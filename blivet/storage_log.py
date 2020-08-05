@@ -3,6 +3,8 @@ import logging
 import sys
 import traceback
 
+from .flags import flags
+
 log = logging.getLogger("blivet")
 log.addHandler(logging.NullHandler())
 
@@ -22,6 +24,9 @@ def function_name_and_depth():
 
 
 def log_method_call(d, *args, **kwargs):
+    if not flags.debug:
+        return
+
     classname = d.__class__.__name__
     (methodname, depth) = function_name_and_depth()
     spaces = depth * ' '

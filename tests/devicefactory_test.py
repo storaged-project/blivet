@@ -1,19 +1,23 @@
 
+import six
 import unittest
 from decimal import Decimal
 import os
 
+import test_compat  # pylint: disable=unused-import
+from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
+
 import blivet
 
 from blivet import devicefactory
-from blivet.devicelibs import raid
+from blivet.devicelibs import raid, crypto
 from blivet.devices import DiskDevice
 from blivet.devices import DiskFile
 from blivet.devices import LUKSDevice
 from blivet.devices import LVMLogicalVolumeDevice
-from blivet.devices import LVMThinLogicalVolumeDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import PartitionDevice
+from blivet.devices.lvm import DEFAULT_THPOOL_RESERVE
 from blivet.errors import RaidError
 from blivet.formats import get_format
 from blivet.size import Size
@@ -50,8 +54,8 @@ class DeviceFactoryTestCase(unittest.TestCase):
             raise unittest.SkipTest("abstract base class")
 
         self.b = blivet.Blivet()  # don't populate it
-        self.disk_files = [create_sparse_tempfile("factorytest", Size("1 GiB")),
-                           create_sparse_tempfile("factorytest", Size("1 GiB"))]
+        self.disk_files = [create_sparse_tempfile("factorytest", Size("2 GiB")),
+                           create_sparse_tempfile("factorytest", Size("2 GiB"))]
         for filename in self.disk_files:
             disk = DiskFile(filename)
             self.b.devicetree._add_device(disk)
@@ -74,7 +78,6 @@ class DeviceFactoryTestCase(unittest.TestCase):
         """ Validate the factory device against the factory args. """
         device = args[0]
         device_type = args[1]
-        size = args[2]
 
         if kwargs.get("encrypted"):
             device_class = LUKSDevice
@@ -93,7 +96,7 @@ class DeviceFactoryTestCase(unittest.TestCase):
             self.assertEqual(device.format.label,
                              kwargs.get('label'))
 
-        self.assertLessEqual(device.size, size)
+        self.assertLessEqual(device.size, kwargs.get("size"))
         self.assertGreaterEqual(device.size, device.format.min_size)
         if device.format.max_size:
             self.assertLessEqual(device.size, device.format.max_size)
@@ -101,24 +104,27 @@ class DeviceFactoryTestCase(unittest.TestCase):
         self.assertEqual(device.encrypted,
                          kwargs.get("encrypted", False) or
                          kwargs.get("container_encrypted", False))
+        if kwargs.get("encrypted", False):
+            self.assertEqual(device.slave.format.luks_version,
+                             kwargs.get("luks_version", crypto.DEFAULT_LUKS_VERSION))
 
         self.assertTrue(set(device.disks).issubset(kwargs["disks"]))
 
     def test_device_factory(self):
         device_type = self.device_type
-        size = Size('400 MiB')
         kwargs = {"disks": self.b.disks,
+                  "size": Size("400 MiB"),
                   "fstype": 'ext4',
                   "mountpoint": '/factorytest'}
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
         self.b.recursive_remove(device)
 
         if self.encryption_supported:
             # Encrypt the leaf device
             kwargs["encrypted"] = True
-            device = self._factory_device(device_type, size, **kwargs)
-            self._validate_factory_device(device, device_type, size, **kwargs)
+            device = self._factory_device(device_type, **kwargs)
+            self._validate_factory_device(device, device_type, **kwargs)
             for partition in self.b.partitions:
                 self.b.recursive_remove(partition)
 
@@ -127,32 +133,41 @@ class DeviceFactoryTestCase(unittest.TestCase):
         ##
 
         # Create a basic stack
-        size = Size('800 MiB')
         kwargs = {"disks": self.b.disks,
+                  "size": Size('800 MiB'),
                   "fstype": 'ext4',
                   "mountpoint": '/factorytest'}
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
 
         if self.encryption_supported:
             # Encrypt the leaf device
             kwargs["encrypted"] = True
             kwargs["device"] = device
-            device = self._factory_device(device_type, size, **kwargs)
-            self._validate_factory_device(device, device_type, size, **kwargs)
+            device = self._factory_device(device_type, **kwargs)
+            self._validate_factory_device(device, device_type, **kwargs)
 
         # Change the mountpoint
         kwargs["mountpoint"] = "/a/different/dir"
         kwargs["device"] = device
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
 
         # Change the fstype and size.
         kwargs["fstype"] = "xfs"
         kwargs["device"] = device
-        size = Size("650 MiB")
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        kwargs["size"] = Size("650 MiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # Change LUKS version
+        kwargs["luks_version"] = "luks1"
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["luks_version"] = "luks2"
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
 
     def _get_test_factory_args(self):
         """ Return kwarg dict of type-specific factory ctor args. """
@@ -167,13 +182,13 @@ class DeviceFactoryTestCase(unittest.TestCase):
         """
         return Size("1 MiB")
 
-    def test_get_free_disk_space(self):
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_get_free_disk_space(self, *args):  # pylint: disable=unused-argument
         # get_free_disk_space should return the total free space on disks
         kwargs = self._get_test_factory_args()
-        size = Size("500 MiB")
+        kwargs["size"] = Size("500 MiB")
         factory = devicefactory.get_device_factory(self.b,
                                                    self.device_type,
-                                                   size,
                                                    disks=self.b.disks,
                                                    **kwargs)
         # disks contain empty disklabels, so free space is sum of disk sizes
@@ -187,7 +202,6 @@ class DeviceFactoryTestCase(unittest.TestCase):
         device_space = factory._get_device_space()
         factory = devicefactory.get_device_factory(self.b,
                                                    self.device_type,
-                                                   size,
                                                    disks=self.b.disks,
                                                    **kwargs)
         # disks contain a 500 MiB device, which includes varying amounts of
@@ -196,7 +210,8 @@ class DeviceFactoryTestCase(unittest.TestCase):
                                sum(d.size for d in self.b.disks) - device_space,
                                delta=self._get_size_delta(devices=[device]))
 
-    def test_normalize_size(self):
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_normalize_size(self, *args):  # pylint: disable=unused-argument
         # _normalize_size should adjust target size to within the format limits
         fstype = "ext2"
         ext2 = get_format(fstype)
@@ -205,9 +220,9 @@ class DeviceFactoryTestCase(unittest.TestCase):
         self.assertTrue(size > ext2.max_size)
 
         kwargs = self._get_test_factory_args()
+        kwargs["size"] = size
         factory = devicefactory.get_device_factory(self.b,
                                                    self.device_type,
-                                                   size,
                                                    disks=self.b.disks,
                                                    fstype=fstype,
                                                    **kwargs)
@@ -228,10 +243,10 @@ class DeviceFactoryTestCase(unittest.TestCase):
         # device, in case the factory is to be modifying a defined device
         # must be a couple MiB smaller than the disk to accommodate
         # PartitionFactory
-        size = self.b.disks[0].size - Size("4 MiB")
-        device = self._factory_device(self.device_type, size,
+        kwargs["size"] = self.b.disks[0].size - Size("4 MiB")
+        device = self._factory_device(self.device_type,
                                       disks=self.b.disks, **kwargs)
-        self.assertAlmostEqual(device.size, size, delta=self._get_size_delta())
+        self.assertAlmostEqual(device.size, kwargs["size"], delta=self._get_size_delta())
 
         factory.size = None
         factory.device = device
@@ -244,6 +259,36 @@ class DeviceFactoryTestCase(unittest.TestCase):
                                sum(d.size for d in self.b.disks),
                                delta=self._get_size_delta(devices=[device]))
 
+    def test_default_factory_type(self):
+        factory = devicefactory.get_device_factory(self.b)
+        self.assertIsInstance(factory, devicefactory.LVMFactory)
+
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_factory_defaults(self, *args):  # pylint: disable=unused-argument
+        ctor_kwargs = self._get_test_factory_args()
+        factory = devicefactory.get_device_factory(self.b, self.device_type, **ctor_kwargs)
+        for setting, value in factory._default_settings.items():
+            if setting not in ctor_kwargs:
+                self.assertEqual(getattr(factory, setting), value)
+
+        self.assertEqual(factory.fstype, self.b.get_fstype())
+
+        kwargs = self._get_test_factory_args()
+        kwargs.update({"disks": self.b.disks[:],
+                       "fstype": "swap",
+                       "size": Size("2GiB"),
+                       "label": "SWAP"})
+        device = self._factory_device(self.device_type, **kwargs)
+        factory = devicefactory.get_device_factory(self.b, self.device_type,
+                                                   device=device)
+        self.assertEqual(factory.size, getattr(device, "req_size", device.size))
+        if self.device_type == devicefactory.DEVICE_TYPE_PARTITION:
+            self.assertIn(device.disk, factory.disks)
+        else:
+            self.assertEqual(factory.disks, device.disks)
+        self.assertEqual(factory.fstype, device.format.type)
+        self.assertEqual(factory.label, device.format.label)
+
 
 class PartitionFactoryTestCase(DeviceFactoryTestCase):
     device_class = PartitionDevice
@@ -253,17 +298,17 @@ class PartitionFactoryTestCase(DeviceFactoryTestCase):
         # Test a change of format and size where old size is too large for the
         # new format but not for the old one.
         device_type = self.device_type
-        size = Size('400 MiB')
         kwargs = {"disks": self.b.disks,
+                  "size": Size('400 MiB'),
                   "fstype": 'ext4',
                   "mountpoint": '/factorytest'}
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
 
         kwargs["device"] = device
         kwargs["fstype"] = "prepboot"
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
 
     def _get_size_delta(self, devices=None):
         delta = Size("2 MiB")
@@ -301,15 +346,24 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
             self.assertEqual(pv.encrypted, kwargs.get("container_encrypted", False))
             self.assertIsInstance(pv, member_class)
 
-    def test_device_factory(self):
+            if pv.encrypted:
+                self.assertEqual(pv.slave.format.luks_version,
+                                 kwargs.get("luks_version", crypto.DEFAULT_LUKS_VERSION))
+
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         super(LVMFactoryTestCase, self).test_device_factory()
 
         ##
         # New device
         ##
         device_type = self.device_type
-        size = Size('400 MiB')
         kwargs = {"disks": self.b.disks,
+                  "size": Size('400 MiB'),
                   "fstype": 'ext4',
                   "mountpoint": '/factorytest'}
 
@@ -317,16 +371,16 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
             # encrypt the PVs
             kwargs["encrypted"] = False
             kwargs["container_encrypted"] = True
-            device = self._factory_device(device_type, size, **kwargs)
-            self._validate_factory_device(device, device_type, size, **kwargs)
+            device = self._factory_device(device_type, **kwargs)
+            self._validate_factory_device(device, device_type, **kwargs)
             for partition in self.b.partitions:
                 self.b.recursive_remove(partition)
 
         # Add mirroring of PV using MD
         kwargs["container_encrypted"] = False
         kwargs["container_raid_level"] = "raid1"
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
         for partition in self.b.partitions:
             self.b.recursive_remove(partition)
 
@@ -336,12 +390,12 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
 
         # Create a basic LVM stack
         device_type = self.device_type
-        size = Size('800 MiB')
         kwargs = {"disks": self.b.disks,
+                  "size": Size('800 MiB'),
                   "fstype": 'ext4',
                   "mountpoint": '/factorytest'}
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
 
         if self.encryption_supported:
             # Encrypt the LV
@@ -350,35 +404,79 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
             # members in the next test.
             kwargs["encrypted"] = True
             kwargs["device"] = device
-            device = self._factory_device(device_type, size, **kwargs)
-            self._validate_factory_device(device, device_type, size, **kwargs)
+            kwargs["luks_version"] = "luks1"
+            device = self._factory_device(device_type, **kwargs)
+            self._validate_factory_device(device, device_type, **kwargs)
 
             # Decrypt the LV, but encrypt the PVs
             kwargs["encrypted"] = False
             kwargs["container_encrypted"] = True
             kwargs["device"] = device
-            device = self._factory_device(device_type, size, **kwargs)
-            self._validate_factory_device(device, device_type, size, **kwargs)
+            device = self._factory_device(device_type, **kwargs)
+            self._validate_factory_device(device, device_type, **kwargs)
 
         # Switch to an encrypted raid0 md pv
         kwargs["container_raid_level"] = "raid0"
         kwargs["device"] = device
-        size = Size("400 MiB")
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        kwargs["size"] = Size("400 MiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
 
         # remove encryption from the md pv
         kwargs["container_encrypted"] = False
         kwargs["device"] = device
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
 
         # switch back to normal partition pvs
         kwargs["container_raid_level"] = None
         kwargs["device"] = device
-        size = Size("750 MiB")
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        kwargs["size"] = Size("750 MiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # limit the vg to the first disk
+        kwargs["disks"] = self.b.disks[:1]
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # expand it back to all disks
+        kwargs["disks"] = self.b.disks
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # Change LUKS version
+        kwargs["luks_version"] = "luks1"
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["luks_version"] = "luks2"
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # enable, disable and enable container encryption
+        kwargs["container_encrypted"] = True
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["container_encrypted"] = False
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["container_encrypted"] = True
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_factory_defaults(self, *args):  # pylint: disable=unused-argument
+        super(LVMFactoryTestCase, self).test_factory_defaults()
 
     def _get_size_delta(self, devices=None):
         if not devices:
@@ -388,7 +486,12 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
 
         return delta
 
-    def test_get_container(self):
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_get_container(self, *args):  # pylint: disable=unused-argument
         for disk in self.b.disks:
             self.b.format_device(disk, get_format("lvmpv"))
 
@@ -398,7 +501,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
 
         factory = devicefactory.get_device_factory(self.b,
                                                    self.device_type,
-                                                   Size("500 MiB"),
+                                                   size=Size("500 MiB"),
                                                    fstype="xfs")
 
         # get_container on lvm factory should return the lone non-existent vg
@@ -410,9 +513,26 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         self.assertEqual(factory.get_container(), None)
         self.assertEqual(factory.get_container(allow_existing=True), vg)
 
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_get_free_disk_space(self, *args):
+        super(LVMFactoryTestCase, self).test_get_free_disk_space()
+
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_normalize_size(self, *args):  # pylint: disable=unused-argument
+        super(LVMFactoryTestCase, self).test_normalize_size()
+
 
 class LVMThinPFactoryTestCase(LVMFactoryTestCase):
-    device_class = LVMThinLogicalVolumeDevice
+    # TODO: check that the LV we get is a thin pool
+    device_class = LVMLogicalVolumeDevice
     device_type = devicefactory.DEVICE_TYPE_LVM_THINP
     encryption_supported = False
 
@@ -433,8 +553,11 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
     def _get_size_delta(self, devices=None):
         delta = super(LVMThinPFactoryTestCase, self)._get_size_delta(devices=devices)
         if devices:
-            # we reserve 20% of thin pool size in VG for pool metadata
-            delta += sum(d.size for d in devices) * Decimal('0.20')
+            # we reserve 20% in the VG for pool to grow
+            if sum(d.size for d in devices) * Decimal('0.20') > DEFAULT_THPOOL_RESERVE.min:
+                delta += sum(d.size for d in devices) * (DEFAULT_THPOOL_RESERVE.percent / 100)
+            else:
+                delta += DEFAULT_THPOOL_RESERVE.min
 
         return delta
 
@@ -443,33 +566,34 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
     device_type = devicefactory.DEVICE_TYPE_MD
     device_class = MDRaidArrayDevice
 
-    def test_device_factory(self):
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         # RAID0 across two disks
         device_type = self.device_type
-        size = Size('1 GiB')
         kwargs = {"disks": self.b.disks,
+                  "size": Size('1 GiB'),
                   "fstype": 'ext4',
                   "raid_level": "raid0",
                   "mountpoint": '/factorytest'}
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
         self.b.recursive_remove(device)
 
         # Encrypt the leaf device
         kwargs["encrypted"] = True
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
         for partition in self.b.partitions:
             self.b.recursive_remove(partition)
 
         # RAID1 across two disks
-        size = Size('500 MiB')
         kwargs = {"disks": self.b.disks,
+                  "size": Size('500 MiB'),
                   "fstype": 'ext4',
                   "raid_level": "raid1",
                   "mountpoint": '/factorytest'}
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
         for partition in self.b.partitions:
             self.b.recursive_remove(partition)
 
@@ -478,30 +602,46 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
         ##
 
         # RAID0 across two disks w/ swap
-        size = Size('800 MiB')
         kwargs = {"disks": self.b.disks,
+                  "size": Size('800 MiB'),
                   "fstype": 'swap',
                   "raid_level": "raid0",
                   "label": 'SWAP00'}
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
 
         # Encrypt the leaf device
         kwargs["encrypted"] = True
         kwargs["device"] = device
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
 
         # Change the mountpoint
-        size = Size('400 MiB')
+        kwargs["size"] = Size('400 MiB')
         kwargs["raid_level"] = "raid1"
         kwargs["mountpoint"] = "/a/different/dir"
         kwargs["label"] = "fedora 53 root"
         kwargs["fstype"] = "xfs"
         kwargs["device"] = device
         # kwargs["encrypted"] = False
-        device = self._factory_device(device_type, size, **kwargs)
-        self._validate_factory_device(device, device_type, size, **kwargs)
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # enable, disable and enable container encryption
+        kwargs["container_encrypted"] = True
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["container_encrypted"] = False
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["container_encrypted"] = True
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
 
     def _get_size_delta(self, devices=None):
         return Size("2 MiB") * len(self.b.disks)
@@ -515,27 +655,28 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
        initial commit message for this file for further details.
     """
 
-    def test_mdfactory(self):
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_mdfactory(self, *args):  # pylint: disable=unused-argument
         factory1 = devicefactory.get_device_factory(self.b,
                                                     devicefactory.DEVICE_TYPE_MD,
-                                                    Size("1 GiB"),
+                                                    size=Size("1 GiB"),
                                                     raid_level=raid.RAID1)
 
         factory2 = devicefactory.get_device_factory(self.b,
                                                     devicefactory.DEVICE_TYPE_MD,
-                                                    Size("1 GiB"),
+                                                    size=Size("1 GiB"),
                                                     raid_level=0)
 
-        with self.assertRaisesRegex(devicefactory.DeviceFactoryError, "must have some RAID level"):
+        with six.assertRaisesRegex(self, devicefactory.DeviceFactoryError, "must have some RAID level"):
             devicefactory.get_device_factory(
                 self.b,
                 devicefactory.DEVICE_TYPE_MD,
-                Size("1 GiB"))
+                size=Size("1 GiB"))
 
-        with self.assertRaisesRegex(RaidError, "requires at least"):
+        with six.assertRaisesRegex(self, RaidError, "requires at least"):
             factory1._get_device_space()
 
-        with self.assertRaisesRegex(RaidError, "requires at least"):
+        with six.assertRaisesRegex(self, RaidError, "requires at least"):
             factory1._configure()
 
         self.assertEqual(factory1.container_list, [])
@@ -548,7 +689,7 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
         ]
         self.assertIsNotNone(factory1._get_new_device(parents=parents))
 
-        with self.assertRaisesRegex(RaidError, "requires at least"):
+        with six.assertRaisesRegex(self, RaidError, "requires at least"):
             factory2._get_device_space()
 
         self.assertEqual(factory2.container_list, [])

@@ -21,7 +21,7 @@
 #
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -30,10 +30,13 @@ import os
 from ..storage_log import log_method_call
 from parted import PARTITION_LVM
 from ..devicelibs import lvm
-from ..tasks import availability
+from ..tasks import availability, pvtask
 from ..i18n import N_
 from ..size import Size
+from ..errors import PhysicalVolumeError
 from . import DeviceFormat, register_device_format
+from .. import udev
+from ..static_data.lvm_info import pvs_info
 
 import logging
 log = logging.getLogger("blivet")
@@ -53,6 +56,10 @@ class LVMPhysicalVolume(DeviceFormat):
     _packages = ["lvm2"]                # required packages
     _ks_mountpoint = "pv."
     _plugin = availability.BLOCKDEV_LVM_PLUGIN
+    _resizable = True
+
+    _size_info_class = pvtask.PVSize
+    _resize_class = pvtask.PVResize
 
     def __init__(self, **kwargs):
         """
@@ -66,6 +73,8 @@ class LVMPhysicalVolume(DeviceFormat):
             :type pe_start: :class:`~.size.Size`
             :keyword data_alignment: data alignment (for non-existent PVs)
             :type data_alignment: :class:`~.size.Size`
+            :keyword free: free space in the PV
+            :type free: :class:`~.size.Size`
 
             .. note::
 
@@ -77,10 +86,15 @@ class LVMPhysicalVolume(DeviceFormat):
         """
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
+
+        self._size_info = self._size_info_class(self)
+        self._resize = self._resize_class(self)
+
         self.vg_name = kwargs.get("vg_name")
         self.vg_uuid = kwargs.get("vg_uuid")
         self.pe_start = kwargs.get("pe_start", lvm.LVM_PE_START)
         self.data_alignment = kwargs.get("data_alignment", Size(0))
+        self._free = kwargs.get("free")  # None means unknown
 
         self.inconsistent_vg = False
 
@@ -111,17 +125,8 @@ class LVMPhysicalVolume(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
 
-        # Consider use of -Z|--zero
-        # -f|--force or -y|--yes may be required
-
-        # lvm has issues with persistence of metadata, so here comes the
-        # hammer...
-        # XXX This format doesn't exist yet, so bypass the precondition checking
-        #     for destroy by calling _destroy directly.
-        DeviceFormat._destroy(self, **kwargs)
-        blockdev.lvm.pvscan(self.device)
-        blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment)
-        blockdev.lvm.pvscan(self.device)
+        ea_yes = blockdev.ExtraArg.new("-y", "")
+        blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
 
     def _destroy(self, **kwargs):
         log_method_call(self, device=self.device,
@@ -129,9 +134,9 @@ class LVMPhysicalVolume(DeviceFormat):
         try:
             blockdev.lvm.pvremove(self.device)
         except blockdev.LVMError:
-            DeviceFormat.destroy(self, **kwargs)
+            DeviceFormat._destroy(self, **kwargs)
         finally:
-            blockdev.lvm.pvscan(self.device)
+            udev.settle()
 
     @property
     def destroyable(self):
@@ -142,5 +147,51 @@ class LVMPhysicalVolume(DeviceFormat):
         # XXX hack
         return (self.exists and self.vg_name and
                 os.path.isdir("/dev/%s" % self.vg_name))
+
+    def update_size_info(self):
+        """ Update this format's current size. """
+
+        self._resizable = False
+
+        if not self.exists:
+            return
+
+        try:
+            self._size = self._size_info.do_task()
+        except PhysicalVolumeError as e:
+            log.warning("Failed to obtain current size for device %s: %s", self.device, e)
+        else:
+            self._resizable = True
+
+    @property
+    def free(self):
+        """ Information about the free space in this PV """
+        if self._free is None:
+            if self.exists:
+                # we don't have any actual value, but the PV exists and is
+                # active, we should try to determine it
+                pv_info = pvs_info.cache.get(self.device.path)
+                if pv_info is None:
+                    log.error("Failed to get free space information for the PV '%s'", self.device)
+                    self._free = Size(0)
+                else:
+                    self._free = Size(pv_info.pv_free)
+            else:
+                raise PhysicalVolumeError("Unknown free space information for the PV '%s'" % self.device)
+
+        return self._free
+
+    @free.setter
+    def free(self, value):
+        self._free = value
+
+    @property
+    def container_uuid(self):
+        return self.vg_uuid
+
+    @container_uuid.setter
+    def container_uuid(self, uuid):
+        self.vg_uuid = uuid
+
 
 register_device_format(LVMPhysicalVolume)

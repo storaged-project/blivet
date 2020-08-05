@@ -20,7 +20,10 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
+import os
+import tempfile
 
+from contextlib import contextmanager
 from six import add_metaclass
 
 from ..errors import FSError
@@ -28,16 +31,18 @@ from ..size import B, KiB, MiB, GiB, KB, MB, GB
 from ..import util
 
 from . import availability
-from . import fstask
 from . import task
+from . import fstask
+from . import dfresize
+
+import logging
+log = logging.getLogger("blivet")
 
 
 @add_metaclass(abc.ABCMeta)
 class FSResizeTask(fstask.FSTask):
-
     """ The abstract properties that any resize task must have. """
 
-    unit = abc.abstractproperty(doc="Resize unit.")
     size_fmt = abc.abstractproperty(doc="Size format string.")
 
 
@@ -116,6 +121,54 @@ class NTFSResize(FSResize):
         ]
 
 
+class XFSResize(FSResize):
+    ext = availability.XFSRESIZE_APP
+    unit = B
+    size_fmt = None
+
+    @contextmanager
+    def _do_temp_mount(self):
+        if self.fs.status:
+            yield
+        else:
+            dev_name = os.path.basename(self.fs.device)
+            tmpdir = tempfile.mkdtemp(prefix="xfs-tempmount-%s" % dev_name)
+            log.debug("mounting XFS on '%s' to '%s' for resize", self.fs.device, tmpdir)
+            try:
+                self.fs.mount(mountpoint=tmpdir)
+            except FSError as e:
+                raise FSError("Failed to mount XFS filesystem for resize: %s" % str(e))
+
+            try:
+                yield
+            finally:
+                util.umount(mountpoint=tmpdir)
+                os.rmdir(tmpdir)
+
+    def _get_block_size(self):
+        if self.fs._current_info:
+            # this should be set by update_size_info()
+            for line in self.fs._current_info.split("\n"):
+                if line.startswith("blocksize ="):
+                    return int(line.split("=")[-1])
+
+        raise FSError("Failed to get XFS filesystem block size for resize")
+
+    def size_spec(self):
+        # size for xfs_growfs is in blocks
+        return str(self.fs.target_size.convert_to(self.unit) / self._get_block_size())
+
+    @property
+    def args(self):
+        return [self.fs.system_mountpoint, "-D", self.size_spec()]
+
+    def do_task(self):
+        """ Resizes the XFS format. """
+
+        with self._do_temp_mount():
+            super(XFSResize, self).do_task()
+
+
 class TmpFSResize(FSResize):
 
     ext = availability.MOUNT_APP
@@ -135,11 +188,7 @@ class TmpFSResize(FSResize):
         return ['-o', ",".join(options), self.fs._type, self.fs.system_mountpoint]
 
 
-class UnimplementedFSResize(task.UnimplementedTask, FSResizeTask):
-
-    @property
-    def unit(self):
-        raise NotImplementedError()
+class UnimplementedFSResize(dfresize.UnimplementedDFResize, FSResizeTask):
 
     @property
     def size_fmt(self):

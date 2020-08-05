@@ -83,8 +83,8 @@ class FileDevice(StorageDevice):
 
         return os.path.normpath("%s%s" % (root, self.name))
 
-    def _get_size(self):
-        size = self._size
+    def read_current_size(self):
+        size = Size(0)
         if self.exists and os.path.exists(self.path):
             st = os.stat(self.path)
             size = Size(st[stat.ST_SIZE])
@@ -106,7 +106,7 @@ class FileDevice(StorageDevice):
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        fd = util.eintr_retry_call(os.open, self.path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+        fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
         # all this fuss is so we write the zeros 1MiB at a time
         zero = "\0"
         block_size = 1024 ** 2
@@ -114,24 +114,26 @@ class FileDevice(StorageDevice):
 
         zeros = zero * block_size
         for _n in range(count):
-            util.eintr_retry_call(os.write, fd, zeros.encode("utf-8"))
+            os.write(fd, zeros.encode("utf-8"))
 
         if rem:
             # write out however many more zeros it takes to hit our size target
             size_target = zero * rem
-            util.eintr_retry_call(os.write, fd, size_target.encode("utf-8"))
+            os.write(fd, size_target.encode("utf-8"))
 
-        util.eintr_ignore(os.close, fd)
+        os.close(fd)
 
     def _destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
         os.unlink(self.path)
 
-    @classmethod
-    def is_name_valid(cls, name):
+    def is_name_valid(self, name):
         # Override StorageDevice.is_name_valid to allow /
         return not('\x00' in name or name == '.' or name == '..')
+
+    def update_sysfs_path(self):
+        pass
 
 
 class SparseFileDevice(FileDevice):

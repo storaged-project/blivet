@@ -1,13 +1,15 @@
 # vim:set fileencoding=utf-8
+import test_compat  # pylint: disable=unused-import
 
+import six
 import unittest
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
-from mock import Mock
+from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,import-error
 
 import blivet
 
@@ -74,7 +76,7 @@ class DeviceStateTestCase(unittest.TestCase):
             "parents": xform(lambda x, m: self.assertEqual(len(x), 0, m) and
                              self.assertIsInstance(x, ParentList, m)),
             "partitionable": xform(self.assertFalse),
-            "path": xform(lambda x, m: self.assertRegex(x, "^/dev", m)),
+            "path": xform(lambda x, m: six.assertRegex(self, x, "^/dev", m)),
             "raw_device": xform(self.assertIsNotNone),
             "resizable": xform(self.assertFalse),
             "size": xform(lambda x, m: self.assertEqual(x, Size(0), m)),
@@ -110,6 +112,18 @@ class DeviceStateTestCase(unittest.TestCase):
             else:
                 v(device, k)
 
+    def test_resizable(self):
+        """ Test resizable property of unformatted devices. """
+        # Devices with no (or unrecognized) formatting should not be resizable.
+        device = StorageDevice("testdev1", exists=True, size=Size("100 G"), fmt=get_format("ext4", exists=True))
+        device._resizable = True
+        with patch.object(device, "_format", exists=True, resizable=True):
+            self.assertTrue(device.resizable)
+
+        device = StorageDevice("testdev1", exists=True, size=Size("100 G"))
+        device._resizable = True
+        self.assertFalse(device.resizable)
+
 
 class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
 
@@ -141,6 +155,8 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
         mdraid.MD_CHUNK_SIZE = Size("1 MiB")
         self.get_superblock_size = MDRaidArrayDevice.get_superblock_size
         MDRaidArrayDevice.get_superblock_size = lambda a, s: Size(0)
+
+        self.addCleanup(self._clean_up)
 
         parents = [
             DiskDevice("name1", fmt=get_format("mdmember"))
@@ -346,7 +362,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
             uuid='Just-pretending'
         )
 
-    def tearDown(self):
+    def _clean_up(self):
         mdraid.MD_CHUNK_SIZE = self.md_chunk_size
         MDRaidArrayDevice.get_superblock_size = self.get_superblock_size
 
@@ -535,35 +551,35 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                          parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                          uuid=xform(lambda x, m: self.assertEqual(x, self.dev20.uuid, m)))
 
-        with self.assertRaisesRegex(DeviceError, "invalid"):
+        with six.assertRaisesRegex(self, DeviceError, "invalid"):
             MDRaidArrayDevice("dev")
 
-        with self.assertRaisesRegex(DeviceError, "invalid"):
+        with six.assertRaisesRegex(self, DeviceError, "invalid"):
             MDRaidArrayDevice("dev", level="raid2")
 
-        with self.assertRaisesRegex(DeviceError, "invalid"):
+        with six.assertRaisesRegex(self, DeviceError, "invalid"):
             MDRaidArrayDevice(
                 "dev",
                 parents=[StorageDevice("parent", fmt=get_format("mdmember"))])
 
-        with self.assertRaisesRegex(DeviceError, "at least 2 members"):
+        with six.assertRaisesRegex(self, DeviceError, "at least 2 members"):
             MDRaidArrayDevice(
                 "dev",
                 level="raid0",
                 parents=[StorageDevice("parent", fmt=get_format("mdmember"))])
 
-        with self.assertRaisesRegex(DeviceError, "invalid"):
+        with six.assertRaisesRegex(self, DeviceError, "invalid"):
             MDRaidArrayDevice("dev", level="junk")
 
-        with self.assertRaisesRegex(DeviceError, "at least 2 members"):
+        with six.assertRaisesRegex(self, DeviceError, "at least 2 members"):
             MDRaidArrayDevice("dev", level=0, member_devices=2)
 
     def test_mdraid_array_device_methods(self):
         """Test for method calls on initialized MDRaidDevices."""
-        with self.assertRaisesRegex(DeviceError, "invalid"):
+        with six.assertRaisesRegex(self, DeviceError, "invalid"):
             self.dev7.level = "junk"
 
-        with self.assertRaisesRegex(DeviceError, "invalid"):
+        with six.assertRaisesRegex(self, DeviceError, "invalid"):
             self.dev7.level = None
 
 
@@ -583,7 +599,8 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
             "media_present": xform(self.assertTrue),
             "metadata_level": lambda d, a: self.assertFalse(hasattr(d, a)),
             "type": xform(lambda x, m: self.assertEqual(x, "btrfs", m)),
-            "vol_id": xform(lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m))}
+            "vol_id": xform(lambda x, m: self.assertEqual(x, btrfs.MAIN_VOLUME_ID, m))
+        }
         self._state_functions.update(state_functions)
 
     def setUp(self):
@@ -636,27 +653,27 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
                          size=xform(lambda x, m: self.assertEqual(x, Size("500 MiB"), m)),
                          type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
 
-        with self.assertRaisesRegex(ValueError, "BTRFSDevice.*must have at least one parent"):
+        with six.assertRaisesRegex(self, ValueError, "BTRFSDevice.*must have at least one parent"):
             BTRFSVolumeDevice("dev")
 
-        with self.assertRaisesRegex(ValueError, "format"):
+        with six.assertRaisesRegex(self, ValueError, "format"):
             BTRFSVolumeDevice("dev", parents=[StorageDevice("deva", size=BTRFS_MIN_MEMBER_SIZE)])
 
-        with self.assertRaisesRegex(DeviceError, "btrfs subvolume.*must be a btrfs volume"):
+        with six.assertRaisesRegex(self, DeviceError, "btrfs subvolume.*must be a btrfs volume"):
             fmt = blivet.formats.get_format("btrfs")
             device = StorageDevice("deva", fmt=fmt, size=BTRFS_MIN_MEMBER_SIZE)
             BTRFSSubVolumeDevice("dev1", parents=[device])
 
         deva = OpticalDevice("deva", fmt=blivet.formats.get_format("btrfs", exists=True),
                              exists=True)
-        with self.assertRaisesRegex(BTRFSValueError, "at least"):
+        with six.assertRaisesRegex(self, BTRFSValueError, "at least"):
             BTRFSVolumeDevice("dev1", data_level="raid1", parents=[deva])
 
         deva = StorageDevice("deva", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)
         self.assertIsNotNone(BTRFSVolumeDevice("dev1", metadata_level="dup", parents=[deva]))
 
         deva = StorageDevice("deva", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)
-        with self.assertRaisesRegex(BTRFSValueError, "invalid"):
+        with six.assertRaisesRegex(self, BTRFSValueError, "invalid"):
             BTRFSVolumeDevice("dev1", data_level="dup", parents=[deva])
 
         self.assertEqual(self.dev1.isleaf, False)
@@ -681,24 +698,24 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         self.assertIsNotNone(self.dev2.volume)
 
         # size
-        with self.assertRaisesRegex(RuntimeError, "cannot directly set size of btrfs volume"):
+        with six.assertRaisesRegex(self, RuntimeError, "cannot directly set size of btrfs volume"):
             self.dev1.size = Size("500 MiB")
 
     def test_btrfssnap_shot_device_init(self):
         parents = [StorageDevice("p1", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)]
         vol = BTRFSVolumeDevice("test", parents=parents)
-        with self.assertRaisesRegex(ValueError, "non-existent btrfs snapshots must have a source"):
+        with six.assertRaisesRegex(self, ValueError, "non-existent btrfs snapshots must have a source"):
             BTRFSSnapShotDevice("snap1", parents=[vol])
 
-        with self.assertRaisesRegex(ValueError, "btrfs snapshot source must already exist"):
+        with six.assertRaisesRegex(self, ValueError, "btrfs snapshot source must already exist"):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=vol)
 
-        with self.assertRaisesRegex(ValueError, "btrfs snapshot source must be a btrfs subvolume"):
+        with six.assertRaisesRegex(self, ValueError, "btrfs snapshot source must be a btrfs subvolume"):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=parents[0])
 
-        parents2 = [StorageDevice("p1", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)]
+        parents2 = [StorageDevice("p1", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE, exists=True)]
         vol2 = BTRFSVolumeDevice("test2", parents=parents2, exists=True)
-        with self.assertRaisesRegex(ValueError, ".*snapshot and source must be in the same volume"):
+        with six.assertRaisesRegex(self, ValueError, ".*snapshot and source must be in the same volume"):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=vol2)
 
         vol.exists = True
@@ -743,6 +760,8 @@ class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
             "parents": xform(lambda x, m: self.assertEqual(len(x), 1, m) and
                              self.assertIsInstance(x, ParentList) and
                              self.assertIsInstance(x[0], LVMVolumeGroupDevice)),
+            "size": xform(lambda x, m: self.assertEqual(x, self.fmt._min_size, m)),
+            "target_size": xform(lambda x, m: self.assertEqual(x, self.fmt._min_size, m))
         }
 
         self._state_functions.update(state_functions)
@@ -751,8 +770,9 @@ class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("1 GiB"))
         vg = LVMVolumeGroupDevice("testvg", parents=[pv])
+        self.fmt = blivet.formats.get_format("xfs")
         self.lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
-                                         fmt=blivet.formats.get_format("xfs"))
+                                         fmt=self.fmt)
 
         pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
                             size=Size("1 GiB"))
@@ -798,9 +818,10 @@ class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
 
     def test_lvmlogical_volume_device_init_cached(self):
         self.state_check(self.cached_lv,
-                         # 2 * (1 GiB - one extent) - 512 MiB - 8 MiB
+                         # 2 * (1 GiB - one extent) - 504 MiB - 8 MiB
                          #       PVfree               cache     pmspare
-                         max_size=xform(lambda x, m: self.assertEqual(x, Size("1520 MiB"), m) and
+                         # NOTE: cache reserves space for the pmspare LV
+                         max_size=xform(lambda x, m: self.assertEqual(x, Size("1528 MiB"), m) and
                                         self.assertIsInstance(x, Size, m)),
                          snapshots=xform(lambda x, m: self.assertEqual(x, [], m)),
                          seg_type=xform(lambda x, m: self.assertEqual(x, "linear", m)),

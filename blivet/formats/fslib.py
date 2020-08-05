@@ -21,8 +21,6 @@
 #                    David Cantrell <dcantrell@redhat.com>
 #                    Anne Mulhern <amulhern@redhat.com>
 
-from ..util import open  # pylint: disable=redefined-builtin
-
 kernel_filesystems = []
 nodev_filesystems = []
 
@@ -35,5 +33,6 @@ def update_kernel_filesystems():
             kernel_filesystems.append(fstype)
             if fields[0] == "nodev":
                 nodev_filesystems.append(fstype)
+
 
 update_kernel_filesystems()

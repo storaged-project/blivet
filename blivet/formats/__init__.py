@@ -22,25 +22,35 @@
 #
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
 import os
 import importlib
+from six import add_metaclass
 
-from ..util import notify_kernel
+from .. import udev
 from ..util import get_sysfs_path_by_name
 from ..util import run_program
 from ..util import ObjectID
 from ..storage_log import log_method_call
 from ..errors import DeviceFormatError, FormatCreateError, FormatDestroyError, FormatSetupError
 from ..i18n import N_
-from ..size import Size
+from ..size import Size, ROUND_DOWN, unit_str
+from ..threads import SynchronizedMeta
+from ..flags import flags
+
+from ..errors import FSError, FSResizeError, LUKSError, FormatResizeError
+
+from ..tasks import fsinfo
+from ..tasks import fsresize
+from ..tasks import fssize
+from ..tasks import fsck
+from ..tasks import fsminsize
 
 import logging
 log = logging.getLogger("blivet")
-
 
 device_formats = {}
 
@@ -53,15 +63,16 @@ def register_device_format(fmt_class):
     log.debug("registered device format class %s as %s", fmt_class.__name__,
               fmt_class._type)
 
-default_fstypes = ("ext4", "ext3", "ext2")
+
+default_fstypes = ("ext4", "xfs", "ext3", "ext2")
 
 
 def get_default_filesystem_type():
     for fstype in default_fstypes:
         try:
-            supported = get_device_format_class(fstype).supported
+            supported = get_format(fstype).supported
         except AttributeError:
-            supported = None
+            supported = False
 
         if supported:
             return fstype
@@ -101,28 +112,6 @@ def get_format(fmt_type, *args, **kwargs):
     return fmt
 
 
-def collect_device_format_classes():
-    """ Pick up all device format classes from this directory.
-
-        .. note::
-
-            Modules must call :func:`register_device_format` to make format
-            classes available to :func:`getFormat`.
-    """
-    mydir = os.path.dirname(__file__)
-    myfile = os.path.basename(__file__)
-    (myfile_name, _ext) = os.path.splitext(myfile)
-    for module_file in os.listdir(mydir):
-        (mod_name, ext) = os.path.splitext(module_file)
-        if ext == ".py" and mod_name != myfile_name and not mod_name.startswith("."):
-            try:
-                globals()[mod_name] = importlib.import_module("." + mod_name, package=__package__)
-            except ImportError:
-                log.error("import of device format module '%s' failed", mod_name)
-                from traceback import format_exc
-                log.debug("%s", format_exc())
-
-
 def get_device_format_class(fmt_type):
     """ Return an appropriate format class.
 
@@ -133,9 +122,6 @@ def get_device_format_class(fmt_type):
 
         Returns None if no class is found for fmt_type.
     """
-    if not device_formats:
-        collect_device_format_classes()
-
     fmt = device_formats.get(fmt_type)
     if not fmt:
         for fmt_class in device_formats.values():
@@ -149,6 +135,7 @@ def get_device_format_class(fmt_type):
     return fmt
 
 
+@add_metaclass(SynchronizedMeta)
 class DeviceFormat(ObjectID):
 
     """ Generic device format.
@@ -173,6 +160,11 @@ class DeviceFormat(ObjectID):
     _check = False
     _hidden = False                     # hide devices with this formatting?
     _ks_mountpoint = None
+
+    _resize_class = fsresize.UnimplementedFSResize
+    _size_info_class = fssize.UnimplementedFSSize
+    _info_class = fsinfo.UnimplementedFSInfo
+    _minsize_class = fsminsize.UnimplementedFSMinSize
 
     def __init__(self, **kwargs):
         """
@@ -201,6 +193,22 @@ class DeviceFormat(ObjectID):
         self.exists = kwargs.get("exists", False)
         self.options = kwargs.get("options")
         self._create_options = kwargs.get("create_options")
+
+        # Create task objects
+        self._info = self._info_class(self)
+        self._resize = self._resize_class(self)
+        # These two may depend on info class, so create them after
+        self._minsize = self._minsize_class(self)
+        self._size_info = self._size_info_class(self)
+
+        # format size does not necessarily equal device size
+        self._size = kwargs.get("size", Size(0))
+        self._target_size = self._size
+        self._min_instance_size = Size(0)    # min size of this DeviceFormat instance
+
+        # Resize operations are limited to error-free formats whose current
+        # size is known.
+        self._resizable = False
 
     def __repr__(self):
         s = ("%(classname)s instance (%(id)s) object id %(object_id)d--\n"
@@ -239,6 +247,10 @@ class DeviceFormat(ObjectID):
         return d
 
     def labeling(self):
+        """Returns False by default since most formats are non-labeling."""
+        return False
+
+    def relabels(self):
         """Returns False by default since most formats are non-labeling."""
         return False
 
@@ -352,32 +364,139 @@ class DeviceFormat(ObjectID):
     def type(self):
         return self._type
 
-    def notify_kernel(self):
-        log_method_call(self, device=self.device,
-                        type=self.type)
-        if not self.device:
+    def _set_target_size(self, newsize):
+        """ Set the target size for this filesystem.
+
+            :param :class:`~.size.Size` newsize: the newsize
+        """
+        if not isinstance(newsize, Size):
+            raise ValueError("new size must be of type Size")
+
+        if not self.exists:
+            raise DeviceFormatError("format has not been created")
+
+        if not self.resizable:
+            raise DeviceFormatError("format is not resizable")
+
+        if newsize < self.min_size:
+            raise ValueError("requested size %s must be at least minimum size %s" % (newsize, self.min_size))
+
+        if self.max_size and newsize >= self.max_size:
+            raise ValueError("requested size %s must be less than maximum size %s" % (newsize, self.max_size))
+
+        self._target_size = newsize
+
+    def _get_target_size(self):
+        """ Get this filesystem's target size. """
+        return self._target_size
+
+    target_size = property(_get_target_size, _set_target_size,
+                           doc="Target size for this filesystem")
+
+    def _get_size(self):
+        """ Get this filesystem's size. """
+        return self.target_size if self.resizable else self._size
+
+    size = property(_get_size, doc="This filesystem's size, accounting "
+                    "for pending changes")
+
+    @property
+    def min_size(self):
+        # If self._min_instance_size is not 0, then it should be no less than
+        # self._min_size, by definition, and since a non-zero value indicates
+        # that it was obtained, it is the preferred value.
+        # If self._min_instance_size is less than self._min_size,
+        # but not 0, then there must be some mistake, so better to use
+        # self._min_size.
+        return max(self._min_instance_size, self._min_size)
+
+    def update_size_info(self):
+        """ Update this format's current and minimum size (for resize). """
+
+    def do_resize(self):
+        """ Resize this filesystem based on this instance's target_size attr.
+
+            :raises: FSResizeError, FormatResizeError
+        """
+        if not self.exists:
+            raise FormatResizeError("format does not exist", self.device)
+
+        if not self.resizable:
+            raise FormatResizeError("format not resizable", self.device)
+
+        if self.target_size == self.current_size:
             return
 
-        if self.device.startswith("/dev/mapper/"):
-            try:
-                name = blockdev.dm.node_from_name(os.path.basename(self.device))
-            except blockdev.DMError:
-                log.warning("failed to get dm node for %s", self.device)
-                return
-        elif self.device.startswith("/dev/md/"):
-            try:
-                name = blockdev.md.node_from_name(os.path.basename(self.device))
-            except blockdev.MDRaidError:
-                log.warning("failed to get md node for %s", self.device)
-                return
-        else:
-            name = self.device
+        if not self._resize.available:
+            return
 
-        path = get_sysfs_path_by_name(name)
+        # tmpfs mounts don't need an existing device node
+        if not self.device == "tmpfs" and not os.path.exists(self.device):
+            raise FormatResizeError("device does not exist", self.device)
+
+        self._pre_resize()
+
+        self.update_size_info()
+
+        # Check again if resizable is True, as update_size_info() can change that
+        if not self.resizable:
+            raise FormatResizeError("format not resizable", self.device)
+
+        if self.target_size < self.min_size:
+            self.target_size = self.min_size
+            log.info("Minimum size changed, setting target_size on %s to %s",
+                     self.device, self.target_size)
+
+        # Bump target size to nearest whole number of the resize tool's units.
+        # We always round down because the fs has to fit on whatever device
+        # contains it. To round up would risk quietly setting a target size too
+        # large for the device to hold.
+        rounded = self.target_size.round_to_nearest(self._resize.unit,
+                                                    rounding=ROUND_DOWN)
+
+        # 1. target size was between the min size and max size values prior to
+        #    rounding (see _set_target_size)
+        # 2. we've just rounded the target size down (or not at all)
+        # 3. the minimum size is already either rounded (see _get_min_size) or is
+        #    equal to the current size (see update_size_info)
+        # 5. the minimum size is less than or equal to the current size (see
+        #    _get_min_size)
+        #
+        # This, I think, is sufficient to guarantee that the rounded target size
+        # is greater than or equal to the minimum size.
+
+        # It is possible that rounding down a target size greater than the
+        # current size would move it below the current size, thus changing the
+        # direction of the resize. That means the target size was less than one
+        # unit larger than the current size, and we should do nothing and return
+        # early.
+        if self.target_size > self.current_size and rounded < self.current_size:
+            log.info("rounding target size down to next %s obviated resize of "
+                     "filesystem on %s", unit_str(self._resize.unit), self.device)
+            return
+        else:
+            self.target_size = rounded
+
         try:
-            notify_kernel(path, action="change")
-        except (ValueError, IOError) as e:
-            log.warning("failed to notify kernel of change: %s", e)
+            self._resize.do_task()
+        except FSError as e:
+            raise FSResizeError(e, self.device)
+        except LUKSError as e:
+            raise FormatResizeError(e, self.device)
+
+        self._post_resize()
+
+    def _pre_resize(self):
+        """ Do whatever needs to be done before the format is resized """
+
+    def _post_resize(self):
+        # XXX must be a smarter way to do this
+        self._size = self.target_size
+
+    @property
+    def current_size(self):
+        """ The filesystem's current actual size. """
+        return self._size if self.exists else Size(0)
 
     def create(self, **kwargs):
         """ Write the formatting to the specified block device.
@@ -417,12 +536,10 @@ class DeviceFormat(ObjectID):
     # pylint: disable=unused-argument
     def _create(self, **kwargs):
         """ Type-specific create method. """
-        pass
 
     # pylint: disable=unused-argument
     def _post_create(self, **kwargs):
         self.exists = True
-        self.notify_kernel()
 
     def destroy(self, **kwargs):
         """ Remove the formatting from the associated block device.
@@ -463,8 +580,8 @@ class DeviceFormat(ObjectID):
             raise FormatDestroyError(msg)
 
     def _post_destroy(self, **kwargs):
+        udev.settle()
         self.exists = False
-        self.notify_kernel()
 
     @property
     def destroyable(self):
@@ -608,17 +725,6 @@ class DeviceFormat(ObjectID):
         return self._max_size
 
     @property
-    def min_size(self):
-        """ Minimum size for this format instance.
-
-            :returns: the minimum size for this format instance
-            :rtype: :class:`~.size.Size`
-
-            A value of 0 indicates an unknown size.
-        """
-        return self._min_size
-
-    @property
     def hidden(self):
         """ Whether devices with this formatting should be hidden in UIs. """
         return self._hidden
@@ -632,6 +738,8 @@ class DeviceFormat(ObjectID):
         data.fstype = self.type
         data.mountpoint = self.ks_mountpoint
 
+
 register_device_format(DeviceFormat)
 
-collect_device_format_classes()
+# import the format modules (which register their device formats)
+from . import biosboot, disklabel, dmraid, fslib, fs, luks, lvmpv, mdraid, multipath, prepboot, swap

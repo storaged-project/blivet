@@ -21,7 +21,7 @@
 #
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -104,10 +104,20 @@ class MDRaidMember(DeviceFormat):
     def hidden(self):
         return super(MDRaidMember, self).hidden or self.biosraid
 
+    @property
+    def container_uuid(self):
+        return self.md_uuid
+
+    @container_uuid.setter
+    def container_uuid(self, uuid):
+        self.md_uuid = uuid
+
+
 # nodmraid -> Wether to use BIOS RAID or not
 # Note the anaconda cmdline has not been parsed yet when we're first imported,
 # so we can not use flags.dmraid here
 if not flags.noiswmd and flags.dmraid:
     MDRaidMember._udev_types.append("isw_raid_member")
+
 
 register_device_format(MDRaidMember)

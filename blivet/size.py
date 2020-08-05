@@ -19,98 +19,12 @@
 #
 # Red Hat Author(s): David Cantrell <dcantrell@redhat.com>
 
-import re
-import string           # pylint: disable=deprecated-module
-import locale
-import sys
-from collections import namedtuple
+from bytesize import bytesize
 
-from decimal import Decimal
-from decimal import InvalidOperation
-from decimal import ROUND_DOWN, ROUND_UP, ROUND_HALF_UP
-import six
-
-from .errors import SizePlacesError
-from .i18n import _, N_
-from .util import stringize, unicodeize
-
-ROUND_DEFAULT = ROUND_HALF_UP
-
-# Container for size unit prefix information
-_Prefix = namedtuple("Prefix", ["factor", "prefix", "abbr"])
-
-_DECIMAL_FACTOR = 10 ** 3
-_BINARY_FACTOR = 2 ** 10
-
-_BYTES_SYMBOL = N_("B")
-_BYTES_WORDS = (N_("bytes"), N_("byte"))
-
-# Symbolic constants for units
-B = _Prefix(1, "", "")
-
-KB = _Prefix(_DECIMAL_FACTOR ** 1, N_("kilo"), N_("k"))
-MB = _Prefix(_DECIMAL_FACTOR ** 2, N_("mega"), N_("M"))
-GB = _Prefix(_DECIMAL_FACTOR ** 3, N_("giga"), N_("G"))
-TB = _Prefix(_DECIMAL_FACTOR ** 4, N_("tera"), N_("T"))
-PB = _Prefix(_DECIMAL_FACTOR ** 5, N_("peta"), N_("P"))
-EB = _Prefix(_DECIMAL_FACTOR ** 6, N_("exa"), N_("E"))
-ZB = _Prefix(_DECIMAL_FACTOR ** 7, N_("zetta"), N_("Z"))
-YB = _Prefix(_DECIMAL_FACTOR ** 8, N_("yotta"), N_("Y"))
-
-KiB = _Prefix(_BINARY_FACTOR ** 1, N_("kibi"), N_("Ki"))
-MiB = _Prefix(_BINARY_FACTOR ** 2, N_("mebi"), N_("Mi"))
-GiB = _Prefix(_BINARY_FACTOR ** 3, N_("gibi"), N_("Gi"))
-TiB = _Prefix(_BINARY_FACTOR ** 4, N_("tebi"), N_("Ti"))
-PiB = _Prefix(_BINARY_FACTOR ** 5, N_("pebi"), N_("Pi"))
-EiB = _Prefix(_BINARY_FACTOR ** 6, N_("exbi"), N_("Ei"))
-ZiB = _Prefix(_BINARY_FACTOR ** 7, N_("zebi"), N_("Zi"))
-YiB = _Prefix(_BINARY_FACTOR ** 8, N_("yobi"), N_("Yi"))
-
-# Categories of symbolic constants
-_DECIMAL_PREFIXES = [KB, MB, GB, TB, PB, EB, ZB, YB]
-_BINARY_PREFIXES = [KiB, MiB, GiB, TiB, PiB, EiB, ZiB, YiB]
-_EMPTY_PREFIX = B
-
-if six.PY2:
-    _ASCIIlower_table = string.maketrans(string.ascii_uppercase, string.ascii_lowercase)  # pylint: disable=no-member
-else:
-    _ASCIIlower_table = str.maketrans(string.ascii_uppercase, string.ascii_lowercase)  # pylint: disable=no-member
-
-
-def _lower_ascii(s):
-    """Convert a string to lowercase using only ASCII character definitions.
-
-       :param s: string instance to convert
-       :type s: str or bytes
-       :returns: lower-cased string
-       :rtype: str
-    """
-
-    # XXX: Python 3 has str.maketrans() and bytes.maketrans() so we should
-    # ideally use one or the other depending on the type of 's'. But it turns
-    # out we expect this function to always return string even if given bytes.
-    if not six.PY2 and isinstance(s, bytes):
-        s = s.decode(sys.getdefaultencoding())
-    return s.translate(_ASCIIlower_table)  # pylint: disable=no-member
-
-
-def _make_spec(prefix, suffix, xlate, lowercase=True):
-    """ Synthesizes a whole word from prefix and suffix.
-
-        :param str prefix: a prefix
-        :param str suffixes: a suffix
-        :param bool xlate: if True, treat as locale specific
-        :param bool lowercase: if True, make all lowercase
-
-        :returns:  whole word
-        :rtype: str
-    """
-    if xlate:
-        word = (_(prefix) + _(suffix))
-        return word.lower() if lowercase else word
-    else:
-        word = prefix + suffix
-        return _lower_ascii(word) if lowercase else word
+# we just need to make these objects available here
+# pylint: disable=unused-import
+from bytesize.bytesize import B, KiB, MiB, GiB, TiB, PiB, EiB, ZiB, YiB, KB, MB, GB, TB, PB, EB, ZB, YB
+from bytesize.bytesize import ROUND_UP, ROUND_DOWN, ROUND_HALF_UP
 
 
 def unit_str(unit, xlate=False):
@@ -121,134 +35,10 @@ def unit_str(unit, xlate=False):
         :rtype: some kind of string type
         :returns: string representation of unit
     """
-    return _make_spec(unit.abbr, _BYTES_SYMBOL, xlate, lowercase=False)
+    return bytesize.unit_str(unit, xlate)
 
 
-def parse_units(spec, xlate):
-    """ Parse a unit specification and return corresponding factor.
-
-        :param spec: a units specifier
-        :type spec: any type of string like object
-        :param bool xlate: if True, assume locale specific
-
-        :returns: a named constant corresponding to spec, if found
-        :rtype: _Prefix or NoneType
-
-        Looks first for exact matches for a specifier, but, failing that,
-        searches for partial matches for abbreviations.
-
-        Normalizes units to lowercase, e.g., MiB and mib are treated the same.
-    """
-    if spec == "":
-        return B
-
-    if xlate:
-        spec = spec.lower()
-    else:
-        spec = _lower_ascii(spec)
-
-    # Search for complete matches
-    for unit in [_EMPTY_PREFIX] + _BINARY_PREFIXES + _DECIMAL_PREFIXES:
-        if spec == _make_spec(unit.abbr, _BYTES_SYMBOL, xlate) or \
-           spec in (_make_spec(unit.prefix, s, xlate) for s in _BYTES_WORDS):
-            return unit
-
-    # Search for unambiguous partial match among binary abbreviations
-    matches = [p for p in _BINARY_PREFIXES if _make_spec(p.abbr, "", xlate).startswith(spec)]
-    if len(matches) == 1:
-        return matches[0]
-
-    return None
-
-
-def parse_spec(spec):
-    """ Parse string representation of size.
-
-        :param spec: the specification of a size with, optionally, units
-        :type spec: any type of string like object
-        :returns: numeric value of the specification in bytes
-        :rtype: Decimal
-
-        :raises ValueError: if spec is unparseable
-
-        Tries to parse the spec first as English, if that fails, as
-        a locale specific string.
-    """
-
-    if not spec:
-        raise ValueError("invalid size specification", spec)
-
-    # Replace the localized radix character with a .
-    radix = locale.nl_langinfo(locale.RADIXCHAR)
-    if radix != '.':
-        spec = spec.replace(radix, '.')
-
-    # The purpose of this regular expression is to distinguish
-    # between the numeric part and the part that specifies the units.
-    # The regular expression that matches the numeric part of the spec
-    # should recognize all valid numbers and should not include any part
-    # of the unit specifier in the string that it recognizes. It may
-    # recognize strings that are not valid numbers as well, if it does
-    # some other part of the implementation is expected to recognize that
-    # the number is invalid and raise an exception.
-    # Specifically, the string "0.9.9 KiB" will be matched, and the numeric
-    # part will match "0.9.9". This is not a valid number, but that will
-    # be detected when an exception is raised during conversion of the numeric
-    # part to a numeric value.
-    spec_re = re.compile(
-        r"""(?P<numeric> # the numeric part consists of three parts, below
-           (-|\+)? # optional sign character
-           (?P<base>([0-9\.]+)) # the base
-           (?P<exp>(e|E)(-|\+)[0-9]+)?) # optional exponent
-           \s* # whitespace
-           (?P<rest>[^\s]*$) # the units specification
-        """,
-        re.VERBOSE
-    )
-    m = re.match(spec_re, spec.strip())
-    if not m:
-        raise ValueError("invalid size specification", spec)
-
-    try:
-        size = Decimal(m.group('numeric'))
-    except InvalidOperation:
-        raise ValueError("invalid size specification", spec)
-
-    specifier = m.group('rest')
-
-    # First try to parse as English.
-    try:
-        if six.PY2:
-            spec_ascii = str(specifier.decode("ascii"))
-        else:
-            spec_ascii = bytes(specifier, 'ascii')
-    except (UnicodeDecodeError, UnicodeEncodeError):
-        # String contains non-ascii characters, so can not be English.
-        pass
-    else:
-        unit = parse_units(spec_ascii, False)
-        if unit is not None:
-            return size * unit.factor
-
-    # No English match found, try localized size specs.
-    if six.PY2:
-        # pylint: disable=undefined-variable
-        if isinstance(specifier, unicode):
-            spec_local = specifier
-        else:
-            spec_local = specifier.decode("utf-8")
-    else:
-        spec_local = specifier
-
-    unit = parse_units(spec_local, True)
-    if unit is not None:
-        return size * unit.factor
-
-    raise ValueError("invalid size specification", spec)
-
-
-class Size(Decimal):
-
+class Size(bytesize.Size):
     """ Common class to represent storage device and filesystem sizes.
         Can handle parsing strings such as 45MB or 6.7GB to initialize
         itself, or can be initialized with a numerical size in bytes.
@@ -256,99 +46,54 @@ class Size(Decimal):
         decimal places.
     """
 
-    def __new__(cls, value=0, context=None):
-        """ Initialize a new Size object.  Must pass a bytes or a spec value
-            for size. The bytes value is a numerical value for the size
-            this object represents, in bytes.  The spec value is a string
-            specification of the size using any of the size specifiers in the
-            _DECIMAL_PREFIXES or _BINARY_PREFIXES lists combined with a 'b' or
-            'B'.  For example, to specify 640 kilobytes, you could pass any of
-            these spec parameters:
+    def __abs__(self):
+        return Size(bytesize.Size.__abs__(self))
 
-                "640kb"
-                "640 kb"
-                "640KB"
-                "640 KB"
-                "640 kilobytes"
-
-            If you want to use a spec value to represent a bytes value,
-            you can use the letter 'b' or 'B' or omit the size specifier.
-        """
-        if isinstance(value, (six.string_types, bytes)):
-            size = parse_spec(value)
-        elif isinstance(value, (six.integer_types, float, Decimal)):
-            size = Decimal(value)
-        elif isinstance(value, Size):
-            size = Decimal(value.convert_to())
-        else:
-            raise ValueError("invalid value %s for size" % value)
-
-        # drop any partial byte
-        size = size.to_integral_value(rounding=ROUND_DOWN)
-        self = Decimal.__new__(cls, value=size, context=context)
-        return self
-
-    # Force str and unicode types since the translated sizespec may be unicode
-    def _to_string(self):
-        return self.human_readable()
-
-    def __str__(self, eng=False, context=None):
-        return stringize(self._to_string())
-
-    def __unicode__(self):
-        return unicodeize(self._to_string())
-
-    def __repr__(self):
-        return "Size('%s')" % self
-
-    def __deepcopy__(self, memo):
-        return Size(self.convert_to())
-
-    # pickling support for Size
-    # see https://docs.python.org/3/library/pickle.html#object.__reduce__
-    def __reduce__(self):
-        return (self.__class__, (self.convert_to(),))
-
-    def __add__(self, other, context=None):
-        # because float is not automatically converted to Decimal type
-        if isinstance(other, float):
-            other = Decimal(str(other))
-        return Size(Decimal.__add__(self, other))
+    def __add__(self, other):
+        return Size(bytesize.Size.__add__(self, other))
 
     # needed to make sum() work with Size arguments
-    def __radd__(self, other, context=None):
-        if isinstance(other, float):
-            other = Decimal(str(other))
-        return Size(Decimal.__radd__(self, other))
+    def __radd__(self, other):
+        return Size(bytesize.Size.__radd__(self, other))
 
-    def __sub__(self, other, context=None):
-        if isinstance(other, float):
-            other = Decimal(str(other))
-        return Size(Decimal.__sub__(self, other))
+    def __sub__(self, other):
+        return Size(bytesize.Size.__sub__(self, other))
 
-    def __mul__(self, other, context=None):
-        if isinstance(other, float):
-            other = Decimal(str(other))
-        return Size(Decimal.__mul__(self, other))
+    def __rsub__(self, other):
+        return Size(bytesize.Size.__rsub__(self, other))
+
+    def __mul__(self, other):
+        return Size(bytesize.Size.__mul__(self, other))
     __rmul__ = __mul__
 
-    def __div__(self, other, context=None):
-        if six.PY2:
-            # This still needs to be ignored by pylint, because it will get
-            # through the above guard.
-            return Size(Decimal.__div__(self, other))   # pylint: disable=no-member
-        else:
-            raise AttributeError
+    def __div__(self, other):       # pylint: disable=unused-argument
+        ret = bytesize.Size.__div__(self, other)  # pylint: disable=no-member
+        if isinstance(ret, bytesize.Size):
+            ret = Size(ret)
 
-    def __truediv__(self, other, context=None):
-        return Size(Decimal.__truediv__(self, other))
+        return ret
 
-    def __floordiv__(self, other, context=None):
-        return Size(Decimal.__floordiv__(self, other))
+    def __truediv__(self, other):
+        ret = bytesize.Size.__truediv__(self, other)
+        if isinstance(ret, bytesize.Size):
+            ret = Size(ret)
 
-    def __mod__(self, other, context=None):
-        return Size(Decimal.__mod__(self, other))
+        return ret
 
+    def __floordiv__(self, other):
+        ret = bytesize.Size.__floordiv__(self, other)
+        if isinstance(ret, bytesize.Size):
+            ret = Size(ret)
+
+        return ret
+
+    def __mod__(self, other):
+        return Size(bytesize.Size.__mod__(self, other))
+
+    def __deepcopy__(self, memo_dict):
+        return Size(bytesize.Size.__deepcopy__(self, memo_dict))
+
+    # pylint: disable=arguments-differ
     def convert_to(self, spec=None):
         """ Return the size in the units indicated by the specifier.
 
@@ -361,15 +106,14 @@ class Size(Decimal):
             .. versionadded:: 1.6
                spec parameter may be Size as well as units specifier.
         """
+        if isinstance(spec, Size):
+            if spec == Size(0):
+                raise ValueError("cannot convert to 0 size")
+            return bytesize.Size.__truediv__(self, spec)
         spec = B if spec is None else spec
-        factor = Decimal(getattr(spec, "factor", spec))
+        return bytesize.Size.convert_to(self, spec)
 
-        if factor <= 0:
-            raise ValueError("invalid conversion unit: %s" % factor)
-
-        return Decimal(self) / factor
-
-    def human_readable(self, max_places=2, strip=True, min_value=1, xlate=True):
+    def human_readable(self, min_unit=B, max_places=2, xlate=True):
         """ Return a string representation of this size with appropriate
             size specifier and in the specified number of decimal places.
             Values are always represented using binary not decimal units.
@@ -377,90 +121,62 @@ class Size(Decimal):
             is 65531, expect the representation to be something like
             64.00 KiB, not 65.53 KB.
 
-            :param max_places: number of decimal places to use, default is 2
+            :param min_unit: the smallest unit the returned representation should use
+            :type min_unit: one of the B, KiB, MiB,... (binary) units from this module
+                            or str ("B", "KiB",...)
+            :param max_places: number of decimal places to use
             :type max_places: an integer type or NoneType
-            :param bool strip: True if trailing zeros are to be stripped.
-            :param min_value: Lower bound for value, default is 1.
-            :type min_value: A precise numeric type: int, long, or Decimal
             :param bool xlate: If True, translate for current locale
             :returns: a representation of the size
             :rtype: str
 
-            If max_places is set to None, all non-zero digits will be shown.
-            Otherwise, max_places digits will be shown.
-
-            If strip is True and there is a fractional quantity, trailing
-            zeros are removed up to the decimal point.
-
-            min_value sets the smallest value allowed.
-            If min_value is 10, then single digits on the lhs of
-            the decimal will be avoided if possible. In that case,
-            9216 KiB is preferred to 9 MiB. However, 1 B has no alternative.
-            If min_value is 1, however, 9 MiB is preferred.
-            If min_value is 0.1, then 0.75 GiB is preferred to 768 MiB,
-            but 0.05 GiB is still displayed as 51.2 MiB.
-
-            human_readable() is a function that evaluates to a number which
-            represents a range of values. For a constant choice of max_places,
-            all ranges are of equal size, and are bisected by the result. So,
-            if n.human_readable() == x U and b is the number of bytes in 1 U,
-            and e = 1/2 * 1/(10^max_places) * b, then x - e < n < x + e.
         """
-        if max_places is not None and (max_places < 0 or not isinstance(max_places, six.integer_types)):
-            raise SizePlacesError("max_places must be None or an non-negative integer value")
 
-        if min_value < 0 or not isinstance(min_value, (six.integer_types, Decimal)):
-            raise ValueError("min_value must be a precise positive numeric value.")
+        if max_places is None:
+            max_places = -1
+        return bytesize.Size.human_readable(self, min_unit, max_places, xlate)
 
-        # Find the smallest prefix which will allow a number less than
-        # _BINARY_FACTOR * min_value to the left of the decimal point.
-        # If the number is so large that no prefix will satisfy this
-        # requirement use the largest prefix.
-        limit = _BINARY_FACTOR * min_value
-        for unit in [_EMPTY_PREFIX] + _BINARY_PREFIXES:
-            newcheck = self.convert_to(unit)
-
-            if abs(newcheck) < limit:
-                break
-
-        if max_places is not None:
-            newcheck = newcheck.quantize(Decimal(10) ** -max_places)
-
-        retval_str = str(newcheck)
-
-        if '.' in retval_str and strip:
-            retval_str = retval_str.rstrip("0").rstrip(".")
-
-        if xlate:
-            radix = locale.nl_langinfo(locale.RADIXCHAR)
-            if radix != '.':
-                retval_str = retval_str.replace('.', radix)
-
-        # pylint: disable=undefined-loop-variable
-        return retval_str + " " + _make_spec(unit.abbr, _BYTES_SYMBOL, xlate, lowercase=False)
-
-    def round_to_nearest(self, unit, rounding=ROUND_DEFAULT):
+    # pylint: disable=arguments-differ
+    def round_to_nearest(self, size, rounding):
         """ Rounds to nearest unit specified as a named constant or a Size.
 
-            :param unit: a unit specifier
-            :type unit: a named constant like KiB, or any non-negative Size
+            :param size: a size specifier
+            :type size: a named constant like KiB, or any non-negative Size
             :keyword rounding: which direction to round
-            :type rounding: one of ROUND_UP, ROUND_DOWN, or ROUND_DEFAULT
+            :type rounding: one of ROUND_UP, ROUND_DOWN, or ROUND_HALF_UP
             :returns: Size rounded to nearest whole specified unit
             :rtype: :class:`Size`
 
-            If unit is Size(0), returns Size(0).
+            If size is Size(0), returns Size(0).
         """
-        if rounding not in (ROUND_UP, ROUND_DOWN, ROUND_DEFAULT):
+        if rounding not in (ROUND_UP, ROUND_DOWN, ROUND_HALF_UP):
             raise ValueError("invalid rounding specifier")
 
-        factor = Decimal(getattr(unit, "factor", unit))
+        if isinstance(size, Size):
+            if size.get_bytes() == 0:
+                return Size(0)
+            elif size < Size(0):
+                raise ValueError("invalid rounding size: %s" % size)
 
-        if factor == 0:
-            return Size(0)
+        return Size(bytesize.Size.round_to_nearest(self, size, rounding))
 
-        if factor < 0:
-            raise ValueError("invalid rounding unit: %s" % factor)
+    def ensure_percent_reserve(self, percent):
+        """Get a new size with given space reserve.
 
-        rounded = (Decimal(self) / factor).to_integral_value(rounding=rounding)
-        return Size(rounded * factor)
+            :param percent: number of percent to reserve
+            :returns: a new size with :param:`percent` space reserve
+            :rtype: :class:`Size`
+
+            Best described with an example:
+            >>> Size("80 GiB").ensure_percent_reserve(20)
+            Size (100 GiB)
+
+            This method returns a new size in which there's a :param:`percent`%
+            reserve (on top of the original size). In other words::
+
+              with_reserve - orig_size == with_reserve * (percent / 100)
+
+            except that due to float arithmetics the numbers are unlikely to be
+            exactly equal.
+        """
+        return Size(self * (1 / (1 - (percent / 100))))

@@ -1,7 +1,5 @@
 import os
 
-from examples.common import print_devices
-
 import blivet
 from blivet.size import Size
 from blivet.util import set_up_logging, create_sparse_tempfile
@@ -11,9 +9,9 @@ b = blivet.Blivet()   # create an instance of Blivet (don't add system devices)
 
 # create two disk image files on which to create new devices
 disk1_file = create_sparse_tempfile("disk1", Size("100GiB"))
-b.config.disk_images["disk1"] = disk1_file
+b.disk_images["disk1"] = disk1_file
 disk2_file = create_sparse_tempfile("disk2", Size("100GiB"))
-b.config.disk_images["disk2"] = disk2_file
+b.disk_images["disk2"] = disk2_file
 
 b.reset()
 
@@ -27,7 +25,7 @@ try:
     device = b.factory_device(blivet.devicefactory.DEVICE_TYPE_LVM,
                               Size("50GiB"), disks=[disk1, disk2],
                               fstype="xfs", mountpoint="/data")
-    print_devices(b)
+    print(b.devicetree)
 
     # change testvg to have an md RAID1 pv instead of partition pvs
     device = b.factory_device(blivet.devicefactory.DEVICE_TYPE_LVM,
@@ -35,10 +33,10 @@ try:
                               fstype="xfs", mountpoint="/data",
                               container_raid_level="raid1",
                               device=device)
-    print_devices(b)
+    print(b.devicetree)
 
-    b.devicetree.process_actions()
-    print_devices(b)
+    b.do_it()
+    print(b.devicetree)
 finally:
     b.devicetree.teardown_disk_images()
     os.unlink(disk1_file)

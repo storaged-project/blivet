@@ -22,7 +22,7 @@
 import abc
 from collections import namedtuple
 
-from six import add_metaclass
+import six
 
 from ..errors import FSError
 from ..size import Size
@@ -36,7 +36,7 @@ _tags = ("count", "size")
 _Tags = namedtuple("_Tags", _tags)
 
 
-@add_metaclass(abc.ABCMeta)
+@six.add_metaclass(abc.ABCMeta)
 class FSSize(fstask.FSTask):
 
     """ An abstract class that represents size information extraction. """
@@ -78,7 +78,7 @@ class FSSize(fstask.FSTask):
 
         # Attempt to set values from info
         for line in (l.strip() for l in self.fs._current_info.splitlines()):
-            key = next((k for k in _tags if line.startswith(getattr(self.tags, k))), None)
+            key = six.next((k for k in _tags if line.startswith(getattr(self.tags, k))), None)
             if not key:
                 continue
 
@@ -96,7 +96,7 @@ class FSSize(fstask.FSTask):
                     continue
 
         # Raise an error if a value is missing
-        missing = next((k for k in _tags if values[k] is None), None)
+        missing = six.next((k for k in _tags if values[k] is None), None)
         if missing is not None:
             raise FSError("Failed to parse info for %s." % missing)
 

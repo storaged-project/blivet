@@ -19,24 +19,28 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+import math
 import os
 import six
+import time
+
+from six.moves import reduce
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
 from ..devicelibs import mdraid, raid
 
 from .. import errors
+from ..formats import DeviceFormat
 from .. import util
-from ..flags import flags
+from ..static_data import pvs_info
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size
 from ..tasks import availability
-from ..util import open  # pylint: disable=redefined-builtin
 
 import logging
 log = logging.getLogger("blivet")
@@ -44,6 +48,9 @@ log = logging.getLogger("blivet")
 from .storage import StorageDevice
 from .container import ContainerDevice
 from .raid import RaidDevice
+from .lib import get_majors_by_device_type
+
+MD_MAJORS = get_majors_by_device_type("md")
 
 
 class MDRaidArrayDevice(ContainerDevice, RaidDevice):
@@ -59,7 +66,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     def __init__(self, name, level=None, major=None, minor=None, size=None,
                  member_devices=None, total_devices=None,
                  uuid=None, fmt=None, exists=False, metadata_version=None,
-                 parents=None, sysfs_path=''):
+                 parents=None, sysfs_path='', chunk_size=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -73,6 +80,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword sysfs_path: sysfs device path
             :type sysfs_path: str
+            :keyword chunk_size: chunk size for the device
+            :type chunk_size: :class:`~.size.Size`
             :keyword uuid: the device UUID
             :type uuid: str
 
@@ -119,14 +128,17 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             # Could not set the level, so set loose the parents that were
             # added in superclass constructor.
             for dev in self.parents:
-                dev.remove_child()
+                dev.remove_child(self)
             raise e
 
         self.uuid = uuid
         self._total_devices = util.numeric_type(total_devices)
         self.member_devices = util.numeric_type(member_devices)
 
-        self.chunk_size = mdraid.MD_CHUNK_SIZE
+        if self.exists:
+            self._chunk_size = self.read_chunk_size()
+        else:
+            self._chunk_size = chunk_size or mdraid.MD_CHUNK_SIZE
 
         if not self.exists and not isinstance(metadata_version, str):
             self.metadata_version = "default"
@@ -137,12 +149,6 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         if self.parents and self.parents[0].type == "mdcontainer" and self.type != "mdbiosraidarray":
             raise errors.DeviceError("A device with mdcontainer member must be mdbiosraidarray.")
-
-        if self.exists and self.mdadm_format_uuid and not flags.testing:
-            # this is a hack to work around mdadm's insistence on giving
-            # really high minors to arrays it has no config entry for
-            with open("/etc/mdadm.conf", "a") as c:
-                c.write("ARRAY %s UUID=%s\n" % (self.path, self.mdadm_format_uuid))
 
     @property
     def mdadm_format_uuid(self):
@@ -193,10 +199,46 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         self._level = level
 
     @property
+    def sector_size(self):
+        if not self.exists:
+            # Least common multiple of parents' sector sizes
+            return reduce(lambda a, b: a * b // math.gcd(a, b), (int(p.sector_size) for p in self.parents))
+
+        return super(MDRaidArrayDevice, self).sector_size
+
+    @property
+    def chunk_size(self):
+        if self.exists and self._chunk_size == Size(0):
+            self._chunk_size = self.read_chunk_size()
+        return self._chunk_size
+
+    @chunk_size.setter
+    def chunk_size(self, newsize):
+        if not isinstance(newsize, Size):
+            raise ValueError("new chunk size must be of type Size")
+
+        if newsize % Size("4 KiB") != Size(0):
+            raise ValueError("new chunk size must be multiple of 4 KiB")
+
+        if self.exists:
+            raise ValueError("cannot set chunk size for an existing device")
+
+        self._chunk_size = newsize
+
+    def read_chunk_size(self):
+        log_method_call(self, exists=self.exists, path=self.path,
+                        sysfs_path=self.sysfs_path)
+        chunk_size = Size(0)
+        if self.status:
+            chunk_size = Size(util.get_sysfs_attr(self.sysfs_path, "md/chunk_size") or "0")
+
+        return chunk_size
+
+    @property
     def create_bitmap(self):
         """ Whether or not a bitmap should be created on the array.
 
-            If the the array is sufficiently small, a bitmap yields no benefit.
+            If the array is sufficiently small, a bitmap yields no benefit.
 
             If the array has no redundancy, a bitmap is just pointless.
         """
@@ -242,12 +284,12 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         return size
 
-    def update_size(self):
+    def update_size(self, newsize=None):
         # container size is determined by the member disks, so there is nothing
         # to update in that case
         if self.type != "mdcontainer":
             # pylint: disable=bad-super-call
-            super(ContainerDevice, self).update_size()
+            super(ContainerDevice, self).update_size(newsize=newsize)
 
     @property
     def description(self):
@@ -331,36 +373,36 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
     spares = property(_get_spares, _set_spares)
 
-    def _add_parent(self, member):
-        super(MDRaidArrayDevice, self)._add_parent(member)
+    def _add_parent(self, parent):
+        super(MDRaidArrayDevice, self)._add_parent(parent)
 
-        if self.status and member.format.exists:
+        if self.status and parent.format.exists:
             # we always probe since the device may not be set up when we want
             # information about it
             self._size = self.current_size
 
-        # These should be incremented when adding new member devices except
+        # These should be incremented when adding new parent devices except
         # during devicetree.populate. When detecting existing arrays we will
         # have gotten these values from udev and will use them to determine
-        # whether we found all of the members, so we shouldn't change them in
+        # whether we found all of the parents, so we shouldn't change them in
         # that case.
-        if not member.format.exists:
+        if not parent.format.exists:
             self._total_devices += 1
             self.member_devices += 1
 
-        # The new member hasn't been added yet, so account for it explicitly.
-        is_disk = self.is_disk and member.is_disk
+        # The new parent hasn't been added yet, so account for it explicitly.
+        is_disk = self.is_disk and parent.is_disk
         for p in self.parents:
             p.format._hidden = is_disk
 
-        member.format._hidden = is_disk
+        parent.format._hidden = is_disk
 
-    def _remove_parent(self, member):
-        error_msg = self._validate_parent_removal(self.level, member)
+    def _remove_parent(self, parent):
+        error_msg = self._validate_parent_removal(self.level, parent)
         if error_msg:
             raise errors.DeviceError(error_msg)
 
-        super(MDRaidArrayDevice, self)._remove_parent(member)
+        super(MDRaidArrayDevice, self)._remove_parent(parent)
         self.member_devices -= 1
 
     @property
@@ -438,16 +480,17 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         return list(self.parents)
 
     @property
-    @util.deprecated('1.11', "Use 'members' instead.")
-    def devices(self):
-        return self.members
-
-    @property
     def complete(self):
         """ An MDRaidArrayDevice is complete if it has at least as many
             component devices as its count of active devices.
         """
         return (self.member_devices <= len(self.members)) or not self.exists
+
+    @property
+    def bootable(self):
+        return (self.level == raid.RAID1 and
+                self.metadata_version in ("0.90", "1.0") and
+                all(getattr(p, "bootable", False) for p in self.parents))
 
     def _post_setup(self):
         super(MDRaidArrayDevice, self)._post_setup()
@@ -471,6 +514,9 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         # give valid results
         self.sysfs_path = ''
 
+        # make sure the /dev/mdXXX path is removed after stopping the array
+        udev.settle()
+
     def teardown(self, recursive=None):
         """ Close, or tear down, a device. """
         log_method_call(self, self.name, status=self.status,
@@ -491,7 +537,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         self._post_teardown(recursive=recursive)
 
-    def pre_commit_fixup(self):
+    def pre_commit_fixup(self, current_fmt=False):
         """ Determine create parameters for this set """
         log_method_call(self, self.name)
         # UEFI firmware/bootloader cannot read 1.1 or 1.2 metadata arrays
@@ -511,6 +557,33 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         for member in self.members:
             member.format.md_uuid = self.uuid
 
+        def remove_stale_lvm():
+            """ Remove any stale LVM metadata that pre-existed in a new array's on-disk footprint. """
+            log.debug("waiting 5s for activation of stale lvm on new md array %s", self.path)
+            time.sleep(5)
+            udev.settle()
+            pvs_info.drop_cache()
+            pv_info = pvs_info.cache.get(self.path)
+            if pv_info is None:
+                return
+
+            if pv_info.vg_uuid:
+                log.info("removing stale LVM metadata found on %s", self.name)
+                try:
+                    blockdev.lvm.vgremove(pv_info.vg_name, extra={"--select": "vg_uuid=%s" % pv_info.vg_uuid})
+                except blockdev.LVMError as e:
+                    log.error("Failed to remove stale volume group from newly-created md array %s: %s",
+                              self.path, str(e))
+                    raise
+
+            # lvm says it is a pv whether or not there is vg metadata, so wipe the pv signature
+            blockdev.lvm.pvremove(self.path)
+
+        remove_stale_lvm()
+
+        # remove any other stale metadata before proceeding
+        DeviceFormat(device=self.path, exists=True).destroy()
+
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
@@ -521,7 +594,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             level = str(self.level)
         blockdev.md.create(self.path, level, disks, spares,
                            version=self.metadata_version,
-                           bitmap=self.create_bitmap)
+                           bitmap=self.create_bitmap,
+                           chunk_size=int(self.chunk_size))
         udev.settle()
 
     def _remove(self, member):
@@ -583,6 +657,12 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         data.members = ["raid.%d" % p.id for p in self.parents]
         data.preexist = self.exists
         data.device = self.name
+
+        if not self.exists:
+            # chunk size is meaningless on RAID1, so do not add our default value
+            # to generated kickstart
+            if self.level != raid.RAID1:
+                data.chunk_size = self.chunk_size.convert_to("KiB")
 
 
 class MDContainerDevice(MDRaidArrayDevice):
@@ -693,33 +773,28 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
         return self.parents[0].members
 
     @property
-    @util.deprecated('1.11', "Use 'members' instead.")
-    def devices(self):
-        return self.parents[0].devices
-
-    @property
     def total_devices(self):
         return self.parents[0].total_devices
 
     def _get_member_devices(self):
         return self.parents[0].member_devices
 
-    def _add_parent(self, member):
+    def _add_parent(self, parent):
         # pylint: disable=bad-super-call
-        super(MDRaidArrayDevice, self)._add_parent(member)
+        super(MDRaidArrayDevice, self)._add_parent(parent)
 
-        if self.status and member.format.exists:
+        if self.status and parent.format.exists:
             # we always probe since the device may not be set up when we want
             # information about it
             self._size = self.current_size
 
-    def _remove_parent(self, member):
-        error_msg = self._validate_parent_removal(self.level, member)
+    def _remove_parent(self, parent):
+        error_msg = self._validate_parent_removal(self.level, parent)
         if error_msg:
             raise errors.DeviceError(error_msg)
 
         # pylint: disable=bad-super-call
-        super(MDRaidArrayDevice, self)._remove_parent(member)
+        super(MDRaidArrayDevice, self)._remove_parent(parent)
 
     def teardown(self, recursive=None):
         log_method_call(self, self.name, status=self.status,

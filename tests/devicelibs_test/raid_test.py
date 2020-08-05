@@ -1,3 +1,4 @@
+import six
 import unittest
 
 import blivet.devicelibs.raid as raid
@@ -8,13 +9,13 @@ from blivet.size import Size
 class RaidTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.levels = raid.RAIDLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10"])
+        self.levels = raid.RAIDLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10", "striped"])
         self.levels_none = raid.RAIDLevels([])
         self.levels_some = raid.RAIDLevels(["mirror", 6])
 
     def test_raid(self):
 
-        with self.assertRaisesRegex(TypeError, "Can't instantiate abstract class"):
+        with six.assertRaisesRegex(self, TypeError, "Can't instantiate abstract class"):
             raid.ErsatzRAID()
 
         ##
@@ -27,6 +28,7 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.RAID6.min_members, 4)
         self.assertEqual(raid.RAID10.min_members, 4)
         self.assertEqual(raid.Linear.min_members, 1)
+        self.assertEqual(raid.Striped.min_members, 2)
 
         ##
         # get_max_spares
@@ -38,6 +40,7 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.RAID6.get_max_spares(5), 1)
         self.assertEqual(raid.RAID10.get_max_spares(5), 1)
         self.assertEqual(raid.Linear.get_max_spares(5), 4)
+        self.assertEqual(raid.Striped.get_max_spares(5), 0)
         self.assertEqual(raid.Single.get_max_spares(5), 4)
 
         ##
@@ -51,6 +54,7 @@ class RaidTestCase(unittest.TestCase):
         self.assertIs(self.levels.raid_level("mirror"), raid.RAID1)
         self.assertIs(self.levels.raid_level("stripe"), raid.RAID0)
         self.assertIs(self.levels.raid_level(raid.RAID0), raid.RAID0)
+        self.assertIs(self.levels.raid_level(raid.Striped), raid.Striped)
 
         with self.assertRaises(errors.RaidError):
             self.levels.raid_level("bogus")
@@ -77,6 +81,7 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.RAID10.get_base_member_size(4, 4), 2)
         self.assertEqual(raid.RAID10.get_base_member_size(4, 5), 2)
         self.assertEqual(raid.RAID10.get_base_member_size(5, 5), 3)
+        self.assertEqual(raid.Striped.get_base_member_size(4, 2), 2)
 
         with self.assertRaises(errors.RaidError):
             raid.RAID10.get_base_member_size(4, 3)
@@ -93,6 +98,7 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.RAID6.get_net_array_size(4, Size(2)), Size(4))
         self.assertEqual(raid.RAID10.get_net_array_size(4, Size(2)), Size(4))
         self.assertEqual(raid.RAID10.get_net_array_size(5, Size(2)), Size(4))
+        self.assertEqual(raid.Striped.get_net_array_size(4, Size(2)), Size(8))
 
         ##
         # get_recommended_stride
@@ -105,6 +111,7 @@ class RaidTestCase(unittest.TestCase):
         self.assertEqual(raid.RAID4.get_recommended_stride(4), 48)
         self.assertEqual(raid.RAID5.get_recommended_stride(4), 48)
         self.assertIsNone(raid.Linear.get_recommended_stride(4))
+        self.assertEqual(raid.Striped.get_recommended_stride(4), 64)
 
         with self.assertRaises(errors.RaidError):
             raid.RAID10.get_recommended_stride(1)
@@ -145,11 +152,11 @@ class RaidTestCase(unittest.TestCase):
         ##
         # __init__
         ##
-        with self.assertRaisesRegex(errors.RaidError, "invalid RAID level"):
+        with six.assertRaisesRegex(self, errors.RaidError, "invalid RAID level"):
             self.levels_none.raid_level(10)
 
-        with self.assertRaisesRegex(errors.RaidError, "invalid RAID level"):
+        with six.assertRaisesRegex(self, errors.RaidError, "invalid RAID level"):
             self.levels_some.raid_level(10)
 
-        with self.assertRaisesRegex(errors.RaidError, "invalid standard RAID level descriptor"):
+        with six.assertRaisesRegex(self, errors.RaidError, "invalid standard RAID level descriptor"):
             raid.RAIDLevels(["raid3.1415"])

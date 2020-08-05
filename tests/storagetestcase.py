@@ -52,6 +52,8 @@ class StorageTestCase(unittest.TestCase):
         blivet.devices.PartitionDevice.max_size = StorageDevice.max_size
         blivet.devices.PartitionDevice.min_size = StorageDevice.min_size
 
+        self.addCleanup(self._clean_up)
+
         def partition_probe(device):
             if isinstance(device._parted_partition, Mock):
                 # don't clobber a Mock we already set up here
@@ -74,7 +76,7 @@ class StorageTestCase(unittest.TestCase):
         self.get_active_mounts = blivet.formats.fs.mounts_cache._get_active_mounts
         blivet.formats.fs.mounts_cache._get_active_mounts = Mock()
 
-    def tearDown(self):
+    def _clean_up(self):
         blivet.devices.StorageDevice.status = self.storage_status
         blivet.devices.DMDevice.status = self.dm_status
         blivet.devices.LUKSDevice.status = self.luks_status
@@ -94,7 +96,16 @@ class StorageTestCase(unittest.TestCase):
     def new_device(self, *args, **kwargs):
         """ Return a new Device instance suitable for testing. """
         device_class = kwargs.pop("device_class")
-        exists = kwargs.pop("exists", False)
+
+        # we intentionally don't pass the "exists" kwarg to the constructor
+        # becauses this causes issues with some devices (especially partitions)
+        # but we still need it for some LVs like VDO because we can't create
+        # those so we need to fake their existence even for the constructor
+        if device_class is blivet.devices.LVMLogicalVolumeDevice:
+            exists = kwargs.get("exists", False)
+        else:
+            exists = kwargs.pop("exists", False)
+
         part_type = kwargs.pop("part_type", parted.PARTITION_NORMAL)
         device = device_class(*args, **kwargs)
 

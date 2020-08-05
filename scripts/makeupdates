@@ -20,11 +20,10 @@
 #
 # Author: David Cantrell <dcantrell@redhat.com>
 
-# pylint: disable=interruptible-system-call
-
 import getopt
 import os
 import shutil
+import six
 import subprocess
 import sys
 
@@ -79,10 +78,12 @@ def doGitDiff(tag, args=None):
     args = args or []
     proc = subprocess.Popen(['git', 'diff', '--name-status', tag] + args,
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE).communicate()
+                            stderr=subprocess.PIPE)
+    out, _err = proc.communicate()
+    if six.PY3:
+        out = out.decode("utf-8")
 
-    lines = proc[0].split('\n')
-    return lines
+    return out.split('\n')
 
 def copyUpdatedFiles(tag, updates):
     def install_to_dir(fname, relpath):

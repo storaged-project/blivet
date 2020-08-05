@@ -35,7 +35,7 @@ log = logging.getLogger("blivet")
 testdata_log = logging.getLogger("testdata")
 testdata_log.setLevel(logging.DEBUG)
 
-re_bios_device_number = re.compile(r'.*/int13_dev(\d+)/*$')
+re_bios_device_number = re.compile(r'.*/int13_dev([0-9a-fA-F]+)/*$')
 re_host_bus_pci = re.compile(r'^(PCIX|PCI|XPRS|HTPT)\s*(\S*)\s*channel: (\S*)\s*$')
 re_interface_atapi = re.compile(r'^ATAPI\s*device: (\S*)\s*lun: (\S*)\s*$')
 re_interface_ata = re.compile(r'^ATA\s*device: (\S*)\s*$')
@@ -219,7 +219,7 @@ class EddEntry(object):
         if self.ieee1394_eui64 is not None:
             s += "%(nl)s%(t)s1394_eui: %(ieee1394_eui64)s"
         if any([self.fibre_wwid, self.fibre_lun]):
-            s += "%(nl)s%(t)sfibre wwid: %(fibre_wwid)s lun: %s(fibre_lun)s"
+            s += "%(nl)s%(t)sfibre wwid: %(fibre_wwid)s lun: %(fibre_lun)s"
         if self.i2o_identity is not None:
             s += "%(nl)s%(t)si2o_identity: %(i2o_identity)s"
         if any([self.sas_address, self.sas_lun]):
@@ -266,6 +266,12 @@ class EddEntry(object):
 
     def __repr__(self):
         return "<EddEntry%s>" % (self._fmt(' ', ''),)
+
+    def __getitem__(self, idx):
+        return str(self)[idx]
+
+    def __len__(self):
+        return len(str(self))
 
     def load(self):
         interface = util.get_sysfs_attr(self.sysfspath, "interface")
@@ -316,8 +322,8 @@ class EddEntry(object):
                         self.sas_address = int(sas_match.group(1), base=16)
                         self.sas_lun = int(sas_match.group(2), base=16)
                     elif unknown_match:
-                        self.sas_address = int(unknown_match.group(1), base=16)
-                        self.sas_lun = int(unknown_match.group(2), base=16)
+                        self.sas_address = int(unknown_match.group(2), base=16)
+                        self.sas_lun = int(unknown_match.group(3), base=16)
                     else:
                         log.warning("edd: can not match interface for %s: %s",
                                     self.sysfspath, interface)
@@ -356,15 +362,15 @@ class EddMatcher(object):
 
     def __init__(self, edd_entry, root=None):
         self.edd = edd_entry
-        self.root = root
+        self.root = root or ""
 
     def devname_from_ata_pci_dev(self):
         pattern = util.Path('/sys/block/*', root=self.root)
         retries = []
 
         def match_port(components, ata_port, ata_port_idx, path, link):
-            fn = util.Path(util.join_paths(components[0:6]
-                                           + ['ata_port', ata_port]), root=self.root)
+            fn = util.Path(util.join_paths(components[0:6] +
+                                           ['ata_port', ata_port]), root=self.root)
             port_no = int(util.get_sysfs_attr(fn, 'port_no'))
 
             if self.edd.type == "ATA":
@@ -414,8 +420,8 @@ class EddMatcher(object):
 
         answers = []
         for path in pattern.glob():
-            emptyslash = util.Path("/", self.root)
-            path = util.Path(path, self.root)
+            emptyslash = util.Path("/", root=self.root)
+            path = util.Path(path, root=self.root)
             link = util.sysfs_readlink(path=emptyslash, link=path)
             testdata_log.debug("sysfs link: \"%s\" -> \"%s\"", path, link)
             # just add /sys/block/ at the beginning so it's always valid
@@ -518,7 +524,7 @@ class EddMatcher(object):
             'dev': self.edd.scsi_id,
             'lun': self.edd.scsi_lun,
         }
-        pattern = util.Path(tmpl % args, self.root + "/sys/block/")
+        pattern = util.Path(tmpl % args, root=self.root + "/sys/block/")
         answers = []
         for mp in pattern.glob():
             # Normal VirtIO devices just have the block link right there...
@@ -660,14 +666,14 @@ def collect_mbrs(devices, root=None):
     for dev in devices:
         try:
             path = util.Path("/dev", root=root) + dev.name
-            fd = util.eintr_retry_call(os.open, path.ondisk, os.O_RDONLY)
+            fd = os.open(path.ondisk, os.O_RDONLY)
             # The signature is the unsigned integer at byte 440:
             os.lseek(fd, 440, 0)
-            data = util.eintr_retry_call(os.read, fd, 4)
+            data = os.read(fd, 4)
             mbrsig = struct.unpack('I', data)
             sdata = struct.unpack("BBBB", data)
             sdata = "".join(["%02x" % (x,) for x in sdata])
-            util.eintr_ignore(os.close, fd)
+            os.close(fd)
             testdata_log.debug("device %s data[440:443] = %s", path, sdata)
         except OSError as e:
             testdata_log.debug("device %s data[440:443] raised %s", path, e)

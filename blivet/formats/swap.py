@@ -20,14 +20,18 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+import os
+
 from parted import PARTITION_SWAP, fileSystemType
+from ..errors import FSWriteUUIDError, SwapSpaceError
 from ..storage_log import log_method_call
 from ..tasks import availability
+from ..tasks import fsuuid
 from . import DeviceFormat, register_device_format
 from ..size import Size
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -48,8 +52,9 @@ class SwapSpace(DeviceFormat):
     _linux_native = True                # for clearpart
     _plugin = availability.BLOCKDEV_SWAP_PLUGIN
 
-    # see rhbz#744129 for details
-    _max_size = Size("128 GiB")
+    _max_size = Size("16 TiB")
+
+    config_actions_map = {"label": "write_label"}
 
     def __init__(self, **kwargs):
         """
@@ -103,12 +108,49 @@ class SwapSpace(DeviceFormat):
         """Returns True as mkswap can write a label to the swap space."""
         return True
 
+    def relabels(self):
+        """Returns True as mkswap can write a label to the swap space."""
+        return True and self._plugin.available
+
     def label_format_ok(self, label):
         """Returns True since no known restrictions on the label."""
         return True
 
+    def write_label(self, dry_run=False):
+        """ Create a label for this format.
+
+            :raises: SwapSpaceError
+
+            If self.label is None, this means accept the default, so raise
+            an SwapSpaceError in this case.
+
+            Raises a SwapSpaceError if the label can not be set.
+        """
+
+        if not self._plugin.available:
+            raise SwapSpaceError("application to set label on swap format is not available")
+
+        if not dry_run:
+            if not self.exists:
+                raise SwapSpaceError("swap has not been created")
+
+            if not os.path.exists(self.device):
+                raise SwapSpaceError("device does not exist")
+
+            if self.label is None:
+                raise SwapSpaceError("makes no sense to write a label when accepting default label")
+
+            if not self.label_format_ok(self.label):
+                raise SwapSpaceError("bad label format")
+
+            blockdev.swap.mkswap(self.device, self.label)
+
     label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
                      doc="the label for this swap space")
+
+    def uuid_format_ok(self, uuid):
+        """Check whether the given UUID is correct according to RFC 4122."""
+        return fsuuid.FSUUID._check_rfc4122_uuid(uuid)
 
     def _set_priority(self, priority):
         # pylint: disable=attribute-defined-outside-init
@@ -135,12 +177,12 @@ class SwapSpace(DeviceFormat):
 
         return opts
 
-    def _set_options(self, opts):
-        if not opts:
+    def _set_options(self, options):
+        if not options:
             self.priority = None
             return
 
-        for option in opts.split(","):
+        for option in options.split(","):
             (opt, equals, arg) = option.partition("=")
             if equals and opt == "pri":
                 try:
@@ -167,6 +209,13 @@ class SwapSpace(DeviceFormat):
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        blockdev.swap.mkswap(self.device, label=self.label)
+        if self.uuid is None:
+            blockdev.swap.mkswap(self.device, label=self.label)
+        else:
+            if not self.uuid_format_ok(self.uuid):
+                raise FSWriteUUIDError("bad UUID format for swap filesystem")
+            blockdev.swap.mkswap(self.device, label=self.label,
+                                 extra={"-U": self.uuid})
+
 
 register_device_format(SwapSpace)

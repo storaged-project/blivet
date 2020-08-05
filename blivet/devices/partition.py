@@ -24,7 +24,7 @@ import parted
 import _ped
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -35,7 +35,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
 from ..formats import DeviceFormat, get_format
-from ..size import Size, MiB
+from ..size import Size, MiB, ROUND_DOWN
 
 import logging
 log = logging.getLogger("blivet")
@@ -66,11 +66,11 @@ class PartitionDevice(StorageDevice):
     _resizable = True
     default_size = DEFAULT_PART_SIZE
 
-    def __init__(self, name, fmt=None,
+    def __init__(self, name, fmt=None, uuid=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,
                  major=None, minor=None, bootable=None,
                  sysfs_path='', parents=None, exists=False,
-                 part_type=None, primary=False, weight=0):
+                 part_type=None, primary=False, weight=None, disk_tags=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -85,6 +85,7 @@ class PartitionDevice(StorageDevice):
 
             For existing partitions only:
 
+            :keyword str uuid: partition UUID (not filesystem UUID)
             :keyword major: the device major
             :type major: long
             :keyword minor: the device minor
@@ -108,14 +109,28 @@ class PartitionDevice(StorageDevice):
             :keyword bootable: whether the partition is bootable
             :type bootable: bool
             :keyword weight: an initial sorting weight to assign
-            :type weight: int
+            :type weight: int or NoneType
+            :keyword disk_tags: (str) tags defining candidate disk set
+            :type disk_tags: iterable
 
             .. note::
 
                 If a start sector is specified the partition will not be
                 adjusted for optimal alignment. That is up to the caller.
+
+            .. note::
+
+                You can only pass one of parents or disk_tags when instantiating
+                a non-existent partition. If both disk set and disk tags are
+                specified, the explicit disk set will be used.
+
+            .. note::
+
+                Multiple disk tags will be combined using the logical "or" operation.
+
         """
         self.req_disks = []
+        self.req_disk_tags = []
         self.req_part_type = None
         self.req_primary = None
         self.req_grow = None
@@ -142,7 +157,7 @@ class PartitionDevice(StorageDevice):
             else:
                 size = self.default_size
 
-        StorageDevice.__init__(self, name, fmt=fmt, size=size,
+        StorageDevice.__init__(self, name, fmt=fmt, uuid=uuid, size=size,
                                major=major, minor=minor, exists=exists,
                                sysfs_path=sysfs_path, parents=parents)
 
@@ -155,10 +170,21 @@ class PartitionDevice(StorageDevice):
         #        For existing partitions we will get the size from
         #        parted.
 
-        if self.exists and not flags.testing:
+        # We can't rely on self.disk.format.supported because self.disk may get reformatted
+        # in the course of things.
+        self.disklabel_supported = True
+        if self.exists and self.disk.partitioned and not self.disk.format.supported:
+            log.info("partition %s disklabel is unsupported", self.name)
+            self.disklabel_supported = False
+        elif self.exists and not flags.testing:
+            if not self.disk.partitioned:
+                self.disklabel_supported = False
+                raise errors.DeviceError("disk has wrong format '%s'" % self.disk.format.type)
+
             log.debug("looking up parted Partition: %s", self.path)
             self._parted_partition = self.disk.format.parted_disk.getPartitionByPath(self.path)
             if not self._parted_partition:
+                self.parents = []
                 raise errors.DeviceError("cannot find parted partition instance", self.name)
 
             self._orig_path = self.path
@@ -176,6 +202,7 @@ class PartitionDevice(StorageDevice):
             # XXX It might be worthwhile to create a shit-simple
             #     PartitionRequest class and pass one to this constructor
             #     for new partitions.
+            self.req_disk_tags = list(disk_tags) if disk_tags is not None else list()
             self.req_name = name
             self.req_part_type = part_type
             self.req_primary = primary
@@ -347,15 +374,18 @@ class PartitionDevice(StorageDevice):
     parted_partition = property(lambda d: d._get_parted_partition(),
                                 lambda d, p: d._set_parted_partition(p))
 
-    def pre_commit_fixup(self):
+    def pre_commit_fixup(self, current_fmt=False):
         """ Re-get self.parted_partition from the original disklabel. """
         log_method_call(self, self.name)
-        if not self.exists:
+        if not self.exists or not self.disklabel_supported:
             return
 
         # find the correct partition on the original parted.Disk since the
         # name/number we're now using may no longer match
-        _disklabel = self.disk.original_format
+        if not current_fmt:
+            _disklabel = self.disk.original_format
+        else:
+            _disklabel = self.disk.format
 
         if self.is_extended:
             # getPartitionBySector doesn't work on extended partitions
@@ -373,7 +403,31 @@ class PartitionDevice(StorageDevice):
         self.parted_partition = _partition
 
     def _get_weight(self):
-        return self.req_base_weight
+        if isinstance(self.req_base_weight, int):
+            return self.req_base_weight
+
+        # now we have the weights for varying mountpoints and fstypes by platform
+        weight = 0
+        if self.format.mountable and self.format.mountpoint == "/boot":
+            weight = 2000
+        elif (self.format.mountable and
+              self.format.mountpoint == "/boot/efi" and
+              self.format.type in ("efi", "macefi") and
+              arch.is_efi()):
+            weight = 5000
+        elif arch.is_x86() and self.format.type == "biosboot" and not arch.is_efi():
+            weight = 5000
+        elif self.format.mountable and arch.is_arm():
+            # On ARM images '/' must be the last partition.
+            if self.format.mountpoint == "/":
+                weight = -100
+        elif arch.is_ppc():
+            if arch.is_pmac() and self.format.type == "appleboot":
+                weight = 5000
+            elif arch.is_ipseries() and self.format.type == "prepboot":
+                weight = 5000
+
+        return weight
 
     def _set_weight(self, weight):
         self.req_base_weight = weight
@@ -385,7 +439,9 @@ class PartitionDevice(StorageDevice):
         self._name = value  # actual name setting is done by parted
 
     def update_name(self):
-        if self.parted_partition is None:
+        if self.disk and not self.disklabel_supported:
+            pass
+        elif self.parted_partition is None:
             self.name = self.req_name
         else:
             self.name = device_path_to_name(self.parted_partition.path)
@@ -472,7 +528,7 @@ class PartitionDevice(StorageDevice):
 
     @property
     def is_magic(self):
-        if not self.disk:
+        if not self.disk or not self.disklabel_supported:
             return False
 
         number = getattr(self.parted_partition, "number", -1)
@@ -480,7 +536,7 @@ class PartitionDevice(StorageDevice):
         return (number == magic)
 
     def remove_hook(self, modparent=True):
-        if modparent:
+        if modparent and self.disklabel_supported:
             # if this partition hasn't been allocated it could not have
             # a disk attribute
             if not self.disk:
@@ -524,7 +580,7 @@ class PartitionDevice(StorageDevice):
             size, partition type, flags
         """
         log_method_call(self, self.name, exists=self.exists)
-        if not self.exists:
+        if not self.exists or not self.disklabel_supported:
             return
 
         self._size = Size(self.parted_partition.getLength(unit="B"))
@@ -623,7 +679,7 @@ class PartitionDevice(StorageDevice):
         # compute new size for partition
         current_geom = partition.geometry
         current_dev = current_geom.device
-        new_len = int(newsize // Size(current_dev.sectorSize))
+        new_len = int(Size(newsize) // Size(current_dev.sectorSize))
         new_geometry = parted.Geometry(device=current_dev,
                                        start=current_geom.start,
                                        length=new_len)
@@ -659,14 +715,36 @@ class PartitionDevice(StorageDevice):
         self.disk.format.commit()
         self.update_size()
 
+    @property
+    def protected(self):
+        protected = super(PartitionDevice, self).protected
+
+        # extended partition is protected also when one of its logical partitions is protected
+        if self.is_extended:
+            return protected or any(part.protected for part in self.disk.children if part.is_logical)
+        else:
+            return protected
+
+    @protected.setter
+    def protected(self, value):
+        self._protected = value
+
+    @property
+    def sector_size(self):
+        if self.disk:
+            return self.disk.sector_size
+
+        return super(PartitionDevice, self).sector_size
+
     def _pre_resize(self):
         if not self.exists:
             raise errors.DeviceError("device has not been created", self.name)
 
-        if not self.isleaf and not self.is_extended:
-            raise errors.DeviceError("Cannot destroy non-leaf device", self.name)
-
-        self.teardown()
+        # don't teardown when resizing luks
+        if self.format.type == "luks" and self.children:
+            self.children[0].format.teardown()
+        else:
+            self.teardown()
 
         if not self.sysfs_path:
             return
@@ -683,6 +761,9 @@ class PartitionDevice(StorageDevice):
     def _destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
+        if not self.disklabel_supported:
+            return
+
         # we should have already set self.parted_partition to point to the
         # partition on the original disklabel
         self.disk.original_format.remove_partition(self.parted_partition)
@@ -706,6 +787,9 @@ class PartitionDevice(StorageDevice):
             self.disk.format.commit()
 
     def _post_destroy(self):
+        if not self.disklabel_supported:
+            return
+
         super(PartitionDevice, self)._post_destroy()
         if isinstance(self.disk, DMDevice):
             udev.settle()
@@ -850,8 +934,14 @@ class PartitionDevice(StorageDevice):
 
     @property
     def resizable(self):
-        return super(PartitionDevice, self).resizable and \
-            self.disk.type != 'dasd'
+        if not self.exists:
+            return False
+        elif self.disk.type == 'dasd' or not self.disklabel_supported:
+            return False
+        elif self.is_extended:
+            return True
+        else:
+            return super(PartitionDevice, self).resizable
 
     def check_size(self):
         """ Check to make sure the size of the device is allowed by the
@@ -877,7 +967,8 @@ class PartitionDevice(StorageDevice):
         data.resize = (self.exists and self.target_size and
                        self.target_size != self.current_size)
         if not self.exists:
-            data.size = self.req_base_size.convert_to(MiB)
+            # round this to nearest MiB before doing anything else
+            data.size = self.req_base_size.round_to_nearest(MiB, rounding=ROUND_DOWN).convert_to(spec=MiB)
             data.grow = self.req_grow
             if self.req_grow:
                 data.max_size_mb = self.req_max_size.convert_to(MiB)
@@ -890,4 +981,6 @@ class PartitionDevice(StorageDevice):
             data.on_part = self.name                     # by-id
 
             if data.resize:
-                data.size = self.size.convert_to(MiB)
+                # on s390x in particular, fractional sizes are reported, which
+                # cause issues when writing to ks.cfg
+                data.size = self.size.round_to_nearest(MiB, rounding=ROUND_DOWN).convert_to(spec=MiB)

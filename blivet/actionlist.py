@@ -21,7 +21,10 @@
 #
 
 import copy
+from functools import wraps
+from six import add_metaclass
 
+from .callbacks import callbacks as _callbacks
 from .deviceaction import ActionCreateDevice
 from .deviceaction import action_type_from_string, action_object_from_string
 from .devicelibs import lvm
@@ -29,18 +32,38 @@ from .devices import PartitionDevice
 from .errors import DiskLabelCommitError, StorageError
 from .flags import flags
 from . import tsort
+from .threads import blivet_lock, SynchronizedMeta
 
 import logging
 log = logging.getLogger("blivet")
 
 
+def with_flag(flag_attr):
+    """ Decorator to set a flag attribute while running a method. """
+    def run_func_with_flag_attr_set(func):
+        @wraps(func)
+        def wrapped_func(obj, *args, **kwargs):
+            setattr(obj, flag_attr, True)
+            try:
+                return func(obj, *args, **kwargs)
+            finally:
+                setattr(obj, flag_attr, False)
+
+        return wrapped_func
+
+    return run_func_with_flag_attr_set
+
+
+@add_metaclass(SynchronizedMeta)
 class ActionList(object):
+    _unsynchronized_methods = ['process']
 
     def __init__(self, addfunc=None, removefunc=None):
         self._add_func = addfunc
         self._remove_func = removefunc
         self._actions = []
         self._completed_actions = []
+        self.processing = False
 
     def __iter__(self):
         return iter(self._actions)
@@ -52,6 +75,7 @@ class ActionList(object):
         # apply the action before adding it in case apply raises an exception
         action.apply()
         self._actions.append(action)
+        _callbacks.action_added(action=action)
         log.info("registered action: %s", action)
 
     def remove(self, action):
@@ -60,6 +84,7 @@ class ActionList(object):
 
         action.cancel()
         self._actions.remove(action)
+        _callbacks.action_removed(action=action)
         log.info("canceled action %s", action)
 
     def find(self, device=None, action_type=None, object_type=None,
@@ -176,7 +201,7 @@ class ActionList(object):
 
         problematic = self._find_active_devices_on_action_disks(devices=devices)
         if problematic:
-            if flags.installer_mode:
+            if flags.auto_dev_updates:
                 for device in devices:
                     if device.protected:
                         continue
@@ -192,7 +217,7 @@ class ActionList(object):
 
         log.info("resetting parted disks...")
         for device in devices:
-            if device.partitioned:
+            if device.partitioned and device.format.supported:
                 device.format.reset_parted_disk()
 
             if device.original_format.type == "disklabel" and \
@@ -204,7 +229,10 @@ class ActionList(object):
         fixup_devices = devices + [a.device for a in self._actions
                                    if a.is_destroy and a.is_device]
         for device in fixup_devices:
-            device.pre_commit_fixup()
+            if isinstance(device, PartitionDevice) and not self.find(device=device, object_type="device"):
+                device.pre_commit_fixup(current_fmt=True)
+            else:
+                device.pre_commit_fixup()
 
         # setup actions to create any extended partitions we added
         #
@@ -240,7 +268,7 @@ class ActionList(object):
         devices = devices or []
         # removal of partitions makes use of original_format, so it has to stay
         # up to date in case of multiple passes through this method
-        for disk in (d for d in devices if d.partitioned):
+        for disk in (d for d in devices if d.partitioned and d.format.supported):
             disk.format.update_orig_parted_disk()
             disk.original_format = copy.deepcopy(disk.format)
 
@@ -276,6 +304,7 @@ class ActionList(object):
         devices = [a.name for a in active if any(d in disks for d in a.disks)]
         return devices
 
+    @with_flag("processing")
     def process(self, callbacks=None, devices=None, dry_run=None):
         """
         Execute all registered actions.
@@ -290,7 +319,10 @@ class ActionList(object):
 
         for action in self._actions[:]:
             log.info("executing action: %s", action)
-            if not dry_run:
+            if dry_run:
+                continue
+
+            with blivet_lock:
                 try:
                     action.execute(callbacks)
                 except DiskLabelCommitError:
@@ -299,7 +331,8 @@ class ActionList(object):
                     # include deps no longer in the tree due to pending removal
                     devs = devices + [a.device for a in self._actions]
                     for dep in set(devs):
-                        if dep.exists and dep.depends_on(action.device.disk):
+                        if dep.exists and \
+                           any(dep.depends_on(disk) for disk in action.device.disks):
                             dep.teardown(recursive=True)
 
                     action.execute(callbacks)
@@ -307,9 +340,16 @@ class ActionList(object):
                 for device in devices:
                     # make sure we catch any renumbering parted does
                     if device.exists and isinstance(device, PartitionDevice):
+                        # also update existence for partitions on unsupported disklabels
+                        if not device.disklabel_supported and \
+                           action.is_destroy and action.is_format and action.device == device.disk:
+                            device.exists = False
+                            continue
+
                         device.update_name()
                         device.format.device = device.path
 
                 self._completed_actions.append(self._actions.pop(0))
+                _callbacks.action_executed(action=action)
 
         self._post_process(devices=devices)

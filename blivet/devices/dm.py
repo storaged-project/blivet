@@ -21,7 +21,7 @@
 #
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -37,7 +37,9 @@ import logging
 log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
-from .lib import LINUX_SECTOR_SIZE
+from .lib import LINUX_SECTOR_SIZE, get_majors_by_device_type
+
+DM_MAJORS = get_majors_by_device_type("device-mapper")
 
 
 class DMDevice(StorageDevice):
@@ -127,14 +129,14 @@ class DMDevice(StorageDevice):
         return blockdev.dm.node_from_name(self.name)
 
     def setup_partitions(self):
-        log_method_call(self, name=self.name, kids=self.kids)
+        log_method_call(self, name=self.name)
         rc = util.run_program(["kpartx", "-a", "-s", self.path])
         if rc:
             raise errors.DMError("partition activation failed for '%s'" % self.name)
         udev.settle()
 
     def teardown_partitions(self):
-        log_method_call(self, name=self.name, kids=self.kids)
+        log_method_call(self, name=self.name)
         rc = util.run_program(["kpartx", "-d", "-s", self.path])
         if rc:
             raise errors.DMError("partition deactivation failed for '%s'" % self.name)
@@ -249,3 +251,30 @@ class DMCryptDevice(DMDevice):
         DMDevice.__init__(self, name, fmt=fmt, size=size,
                           parents=parents, sysfs_path=sysfs_path,
                           exists=exists, target="crypt")
+
+
+class DMIntegrityDevice(DMDevice):
+
+    """ A dm-integrity device """
+    _type = "dm-integrity"
+    _encrypted = True
+
+    def __init__(self, name, fmt=None, size=None, uuid=None,
+                 exists=False, sysfs_path='', parents=None):
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword fmt: this device's formatting
+            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword sysfs_path: sysfs device path
+            :type sysfs_path: str
+        """
+        DMDevice.__init__(self, name, fmt=fmt, size=size,
+                          parents=parents, sysfs_path=sysfs_path,
+                          exists=exists, target="integrity")

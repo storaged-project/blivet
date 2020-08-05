@@ -20,13 +20,18 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+import gi
 import os
+
+gi.require_version("BlockDev", "2.0")
+from gi.repository import BlockDev as blockdev
 
 from ..storage_log import log_exception_info, log_method_call
 import parted
 import _ped
 from ..errors import DiskLabelCommitError, InvalidDiskLabelError, AlignmentError
 from .. import arch
+from ..events.manager import event_manager
 from .. import udev
 from .. import util
 from ..flags import flags
@@ -44,11 +49,13 @@ class DiskLabel(DeviceFormat):
     _type = "disklabel"
     _name = N_("partition table")
     _formattable = True                # can be formatted
+    _default_label_type = None
 
     def __init__(self, **kwargs):
         """
             :keyword device: full path to the block device node
             :type device: str
+            :keyword str uuid: disklabel UUID
             :keyword label_type: type of disklabel to create
             :type label_type: str
             :keyword exists: whether the formatting exists
@@ -57,16 +64,16 @@ class DiskLabel(DeviceFormat):
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
 
+        self._label_type = ""
         if not self.exists:
-            self._label_type = kwargs.get("label_type", "msdos")
-        else:
-            self._label_type = ""
+            self._label_type = kwargs.get("label_type") or ""
 
         self._size = Size(0)
 
         self._parted_device = None
         self._parted_disk = None
         self._orig_parted_disk = None
+        self._supported = True
 
         self._disk_label_alignment = None
         self._minimal_alignment = None
@@ -74,7 +81,12 @@ class DiskLabel(DeviceFormat):
 
         if self.parted_device:
             # set up the parted objects and raise exception on failure
-            self.update_orig_parted_disk()
+            try:
+                self.update_orig_parted_disk()
+            except Exception as e:  # pylint: disable=broad-except
+                self._supported = False
+                self._label_type = kwargs.get("label_type") or ""
+                log.warning("error setting up disklabel object on %s: %s", self.device, str(e))
 
     def __deepcopy__(self, memo):
         """ Create a deep copy of a Disklabel instance.
@@ -82,7 +94,8 @@ class DiskLabel(DeviceFormat):
             We can't do copy.deepcopy on parted objects, which is okay.
         """
         return util.variable_copy(self, memo,
-                                  shallow=('_parted_device', '_optimal_alignment', '_minimal_alignment',),
+                                  shallow=('_parted_device', '_optimal_alignment', '_minimal_alignment',
+                                           '_disk_label_alignment'),
                                   duplicate=('_parted_disk', '_orig_parted_disk'))
 
     def __repr__(self):
@@ -120,6 +133,18 @@ class DiskLabel(DeviceFormat):
                   "grain_size": self.get_alignment().grainSize})
         return d
 
+    @property
+    def supported(self):
+        return self._supported
+
+    def update_parted_disk(self):
+        """ re-read the disklabel from the device """
+        self._parted_disk = None
+        mask = event_manager.add_mask(device=os.path.basename(self.device), partitions=True)
+        self.update_orig_parted_disk()
+        udev.settle()
+        event_manager.remove_mask(mask)
+
     def update_orig_parted_disk(self):
         self._orig_parted_disk = self.parted_disk.duplicate()
 
@@ -130,18 +155,21 @@ class DiskLabel(DeviceFormat):
 
     def fresh_parted_disk(self):
         """ Return a new, empty parted.Disk instance for this device. """
-        log_method_call(self, device=self.device, label_type=self._label_type)
-        return parted.freshDisk(device=self.parted_device, ty=self._label_type)
+        log_method_call(self, device=self.device, label_type=self.label_type)
+        return parted.freshDisk(device=self.parted_device, ty=self.label_type)
 
     @property
     def parted_disk(self):
-        if not self._parted_disk:
+        if not self.parted_device:
+            return None
+
+        if not self._parted_disk and self.supported:
             if self.exists:
                 try:
                     self._parted_disk = parted.Disk(device=self.parted_device)
-                except (_ped.DiskLabelException, _ped.IOException,
-                        NotImplementedError) as e:
-                    raise InvalidDiskLabelError(e)
+                except (_ped.DiskLabelException, _ped.IOException, NotImplementedError):
+                    self._supported = False
+                    return None
 
                 if self._parted_disk.type == "loop":
                     # When the device has no partition table but it has a FS,
@@ -149,10 +177,6 @@ class DiskLabel(DeviceFormat):
                     # same as if the device had no label (cause it really
                     # doesn't).
                     raise InvalidDiskLabelError()
-
-                # here's where we correct the ctor-supplied disklabel type for
-                # preexisting disklabels if the passed type was wrong
-                self._label_type = self._parted_disk.type
             else:
                 self._parted_disk = self.fresh_parted_disk()
 
@@ -172,7 +196,7 @@ class DiskLabel(DeviceFormat):
             else:
                 log.debug("Did not change pmbr_boot on %s", self._parted_disk)
 
-        udev.settle(quiet=True)
+            udev.settle(quiet=True)
         return self._parted_disk
 
     @property
@@ -194,9 +218,84 @@ class DiskLabel(DeviceFormat):
             log.info("DiskLabel.parted_device returning None")
         return self._parted_device
 
+    @classmethod
+    def get_platform_label_types(cls):
+        label_types = ["msdos", "gpt"]
+        if arch.is_pmac():
+            label_types = ["mac"]
+        elif arch.is_aarch64():
+            label_types = ["gpt", "msdos"]
+        elif arch.is_efi() and arch.is_arm():
+            label_types = ["msdos", "gpt"]
+        elif arch.is_efi() and not arch.is_aarch64():
+            label_types = ["gpt", "msdos"]
+        elif arch.is_s390():
+            label_types += ["dasd"]
+
+        return label_types
+
+    @classmethod
+    def set_default_label_type(cls, labeltype):
+        cls._default_label_type = labeltype
+        log.debug("default disklabel has been set to %s", labeltype)
+
+    def _label_type_size_check(self, label_type):
+        if self.parted_device is None:
+            return False
+
+        label = parted.freshDisk(device=self.parted_device, ty=label_type)
+        return self.parted_device.length < label.maxPartitionStartSector
+
+    def _get_best_label_type(self):
+        label_type = self._default_label_type
+        label_types = self.get_platform_label_types()[:]
+        if label_type in label_types:
+            label_types.remove(label_type)
+        if label_type:
+            label_types.insert(0, label_type)
+
+        if arch.is_s390():
+            if blockdev.s390.dasd_is_fba(self.device):
+                # the device is FBA DASD
+                return "msdos"
+            elif self.parted_device.type == parted.DEVICE_DASD:
+                # the device is DASD
+                return "dasd"
+            elif util.detect_virt():
+                # check for dasds exported into qemu as normal virtio/scsi disks
+                try:
+                    _parted_disk = parted.Disk(device=self.parted_device)
+                except (_ped.DiskLabelException, _ped.IOException, NotImplementedError):
+                    pass
+                else:
+                    if _parted_disk.type == "dasd":
+                        return "dasd"
+
+        for lt in label_types:
+            if self._label_type_size_check(lt):
+                log.debug("selecting %s disklabel for %s based on size",
+                          label_type, os.path.basename(self.device))
+                label_type = lt
+                break
+
+        return label_type
+
     @property
     def label_type(self):
         """ The disklabel type (eg: 'gpt', 'msdos') """
+        if not self.supported:
+            return self._label_type
+
+        # For new disklabels, user-specified type overrides built-in logic.
+        # XXX This determines the type we pass to parted.Disk
+        if not self.exists and not self._parted_disk:
+            if self._label_type:
+                lt = self._label_type
+            else:
+                lt = self._get_best_label_type()
+
+            return lt
+
         try:
             lt = self.parted_disk.type
         except Exception:  # pylint: disable=broad-except
@@ -214,7 +313,13 @@ class DiskLabel(DeviceFormat):
 
     @property
     def name(self):
-        return "%s (%s)" % (_(self._name), self.label_type.upper())
+        if self.supported:
+            _str = "%(name)s (%(type)s)"
+        else:
+            # Translators: Name for an unsupported disklabel; e.g. "Unsupported partition table"
+            _str = _("Unsupported %(name)s")
+
+        return _str % {"name": _(self._name), "type": self.label_type.upper()}
 
     @property
     def size(self):
@@ -233,6 +338,13 @@ class DiskLabel(DeviceFormat):
         """ Device status. """
         return False
 
+    @property
+    def supports_names(self):
+        if not self.supported or not self.parted_disk:
+            return False
+
+        return self.parted_disk.supportsFeature(parted.DISK_TYPE_PARTITION_NAME)
+
     def _create(self, **kwargs):
         """ Create the device. """
         log_method_call(self, device=self.device,
@@ -242,12 +354,6 @@ class DiskLabel(DeviceFormat):
         # None right before calling self.commit(), but that might hide
         # other problems.
         self.commit()
-
-    def _destroy(self, **kwargs):
-        """ Wipe the disklabel from the device. """
-        log_method_call(self, device=self.device,
-                        type=self.type, status=self.status)
-        self.parted_device.clobber()
 
     def commit(self):
         """ Commit the current partition table to disk and notify the OS. """
@@ -347,7 +453,7 @@ class DiskLabel(DeviceFormat):
 
     @property
     def partitions(self):
-        return self.parted_disk.partitions
+        return getattr(self.parted_disk, "partitions", [])
 
     def _get_disk_label_alignment(self):
         """ Return the disklabel's required alignment for new partitions.
@@ -357,13 +463,13 @@ class DiskLabel(DeviceFormat):
         if not self._disk_label_alignment:
             try:
                 self._disk_label_alignment = self.parted_disk.partitionAlignment
-            except _ped.CreateException:
+            except (_ped.CreateException, AttributeError):
                 self._disk_label_alignment = parted.Alignment(offset=0,
                                                               grainSize=1)
 
         return self._disk_label_alignment
 
-    def _get_minimal_alignment(self):
+    def get_minimal_alignment(self):
         """ Return the device's minimal alignment for new partitions.
 
             :rtype: :class:`parted.Alignment`
@@ -372,7 +478,7 @@ class DiskLabel(DeviceFormat):
             disklabel_alignment = self._get_disk_label_alignment()
             try:
                 minimal_alignment = self.parted_device.minimumAlignment
-            except _ped.CreateException:
+            except (_ped.CreateException, AttributeError):
                 # handle this in the same place we'd handle an ArithmeticError
                 minimal_alignment = None
 
@@ -385,7 +491,7 @@ class DiskLabel(DeviceFormat):
 
         return self._minimal_alignment
 
-    def _get_optimal_alignment(self):
+    def get_optimal_alignment(self):
         """ Return the device's optimal alignment for new partitions.
 
             :rtype: :class:`parted.Alignment`
@@ -399,11 +505,11 @@ class DiskLabel(DeviceFormat):
             disklabel_alignment = self._get_disk_label_alignment()
             try:
                 optimal_alignment = self.parted_device.optimumAlignment
-            except _ped.CreateException:
+            except (_ped.CreateException, AttributeError):
                 # if there is no optimal alignment, use the minimal alignment,
                 # which has already been intersected with the disklabel
                 # alignment
-                alignment = self._get_minimal_alignment()
+                alignment = self.get_minimal_alignment()
             else:
                 try:
                     alignment = optimal_alignment.intersect(disklabel_alignment)
@@ -425,13 +531,13 @@ class DiskLabel(DeviceFormat):
                                                          small to be aligned
         """
         # default to the optimal alignment
-        alignment = self._get_optimal_alignment()
+        alignment = self.get_optimal_alignment()
         if size is None:
             return alignment
 
         # use the minimal alignment if the requested size is smaller than the
         # optimal io size
-        minimal_alignment = self._get_minimal_alignment()
+        minimal_alignment = self.get_minimal_alignment()
         optimal_grain_size = Size(alignment.grainSize * self.sector_size)
         minimal_grain_size = Size(minimal_alignment.grainSize * self.sector_size)
         if size < minimal_grain_size:
@@ -469,7 +575,12 @@ class DiskLabel(DeviceFormat):
 
     @property
     def free(self):
-        return sum((Size(f.getLength(unit="B")) for f in self.parted_disk.getFreeSpacePartitions()), Size(0))
+        if self.parted_disk is not None:
+            free_areas = self.parted_disk.getFreeSpacePartitions()
+        else:
+            free_areas = []
+
+        return sum((Size(f.getLength(unit="B")) for f in free_areas), Size(0))
 
     @property
     def magic_partition_number(self):
@@ -480,5 +591,6 @@ class DiskLabel(DeviceFormat):
             return 3
         else:
             return 0
+
 
 register_device_format(DiskLabel)

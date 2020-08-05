@@ -24,7 +24,7 @@ import copy
 import tempfile
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -76,7 +76,7 @@ class BTRFSDevice(StorageDevice):
         self.sysfs_path = self.parents[0].sysfs_path
         log.debug("%s sysfs_path set to %s", self.name, self.sysfs_path)
 
-    def update_size(self):
+    def update_size(self, newsize=None):
         pass
 
     def _post_create(self):
@@ -151,10 +151,9 @@ class BTRFSDevice(StorageDevice):
             spec = super(BTRFSDevice, self).fstab_spec
         return spec
 
-    @classmethod
-    def is_name_valid(cls, name):
+    def is_name_valid(self, name):
         # Override StorageDevice.is_name_valid to allow pretty much anything
-        return not('\x00' in name)
+        return btrfs.is_btrfs_name_valid(name)
 
 
 class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
@@ -197,7 +196,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             # Could not set the levels, so set loose the parents that were
             # added in superclass constructor.
             for dev in self.parents:
-                dev.remove_child()
+                dev.remove_child(self)
             raise e
 
         self.subvolumes = []
@@ -312,13 +311,13 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
                                    chunk_size=Size(1),
                                    superblock_size_func=lambda x: 0)
 
-    def _remove_parent(self, member):
+    def _remove_parent(self, parent):
         levels = (l for l in (self.data_level, self.metadata_level) if l)
         for l in levels:
-            error_msg = self._validate_parent_removal(l, member)
+            error_msg = self._validate_parent_removal(l, parent)
             if error_msg:
                 raise errors.DeviceError(error_msg)
-        super(BTRFSVolumeDevice, self)._remove_parent(member)
+        super(BTRFSVolumeDevice, self)._remove_parent(parent)
 
     def _add_subvolume(self, vol):
         if vol.name in [v.name for v in self.subvolumes]:
@@ -335,7 +334,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
     def list_subvolumes(self, snapshots_only=False):
         subvols = []
-        if flags.installer_mode:
+        if flags.auto_dev_updates:
             self.setup(orig=True)
         elif not self.original_format.status:
             return subvols
@@ -354,13 +353,6 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             pass
 
         return subvols
-
-    @util.deprecated('1.16', '')
-    def create_subvolumes(self):
-        for _name, subvol in self.subvolumes:
-            if subvol.exists:
-                continue
-            subvol.create()
 
     def remove_subvolume(self, name):
         raise NotImplementedError()
@@ -503,7 +495,10 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
         # propagate mount options specified for members via kickstart
         opts = "subvol=%s" % self.name
         if self.volume.format.mountopts:
-            opts = "%s,%s" % (self.volume.format.mountopts, opts)
+            for opt in self.volume.format.mountopts.split(","):
+                # do not add members subvol spec
+                if not opt.startswith("subvol"):
+                    opts += ",%s" % opt
 
         self.format.mountopts = opts
 
@@ -535,7 +530,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
     def setup_parents(self, orig=False):
         """ Run setup method of all parent devices. """
-        log_method_call(self, name=self.name, orig=orig, kids=self.kids)
+        log_method_call(self, name=self.name, orig=orig)
         self.volume.setup(orig=orig)
 
     def _create(self):

@@ -38,7 +38,7 @@ class MultipathMember(DeviceFormat):
     """ A multipath member disk. """
     _type = "multipath_member"
     _name = N_("multipath member device")
-    _udev_types = ["multipath_member"]
+    _udev_types = ["mpath_member"]
     _supported = True                   # is supported
     _packages = ["device-mapper-multipath"]  # required packages
     _hidden = True                      # hide devices with this formatting?
@@ -79,5 +79,6 @@ class MultipathMember(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         raise MultipathMemberError("destruction of multipath members is non-sense")
+
 
 register_device_format(MultipathMember)

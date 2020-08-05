@@ -24,6 +24,7 @@ import os
 import copy
 import pyudev
 
+from ..callbacks import callbacks
 from .. import errors
 from .. import util
 from ..flags import flags
@@ -31,7 +32,6 @@ from ..storage_log import log_method_call
 from .. import udev
 from ..formats import get_format, DeviceFormat
 from ..size import Size
-from ..util import open  # pylint: disable=redefined-builtin
 
 import logging
 log = logging.getLogger("blivet")
@@ -39,6 +39,7 @@ log = logging.getLogger("blivet")
 from .device import Device
 from .network import NetworkStorageDevice
 from .lib import LINUX_SECTOR_SIZE
+from ..devicelibs.crypto import LUKS_METADATA_SIZE
 
 
 class StorageDevice(Device):
@@ -59,7 +60,6 @@ class StorageDevice(Device):
     _partitionable = False
     _is_disk = False
     _encrypted = False
-    _external_dependencies = []
 
     def __init__(self, name, fmt=None, uuid=None,
                  size=None, major=None, minor=None,
@@ -131,8 +131,14 @@ class StorageDevice(Device):
 
         self._readonly = False
         self._protected = False
-        self.controllable = not flags.testing
+        self._controllable = True
 
+        # Copy only the validity check from Device._set_name() so we don't try
+        # to check a bunch of inappropriate state properties during
+        # __init__ in subclasses
+        # Has to be here because Device does not have exists attribute
+        if not self.exists and not self.is_name_valid(name):
+            raise ValueError("%s is not a valid name for this device" % name)
         super(StorageDevice, self).__init__(name, parents=parents)
 
         self.format = fmt
@@ -141,8 +147,10 @@ class StorageDevice(Device):
 
         self.device_links = []
 
-        if self.exists and self.status:
-            self.update_size()
+        if self.exists:
+            if self.status:
+                self.update_sysfs_path()
+                self.update_size()
 
     def __str__(self):
         exist = "existing"
@@ -181,6 +189,29 @@ class StorageDevice(Device):
     def raw_device(self):
         """ The device itself, or when encrypted, the backing device. """
         return self
+
+    @property
+    def sector_size(self):
+        """ Logical sector (block) size of this device """
+        if not self.exists:
+            if self.parents:
+                return self.parents[0].sector_size
+            else:
+                return LINUX_SECTOR_SIZE
+
+        block_size = util.get_sysfs_attr(self.sysfs_path, "queue/logical_block_size")
+        if block_size:
+            return int(block_size)
+        else:
+            return LINUX_SECTOR_SIZE
+
+    @property
+    def controllable(self):
+        return self._controllable and not flags.testing and not self.unavailable_type_dependencies()
+
+    @controllable.setter
+    def controllable(self, value):
+        self._controllable = value
 
     def _set_name(self, value):
         """Set the device's name.
@@ -277,8 +308,8 @@ class StorageDevice(Device):
             raise errors.DeviceError("device has not been created", self.name)
 
         try:
-            udev_device = pyudev.Device.from_device_file(udev.global_udev,
-                                                         self.path)
+            udev_device = pyudev.Devices.from_device_file(udev.global_udev,
+                                                          self.path)
 
         # from_device_file() does not process exceptions but just propagates
         # any errors that are raised.
@@ -298,25 +329,7 @@ class StorageDevice(Device):
     def resizable(self):
         """ Can this device be resized? """
         return (self._resizable and self.exists and
-                (self.format.type is None or self.format.resizable or
-                 not self.format.exists))
-
-    def notify_kernel(self):
-        """ Send a 'change' uevent to the kernel for this device. """
-        log_method_call(self, self.name, status=self.status)
-        if not self.exists:
-            log.debug("not sending change uevent for non-existent device")
-            return
-
-        if not self.status:
-            log.debug("not sending change uevent for inactive device")
-            return
-
-        path = os.path.normpath(self.sysfs_path)
-        try:
-            util.notify_kernel(path, action="change")
-        except (ValueError, IOError) as e:
-            log.warning("failed to notify kernel of change: %s", e)
+                (self.format.resizable or not self.format.exists))
 
     @property
     def fstab_spec(self):
@@ -375,7 +388,6 @@ class StorageDevice(Device):
 
     def _setup(self, orig=False):
         """ Perform device-specific setup operations. """
-        pass
 
     def setup(self, orig=False):
         """ Open, or set up, a device. """
@@ -418,7 +430,6 @@ class StorageDevice(Device):
 
     def _teardown(self, recursive=None):
         """ Perform device-specific teardown operations. """
-        pass
 
     def teardown(self, recursive=None):
         """ Close, or tear down, a device. """
@@ -449,7 +460,6 @@ class StorageDevice(Device):
 
     def _create(self):
         """ Perform device-specific create operations. """
-        pass
 
     def create(self):
         """ Create the device. """
@@ -485,7 +495,6 @@ class StorageDevice(Device):
 
     def _destroy(self):
         """ Perform device-specific destruction operations. """
-        pass
 
     def destroy(self):
         """ Destroy the device. """
@@ -503,7 +512,7 @@ class StorageDevice(Device):
     #
     def setup_parents(self, orig=False):
         """ Run setup method of all parent devices. """
-        log_method_call(self, name=self.name, orig=orig, kids=self.kids)
+        log_method_call(self, name=self.name, orig=orig)
         for parent in self.parents:
             parent.setup(orig=orig)
             if orig:
@@ -521,14 +530,14 @@ class StorageDevice(Device):
 
             :keyword bool modparent: whether to account for removal in parents
 
-            Parent child counts are adjusted regardless of modparent's value.
+            Parents' list of child devices is updated regardless of modparent.
             The intended use of modparent is to prevent doing things like
             removing a parted.Partition from the disk that contains it as part
             of msdos extended partition management. In general, you should not
             override the default value of modparent in new code.
         """
         for parent in self.parents:
-            parent.remove_child()
+            parent.remove_child(self)
 
     def add_hook(self, new=True):
         """ Perform actions related to adding a device to the devicetree.
@@ -541,7 +550,7 @@ class StorageDevice(Device):
         """
         if not new:
             for p in self.parents:
-                p.add_child()
+                p.add_child(self)
 
     #
     # size manipulations
@@ -606,9 +615,24 @@ class StorageDevice(Device):
             self._current_size = self.read_current_size()
         return self._current_size
 
-    def update_size(self):
-        """ Update size, current_size, and target_size to actual size. """
-        self._current_size = Size(0)
+    def update_size(self, newsize=None):
+        """ Update size, current_size, and target_size to actual size.
+
+            :keyword :class:`~.size.Size` newsize: new size for device
+
+            .. note::
+
+                Most callers will not pass a new size. It is for special cases
+                like outside resize of inactive LVs, which precludes updating
+                the size from /sys.
+        """
+        if newsize is None:
+            self._current_size = Size(0)
+        elif isinstance(newsize, Size):
+            self._current_size = newsize
+        else:
+            raise ValueError("new size must be an instance of class Size")
+
         new_size = self.current_size
         self._size = new_size
         self._target_size = new_size  # bypass setter checks
@@ -617,7 +641,15 @@ class StorageDevice(Device):
     @property
     def min_size(self):
         """ The minimum size this device can be. """
-        return self.align_target_size(self.format.min_size) if self.resizable else self.current_size
+        if self.format.type == "luks" and self.children:
+            if self.resizable:
+                min_size = self.children[0].min_size + LUKS_METADATA_SIZE
+            else:
+                min_size = self.current_size
+        else:
+            min_size = self.align_target_size(self.format.min_size) if self.resizable else self.current_size
+
+        return min_size
 
     @property
     def max_size(self):
@@ -693,20 +725,25 @@ class StorageDevice(Device):
 
         log_method_call(self, self.name, type=fmt.type,
                         current=getattr(self._format, "type", None))
-        if self._format and self._format.status:
-            # FIXME: self.format.status doesn't mean much
-            raise errors.DeviceError("cannot replace active format", self.name)
 
         # check device size against format limits
         if not fmt.exists:
             if fmt.max_size and fmt.max_size < self.size:
                 raise errors.DeviceError("device is too large for new format")
             elif fmt.min_size and fmt.min_size > self.size:
-                raise errors.DeviceError("device is too small for new format")
+                if self.growable:
+                    log.info("%s: using size %s instead of %s to accommodate "
+                             "format minimum size", self.name, fmt.min_size, self.size)
+                    self.size = fmt.min_size
+                else:
+                    raise errors.DeviceError("device is too small for new format")
 
-        self._format = fmt
-        self._format.device = self.path
-        self._update_netdev_mount_option()
+        if self._format != fmt:
+            callbacks.format_removed(device=self, fmt=self._format)
+            self._format = fmt
+            self._format.device = self.path
+            self._update_netdev_mount_option()
+            callbacks.format_added(device=self, fmt=self._format)
 
     def _update_netdev_mount_option(self):
         """ Fix mount options to include or exclude _netdev as appropriate. """
@@ -715,10 +752,11 @@ class StorageDevice(Device):
 
         netdev_option = "_netdev"
         option_list = self._format.options.split(",")
+        user_options = self._format._user_mountopts.split(",")
         is_netdev = any(isinstance(a, NetworkStorageDevice)
                         for a in self.ancestors)
         has_netdev_option = netdev_option in option_list
-        if not is_netdev and has_netdev_option:
+        if not is_netdev and has_netdev_option and netdev_option not in user_options:
             option_list.remove(netdev_option)
             self._format.options = ",".join(option_list)
         elif is_netdev and not has_netdev_option:
@@ -743,9 +781,8 @@ class StorageDevice(Device):
                       lambda d, f: d._set_format(f),
                       doc="The device's formatting.")
 
-    def pre_commit_fixup(self):
+    def pre_commit_fixup(self, current_fmt=False):
         """ Do any necessary pre-commit fixups."""
-        pass
 
     @property
     def format_immutable(self):
@@ -771,6 +808,13 @@ class StorageDevice(Device):
     @property
     def is_disk(self):
         return self._is_disk
+
+    @property
+    def is_empty(self):
+        if not self.partitioned:
+            return self.format.type is None and len(self.children) == 0
+
+        return all(p.type == "partition" and p.is_magic for p in self.children)
 
     @property
     def partitionable(self):
@@ -806,8 +850,7 @@ class StorageDevice(Device):
         if data.mountpoint.endswith("."):
             data.mountpoint += str(self.id)
 
-    @classmethod
-    def is_name_valid(cls, name):
+    def is_name_valid(self, name):
         # This device corresponds to a file in /dev, so no /'s or nulls,
         # and the name cannot be . or ..
 
@@ -815,52 +858,7 @@ class StorageDevice(Device):
         # is an imperfect world of joy and sorrow mingled. For cciss, split
         # the path into its components and do the real check on each piece
         if name.startswith("cciss/"):
-            return all(cls.is_name_valid(n) for n in name.split('/'))
+            return all(self.is_name_valid(n) for n in name.split('/'))
 
         badchars = any(c in ('\x00', '/') for c in name)
         return not(badchars or name == '.' or name == '..')
-
-    #
-    # dependencies
-    #
-    @classmethod
-    def type_external_dependencies(cls):
-        """ A list of external dependencies of this device type.
-
-            :returns: a set of external dependencies
-            :rtype: set of availability.ExternalResource
-
-            The external dependencies include the dependencies of this
-            device type and of all superclass device types.
-        """
-        return set(
-            d for p in cls.__mro__ if issubclass(p, StorageDevice) for d in p._external_dependencies
-        )
-
-    @classmethod
-    def unavailable_type_dependencies(cls):
-        """ A set of unavailable dependencies for this type.
-
-            :return: the unavailable external dependencies for this type
-            :rtype: set of availability.ExternalResource
-        """
-        return set(e for e in cls.type_external_dependencies() if not e.available)
-
-    @property
-    def external_dependencies(self):
-        """ A list of external dependencies of this device and its parents.
-
-            :returns: the external dependencies of this device and all parents.
-            :rtype: set of availability.ExternalResource
-        """
-        return set(d for p in self.ancestors for d in p.type_external_dependencies())
-
-    @property
-    def unavailable_dependencies(self):
-        """ Any unavailable external dependencies of this device or its
-            parents.
-
-            :returns: A list of unavailable external dependencies.
-            :rtype: set of availability.external_resource
-        """
-        return set(e for e in self.external_dependencies if not e.available)

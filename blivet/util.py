@@ -1,10 +1,8 @@
 import copy
-import errno
 import functools
 import glob
 import itertools
 import os
-import shutil
 import selinux
 import subprocess
 import re
@@ -13,13 +11,18 @@ import tempfile
 import uuid
 import hashlib
 import warnings
+import abc
 from decimal import Decimal
 from contextlib import contextmanager
 from functools import wraps
 from collections import namedtuple
+from enum import Enum
+
+from .errors import DependencyError
+from . import safe_dbus
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -29,10 +32,17 @@ import logging
 log = logging.getLogger("blivet")
 program_log = logging.getLogger("program")
 testdata_log = logging.getLogger("testdata")
+console_log = logging.getLogger("blivet.console")
 
 from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
 program_log_lock = Lock()
+
+
+SYSTEMD_SERVICE = "org.freedesktop.systemd1"
+SYSTEMD_MANAGER_PATH = "/org/freedesktop/systemd1"
+SYSTEMD_MANAGER_IFACE = "org.freedesktop.systemd1.Manager"
+VIRT_PROP_NAME = "Virtualization"
 
 
 class Path(str):
@@ -46,7 +56,8 @@ class Path(str):
     _root = None
     _path = None
 
-    def __new__(cls, path, root=None, *args, **kwds):
+    def __new__(cls, path, *args, **kwds):
+        root = kwds.pop("root", None)
         obj = str.__new__(cls, path, *args, **kwds)
         obj._path = path
         obj._root = None
@@ -149,7 +160,7 @@ class Path(str):
             log.error("^^ Somehow \"None\" got logged and that's never right.")
         for g in glob.glob(self.ondisk):
             testdata_log.debug("glob match: %s", g)
-            yield Path(g, self.root)
+            yield Path(g, root=self.root)
 
     def __hash__(self):
         return self._path.__hash__()
@@ -163,7 +174,7 @@ def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=Fa
         if root and root != '/':
             os.chroot(root)
 
-    with program_log_lock:
+    with program_log_lock:  # pylint: disable=not-context-manager
         program_log.info("Running... %s", " ".join(argv))
 
         env = os.environ.copy()
@@ -177,7 +188,7 @@ def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=Fa
         else:
             stderr_dir = subprocess.PIPE
         try:
-            proc = subprocess.Popen(argv,
+            proc = subprocess.Popen(argv,  # pylint: disable=subprocess-popen-preexec-fn
                                     stdin=stdin,
                                     stdout=subprocess.PIPE,
                                     stderr=stderr_dir,
@@ -238,21 +249,11 @@ def mount(device, mountpoint, fstype, options=None):
         makedirs(mountpoint)
 
     argv = ["mount", "-t", fstype, "-o", options, device, mountpoint]
-    try:
-        rc = run_program(argv)
-    except OSError:
-        raise
-
-    return rc
+    return run_program(argv)
 
 
 def umount(mountpoint):
-    try:
-        rc = run_program(["umount", mountpoint])
-    except OSError:
-        raise
-
-    return rc
+    return run_program(["umount", mountpoint])
 
 
 def get_mount_paths(dev):
@@ -272,6 +273,7 @@ def get_mount_paths(dev):
 
 def get_mount_device(mountpoint):
     """ Given a mountpoint, return the device node path mounted there. """
+    mountpoint = os.path.realpath(mountpoint)  # eliminate symlinks
     mounts = open("/proc/mounts").readlines()
     mount_device = None
     for mnt in mounts:
@@ -305,7 +307,7 @@ def total_memory():
     from .size import Size
 
     with open("/proc/meminfo") as lines:
-        line = next(l for l in lines if l.startswith("MemTotal:"))
+        line = six.next(l for l in lines if l.startswith("MemTotal:"))
         mem = Size("%s KiB" % line.split()[1])
 
     # Because /proc/meminfo only gives us the MemTotal (total physical RAM
@@ -315,25 +317,32 @@ def total_memory():
     mem = (mem / bs + 1) * bs
     return mem
 
+
+def available_memory():
+    """ Return the amount of system RAM that is currenly available.
+
+        :rtype: :class:`~.size.Size`
+    """
+    # import locally to avoid a cycle with size importing util
+    from .size import Size
+
+    with open("/proc/meminfo") as lines:
+        mems = {k.strip(): v.strip() for k, v in (l.split(":", 1) for l in lines)}
+
+    if "MemAvailable" in mems.keys():
+        return Size("%s KiB" % mems["MemAvailable"].split()[0])
+    else:
+        # MemAvailable is not present on linux < 3.14
+        free = Size("%s KiB" % mems["MemFree"].split()[0])
+        cached = Size("%s KiB" % mems["Cached"].split()[0])
+        buffers = Size("%s KiB" % mems["Buffers"].split()[0])
+
+        return (free + cached + buffers)
+
+
 ##
 # sysfs functions
 ##
-
-
-def notify_kernel(path, action="change"):
-    """ Signal the kernel that the specified device has changed.
-
-        Exceptions raised: ValueError, IOError
-    """
-    log.debug("notifying kernel of '%s' event on device %s", action, path)
-    path = os.path.join(path, "uevent")
-    if not path.startswith("/sys/") or not os.access(path, os.W_OK):
-        log.debug("sysfs path '%s' invalid", path)
-        raise ValueError("invalid sysfs path")
-
-    f = open(path, "a")
-    f.write("%s\n" % action)
-    f.close()
 
 
 def normalize_path_slashes(path):
@@ -507,36 +516,9 @@ def reset_file_context(path, root=None):
 ##
 
 
-def find_program_in_path(prog, raise_on_error=False):
-    for d in os.environ["PATH"].split(os.pathsep):
-        full = os.path.join(d, prog)
-        if os.access(full, os.X_OK):
-            return full
-
-    if raise_on_error:
-        raise RuntimeError("Unable to locate a needed executable: '%s'" % prog)
-
-
 def makedirs(path):
     if not os.path.isdir(path):
         os.makedirs(path, 0o755)
-
-
-def copy_to_system(source):
-    # do the import now because enable_installer_mode() has finally been called.
-    from . import get_sysroot
-
-    if not os.access(source, os.R_OK):
-        log.info("copy_to_system: source '%s' does not exist.", source)
-        return False
-
-    target = get_sysroot() + source
-    target_dir = os.path.dirname(target)
-    log.debug("copy_to_system: '%s' -> '%s'.", source, target)
-    if not os.path.isdir(target_dir):
-        os.makedirs(target_dir)
-    shutil.copy(source, target)
-    return True
 
 
 def lsmod():
@@ -587,17 +569,17 @@ def insert_colons(a_string):
         return suffix
 
 
-def md5_file(filename):
+def sha256_file(filename):
 
-    md5 = hashlib.md5()
+    sha256 = hashlib.sha256()
     with open(filename, "rb") as f:
 
         block = f.read(65536)
         while block:
-            md5.update(block)
+            sha256.update(block)
             block = f.read(65536)
 
-    return md5.hexdigest()
+    return sha256.hexdigest()
 
 
 class ObjectID(object):
@@ -714,17 +696,30 @@ def compare(first, second):
     else:
         return (first > second) - (first < second)
 
+
+def dedup_list(alist):
+    """Deduplicates the given list by removing duplicates while preserving the order"""
+    seen = set()
+    ret = []
+    for item in alist:
+        if item not in seen:
+            ret.append(item)
+        seen.add(item)
+    return ret
+
+
 ##
 # Convenience functions for examples and tests
 ##
 
 
-def set_up_logging(log_dir="/tmp", log_prefix="blivet"):
+def set_up_logging(log_dir="/tmp", log_prefix="blivet", console_logs=None):
     """ Configure the blivet logger to write out a log file.
 
-        :keyword str log_file: path to the log file (default: /tmp/blivet.log)
+        :keyword str log_dir: path to directory where log files are
+        :keyword str log_prefix: prefix for log file names
+        :keyword list console_logs: list of log names to output on the console
     """
-
     log.setLevel(logging.DEBUG)
     program_log.setLevel(logging.DEBUG)
 
@@ -733,7 +728,7 @@ def set_up_logging(log_dir="/tmp", log_prefix="blivet"):
         log_file = os.path.realpath(log_file)
         handler = logging.FileHandler(log_file)
         handler.setLevel(level)
-        formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+        formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s/%(threadName)s: %(message)s")
         handler.setFormatter(formatter)
         return handler
 
@@ -745,12 +740,27 @@ def set_up_logging(log_dir="/tmp", log_prefix="blivet"):
     warning_log = logging.getLogger("py.warnings")
     warning_log.addHandler(handler)
 
+    if console_logs:
+        set_up_console_log(log_names=console_logs)
+
     log.info("sys.argv = %s", sys.argv)
 
     prefix = "%s-testdata" % (log_prefix,)
     handler = make_handler(log_dir, prefix, logging.DEBUG)
     testdata_log.setLevel(logging.DEBUG)
     testdata_log.addHandler(handler)
+
+
+def set_up_console_log(log_names=None):
+    log_names = log_names or []
+    handler = logging.StreamHandler()
+    console_log.setLevel(logging.DEBUG)
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(threadName)s: %(message)s")
+    handler.setFormatter(formatter)
+    console_log.addHandler(handler)
+    for name in log_names:
+        logging.getLogger(name).addHandler(handler)
 
 
 def create_sparse_tempfile(name, size):
@@ -761,7 +771,7 @@ def create_sparse_tempfile(name, size):
         :returns: the path to the newly created file
     """
     (fd, path) = tempfile.mkstemp(prefix="blivet.", suffix="-%s" % name)
-    eintr_ignore(os.close, fd)
+    os.close(fd)
     create_sparse_file(path, size)
     return path
 
@@ -773,9 +783,9 @@ def create_sparse_file(path, size):
         :param :class:`~.size.Size` size: the size of the file
         :returns: None
     """
-    fd = eintr_retry_call(os.open, path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
-    eintr_retry_call(os.ftruncate, fd, size)
-    eintr_ignore(os.close, fd)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+    os.ftruncate(fd, size)
+    os.close(fd)
 
 
 @contextmanager
@@ -865,41 +875,6 @@ def power_of_two(value):
 
     return True
 
-# Copied from python's subprocess.py
-
-
-def eintr_retry_call(func, *args, **kwargs):
-    """Retry an interruptible system call if interrupted."""
-    while True:
-        try:
-            return func(*args, **kwargs)
-        except (OSError, IOError) as e:
-            if e.errno == errno.EINTR:
-                continue
-            raise
-
-
-def eintr_ignore(func, *args, **kwargs):
-    """Call a function and ignore EINTR.
-
-       This is useful for calls to close() and dup2(), which can return EINTR
-       but which should *not* be retried, since by the time they return the
-       file descriptor is already closed.
-    """
-    try:
-        return func(*args, **kwargs)
-    except (OSError, IOError) as e:
-        if e.errno == errno.EINTR:
-            pass
-        raise
-
-_open = open
-
-
-def open(*args, **kwargs):  # pylint: disable=redefined-builtin
-    """Open a file, and retry on EINTR."""
-    return eintr_retry_call(_open, *args, **kwargs)
-
 
 def indent(text, spaces=4):
     """ Indent text by a specified number of spaces.
@@ -973,6 +948,7 @@ def _add_extra_doc_text(func, field=None, desc=None, field_unique=False):
     text += field + " " + desc
     func.__doc__ = base_text + "\n" + indent(text, indent_spaces)
 
+
 #
 # Deprecation decorator.
 #
@@ -981,6 +957,7 @@ _DEPRECATION_MESSAGE = "will be removed in a future version."
 
 def _default_deprecation_msg(func):
     return "%s %s" % (func.__name__, _DEPRECATION_MESSAGE)
+
 
 _SPHINX_DEPRECATE = ".. deprecated::"
 _DEPRECATION_INFO = """%(version)s
@@ -1070,3 +1047,74 @@ def default_namedtuple(name, fields, doc=""):
             return nt.__new__(cls, *args_list)
 
     return TheDefaultNamedTuple
+
+
+def requires_property(prop_name, val=True):
+    """
+    Function returning a decorator that can be used to guard methods and
+    properties with evaluation of the given property.
+
+    :param str prop_name: property to evaluate
+    :param val: guard value of the :param:`prop_name`
+    :type val: :class:`Object` (anything)
+    """
+    def guard(fn):
+        @wraps(fn)
+        def func(self, *args, **kwargs):
+            if getattr(self, prop_name) == val:
+                return fn(self, *args, **kwargs)
+            else:
+                raise ValueError("%s can only be accessed if %s evaluates to %s" % (fn.__name__, prop_name, val))
+        return func
+    return guard
+
+
+class EvalMode(Enum):
+    onetime = 1
+    always = 2
+    # TODO: no_sooner_than, if_changed,...
+
+
+@six.add_metaclass(abc.ABCMeta)
+class DependencyGuard(object):
+
+    error_msg = abc.abstractproperty(doc="Error message to report when a dependency is missing")
+
+    def __init__(self, exn_cls=DependencyError):
+        self._exn_cls = exn_cls
+        self._avail = None
+
+    def check_avail(self, onetime=False):
+        if self._avail is None or not onetime:
+            self._avail = self._check_avail()
+        return self._avail
+
+    @abc.abstractmethod
+    def _check_avail(self):
+        raise NotImplementedError()
+
+    def __call__(self, critical=False, eval_mode=EvalMode.always):
+        def decorator(fn):
+            @wraps(fn)
+            def decorated(*args, **kwargs):
+                just_onetime = eval_mode == EvalMode.onetime
+                if self.check_avail(onetime=just_onetime):
+                    return fn(*args, **kwargs)
+                elif critical:
+                    raise self._exn_cls(self.error_msg)
+                else:
+                    log.warning("Failed to call the %s method: %s", fn.__name__, self.error_msg)
+                    return None
+            return decorated
+        return decorator
+
+
+def detect_virt():
+    """ Return True if we are running in a virtual machine. """
+    try:
+        vm = safe_dbus.get_property_sync(SYSTEMD_SERVICE, SYSTEMD_MANAGER_PATH,
+                                         SYSTEMD_MANAGER_IFACE, VIRT_PROP_NAME)
+    except (safe_dbus.DBusCallError, safe_dbus.DBusPropertyError):
+        return False
+    else:
+        return vm[0] in ('qemu', 'kvm')

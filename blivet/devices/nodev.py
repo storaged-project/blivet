@@ -72,7 +72,10 @@ class NoDevice(StorageDevice):
         log_method_call(self, self.name, status=self.status)
         self._pre_destroy()
 
-    def update_size(self):
+    def update_size(self, newsize=None):
+        pass
+
+    def update_sysfs_path(self):
         pass
 
 

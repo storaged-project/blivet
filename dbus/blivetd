@@ -1,0 +1,15 @@
+#!/usr/bin/python3
+import dbus
+import dbus.mainloop.glib
+from gi.repository import GLib
+
+from blivet.dbus.blivet import DBusBlivet
+from blivet.dbus.manager import ObjectManager
+
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+system_bus = dbus.SystemBus()
+
+mainloop = GLib.MainLoop()
+manager = ObjectManager()
+blivet_obj = DBusBlivet(manager)
+mainloop.run()

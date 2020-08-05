@@ -1,6 +1,8 @@
+import test_compat  # pylint: disable=unused-import
 
+from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,import-error
+import six
 import unittest
-from mock import Mock, patch
 
 import parted
 
@@ -9,6 +11,7 @@ from blivet.partitioning import get_next_partition_type
 from blivet.partitioning import do_partitioning
 from blivet.partitioning import allocate_partitions
 from blivet.partitioning import get_free_regions
+from blivet.partitioning import resolve_disk_tags
 from blivet.partitioning import Request
 from blivet.partitioning import Chunk
 from blivet.partitioning import LVRequest
@@ -19,11 +22,15 @@ from blivet.partitioning import PartitionRequest
 from blivet.devices import StorageDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
+from blivet.devices import DiskDevice
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
 from blivet.devices.lvm import LVMCacheRequest
 
+from blivet.errors import PartitioningError
+
 from tests.imagebackedtestcase import ImageBackedTestCase
+from blivet.blivet import Blivet
 from blivet.util import sparsetmpfile
 from blivet.formats import get_format
 from blivet.size import Size
@@ -32,9 +39,9 @@ from blivet.flags import flags
 # disklabel-type-specific constants
 # keys: disklabel type string
 # values: 3-tuple of (max_primary_count, supports_extended, max_logical_count)
-disklabel_types = {'dos': (4, True, 11),
-                   'gpt': (128, False, 0),
-                   'mac': (62, False, 0)}
+disklabel_types = {'dos': (4, True),
+                   'gpt': (128, False),
+                   'mac': (62, False)}
 
 
 class PartitioningTestCase(unittest.TestCase):
@@ -46,7 +53,7 @@ class PartitioningTestCase(unittest.TestCase):
 
         disk.type = disk_type
         label_type_info = disklabel_types[disk_type]
-        (max_primaries, supports_extended, max_logicals) = label_type_info
+        (max_primaries, supports_extended) = label_type_info
 
         # primary partitions
         disk.primaryPartitionCount = primary_count
@@ -57,7 +64,6 @@ class PartitioningTestCase(unittest.TestCase):
         disk.getExtendedPartition = Mock(return_value=has_extended)
 
         # logical partitions
-        disk.getMaxLogicalPartitions = Mock(return_value=max_logicals)
         disk.getLogicalPartitions = Mock(return_value=[0] * logical_count)
 
         return disk
@@ -89,26 +95,25 @@ class PartitioningTestCase(unittest.TestCase):
                              logical_count=9)
         self.assertEqual(get_next_partition_type(disk), parted.PARTITION_LOGICAL)
 
-        # four primaries and an extended, no available logical -> None
+        # four primaries and an extended -> logical
         disk = self.get_disk(disk_type="dos", primary_count=4, has_extended=True,
                              logical_count=11)
-        self.assertEqual(get_next_partition_type(disk), None)
+        self.assertEqual(get_next_partition_type(disk), parted.PARTITION_LOGICAL)
 
         # four primaries and no extended -> None
         disk = self.get_disk(disk_type="dos", primary_count=4,
                              has_extended=False)
         self.assertEqual(get_next_partition_type(disk), None)
 
-        # free primary slot, extended, no free logical slot -> primary
+        # free primary slot, extended -> primary
         disk = self.get_disk(disk_type="dos", primary_count=3, has_extended=True,
                              logical_count=11)
         self.assertEqual(get_next_partition_type(disk), parted.PARTITION_NORMAL)
 
-        # free primary slot, extended, no free logical slot w/ no_primary
-        # -> None
+        # free primary slot, extended w/ no_primary -> logical
         disk = self.get_disk(disk_type="dos", primary_count=3, has_extended=True,
                              logical_count=11)
-        self.assertEqual(get_next_partition_type(disk, no_primary=True), None)
+        self.assertEqual(get_next_partition_type(disk, no_primary=True), parted.PARTITION_LOGICAL)
 
         #
         # GPT
@@ -145,7 +150,7 @@ class PartitioningTestCase(unittest.TestCase):
     def test_add_partition(self):
         with sparsetmpfile("addparttest", Size("50 MiB")) as disk_file:
             disk = DiskFile(disk_file)
-            disk.format = get_format("disklabel", device=disk.path, exists=False)
+            disk.format = get_format("disklabel", device=disk.path, exists=False, label_type="msdos")
 
             free = disk.format.parted_disk.getFreeSpaceRegions()[0]
 
@@ -176,6 +181,8 @@ class PartitioningTestCase(unittest.TestCase):
             min_str = 'parted.Device.minimumAlignment'
             opt_al = parted.Alignment(offset=0, grainSize=8192)  # 4 MiB
             min_al = parted.Alignment(offset=0, grainSize=2048)  # 1 MiB
+            disk.format._minimal_alignment = None  # drop cache
+            disk.format._optimal_alignment = None  # drop cache
             with patch(opt_str, opt_al) as optimal, patch(min_str, min_al) as minimal:
                 optimal_end = disk.format.get_end_alignment(alignment=optimal)
                 minimal_end = disk.format.get_end_alignment(alignment=minimal)
@@ -186,6 +193,38 @@ class PartitioningTestCase(unittest.TestCase):
                 part = add_partition(disk.format, free, parted.PARTITION_NORMAL,
                                      size)
                 self.assertEqual(part.geometry.length, length)
+                self.assertEqual(optimal.isAligned(free, part.geometry.start),
+                                 False)
+                self.assertEqual(minimal.isAligned(free, part.geometry.start),
+                                 True)
+                self.assertEqual(optimal_end.isAligned(free, part.geometry.end),
+                                 False)
+                self.assertEqual(minimal_end.isAligned(free, part.geometry.end),
+                                 True)
+
+                disk.format.remove_partition(part)
+                self.assertEqual(len(disk.format.partitions), 0)
+
+            #
+            # adding a partition smaller than the minimal io size should yield
+            # a partition whose size is aligned up to the minimal io size
+            #
+            opt_str = 'parted.Device.optimumAlignment'
+            min_str = 'parted.Device.minimumAlignment'
+            opt_al = parted.Alignment(offset=0, grainSize=8192)  # 4 MiB
+            min_al = parted.Alignment(offset=0, grainSize=2048)  # 1 MiB
+            disk.format._minimal_alignment = None  # drop cache
+            disk.format._optimal_alignment = None  # drop cache
+            with patch(opt_str, opt_al) as optimal, patch(min_str, min_al) as minimal:
+                optimal_end = disk.format.get_end_alignment(alignment=optimal)
+                minimal_end = disk.format.get_end_alignment(alignment=minimal)
+
+                sector_size = Size(disk.format.sector_size)
+                length = 1024  # 512 KiB
+                size = Size(sector_size * length)
+                part = add_partition(disk.format, free, parted.PARTITION_NORMAL,
+                                     size)
+                self.assertEqual(part.geometry.length, min_al.grainSize)
                 self.assertEqual(optimal.isAligned(free, part.geometry.start),
                                  False)
                 self.assertEqual(minimal.isAligned(free, part.geometry.start),
@@ -217,8 +256,8 @@ class PartitioningTestCase(unittest.TestCase):
             #
             # fail: add a logical partition to a primary free region
             #
-            with self.assertRaisesRegex(parted.PartitionException,
-                                        "no extended partition"):
+            with six.assertRaisesRegex(self, PartitioningError,
+                                       "no extended partition"):
                 part = add_partition(disk.format, free, parted.PARTITION_LOGICAL,
                                      Size("10 MiB"))
 
@@ -249,7 +288,7 @@ class PartitioningTestCase(unittest.TestCase):
             #
             # fail: add a primary partition to an extended free region
             #
-            with self.assertRaisesRegex(parted.PartitionException, "overlap"):
+            with six.assertRaisesRegex(self, PartitioningError, "overlap"):
                 part = add_partition(disk.format, all_free[1],
                                      parted.PARTITION_NORMAL,
                                      Size("10 MiB"), all_free[1].start)
@@ -316,11 +355,11 @@ class PartitioningTestCase(unittest.TestCase):
         self.assertEqual(req2.growth, 0)
         self.assertEqual(req3.growth, 35)
 
-    def test_disk_chunk1(self):
+    def test_msdos_disk_chunk1(self):
         disk_size = Size("100 MiB")
         with sparsetmpfile("chunktest", disk_size) as disk_file:
             disk = DiskFile(disk_file)
-            disk.format = get_format("disklabel", device=disk.path, exists=False)
+            disk.format = get_format("disklabel", device=disk.path, exists=False, label_type="msdos")
 
             p1 = PartitionDevice("p1", size=Size("10 MiB"), grow=True)
             p2 = PartitionDevice("p2", size=Size("30 MiB"), grow=True)
@@ -331,13 +370,15 @@ class PartitioningTestCase(unittest.TestCase):
             self.assertEqual(len(free), 1,
                              "free region count %d not expected" % len(free))
 
-            b = Mock()
+            b = Mock(spec=Blivet)
             allocate_partitions(b, disks, partitions, free)
 
             requests = [PartitionRequest(p) for p in partitions]
             chunk = DiskChunk(free[0], requests=requests)
 
-            # parted reports a first free sector of 32 for disk files. whatever.
+            # parted reports a first free sector of 32 for msdos on disk files. whatever.
+            # XXX on gpt, the start is increased to 34 and the end is reduced from 204799 to 204766,
+            #     yielding an expected length of 204733
             length_expected = 204768
             self.assertEqual(chunk.length, length_expected)
 
@@ -367,11 +408,11 @@ class PartitioningTestCase(unittest.TestCase):
             self.assertEqual(requests[0].growth, 30712)
             self.assertEqual(requests[1].growth, 92136)
 
-    def test_disk_chunk2(self):
+    def test_msdos_disk_chunk2(self):
         disk_size = Size("100 MiB")
         with sparsetmpfile("chunktest", disk_size) as disk_file:
             disk = DiskFile(disk_file)
-            disk.format = get_format("disklabel", device=disk.path, exists=False)
+            disk.format = get_format("disklabel", device=disk.path, exists=False, label_type="msdos")
 
             p1 = PartitionDevice("p1", size=Size("10 MiB"), grow=True)
             p2 = PartitionDevice("p2", size=Size("30 MiB"), grow=True)
@@ -394,7 +435,7 @@ class PartitioningTestCase(unittest.TestCase):
             self.assertEqual(len(free), 1,
                              "free region count %d not expected" % len(free))
 
-            b = Mock()
+            b = Mock(spec=Blivet)
             allocate_partitions(b, disks, partitions, free)
 
             requests = [PartitionRequest(p) for p in partitions]
@@ -539,10 +580,9 @@ class PartitioningTestCase(unittest.TestCase):
     def test_vgchunk_with_cache(self):
         pv = StorageDevice("pv1", size=Size("40 GiB"),
                            fmt=get_format("lvmpv"))
-        # 1033 MiB so that the PV provides 1032 MiB of free space (see
-        # LVMVolumeGroupDevice.extents) -- 1024 MiB for caches, 8 MiB for the
-        # pmspare LV
-        pv2 = StorageDevice("pv2", size=Size("1033 MiB"),
+        # 1025 MiB so that the PV provides 1024 MiB of free space (see
+        # LVMVolumeGroupDevice.extents)
+        pv2 = StorageDevice("pv2", size=Size("1025 MiB"),
                             fmt=get_format("lvmpv"))
         vg = LVMVolumeGroupDevice("vg", parents=[pv, pv2])
 
@@ -583,11 +623,10 @@ class PartitioningTestCase(unittest.TestCase):
     def test_vgchunk_with_cache_pvfree(self):
         pv = StorageDevice("pv1", size=Size("40 GiB"),
                            fmt=get_format("lvmpv"))
-        # 1077 MiB so that the PV provides 1076 MiB of free space (see
+        # 1069 MiB so that the PV provides 1068 MiB of free space (see
         # LVMVolumeGroupDevice.extents) which is 44 MiB more than the caches
-        # need (including the 8MiB pmspare LV) and which should thus be split
-        # into the LVs
-        pv2 = StorageDevice("pv2", size=Size("1077 MiB"),
+        # need and which should thus be split into the LVs
+        pv2 = StorageDevice("pv2", size=Size("1069 MiB"),
                             fmt=get_format("lvmpv"))
         vg = LVMVolumeGroupDevice("vg", parents=[pv, pv2])
 
@@ -701,9 +740,9 @@ class ExtendedPartitionTestCase(ImageBackedTestCase):
         self.blivet.do_it()
 
     def test_implicit_extended_partitions_installer_mode(self):
-        flags.installer_mode = True
+        flags.keep_empty_ext_partitions = False
         self.test_implicit_extended_partitions()
-        flags.installer_mode = False
+        flags.keep_empty_ext_partitions = True
 
     def test_explicit_extended_partitions(self):
         """ Verify that explicitly requested extended partitions work. """
@@ -724,3 +763,17 @@ class ExtendedPartitionTestCase(ImageBackedTestCase):
                          "user-specified extended partition was removed")
 
         self.blivet.do_it()
+
+
+class DiskTagsTestCase(unittest.TestCase):
+    def test_disk_tags(self):
+        disks = []
+        for i in range(3):
+            disk = DiskDevice("disk%d" % i)
+            disk.tags.add(str(i))
+            disks.append(disk)
+
+        self.assertEqual(resolve_disk_tags(disks, ["1"]), [disks[1]])
+        self.assertEqual(resolve_disk_tags(disks, ["0", "2"]), [disks[0], disks[2]])
+        self.assertEqual(resolve_disk_tags(disks, ["local"]), disks)
+        self.assertEqual(resolve_disk_tags(disks, ["canteloupe"]), [])

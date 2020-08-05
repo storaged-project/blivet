@@ -18,29 +18,74 @@
 #
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
+from enum import Enum
 import os
 
 from .. import errors
 from .. import udev
 from ..size import Size
-from ..util import open  # pylint: disable=redefined-builtin
 
 LINUX_SECTOR_SIZE = Size(512)
 
 
-def get_device_majors():
-    majors = {}
+class Tags(str, Enum):
+    """Tags that describe various classes of disk."""
+    local = 'local'
+    nvdimm = 'nvdimm'
+    remote = 'remote'
+    removable = 'removable'
+    ssd = 'ssd'
+    usb = 'usb'
+
+
+def _collect_device_major_data():
+    by_major = {}
+    by_device = {}
     for line in open("/proc/devices").readlines():
         try:
             (major, device) = line.split()
         except ValueError:
             continue
         try:
-            majors[int(major)] = device
+            by_major[int(major)] = device
+            if device not in by_device:
+                by_device[device] = []
+
+            by_device[device].append(int(major))
         except ValueError:
             continue
-    return majors
-device_majors = get_device_majors()
+    return (by_major, by_device)
+
+
+_devices_by_major, _majors_by_device = _collect_device_major_data()
+
+
+def get_majors_by_device_type(device_type):
+    """ Return a list of major numbers for the given device type.
+
+        :param str device_type: device type string (eg: 'device-mapper', 'md')
+        :rtype: list of int
+
+        .. note::
+
+            Type strings are taken directly from /proc/devices.
+
+    """
+    return _majors_by_device.get(device_type, [])
+
+
+def get_device_type_by_major(major):
+    """ Return a device-type string for the given major number.
+
+        :param int major: major number
+        :rtype: str
+
+        .. note::
+
+            Type strings are taken directly from /proc/devices.
+
+    """
+    return _devices_by_major.get(major)
 
 
 def device_path_to_name(device_path):
@@ -169,25 +214,3 @@ class ParentList(object):
 
         self.removefunc(y)
         self.items.remove(y)
-
-    def replace(self, x, y):
-        """ Replace the first instance of x with y, bypassing callbacks.
-
-            .. note::
-
-                This method does update the child counts for the two devices.
-
-            .. note::
-
-                It is usually a bad idea to bypass the callbacks. This is
-                intended for specific circumstances like toggling encryption of
-                container member devices in the devicefactory classes.
-
-        """
-        if x not in self.items:
-            raise ValueError("item to be replaced is not in the list")
-
-        idx = self.items.index(x)
-        self.items[idx] = y
-        x.remove_child()
-        y.add_child()

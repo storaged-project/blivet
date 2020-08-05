@@ -20,8 +20,6 @@
 #
 # Author: David Cantrell <dcantrell@redhat.com>
 
-# pylint: disable=interruptible-system-call
-
 import logging
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("bugzilla")
@@ -35,6 +33,7 @@ import getopt
 import getpass
 import os
 import re
+import six
 import subprocess
 import sys
 import textwrap
@@ -91,8 +90,12 @@ class MakeBumpVer:
     def _gitConfig(self, field):
         proc = subprocess.Popen(['git', 'config', field],
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE).communicate()
-        return proc[0].strip('\n')
+                                stderr=subprocess.PIPE)
+        out, _err = proc.communicate()
+        if six.PY3:
+            out = out.decode("utf-8")
+
+        return out.strip('\n')
 
     def _incrementVersion(self):
         fields = self.version.split('.')
@@ -103,9 +106,12 @@ class MakeBumpVer:
     def _isRHEL(self):
         proc = subprocess.Popen(['git', 'branch'],
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE).communicate()
-        lines = filter(lambda x: x.startswith('*'),
-                       proc[0].strip('\n').split('\n'))
+                                stderr=subprocess.PIPE)
+        out, _err = proc.communicate()
+        if six.PY3:
+            out = out.decode("utf-8")
+        lines = [x for x in out.strip('\n').split('\n')
+                 if x.startswith("*")]
 
         if lines == [] or len(lines) > 1:
             return False
@@ -123,9 +129,12 @@ class MakeBumpVer:
         proc = subprocess.Popen(['git', 'log', '-1',
                                  "--pretty=format:%s" % field, commit],
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE).communicate()
+                                stderr=subprocess.PIPE)
+        out, _err = proc.communicate()
+        if six.PY3:
+            out = out.decode("utf-8")
 
-        ret = proc[0].strip('\n').split('\n')
+        ret = out.strip('\n').split('\n')
 
         if len(ret) == 1 and ret[0].find('@') != -1:
             ret = [ret[0].split('@')[0]]
@@ -234,13 +243,13 @@ class MakeBumpVer:
 
     def _rpmLog(self, fixedIn):
         git_range = "%s-%s-%s.." % (self.name, self.version, self.release)
-        proc = subprocess.Popen(['git', 'log', '--pretty=oneline', git_range],
+        proc = subprocess.Popen(['git', 'log', '--pretty=oneline', '--no-merges', git_range],
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE).communicate()
-        lines = filter(lambda x: x.find('l10n: ') != 41 and \
-                                 x.find('Merge commit') != 41 and \
-                                 x.find('Merge branch') != 41,
-                       proc[0].strip('\n').split('\n'))
+                                stderr=subprocess.PIPE)
+        out, _err = proc.communicate()
+        if six.PY3:
+            out = out.decode("utf-8")
+        lines = out.strip('\n').split('\n')
 
         if self.ignore:
             ignore_commits = self.ignore.split(',')
@@ -389,8 +398,8 @@ class MakeBumpVer:
 
         self._replaceString(l, "Version: %s\n" % (self.version),
                                "Version: %s\n" % (newVersion))
-        self._replaceString(l, "Release: %s\n" % (self.release+r"%{\?dist}"),
-                               "Release: %s\n" % (self.new_release+r"%{?dist}"))
+        self._replaceString(l, "Release: %s\n" % (self.release+r"%{\?prerelease}%{\?dist}"),
+                               "Release: %s\n" % (self.new_release+r"%{?prerelease}%{?dist}"))
 
         i = l.index('%changelog\n')
         top = l[:i]

@@ -48,4 +48,3 @@ class UnimplementedFSTask(FSTask, task.UnimplementedTask):
         Useful in the usual case where an Unimplemented task has
         no special methods that it is required to implement.
     """
-    pass

@@ -19,15 +19,15 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-from .lib import get_device_majors, device_path_to_name, device_name_to_disk_by_path, ParentList
+from .lib import device_path_to_name, device_name_to_disk_by_path, ParentList
 from .device import Device
 from .storage import StorageDevice
-from .disk import DiskDevice, DiskFile, DMRaidArrayDevice, MultipathDevice, iScsiDiskDevice, FcoeDiskDevice, DASDDevice, ZFCPDiskDevice
+from .disk import DiskDevice, DiskFile, DMRaidArrayDevice, MultipathDevice, iScsiDiskDevice, FcoeDiskDevice, DASDDevice, ZFCPDiskDevice, NVDIMMNamespaceDevice
 from .partition import PartitionDevice
-from .dm import DMDevice, DMLinearDevice, DMCryptDevice
-from .luks import LUKSDevice
-from .lvm import LVMVolumeGroupDevice, LVMLogicalVolumeDevice, LVMSnapShotDevice, LVMThinPoolDevice, LVMThinLogicalVolumeDevice, LVMThinSnapShotDevice
-from .md import MDBiosRaidArrayDevice, MDContainerDevice, MDRaidArrayDevice
+from .dm import DMDevice, DMLinearDevice, DMCryptDevice, DMIntegrityDevice, DM_MAJORS
+from .luks import LUKSDevice, IntegrityDevice
+from .lvm import LVMVolumeGroupDevice, LVMLogicalVolumeDevice
+from .md import MDBiosRaidArrayDevice, MDContainerDevice, MDRaidArrayDevice, MD_MAJORS
 from .btrfs import BTRFSDevice, BTRFSVolumeDevice, BTRFSSubVolumeDevice, BTRFSSnapShotDevice
 from .file import FileDevice, DirectoryDevice, SparseFileDevice
 from .loop import LoopDevice

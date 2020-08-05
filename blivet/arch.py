@@ -33,9 +33,7 @@ from __future__ import absolute_import
 
 import os
 
-from .flags import flags
 from .storage_log import log_exception_info
-from .util import open  # pylint: disable=redefined-builtin
 
 import logging
 log = logging.getLogger("blivet")
@@ -74,7 +72,7 @@ def get_ppc_machine():
                 'Cell': 'pSeries',
                 'Momentum': 'pSeries',
                 'PS3': 'PS3',
-                'PowerNV': 'pSeries'
+                'PowerNV': 'PowerNV'
                 }
     machine = None
     platform = None
@@ -181,27 +179,6 @@ def is_aarch64():
 
     """
     return os.uname()[4] == 'aarch64'
-
-
-def get_arm_machine():
-    """
-    :return: The ARM processor variety type, or None if not ARM.
-    :rtype: string
-
-    """
-    if not is_arm():
-        return None
-
-    if flags.arm_platform:
-        return flags.arm_platform
-
-    arm_machine = os.uname()[2].rpartition('.')[2]
-
-    if arm_machine.startswith('arm'):
-        # @TBD - Huh? Don't you want the arm machine name here?
-        return None
-    else:
-        return arm_machine
 
 
 def is_cell():
@@ -311,7 +288,7 @@ def is_ppc(bits=None):
 
 def is_s390():
     """
-    :return: True if the hardware supports PPC, False otherwise.
+    :return: True if the hardware supports s390(x), False otherwise.
     :rtype: boolean
 
     """
@@ -343,6 +320,18 @@ def is_arm():
 
     """
     return os.uname()[4].startswith('arm')
+
+
+def is_pmac():
+    return is_ppc() and get_ppc_machine() == "PMac" and get_ppc_mac_gen() == "NewWorld"
+
+
+def is_ipseries():
+    return is_ppc() and get_ppc_machine() in ("iSeries", "pSeries")
+
+
+def is_powernv():
+    return is_ppc() and get_ppc_machine() == "PowerNV"
 
 
 def get_arch():

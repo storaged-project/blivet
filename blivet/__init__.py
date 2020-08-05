@@ -20,43 +20,14 @@
 #                    Vratislav Podzimek <vpodzime@redhat.com>
 #
 
-__version__ = '2.0'
-
-##
-# Default stub values for installer-specific stuff that gets set up in
-# enable_installer_mode.  These constants are only for use inside this file.
-# For use in other blivet files, they must either be passed to the function
-# in question or care must be taken so they are imported only after
-# enable_installer_mode is called.
-##
-iutil = None
-ROOT_PATH = '/'
-_storage_root = ROOT_PATH
-_sysroot = ROOT_PATH
-short_product_name = 'blivet'
-ERROR_RAISE = 0
-
-
-class ErrorHandler(object):
-
-    def cb(self, exn):
-        # pylint: disable=unused-argument
-        return ERROR_RAISE
-
-error_handler = ErrorHandler()
-
-get_bootloader = lambda: None
-
-##
-# end installer stubs
-##
+__version__ = '2.0.2'
 
 import sys
 import importlib
 import warnings
+import syslog
 
 from . import util, arch
-from .flags import flags
 
 import logging
 log = logging.getLogger("blivet")
@@ -70,95 +41,46 @@ warnings.simplefilter('module', DeprecationWarning)
 # Enable logging of python warnings.
 logging.captureWarnings(True)
 
-# XXX: respect the level? Need to translate between C and Python log levels.
-log_bd_message = lambda level, msg: program_log.info(msg)
+# "translation" between syslog log levels (used by libblockdev) and python log levels
+LOG_LEVELS = {syslog.LOG_EMERG: logging.CRITICAL, syslog.LOG_ALERT: logging.CRITICAL,
+              syslog.LOG_CRIT: logging.CRITICAL, syslog.LOG_ERR: logging.ERROR,
+              syslog.LOG_WARNING: logging.WARNING, syslog.LOG_NOTICE: logging.INFO,
+              syslog.LOG_INFO: logging.INFO, syslog.LOG_DEBUG: logging.DEBUG}
+
+
+def log_bd_message(level, msg):
+    # only log <= info for libblockdev, debug contains debug messages
+    # from cryptsetup and we don't want to put these into program.log
+    if level <= syslog.LOG_INFO and level in LOG_LEVELS.keys():
+        program_log.log(LOG_LEVELS[level], msg)
+
 
 import gi
 gi.require_version("GLib", "2.0")
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 # initialize the libblockdev library
 from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
 if arch.is_s390():
-    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390"))
+    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390", "nvdimm"))
 else:
-    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm"))
+    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "nvdimm"))
 
 _requested_plugins = blockdev.plugin_specs_from_names(_REQUESTED_PLUGIN_NAMES)
 try:
+    # do not check for dependencies during libblockdev initializtion, do runtime
+    # checks instead
+    blockdev.switch_init_checks(False)
     succ_, avail_plugs = blockdev.try_reinit(require_plugins=_requested_plugins, reload=False, log_func=log_bd_message)
 except GLib.GError as err:
-    raise RuntimeError("Failed to intialize the libblockdev library: %s" % err)
+    raise RuntimeError("Failed to initialize the libblockdev library: %s" % err)
 else:
     avail_plugs = set(avail_plugs)
 
 missing_plugs = _REQUESTED_PLUGIN_NAMES - avail_plugs
 for p in missing_plugs:
     log.info("Failed to load plugin %s", p)
-
-
-def enable_installer_mode():
-    """ Configure the module for use by anaconda (OS installer). """
-    global iutil
-    global ROOT_PATH
-    global _storage_root
-    global _sysroot
-    global short_product_name
-    global get_bootloader
-    global error_handler
-    global ERROR_RAISE
-
-    from pyanaconda import iutil  # pylint: disable=redefined-outer-name
-    from pyanaconda.constants import shortProductName as short_product_name  # pylint: disable=redefined-outer-name
-    from pyanaconda.bootloader import get_bootloader  # pylint: disable=redefined-outer-name
-    from pyanaconda.errors import errorHandler as error_handler  # pylint: disable=redefined-outer-name
-    from pyanaconda.errors import ERROR_RAISE  # pylint: disable=redefined-outer-name
-
-    if hasattr(iutil, 'getTargetPhysicalRoot'):
-        # For anaconda versions > 21.43
-        _storage_root = iutil.getTargetPhysicalRoot()  # pylint: disable=no-name-in-module
-        _sysroot = iutil.getSysroot()
-    else:
-        # For prior anaconda versions
-        from pyanaconda.constants import ROOT_PATH  # pylint: disable=redefined-outer-name,no-name-in-module
-        _storage_root = _sysroot = ROOT_PATH
-
-    from pyanaconda.anaconda_log import program_log_lock
-    util.program_log_lock = program_log_lock
-
-    flags.installer_mode = True
-
-
-def get_sysroot():
-    """Returns the path to the target OS installation.
-
-    For traditional installations, this is the same as the physical
-    storage root.
-    """
-    return _sysroot
-
-
-def get_target_physical_root():
-    """Returns the path to the "physical" storage root.
-
-    This may be distinct from the sysroot, which could be a
-    chroot-type subdirectory of the physical root.  This is used for
-    example by all OSTree-based installations.
-    """
-    return _storage_root
-
-
-def set_sysroot(storage_root, sysroot=None):
-    """Change the OS root path.
-       :param storage_root: The root of physical storage
-       :param sysroot: An optional chroot subdirectory of storage_root
-    """
-    global _storage_root
-    global _sysroot
-    _storage_root = _sysroot = storage_root
-    if sysroot is not None:
-        _sysroot = sysroot
 
 
 class _LazyImportObject(object):
@@ -200,6 +122,7 @@ class _LazyImportObject(object):
         val = getattr(mod, self._name)
         sys.modules["%s.%s" % (__package__, self._name)] = val
         return dir(val)
+
 
 # this way things like 'from blivet import Blivet' work without an overhead of
 # importing of everything the Blivet class needs whenever anything from the

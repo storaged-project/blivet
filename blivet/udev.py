@@ -24,36 +24,64 @@
 import os
 import re
 import subprocess
+import logging
+import pyudev
 
 from . import util
-from .util import open  # pylint: disable=redefined-builtin
 from .size import Size
 from .flags import flags
 
-import pyudev
-global_udev = pyudev.Context()
+import gi
+gi.require_version("BlockDev", "2.0")
 
-import logging
+from gi.repository import BlockDev as blockdev
+
+global_udev = pyudev.Context()
 log = logging.getLogger("blivet")
 
-INSTALLER_BLACKLIST = (r'^mtd', r'^mmcblk.+boot', r'^mmcblk.+rpmb', r'^zram')
-""" device name regexes to ignore when flags.installer_mode is True """
+device_name_blacklist = []
+""" device name regexes to ignore; this should be empty by default """
 
 
-def get_device(sysfs_path):
+def device_to_dict(device):
+    # Transform Device to dictionary
+    # Originally it was possible to use directly Device where needed,
+    # but it lead to unfixable excessive deprecation warnings from udev.
+    # Sice blivet uses Device.properties only (with couple of exceptions)
+    # this is a functional workaround. (japokorn May 2017)
+
+    result = dict(device.properties)
+    result["SYS_NAME"] = device.sys_name
+    result["SYS_PATH"] = device.sys_path
+    return result
+
+
+def get_device(sysfs_path=None, device_node=None):
     try:
-        dev = pyudev.Device.from_sys_path(global_udev, sysfs_path)
+        if sysfs_path is not None:
+            device = pyudev.Devices.from_sys_path(global_udev, sysfs_path)
+        elif device_node is not None:
+            device = pyudev.Devices.from_device_file(global_udev, device_node)
     except pyudev.DeviceNotFoundError as e:
         log.error(e)
-        dev = None
+        result = None
+    else:
+        result = device_to_dict(device)
 
-    return dev
+    return result
 
 
 def get_devices(subsystem="block"):
-    settle()
-    return [d for d in global_udev.list_devices(subsystem=subsystem)
-            if not __is_blacklisted_blockdev(d.sys_name)]
+    if not flags.uevents:
+        settle()
+
+    result = []
+    for device in global_udev.list_devices(subsystem=subsystem):
+        if not __is_blacklisted_blockdev(device.sys_name):
+            dev = device_to_dict(device)
+            result.append(dev)
+
+    return result
 
 
 def settle(quiet=False):
@@ -101,7 +129,7 @@ def resolve_devspec(devspec, sysname=False):
             if device_get_uuid(dev) == devspec[5:]:
                 ret = dev
                 break
-        elif device_get_name(dev) == devname or dev.sys_name == devname:
+        elif device_get_name(dev) == devname or dev["SYS_NAME"] == devname:
             ret = dev
             break
         else:
@@ -115,10 +143,17 @@ def resolve_devspec(devspec, sysname=False):
                     break
 
     if ret:
-        return ret.sys_name if sysname else device_get_name(ret)
+        return ret["SYS_NAME"] if sysname else device_get_name(ret)
 
 
 def resolve_glob(glob):
+    """
+    :param str glob: glob to match device **names** against
+    :returns: list of udev info objects matching :param:`glob`
+
+    .. note:: This function matches device **names** ("sda"), not paths ("/dev/sda").
+
+    """
     import fnmatch
     ret = []
 
@@ -127,12 +162,15 @@ def resolve_glob(glob):
 
     for dev in get_devices():
         name = device_get_name(dev)
+        path = device_get_devname(dev)
 
-        if fnmatch.fnmatch(name, glob):
+        if name and fnmatch.fnmatch(name, glob):
+            ret.append(name)
+        elif path and fnmatch.fnmatch(path, glob):
             ret.append(name)
         else:
             for link in device_get_symlinks(dev):
-                if fnmatch.fnmatch(link, glob):
+                if link and fnmatch.fnmatch(link, glob):
                     ret.append(name)
 
     return ret
@@ -143,12 +181,13 @@ def __is_blacklisted_blockdev(dev_name):
     if dev_name.startswith("ram") or dev_name.startswith("fd"):
         return True
 
-    if flags.installer_mode:
-        if any(re.search(expr, dev_name) for expr in INSTALLER_BLACKLIST):
+    if device_name_blacklist:
+        if any(re.search(expr, dev_name) for expr in device_name_blacklist):
             return True
 
-    if os.path.exists("/sys/class/block/%s/device/model" % (dev_name,)):
-        model = open("/sys/class/block/%s/device/model" % (dev_name,)).read()
+    model_path = "/sys/class/block/%s/device/model" % dev_name
+    if os.path.exists(model_path):
+        model = open(model_path, encoding="utf-8", errors="replace").read()
         for bad in ("IBM *STMF KERNEL", "SCEI Flash-5", "DGC LUNZ"):
             if model.find(bad) != -1:
                 log.info("ignoring %s with model %s", dev_name, model)
@@ -164,11 +203,20 @@ def device_get_name(udev_info):
     """ Return the best name for a device based on the udev db data. """
     if "DM_NAME" in udev_info:
         name = udev_info["DM_NAME"]
-    elif "MD_DEVNAME" in udev_info and not device_is_partition(udev_info):
-        # md partitions have MD_DEVNAME set to the partition's parent/disk
-        name = udev_info["MD_DEVNAME"]
+    elif "MD_DEVNAME" in udev_info and os.path.exists(device_get_sysfs_path(udev_info) + "/md"):
+        mdname = udev_info["MD_DEVNAME"]
+        if device_is_partition(udev_info):
+            # for partitions on named RAID we want to use the raid name, not
+            # the node, e.g. "raid1" instead of "md127p1"
+            partnum = udev_info["ID_PART_ENTRY_NUMBER"]
+            if mdname[-1].isdigit():
+                name = mdname + "p" + partnum
+            else:
+                name = mdname + partnum
+        else:
+            name = mdname
     else:
-        name = udev_info.sys_name
+        name = udev_info["SYS_NAME"]
 
     return name
 
@@ -176,6 +224,11 @@ def device_get_name(udev_info):
 def device_get_format(udev_info):
     """ Return a device's format type as reported by udev. """
     return udev_info.get("ID_FS_TYPE")
+
+
+def device_get_format_version(udev_info):
+    """ Return a device's format version as reported by udev. """
+    return udev_info.get("ID_FS_VERSION")
 
 
 def device_get_uuid(udev_info):
@@ -296,11 +349,23 @@ def device_is_cdrom(info):
 
 
 def device_is_disk(info):
-    """ Return True is the device is a disk. """
-    if device_is_cdrom(info):
-        return False
+    """ Return True if the device is a disk.
+
+        Unfortunately, since so many things are represented as disks by
+        udev/sysfs, we have to define what is a disk in terms of what is
+        not a disk.
+    """
     has_range = os.path.exists("%s/range" % device_get_sysfs_path(info))
-    return info.get("DEVTYPE") == "disk" or has_range
+    is_disk = info.get("DEVTYPE") == "disk" or has_range
+
+    return (is_disk and
+            not (device_is_cdrom(info) or
+                 device_is_partition(info) or
+                 device_is_dm_partition(info) or
+                 device_is_dm_lvm(info) or
+                 device_is_dm_crypt(info) or
+                 (device_is_md(info) and
+                  (not device_get_md_container(info) and not all(device_is_disk(d) for d in device_get_slaves(info))))))
 
 
 def device_is_partition(info):
@@ -309,9 +374,8 @@ def device_is_partition(info):
 
 
 def device_is_loop(info):
-    """ Return True if the device is a configured loop device. """
-    return (device_get_name(info).startswith("loop") and
-            os.path.isdir("%s/loop" % device_get_sysfs_path(info)))
+    """ Return True if the device is a loop device. """
+    return device_get_name(info).startswith("loop")
 
 
 def device_get_serial(udev_info):
@@ -319,11 +383,12 @@ def device_get_serial(udev_info):
     return udev_info.get("ID_SERIAL_RAW", udev_info.get("ID_SERIAL", udev_info.get("ID_SERIAL_SHORT")))
 
 
-def device_get_wwid(udev_info):
-    """ The WWID of a device is typically just its serial number, but with
-        colons in the name to make it more readable. """
-    serial = device_get_serial(udev_info)
-    return util.insert_colons(serial) if serial else ""
+def device_get_wwn(udev_info):
+    """ Return the WWID as reported by udev without '0x' prefix. """
+    wwn = udev_info.get("ID_WWN_WITH_EXTENSION")
+    if wwn:
+        wwn = wwn[2:]  # strip off the leading '0x'
+    return wwn
 
 
 def device_get_vendor(udev_info):
@@ -342,7 +407,7 @@ def device_get_bus(udev_info):
 
 
 def device_get_path(info):
-    return info["ID_PATH"]
+    return info.get("ID_PATH", "")
 
 
 def device_get_symlinks(info):
@@ -364,7 +429,7 @@ def device_get_by_path(info):
 
 
 def device_get_sysfs_path(info):
-    return info.sys_path
+    return info["SYS_PATH"]
 
 
 def device_get_major(info):
@@ -377,6 +442,34 @@ def device_get_minor(info):
 
 def device_get_devname(info):
     return info.get('DEVNAME')
+
+
+def device_get_slaves(info):
+    """ Return a list of udev device objects representing this device's slaves. """
+    slaves_dir = device_get_sysfs_path(info) + "/slaves/"
+    names = list()
+    if os.path.isdir(slaves_dir):
+        names = os.listdir(slaves_dir)
+
+    slaves = list()
+    for name in names:
+        slaves.append(get_device(device_node="/dev/" + name))
+
+    return slaves
+
+
+def device_get_holders(info):
+    """ Return a list of udev device objects representing this device's holders. """
+    holders_dir = device_get_sysfs_path(info) + "/holders/"
+    names = list()
+    if os.path.isdir(holders_dir):
+        names = os.listdir(holders_dir)
+
+    holders = list()
+    for name in names:
+        holders.append(get_device(device_node="/dev/" + name))
+
+    return holders
 
 
 def device_get_md_level(info):
@@ -540,15 +633,12 @@ def device_get_lv_type(info):
 
 def device_dm_subsystem_match(info, subsystem):
     """ Return True if the device matches a given device-mapper subsystem. """
-    uuid = info.get("DM_UUID", "")
-    uuid_fields = uuid.split("-")
-    _subsystem = uuid_fields[0]
-    if _subsystem.lower().startswith("part") and len(uuid_fields) > 1:
-        # kpartx uses partN- as a subsystem prefix, which we ignore because
-        # we only care about the subsystem of the partitions' parent device.
-        _subsystem = uuid_fields[1]
+    name = info.get("DM_NAME")
+    if name is None:
+        return False
 
-    if _subsystem == uuid or not _subsystem:
+    _subsystem = blockdev.dm.get_subsystem_from_name(name)
+    if not _subsystem:
         return False
 
     return _subsystem.lower() == subsystem.lower()
@@ -573,6 +663,20 @@ def device_is_dm_luks(info):
         _type = ""
 
     return is_crypt and _type.startswith("luks")
+
+
+def device_is_dm_integrity(info):
+    """ Return True if the device is a mapped integrity device. """
+    is_crypt = device_dm_subsystem_match(info, "crypt")
+    if not is_crypt:
+        return False
+
+    try:
+        _type = info.get("DM_UUID", "").split("-")[1].lower()
+    except IndexError:
+        _type = ""
+
+    return _type.startswith("integrity")
 
 
 def device_is_dm_raid(info):
@@ -615,18 +719,30 @@ def device_is_biosraid_member(info):
     return False
 
 
-def device_get_dm_partition_disk(info):
-    if not device_is_dm_partition(info):
+def device_get_partition_disk(info):
+    """ Return the (friendly) name of the given partition's disk. """
+    if not (device_is_partition(info) or device_is_dm_partition(info)):
         return None
 
     disk = None
     majorminor = info.get("ID_PART_ENTRY_DISK")
+    sysfs_path = device_get_sysfs_path(info)
+    slaves_dir = "%s/slaves" % sysfs_path
     if majorminor:
         major, minor = majorminor.split(":")
         for device in get_devices():
             if device.get("MAJOR") == major and device.get("MINOR") == minor:
                 disk = device_get_name(device)
                 break
+    elif device_is_dm_partition(info):
+        if os.path.isdir(slaves_dir):
+            parents = os.listdir(slaves_dir)
+            if len(parents) == 1:
+                disk = resolve_devspec(parents[0].replace('!', '/'))
+    else:
+        _disk = os.path.basename(os.path.dirname(sysfs_path).replace('!', '/'))
+        if info["SYS_NAME"].startswith(_disk):
+            disk = resolve_devspec(_disk)
 
     return disk
 
@@ -644,6 +760,14 @@ def device_get_disklabel_type(info):
         return None
 
     return info.get("ID_PART_TABLE_TYPE")
+
+
+def device_get_disklabel_uuid(info):
+    return info.get("ID_PART_TABLE_UUID")
+
+
+def device_get_partition_uuid(info):
+    return info.get("ID_PART_ENTRY_UUID")
 
 # iscsi disks' ID_PATH form depends on the driver:
 # for software iscsi:
@@ -697,6 +821,16 @@ def device_get_iscsi_name(info):
     return "-".join(path_components[name_field:len(path_components) - 2])
 
 
+def device_get_iscsi_lun(info):
+    lun = 0
+    path_components = device_get_path(info).split("-")
+    idx = list(reversed(path_components)).index("lun")
+    if idx > 0:
+        lun = path_components[-idx]
+
+    return lun
+
+
 def device_get_iscsi_address(info):
     address_field = 1
     if device_is_partoff_iscsi(info):
@@ -743,24 +877,26 @@ def device_get_iscsi_nic(info):
 
 
 def device_get_iscsi_initiator(info):
-    initiator = None
+    initiator_name = None
     if device_is_partoff_iscsi(info):
         host = re.match(r'.*/(host\d+)', device_get_sysfs_path(info)).groups()[0]
         if host:
             initiator_file = "/sys/class/iscsi_host/%s/initiatorname" % host
             if os.access(initiator_file, os.R_OK):
-                initiator = open(initiator_file).read().strip()
+                initiator = open(initiator_file, "rb").read().strip()
+                initiator_name = initiator.decode("utf-8", errors="replace")
                 log.debug("found offload iscsi initiatorname %s in file %s",
-                          initiator, initiator_file)
-                if initiator.lstrip("(").rstrip(")").lower() == "null":
-                    initiator = None
-    if initiator is None:
+                          initiator_name, initiator_file)
+                if initiator_name.lstrip("(").rstrip(")").lower() == "null":
+                    initiator_name = None
+    if initiator_name is None:
         session = device_get_iscsi_session(info)
         if session:
             initiator = open("/sys/class/iscsi_session/%s/initiatorname" %
-                             session).read().strip()
-            log.debug("found iscsi initiatorname %s", initiator)
-    return initiator
+                             session, "rb").read().strip()
+            initiator_name = initiator.decode("utf-8", errors="replace")
+            log.debug("found iscsi initiatorname %s", initiator_name)
+    return initiator_name
 
 
 # fcoe disks have ID_PATH in the form of:
@@ -788,7 +924,7 @@ def device_get_iscsi_initiator(info):
 # Ethernet interface.
 
 def _detect_broadcom_fcoe(info):
-    re_pci_host = re.compile(r'/(.*)/(host\d+)')
+    re_pci_host = re.compile(r'(.*)/(host\d+)')
     match = re_pci_host.match(device_get_sysfs_path(info))
     if match:
         sysfs_pci, host = match.groups()
@@ -856,3 +992,23 @@ def device_get_fcoe_identifier(info):
     if device_is_fcoe(info) and len(path_components) >= 4 and \
        path_components[2] == 'fc':
         return path_components[3]
+
+
+def device_is_nvdimm_namespace(info):
+    if info.get("DEVTYPE") != "disk":
+        return False
+
+    if not blockdev.is_plugin_available(blockdev.Plugin.NVDIMM):
+        # nvdimm plugin is not available -- even if this is an nvdimm device we
+        # don't have tools to work with it, so we should pretend it's just a disk
+        return False
+
+    devname = info.get("DEVNAME", "")
+    ninfo = blockdev.nvdimm_namespace_get_devname(devname)
+    return ninfo is not None
+
+
+def device_is_hidden(info):
+    sysfs_path = device_get_sysfs_path(info)
+    hidden = util.get_sysfs_attr(sysfs_path, "hidden")
+    return bool(hidden)

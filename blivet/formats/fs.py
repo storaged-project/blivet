@@ -25,8 +25,10 @@
 from decimal import Decimal
 import os
 import tempfile
+import uuid as uuid_mod
+import random
 
-from parted import fileSystemType
+from parted import fileSystemType, PARTITION_BOOT
 
 from ..tasks import fsck
 from ..tasks import fsinfo
@@ -38,24 +40,28 @@ from ..tasks import fsreadlabel
 from ..tasks import fsresize
 from ..tasks import fssize
 from ..tasks import fssync
+from ..tasks import fsuuid
 from ..tasks import fswritelabel
+from ..tasks import fswriteuuid
 from ..errors import FormatCreateError, FSError, FSReadLabelError
-from ..errors import FSWriteLabelError, FSResizeError
+from ..errors import FSWriteLabelError, FSWriteUUIDError
 from . import DeviceFormat, register_device_format
 from .. import util
-from .. import platform
 from ..flags import flags
 from ..storage_log import log_exception_info, log_method_call
 from .. import arch
-from ..size import Size, ROUND_UP, ROUND_DOWN, unit_str
+from ..size import Size, ROUND_UP
 from ..i18n import N_
 from .. import udev
 from ..mounts import mounts_cache
 
-from .fslib import kernel_filesystems, update_kernel_filesystems
+from .fslib import kernel_filesystems
 
 import logging
 log = logging.getLogger("blivet")
+
+
+AVAILABLE_FILESYSTEMS = kernel_filesystems
 
 
 class FS(DeviceFormat):
@@ -65,21 +71,23 @@ class FS(DeviceFormat):
     _name = None
     _modules = []                        # kernel modules required for support
     _labelfs = None                      # labeling functionality
+    _uuidfs = None                       # functionality for UUIDs
     _fsck_class = fsck.UnimplementedFSCK
-    _info_class = fsinfo.UnimplementedFSInfo
-    _minsize_class = fsminsize.UnimplementedFSMinSize
     _mkfs_class = fsmkfs.UnimplementedFSMkfs
+    _min_size = Size("2 MiB")            # default minimal size
     _mount_class = fsmount.FSMount
     _readlabel_class = fsreadlabel.UnimplementedFSReadLabel
-    _resize_class = fsresize.UnimplementedFSResize
-    _size_info_class = fssize.UnimplementedFSSize
     _sync_class = fssync.UnimplementedFSSync
     _writelabel_class = fswritelabel.UnimplementedFSWriteLabel
+    _writeuuid_class = fswriteuuid.UnimplementedFSWriteUUID
+    _selinux_supported = True
     # This constant is aquired by testing some filesystems
     # and it's giving us percentage of space left after the format.
-    # This number is more guess then precise number because this
+    # This number is more guess than precise number because this
     # value is already unpredictable and can change in the future...
-    _MetadataSizeFactor = 1.0
+    _metadata_size_factor = 1.0
+
+    config_actions_map = {"label": "write_label"}
 
     def __init__(self, **kwargs):
         """
@@ -109,34 +117,25 @@ class FS(DeviceFormat):
         DeviceFormat.__init__(self, **kwargs)
 
         # Create task objects
-        self._info = self._info_class(self)
         self._fsck = self._fsck_class(self)
         self._mkfs = self._mkfs_class(self)
         self._mount = self._mount_class(self)
         self._readlabel = self._readlabel_class(self)
-        self._resize = self._resize_class(self)
         self._sync = self._sync_class(self)
         self._writelabel = self._writelabel_class(self)
-
-        # These two may depend on info class, so create them after
-        self._minsize = self._minsize_class(self)
-        self._size_info = self._size_info_class(self)
+        self._writeuuid = self._writeuuid_class(self)
 
         self._current_info = None  # info obtained by _info task
+        self._chrooted_mountpoint = None
 
         self.mountpoint = kwargs.get("mountpoint")
-        self.mountopts = kwargs.get("mountopts")
+        self.mountopts = kwargs.get("mountopts", "")
         self.label = kwargs.get("label")
         self.fsprofile = kwargs.get("fsprofile")
 
-        # filesystem size does not necessarily equal device size
-        self._size = kwargs.get("size", Size(0))
-        self._min_instance_size = Size(0)    # min size of this FS instance
+        self._user_mountopts = self.mountopts
 
-        # Resize operations are limited to error-free filesystems whose current
-        # size is known.
-        self._resizable = False
-        if flags.installer_mode and self._resize.available:
+        if flags.auto_dev_updates and self._resize.available:
             # if you want current/min size you have to call update_size_info
             try:
                 self.update_size_info()
@@ -146,10 +145,8 @@ class FS(DeviceFormat):
 
         self._target_size = self._size
 
-        self._chrooted_mountpoint = None
-
         if self.supported:
-            self.load_module()
+            self.check_module()
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
@@ -180,13 +177,63 @@ class FS(DeviceFormat):
     def free_space_estimate(cls, device_size):
         """ Get estimated free space when format will be done on device
             with size ``device_size``.
-            This is more guess then precise number.
+
+            .. note::
+
+                This is more guess than precise number. To get precise
+                space taken the FS must provide this number to us.
 
             :param device_size: original device size
-            :type device_size: ``Size`` object
+            :type device_size: :class:`~.size.Size` object
             :return: estimated free size after format
+            :rtype: :class:`~.size.Size`
         """
-        return device_size * cls._MetadataSizeFactor
+        return device_size * cls._metadata_size_factor
+
+    @classmethod
+    def get_required_size(cls, free_space):
+        """ Get device size we need to get a ``free_space`` on the device.
+            This calculation will add metadata to usable device on the FS.
+
+            .. note::
+
+                This is more guess than precise number. To get precise
+                space taken the FS must provide this number to us.
+
+            :param free_space: how much usable size we want on newly created device
+            :type free_space: :class:`~.size.Size` object
+            :return: estimated size of the device which will have given amount of
+                ``free_space``
+            :rtype: :class:`~.size.Size`
+        """
+        # to get usable size without metadata we will use
+        # usable_size = device_size * _metadata_size_factor
+        # we can change this to get device size with required usable_size
+        # device_size = usable_size / _metadata_size_factor
+        return Size(Decimal(int(free_space)) / Decimal(cls._metadata_size_factor))
+
+    @classmethod
+    def biggest_overhead_FS(cls, fs_list=None):
+        """ Get format class from list of format classes with largest space taken
+            by metadata.
+
+            :param fs_list: list of input filesystems
+            :type fs_list: list of classes with parent :class:`~.FS`
+            :return: FS which takes most space by metadata
+        """
+        if fs_list is None:
+            from . import device_formats
+            fs_list = []
+            for fs_class in device_formats.values():
+                if issubclass(fs_class, cls):
+                    fs_list.append(fs_class)
+        elif not fs_list:
+            raise ValueError("Empty list is not allowed here!")
+        # all items in the list must be subclass of FS class
+        elif not all(issubclass(fs_class, cls) for fs_class in fs_list):
+            raise ValueError("Only filesystem classes may be provided!")
+
+        return min(fs_list, key=lambda x: x._metadata_size_factor)
 
     def labeling(self):
         """Returns True if this filesystem uses labels, otherwise False.
@@ -216,48 +263,46 @@ class FS(DeviceFormat):
     label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
                      doc="this filesystem's label")
 
-    def _set_target_size(self, newsize):
-        """ Set the target size for this filesystem.
+    def can_set_uuid(self):
+        """Returns True if this filesystem supports setting an UUID during
+           creation, otherwise False.
 
-            :param :class:`~.size.Size` newsize: the newsize
+           :rtype: bool
         """
-        if not isinstance(newsize, Size):
-            raise ValueError("new size must be of type Size")
+        return self._mkfs.can_set_uuid and self._mkfs.available
 
-        if not self.exists:
-            raise FSError("filesystem has not been created")
+    def can_modify_uuid(self):
+        """Returns True if it's possible to set the UUID of this filesystem
+           after it has been created, otherwise False.
 
-        if not self.resizable:
-            raise FSError("filesystem is not resizable")
+           :rtype: bool
+        """
+        return self._writeuuid.available
 
-        if newsize < self.min_size:
-            raise ValueError("requested size %s must be at least minimum size %s" % (newsize, self.min_size))
+    def uuid_format_ok(self, uuid):
+        """Return True if the UUID has an acceptable format for this
+           filesystem.
 
-        if self.max_size and newsize >= self.max_size:
-            raise ValueError("requested size %s must be less than maximum size %s" % (newsize, self.max_size))
+           :param uuid: An UUID
+           :type uuid: str
+        """
+        return self._uuidfs is not None and self._uuidfs.uuid_format_ok(uuid)
 
-        self._target_size = newsize
+    def generate_new_uuid(self):
+        """Generate a new random UUID in the RFC 4122 format.
 
-    def _get_target_size(self):
-        """ Get this filesystem's target size. """
-        return self._target_size
+           :rtype: str
 
-    target_size = property(_get_target_size, _set_target_size,
-                           doc="Target size for this filesystem")
-
-    def _get_size(self):
-        """ Get this filesystem's size. """
-        return self.target_size if self.resizable else self._size
-
-    size = property(_get_size, doc="This filesystem's size, accounting "
-                    "for pending changes")
+           .. note:
+                Sub-classes that require a different format of UUID has to
+                override this method!
+        """
+        return str(uuid_mod.uuid4())  # uuid4() returns a random UUID
 
     def update_size_info(self):
         """ Update this filesystem's current and minimum size (for resize). """
 
         #   This method ensures:
-        #   * If there are fsck errors, self._resizable is False.
-        #       Note that if there is no fsck program, no errors are possible.
         #   * If it is not possible to obtain the current size of the
         #       filesystem by interrogating the filesystem, self._resizable
         #       is False (and self._size is 0).
@@ -277,32 +322,26 @@ class FS(DeviceFormat):
         self._min_instance_size = Size(0)
         self._resizable = self.__class__._resizable
 
-        # We can't allow resize if the filesystem has errors.
+        # try to gather current size info
+        self._size = Size(0)
         try:
-            self.do_check()
-        except FSError:
-            self._resizable = False
-            raise
-        finally:
-            # try to gather current size info anyway
-            self._size = Size(0)
-            try:
-                if self._info.available:
-                    self._current_info = self._info.do_task()
-            except FSError as e:
-                log.info("Failed to obtain info for device %s: %s", self.device, e)
-            try:
-                self._size = self._size_info.do_task()
-                self._min_instance_size = self._size
-            except (FSError, NotImplementedError) as e:
-                log.warning("Failed to obtain current size for device %s: %s", self.device, e)
+            if self._info.available:
+                self._current_info = self._info.do_task()
+        except FSError as e:
+            log.info("Failed to obtain info for device %s: %s", self.device, e)
+        try:
+            self._size = self._size_info.do_task()
+        except (FSError, NotImplementedError) as e:
+            log.warning("Failed to obtain current size for device %s: %s", self.device, e)
+        else:
+            self._min_instance_size = self._size
 
-            # We absolutely need a current size to enable resize. To shrink the
-            # filesystem we need a real minimum size provided by the resize
-            # tool. Failing that, we can default to the current size,
-            # effectively disabling shrink.
-            if self._size == Size(0):
-                self._resizable = False
+        # We absolutely need a current size to enable resize. To shrink the
+        # filesystem we need a real minimum size provided by the resize
+        # tool. Failing that, we can default to the current size,
+        # effectively disabling shrink.
+        if self._size == Size(0):
+            self._resizable = False
 
         try:
             result = self._minsize.do_task()
@@ -314,16 +353,6 @@ class FS(DeviceFormat):
             self._min_instance_size = size
         except (FSError, NotImplementedError) as e:
             log.warning("Failed to obtain minimum size for device %s: %s", self.device, e)
-
-    @property
-    def min_size(self):
-        # If self._min_instance_size is not 0, then it should be no less than
-        # self._min_size, by definition, and since a non-zero value indicates
-        # that it was obtained, it is the preferred value.
-        # If self._min_instance_size is less than self._min_size,
-        # but not 0, then there must be some mistake, so better to use
-        # self._min_size.
-        return max(self._min_instance_size, self._min_size)
 
     def _pad_size(self, size):
         """ Return a size padded according to some inflating rules.
@@ -344,11 +373,6 @@ class FS(DeviceFormat):
         padded = min(padded.round_to_nearest(self._resize.unit, rounding=ROUND_UP), self.current_size)
 
         return padded
-
-    @property
-    def current_size(self):
-        """ The filesystem's current actual size. """
-        return self._size if self.exists else Size(0)
 
     @property
     def free(self):
@@ -376,9 +400,16 @@ class FS(DeviceFormat):
 
         super(FS, self)._create()
         try:
-            self._mkfs.do_task(options=kwargs.get("options"), label=not self.relabels())
+            self._mkfs.do_task(options=kwargs.get("options"),
+                               label=not self.relabels(),
+                               set_uuid=self.can_set_uuid())
         except FSWriteLabelError as e:
             log.warning("Choosing not to apply label (%s) during creation of filesystem %s. Label format is unacceptable for this filesystem.", self.label, self.type)
+        except FSWriteUUIDError as e:
+            log.warning("Choosing not to apply UUID (%s) during"
+                        " creation of filesystem %s. UUID format"
+                        " is unacceptable for this filesystem.",
+                        self.uuid, self.type)
         except FSError as e:
             raise FormatCreateError(e, self.device)
 
@@ -389,83 +420,18 @@ class FS(DeviceFormat):
                 self.write_label()
             except FSError as e:
                 log.warning("Failed to write label (%s) for filesystem %s: %s", self.label, self.type, e)
+        if self.uuid is not None and not self.can_set_uuid() and \
+           self.can_modify_uuid():
+            self.write_uuid()
 
-    def do_resize(self):
-        """ Resize this filesystem based on this instance's target_size attr.
-
-            :raises: FSResizeError, FSError
-        """
-        if not self.exists:
-            raise FSResizeError("filesystem does not exist", self.device)
-
-        if not self.resizable:
-            raise FSResizeError("filesystem not resizable", self.device)
-
-        if self.target_size == self.current_size:
-            return
-
-        if not self._resize.available:
-            return
-
-        # tmpfs mounts don't need an existing device node
-        if not self.device == "tmpfs" and not os.path.exists(self.device):
-            raise FSResizeError("device does not exist", self.device)
-
-        # The first minimum size can be incorrect if the fs was not
-        # properly unmounted. After do_check the minimum size will be correct
-        # so run the check one last time and bump up the size if it was too
-        # small.
-        self.update_size_info()
-
-        # Check again if resizable is True, as update_size_info() can change that
-        if not self.resizable:
-            raise FSResizeError("filesystem not resizable", self.device)
-
-        if self.target_size < self.min_size:
-            self.target_size = self.min_size
-            log.info("Minimum size changed, setting target_size on %s to %s",
-                     self.device, self.target_size)
-
-        # Bump target size to nearest whole number of the resize tool's units.
-        # We always round down because the fs has to fit on whatever device
-        # contains it. To round up would risk quietly setting a target size too
-        # large for the device to hold.
-        rounded = self.target_size.round_to_nearest(self._resize.unit,
-                                                    rounding=ROUND_DOWN)
-
-        # 1. target size was between the min size and max size values prior to
-        #    rounding (see _set_target_size)
-        # 2. we've just rounded the target size down (or not at all)
-        # 3. the minimum size is already either rounded (see _get_min_size) or is
-        #    equal to the current size (see update_size_info)
-        # 5. the minimum size is less than or equal to the current size (see
-        #    _get_min_size)
-        #
-        # This, I think, is sufficient to guarantee that the rounded target size
-        # is greater than or equal to the minimum size.
-
-        # It is possible that rounding down a target size greater than the
-        # current size would move it below the current size, thus changing the
-        # direction of the resize. That means the target size was less than one
-        # unit larger than the current size, and we should do nothing and return
-        # early.
-        if self.target_size > self.current_size and rounded < self.current_size:
-            log.info("rounding target size down to next %s obviated resize of "
-                     "filesystem on %s", unit_str(self._resize.unit), self.device)
-            return
-        else:
-            self.target_size = rounded
-
-        try:
-            self._resize.do_task()
-        except FSError as e:
-            raise FSResizeError(e, self.device)
-
+    def _pre_resize(self):
+        # file systems need a check before being resized
         self.do_check()
+        super(FS, self)._pre_resize()
 
-        # XXX must be a smarter way to do this
-        self._size = self.target_size
-        self.notify_kernel()
+    def _post_resize(self):
+        self.do_check()
+        super(FS, self)._post_resize()
 
     def do_check(self):
         """ Run a filesystem check.
@@ -483,27 +449,27 @@ class FS(DeviceFormat):
 
         self._fsck.do_task()
 
-    def load_module(self):
-        """Load whatever kernel module is required to support this filesystem."""
-        if not self._modules or self.mount_type in kernel_filesystems:
+    def check_module(self):
+        """Check if kernel module required to support this filesystem is available."""
+        if not self._modules or self.mount_type in AVAILABLE_FILESYSTEMS:
             return
 
         for module in self._modules:
             try:
-                rc = util.run_program(["modprobe", module])
+                rc = util.run_program(["modprobe", "--dry-run", module])
             except OSError as e:
-                log.error("Could not load kernel module %s: %s", module, e)
+                log.error("Could not check kernel module availability %s: %s", module, e)
                 self._supported = False
                 return
 
             if rc:
-                log.error("Could not load kernel module %s", module)
+                log.debug("Kernel module %s not available", module)
                 self._supported = False
                 return
 
-        # If we successfully loaded a kernel module for this filesystem, we
-        # also need to update the list of supported filesystems.
-        update_kernel_filesystems()
+        # If we successfully tried to load a kernel module for this filesystem, we
+        # also need to update the list of supported filesystems to avoid unnecessary check.
+        AVAILABLE_FILESYSTEMS.extend(self._modules)
 
     @property
     def system_mountpoint(self):
@@ -605,15 +571,10 @@ class FS(DeviceFormat):
         chroot = kwargs.get("chroot", "/")
         mountpoint = kwargs.get("mountpoint") or self.mountpoint
 
-        if flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.installer_mode:
+        if self._selinux_supported and flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
             ret = util.reset_file_context(mountpoint, chroot)
             if not ret:
                 log.warning("Failed to reset SElinux context for newly mounted filesystem root directory to default.")
-            lost_and_found_context = util.match_path_context("/lost+found")
-            lost_and_found_path = os.path.join(mountpoint, "lost+found")
-            ret = util.set_file_context(lost_and_found_path, lost_and_found_context, chroot)
-            if not ret:
-                log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
 
     def _pre_teardown(self, **kwargs):
         if not super(FS, self)._pre_teardown(**kwargs):
@@ -671,7 +632,7 @@ class FS(DeviceFormat):
             raise FSReadLabelError("can not read label for filesystem %s" % self.type)
         return self._readlabel.do_task()
 
-    def write_label(self):
+    def write_label(self, dry_run=False):
         """ Create a label for this filesystem.
 
             :raises: FSError
@@ -681,23 +642,70 @@ class FS(DeviceFormat):
 
             Raises a FSError if the label can not be set.
         """
-        if self.label is None:
-            raise FSError("makes no sense to write a label when accepting default label")
-
-        if not self.exists:
-            raise FSError("filesystem has not been created")
 
         if not self._writelabel.available:
             raise FSError("no application to set label for filesystem %s" % self.type)
 
-        if not self.label_format_ok(self.label):
-            raise FSError("bad label format for labelling application %s" % self._writelabel)
+        if not dry_run:
+            if not self.exists:
+                raise FSError("filesystem has not been created")
+
+            if not os.path.exists(self.device):
+                raise FSError("device does not exist")
+
+            if self.label is None:
+                raise FSError("makes no sense to write a label when accepting default label")
+
+            if not self.label_format_ok(self.label):
+                raise FSError("bad label format for labelling application %s" % self._writelabel)
+
+            self._writelabel.do_task()
+
+    def write_uuid(self):
+        """Set an UUID for this filesystem.
+
+           :raises: FSError
+
+           Raises an FSError if the UUID can not be set.
+        """
+        err = None
+
+        if self.uuid is None:
+            err = "makes no sense to write an UUID when not requested"
+
+        if not self.exists:
+            err = "filesystem has not been created"
+
+        if not self._writeuuid.available:
+            err = "no application to set UUID for filesystem %s" % self.type
+
+        if not self.uuid_format_ok(self.uuid):
+            err = "bad UUID format for application %s" % self._writeuuid
 
         if not os.path.exists(self.device):
-            raise FSError("device does not exist")
+            err = "device does not exist"
 
-        self._writelabel.do_task()
-        self.notify_kernel()
+        if err is not None:
+            raise FSError(err)
+
+        self._writeuuid.do_task()
+
+    def reset_uuid(self):
+        """Generate a new UUID for the file system and set/write it."""
+
+        orig_uuid = self.uuid
+        self.uuid = self.generate_new_uuid()
+
+        if self.status:
+            # XXX: does any FS support this?
+            raise FSError("Cannot reset UUID on a mounted file system")
+
+        try:
+            self.write_uuid()
+        except Exception:  # pylint: disable=broad-except
+            # something went wrong, restore the original UUID
+            self.uuid = orig_uuid
+            raise
 
     @property
     def utils_available(self):
@@ -750,6 +758,7 @@ class FS(DeviceFormat):
             :raises: FSError
 
         .. note::
+
             When mounted multiple times the unmount method needs to be called with
             a specific mountpoint to unmount, otherwise it will try to unmount the most
             recent one listed by the system.
@@ -811,6 +820,7 @@ class Ext2FS(FS):
     _type = "ext2"
     _modules = ["ext2"]
     _labelfs = fslabeling.Ext2FSLabeling()
+    _uuidfs = fsuuid.Ext2FSUUID()
     _packages = ["e2fsprogs"]
     _formattable = True
     _supported = True
@@ -827,8 +837,24 @@ class Ext2FS(FS):
     _resize_class = fsresize.Ext2FSResize
     _size_info_class = fssize.Ext2FSSize
     _writelabel_class = fswritelabel.Ext2FSWriteLabel
+    _writeuuid_class = fswriteuuid.Ext2FSWriteUUID
     parted_system = fileSystemType["ext2"]
-    _MetadataSizeFactor = 0.93  # ext2 metadata may take 7% of space
+    _metadata_size_factor = 0.93  # ext2 metadata may take 7% of space
+
+    def _post_setup(self, **kwargs):
+        super(Ext2FS, self)._post_setup(**kwargs)
+
+        options = kwargs.get("options", "")
+        chroot = kwargs.get("chroot", "/")
+        mountpoint = kwargs.get("mountpoint") or self.mountpoint
+
+        if flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
+            lost_and_found_context = util.match_path_context("/lost+found")
+            lost_and_found_path = os.path.join(mountpoint, "lost+found")
+            ret = util.set_file_context(lost_and_found_path, lost_and_found_context, chroot)
+            if not ret:
+                log.warning("Failed to set SELinux context for newly mounted filesystem lost+found directory at %s to %s", lost_and_found_path, lost_and_found_context)
+
 
 register_device_format(Ext2FS)
 
@@ -846,7 +872,8 @@ class Ext3FS(Ext2FS):
     # with regard to this maximum filesystem size, but if they're doing such
     # things they should know the implications of their chosen block size.
     _max_size = Size("16 TiB")
-    _MetadataSizeFactor = 0.90  # ext3 metadata may take 10% of space
+    _metadata_size_factor = 0.90  # ext3 metadata may take 10% of space
+
 
 register_device_format(Ext3FS)
 
@@ -859,7 +886,8 @@ class Ext4FS(Ext3FS):
     _mkfs_class = fsmkfs.Ext4FSMkfs
     parted_system = fileSystemType["ext4"]
     _max_size = Size("1 EiB")
-    _MetadataSizeFactor = 0.85  # ext4 metadata may take 15% of space
+    _metadata_size_factor = 0.85  # ext4 metadata may take 15% of space
+
 
 register_device_format(Ext4FS)
 
@@ -870,6 +898,7 @@ class FATFS(FS):
     _type = "vfat"
     _modules = ["vfat"]
     _labelfs = fslabeling.FATFSLabeling()
+    _uuidfs = fsuuid.FATFSUUID()
     _supported = True
     _formattable = True
     _max_size = Size("1 TiB")
@@ -879,9 +908,17 @@ class FATFS(FS):
     _mount_class = fsmount.FATFSMount
     _readlabel_class = fsreadlabel.DosFSReadLabel
     _writelabel_class = fswritelabel.DosFSWriteLabel
-    _MetadataSizeFactor = 0.99  # fat metadata may take 1% of space
+    _metadata_size_factor = 0.99  # fat metadata may take 1% of space
     # FIXME this should be fat32 in some cases
     parted_system = fileSystemType["fat16"]
+    _selinux_supported = False
+
+    def generate_new_uuid(self):
+        ret = ""
+        for _i in range(8):
+            ret += random.choice("0123456789ABCDEF")
+        return ret[:4] + "-" + ret[4:]
+
 
 register_device_format(FATFS)
 
@@ -892,10 +929,12 @@ class EFIFS(FATFS):
     _min_size = Size("50 MiB")
     _check = True
     _mount_class = fsmount.EFIFSMount
+    parted_flag = PARTITION_BOOT
 
     @property
     def supported(self):
-        return super(EFIFS, self).supported and isinstance(platform.platform, platform.EFI)
+        return super(EFIFS, self).supported and arch.is_efi()
+
 
 register_device_format(EFIFS)
 
@@ -912,7 +951,7 @@ class BTRFS(FS):
     _min_size = Size("256 MiB")
     _max_size = Size("16 EiB")
     _mkfs_class = fsmkfs.BTRFSMkfs
-    _MetadataSizeFactor = 0.80  # btrfs metadata may take 20% of space
+    _metadata_size_factor = 0.80  # btrfs metadata may take 20% of space
     # FIXME parted needs to be taught about btrfs so that we can set the
     # partition table type correctly for btrfs partitions
     # parted_system = fileSystemType["btrfs"]
@@ -937,6 +976,15 @@ class BTRFS(FS):
         # Don't try to mount it if there's no mountpoint.
         return bool(self.mountpoint or kwargs.get("mountpoint"))
 
+    @property
+    def container_uuid(self):
+        return self.vol_uuid
+
+    @container_uuid.setter
+    def container_uuid(self, uuid):
+        self.vol_uuid = uuid
+
+
 register_device_format(BTRFS)
 
 
@@ -960,6 +1008,7 @@ class GFS2(FS):
         """ Is this filesystem a supported type? """
         return self.utils_available if flags.gfs2 else self._supported
 
+
 register_device_format(GFS2)
 
 
@@ -969,6 +1018,7 @@ class JFS(FS):
     _type = "jfs"
     _modules = ["jfs"]
     _labelfs = fslabeling.JFSLabeling()
+    _uuidfs = fsuuid.JFSUUID()
     _max_size = Size("8 TiB")
     _formattable = True
     _linux_native = True
@@ -978,13 +1028,15 @@ class JFS(FS):
     _mkfs_class = fsmkfs.JFSMkfs
     _size_info_class = fssize.JFSSize
     _writelabel_class = fswritelabel.JFSWriteLabel
-    _MetadataSizeFactor = 0.99  # jfs metadata may take 1% of space
+    _writeuuid_class = fswriteuuid.JFSWriteUUID
+    _metadata_size_factor = 0.99  # jfs metadata may take 1% of space
     parted_system = fileSystemType["jfs"]
 
     @property
     def supported(self):
         """ Is this filesystem a supported type? """
         return self.utils_available if flags.jfs else self._supported
+
 
 register_device_format(JFS)
 
@@ -994,6 +1046,7 @@ class ReiserFS(FS):
     """ reiserfs filesystem """
     _type = "reiserfs"
     _labelfs = fslabeling.ReiserFSLabeling()
+    _uuidfs = fsuuid.ReiserFSUUID()
     _modules = ["reiserfs"]
     _max_size = Size("16 TiB")
     _formattable = True
@@ -1005,13 +1058,15 @@ class ReiserFS(FS):
     _mkfs_class = fsmkfs.ReiserFSMkfs
     _size_info_class = fssize.ReiserFSSize
     _writelabel_class = fswritelabel.ReiserFSWriteLabel
-    _MetadataSizeFactor = 0.98  # reiserfs metadata may take 2% of space
+    _writeuuid_class = fswriteuuid.ReiserFSWriteUUID
+    _metadata_size_factor = 0.98  # reiserfs metadata may take 2% of space
     parted_system = fileSystemType["reiserfs"]
 
     @property
     def supported(self):
         """ Is this filesystem a supported type? """
         return self.utils_available if flags.reiserfs else self._supported
+
 
 register_device_format(ReiserFS)
 
@@ -1022,19 +1077,43 @@ class XFS(FS):
     _type = "xfs"
     _modules = ["xfs"]
     _labelfs = fslabeling.XFSLabeling()
+    _uuidfs = fsuuid.XFSUUID()
+    _min_size = Size("16 MiB")
     _max_size = Size("16 EiB")
     _formattable = True
     _linux_native = True
     _supported = True
+    _resizable = True
     _packages = ["xfsprogs"]
+    _fsck_class = fsck.XFSCK
     _info_class = fsinfo.XFSInfo
     _mkfs_class = fsmkfs.XFSMkfs
     _readlabel_class = fsreadlabel.XFSReadLabel
     _size_info_class = fssize.XFSSize
+    _resize_class = fsresize.XFSResize
     _sync_class = fssync.XFSSync
     _writelabel_class = fswritelabel.XFSWriteLabel
-    _MetadataSizeFactor = 0.97  # xfs metadata may take 3% of space
+    _writeuuid_class = fswriteuuid.XFSWriteUUID
+    _metadata_size_factor = 0.97  # xfs metadata may take 3% of space
     parted_system = fileSystemType["xfs"]
+
+    def write_uuid(self):
+        """Set an UUID for this filesystem.
+
+           :raises: FSError
+
+           Raises an FSError if the UUID can not be set.
+        """
+
+        # try to mount and umount the FS first to make sure it is clean
+        tmpdir = tempfile.mkdtemp(prefix="fs-tmp-mnt")
+        try:
+            self.mount(mountpoint=tmpdir, options="nouuid")
+            self.unmount()
+        finally:
+            os.rmdir(tmpdir)
+
+        super(XFS, self).write_uuid()
 
 
 register_device_format(XFS)
@@ -1047,6 +1126,7 @@ class HFS(FS):
     _formattable = True
     _mkfs_class = fsmkfs.HFSMkfs
     parted_system = fileSystemType["hfs"]
+
 
 register_device_format(HFS)
 
@@ -1061,7 +1141,8 @@ class AppleBootstrapFS(HFS):
 
     @property
     def supported(self):
-        return super(AppleBootstrapFS, self).supported and isinstance(platform.platform, platform.NewWorldPPC)
+        return super(AppleBootstrapFS, self).supported and arch.is_pmac()
+
 
 register_device_format(AppleBootstrapFS)
 
@@ -1072,6 +1153,7 @@ class HFSPlus(FS):
     _udev_types = ["hfsplus"]
     _packages = ["hfsplus-tools"]
     _labelfs = fslabeling.HFSPlusLabeling()
+    _uuidfs = fsuuid.HFSPlusUUID()
     _formattable = True
     _min_size = Size("1 MiB")
     _max_size = Size("2 TiB")
@@ -1080,6 +1162,7 @@ class HFSPlus(FS):
     _fsck_class = fsck.HFSPlusFSCK
     _mkfs_class = fsmkfs.HFSPlusMkfs
     _mount_class = fsmount.HFSPlusMount
+
 
 register_device_format(HFSPlus)
 
@@ -1093,12 +1176,13 @@ class MacEFIFS(HFSPlus):
 
     @property
     def supported(self):
-        return super(MacEFIFS, self).supported and isinstance(platform.platform, platform.MacEFI)
+        return super(MacEFIFS, self).supported and arch.is_efi() and arch.is_mactel()
 
     def __init__(self, **kwargs):
         if "label" not in kwargs:
             kwargs["label"] = self._name
         super(MacEFIFS, self).__init__(**kwargs)
+
 
 register_device_format(MacEFIFS)
 
@@ -1108,7 +1192,9 @@ class NTFS(FS):
     """ ntfs filesystem. """
     _type = "ntfs"
     _labelfs = fslabeling.NTFSLabeling()
+    _uuidfs = fsuuid.NTFSUUID()
     _resizable = True
+    _formattable = True
     _min_size = Size("1 MiB")
     _max_size = Size("16 TiB")
     _packages = ["ntfsprogs"]
@@ -1121,9 +1207,42 @@ class NTFS(FS):
     _resize_class = fsresize.NTFSResize
     _size_info_class = fssize.NTFSSize
     _writelabel_class = fswritelabel.NTFSWriteLabel
+    _writeuuid_class = fswriteuuid.NTFSWriteUUID
     parted_system = fileSystemType["ntfs"]
 
+    def generate_new_uuid(self):
+        ret = ""
+        for _i in range(16):
+            ret += random.choice("0123456789ABCDEF")
+        return ret
+
+
 register_device_format(NTFS)
+
+
+class ExFATFS(FS):
+    _type = "exfat"
+
+
+register_device_format(ExFATFS)
+
+
+class F2FS(FS):
+
+    """ f2fs filesystem. """
+    _type = "f2fs"
+    _labelfs = fslabeling.F2FSLabeling()
+    _formattable = True
+    _linux_native = True
+    _supported = True
+    _min_size = Size("1 MiB")
+    _max_size = Size("16 TiB")
+    _packages = ["f2fs-tools"]
+    _fsck_class = fsck.F2FSFSCK
+    _mkfs_class = fsmkfs.F2FSMkfs
+
+
+register_device_format(F2FS)
 
 
 # if this isn't going to be mountable it might as well not be here
@@ -1139,6 +1258,7 @@ class NFS(FS):
             return "device must be of the form <host>:<path>"
         return None
 
+
 register_device_format(NFS)
 
 
@@ -1148,6 +1268,7 @@ class NFSv4(NFS):
     _type = "nfs4"
     _modules = ["nfs4"]
 
+
 register_device_format(NFSv4)
 
 
@@ -1155,8 +1276,10 @@ class Iso9660FS(FS):
 
     """ ISO9660 filesystem. """
     _type = "iso9660"
+    _modules = ["iso9660"]
     _supported = True
     _mount_class = fsmount.Iso9660FSMount
+
 
 register_device_format(Iso9660FS)
 
@@ -1166,6 +1289,8 @@ class NoDevFS(FS):
     """ nodev filesystem base class """
     _type = "nodev"
     _mount_class = fsmount.NoDevFSMount
+    _selinux_supported = False
+    _min_size = Size(0)
 
     def __init__(self, **kwargs):
         FS.__init__(self, **kwargs)
@@ -1179,9 +1304,6 @@ class NoDevFS(FS):
     def type(self):
         return self.device
 
-    def notify_kernel(self):
-        # NoDevFS should not need to tell the kernel anything.
-        pass
 
 register_device_format(NoDevFS)
 
@@ -1192,6 +1314,7 @@ class DevPtsFS(NoDevFS):
     _type = "devpts"
     _mount_class = fsmount.DevPtsFSMount
 
+
 register_device_format(DevPtsFS)
 
 
@@ -1199,11 +1322,13 @@ register_device_format(DevPtsFS)
 class ProcFS(NoDevFS):
     _type = "proc"
 
+
 register_device_format(ProcFS)
 
 
 class SysFS(NoDevFS):
     _type = "sysfs"
+
 
 register_device_format(SysFS)
 
@@ -1247,13 +1372,11 @@ class TmpFS(NoDevFS):
 
     def create(self, **kwargs):
         """ A filesystem is created automatically once tmpfs is mounted. """
-        pass
 
-    def destroy(self, *args, **kwargs):
+    def destroy(self, **kwargs):
         """ The device and its filesystem are automatically destroyed once the
         mountpoint is unmounted.
         """
-        pass
 
     def _size_option(self, size):
         """ Returns a size option string appropriate for mounting tmpfs.
@@ -1291,7 +1414,7 @@ class TmpFS(NoDevFS):
             # When running with changeroot, such as during installation,
             # self.system_mountpoint is set to the full changeroot path once
             # mounted so even with changeroot, statvfs should still work fine.
-            st = util.eintr_retry_call(os.statvfs, self.system_mountpoint)
+            st = os.statvfs(self.system_mountpoint)
             free_space = Size(st.f_bavail * st.f_frsize)
         else:
             # Free might be called even if the tmpfs mount has not been
@@ -1305,7 +1428,7 @@ class TmpFS(NoDevFS):
         """ All the tmpfs mounts use the same "tmpfs" device. """
         return self._type
 
-    def _set_device(self, value):
+    def _set_device(self, devspec):
         # the DeviceFormat parent class does a
         # self.device = kwargs["device"]
         # assignment, so we need a setter for the
@@ -1320,12 +1443,14 @@ class TmpFS(NoDevFS):
         FS.do_resize(self)
         self._accept_default_size = self._accept_default_size and original_size == self._size
 
+
 register_device_format(TmpFS)
 
 
 class BindFS(FS):
     _type = "bind"
     _mount_class = fsmount.BindFSMount
+
 
 register_device_format(BindFS)
 
@@ -1334,16 +1459,19 @@ class SELinuxFS(NoDevFS):
     _type = "selinuxfs"
     _mount_class = fsmount.SELinuxFSMount
 
+
 register_device_format(SELinuxFS)
 
 
 class USBFS(NoDevFS):
     _type = "usbfs"
 
+
 register_device_format(USBFS)
 
 
 class EFIVarFS(NoDevFS):
     _type = "efivarfs"
+
 
 register_device_format(EFIVarFS)

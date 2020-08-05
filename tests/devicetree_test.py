@@ -1,16 +1,24 @@
+import test_compat  # pylint: disable=unused-import
+
+from six.moves.mock import Mock, patch, PropertyMock, sentinel  # pylint: disable=no-name-in-module,import-error
+import os
+import six
 import unittest
 
-from tests.imagebackedtestcase import ImageBackedTestCase
-
-from blivet.size import Size
-from blivet import devicelibs
-from blivet import devicefactory
-from blivet import util
-from blivet.udev import trigger
-from blivet.devices import LVMSnapShotDevice, LVMThinSnapShotDevice
+from blivet.actionlist import ActionList
+from blivet.errors import DeviceTreeError, DuplicateUUIDError
+from blivet.deviceaction import ACTION_TYPE_DESTROY, ACTION_OBJECT_DEVICE
+from blivet.devicelibs import lvm
+from blivet.devices import DiskDevice
+from blivet.devices import LVMVolumeGroupDevice
+from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import StorageDevice
+from blivet.devices import MultipathDevice
+from blivet.devices.lib import Tags
 from blivet.devicetree import DeviceTree
 from blivet.formats import get_format
+from blivet.size import Size
+from blivet.static_data.lvm_info import lvs_info, LVsInfo
 
 """
     TODO:
@@ -30,7 +38,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         dev1_label = "dev1_label"
         dev1_uuid = "1234-56-7890"
         fmt1 = get_format("ext4", label=dev1_label, uuid=dev1_uuid)
-        dev1 = StorageDevice("dev1", exists=True, fmt=fmt1)
+        dev1 = StorageDevice("dev1", exists=True, fmt=fmt1, size=fmt1.min_size)
         dt._add_device(dev1)
 
         dev2_label = "dev2_label"
@@ -55,279 +63,416 @@ class DeviceTreeTestCase(unittest.TestCase):
 
         self.assertEqual(dt.resolve_device(dev3.name), dev3)
 
+    def test_device_name(self):
+        # check that devicetree.names property contains all device's names
 
-def recursive_getattr(x, attr, default=None):
-    """ Resolve a possibly-dot-containing attribute name. """
-    val = x
-    for sub_attr in attr.split("."):
-        try:
-            val = getattr(val, sub_attr)
-        except AttributeError:
-            return default
+        # mock lvs_info to avoid blockdev call allowing run as non-root
+        with patch.object(LVsInfo, 'cache', new_callable=PropertyMock) as mock_lvs_cache:
+            mock_lvs_cache.return_value = {"sdmock": "dummy", "testvg-testlv": "dummy"}
 
-    return val
+            tree = DeviceTree()
+            dev_names = ["sda", "sdb", "sdc"]
 
+            for dev_name in dev_names:
+                dev = DiskDevice(dev_name, size=Size("1 GiB"))
+                tree._add_device(dev)
+                self.assertTrue(dev in tree.devices)
+                self.assertTrue(dev.name in tree.names)
 
-class BlivetResetTestCase(ImageBackedTestCase):
+            dev.format = get_format("lvmpv", device=dev.path)
+            vg = LVMVolumeGroupDevice("testvg", parents=[dev])
+            tree._add_device(vg)
+            dev_names.append(vg.name)
 
-    """ A class to test the results of Blivet.reset (and DeviceTree.populate).
+            lv = LVMLogicalVolumeDevice("testlv", parents=[vg])
+            tree._add_device(lv)
+            dev_names.append(lv.name)
 
-        Create a device stack on disk images, catalog a set of attributes of
-        every device we created, reset the Blivet instance, and then verify
-        that the devices are all discovered and have attributes matching those
-        we cataloged previously.
-    """
-    _validate_attrs = ["name", "type", "size",
-                       "format.type", "format.mountpoint", "format.label"]
-    """ List of StorageDevice attributes to verify match across the reset. """
+            # frobnicate a bit with the hidden status of the devices:
+            # * hide sda
+            # * hide and unhide again sdb
+            # * leave sdc unchanged
+            tree.hide(tree.get_device_by_name("sda"))
+            tree.hide(tree.get_device_by_name("sdb"))
+            tree.unhide(tree.get_device_by_name("sdb", hidden=True))
 
-    _identifying_attrs = ["name", "type"]
-    """ List of attributes that must match to identify a device. """
+            # some lvs names may be already present in the system (mocked)
+            lv_info = list(lvs_info.cache.keys())
 
-    def collect_expected_data(self):
-        """ Collect the attribute data we plan to validate later. """
-        # only look at devices on the disk images -- no loops, &c
-        for device in (d for d in self.blivet.devices
-                       if d.disks and
-                       set(d.disks).issubset(set(self.blivet.disks))):
-            attr_dict = {}
-            device._parted_device = None  # force update from disk for size, &c
-            for attr in self._validate_attrs:
-                attr_dict[attr] = recursive_getattr(device, attr)
+            # all devices should still be present in the tree.names
+            self.assertEqual(set(tree.names), set(lv_info + dev_names))
 
-            self.device_attr_dicts.append(attr_dict)
+            # "remove" the LV, it should no longer be in the list
+            tree.actions._actions.append(Mock(device=lv, type=ACTION_TYPE_DESTROY,
+                                              obj=ACTION_OBJECT_DEVICE))
+            tree._remove_device(lv)
+            self.assertFalse(lv.name in tree.names)
 
-    def setUp(self):
-        super(BlivetResetTestCase, self).setUp()
+    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+    def test_reset(self):
+        dt = DeviceTree()
+        names = ["fakedev1", "fakedev2"]
+        for name in names:
+            device = Mock(name=name, spec=StorageDevice, parents=[], exists=True)
+            dt._devices.append(device)
 
-        trigger(subsystem="block", action="change")
+        dt.actions._actions.append(Mock(name="fake action"))
 
-        self.device_attr_dicts = []
-        self.collect_expected_data()
+        lvm.lvm_cc_addFilterRejectRegexp("xxx")
+        lvm.config_args_data["filterAccepts"].append("yyy")
 
-    def tearDown(self):
-        """ Clean up after testing is complete. """
-        super(BlivetResetTestCase, self).tearDown()
+        dt.ignored_disks.append(names[0])
+        dt.exclusive_disks.append(names[1])
 
-        # XXX The only reason for this may be lvmetad
-        for disk in self.blivet.disks:
-            self.blivet.recursive_remove(disk)
+        dt._hidden.append(dt._devices.pop(1))
 
-        try:
-            self.blivet.do_it()
-        except Exception:
-            self.blivet.reset()
-            raise
+        dt.edd_dict = {"a": 22}
 
-    def skip_attr(self, device, attr):
-        """ Return True if attr should not be checked for device. """
-        # pylint: disable=unused-argument
-        return False
+        dt.reset()
 
-    def find_device(self, attr_dict):
-        devices = self.blivet.devices  # + self.blivet.devicetree._hidden
-        device = None
-        for check in devices:
-            match = all(attr_dict[attr] == recursive_getattr(check, attr)
-                        for attr in self._identifying_attrs)
-            if match:
-                device = check
-                break
+        empty_list = list()
+        self.assertEqual(dt._devices, empty_list)
 
-        return device
+        self.assertEqual(list(dt.actions), empty_list)
+        self.assertIsInstance(dt.actions, ActionList)
 
-    def run_test(self):
-        """ Verify that the devices and their attributes match across reset. """
-        #
-        # populate the devicetree
-        # XXX it would be better to test the results of a reboot
-        #
-        self.blivet.reset()
+        self.assertEqual(dt._hidden, empty_list)
 
-        for attr_dict in self.device_attr_dicts:
-            #
-            # verify we can find the device that corresponds to this attr_dict
-            #
-            device = self.find_device(attr_dict)
-            device_id = "/".join(attr_dict[attr] for attr in self._identifying_attrs)
-            self.assertIsNotNone(device, msg="failed to find %s" % device_id)
+        self.assertEqual(lvm.config_args_data["filterAccepts"], empty_list)
+        self.assertEqual(lvm.config_args_data["filterRejects"], empty_list)
 
-            #
-            # verify that all attributes match across the reset
-            #
-            for attr, expected in iter(attr_dict.items()):
-                if self.skip_attr(device, attr):
-                    continue
+        self.assertEqual(dt.exclusive_disks, empty_list)
+        self.assertEqual(dt.ignored_disks, empty_list)
 
-                actual = recursive_getattr(device, attr)
-                self.assertEqual(actual, expected,
-                                 msg=("attribute mismatch for %s: %s (%s/%s)"
-                                      % (device_id, attr, expected, actual)))
+        self.assertEqual(dt.edd_dict, dict())
 
+    @patch.object(StorageDevice, "add_hook")
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_add_device(self, *args):  # pylint: disable=unused-argument
+        dt = DeviceTree()
 
-class LVMTestCase(BlivetResetTestCase):
+        dev1 = StorageDevice("dev1", exists=False, uuid=sentinel.dev1_uuid, parents=[])
 
-    """ Test that the devicetree can populate with the product of autopart. """
+        self.assertEqual(dt.devices, list())
 
-    def _set_up_storage(self):
-        # This isn't exactly autopart, but it should be plenty close to it.
-        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   Size("500 MiB"),
-                                   disks=self.blivet.disks[:],
-                                   fstype="swap")
-        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   None,
-                                   disks=self.blivet.disks[:])
+        # things are called, updated as expected when a device is added
+        with patch("blivet.devicetree.callbacks") as callbacks:
+            dt._add_device(dev1)
+            self.assertTrue(callbacks.device_added.called)
 
+        self.assertEqual(dt.devices, [dev1])
+        self.assertTrue(dev1 in dt.devices)
+        self.assertTrue(dev1.name in dt.names)
+        self.assertTrue(dev1.add_hook.called)  # pylint: disable=no-member
 
-class LVMSnapShotTestCase(BlivetResetTestCase):
+        # adding an already-added device fails
+        six.assertRaisesRegex(self, DeviceTreeError, "Trying to add already existing device.", dt._add_device, dev1)
 
-    def _set_up_storage(self):
-        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   Size("1 GiB"),
-                                   label="ROOT",
-                                   disks=self.blivet.disks[:],
-                                   container_name="blivet_test",
-                                   container_size=devicefactory.SIZE_POLICY_MAX)
+        # adding a device with the same UUID
+        dev_clone = StorageDevice("dev_clone", exists=False, uuid=sentinel.dev1_uuid, parents=[])
+        six.assertRaisesRegex(self, DuplicateUUIDError, "Duplicate UUID.*", dt._add_device, dev_clone)
 
-    def setUp(self):
-        super(BlivetResetTestCase, self).setUp()  # pylint: disable=bad-super-call
-        root = self.blivet.lvs[0]
-        snap = LVMSnapShotDevice("rootsnap1", parents=[root.vg], origin=root,
-                                 size=Size("768MiB"))
-        self.blivet.create_device(snap)
-        self.blivet.do_it()
+        dev2 = StorageDevice("dev2", exists=False, parents=[])
+        dev3 = StorageDevice("dev3", exists=False, parents=[dev1, dev2])
 
-        self.device_attr_dicts = []
-        self.collect_expected_data()
+        # adding a device with one or more parents not already in the tree fails
+        six.assertRaisesRegex(self, DeviceTreeError, "parent.*not in tree", dt._add_device, dev3)
+        self.assertFalse(dev2 in dt.devices)
+        self.assertFalse(dev2.name in dt.names)
 
+        dt._add_device(dev2)
+        self.assertTrue(dev2 in dt.devices)
+        self.assertTrue(dev2.name in dt.names)
 
-class LVMThinpTestCase(BlivetResetTestCase):
+        dt._add_device(dev3)
+        self.assertTrue(dev3 in dt.devices)
+        self.assertTrue(dev3.name in dt.names)
 
-    def _set_up_storage(self):
-        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   Size("500 MiB"),
-                                   fstype="swap",
-                                   disks=self.blivet.disks[:])
-        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM_THINP,
-                                   None,
-                                   label="ROOT",
-                                   disks=self.blivet.disks[:])
+    @patch.object(StorageDevice, "remove_hook")
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_remove_device(self, *args):  # pylint: disable=unused-argument
+        dt = DeviceTree()
 
+        dev1 = StorageDevice("dev1", exists=False, parents=[])
 
-class LVMThinSnapShotTestCase(LVMThinpTestCase):
+        # removing a device not in the tree raises an exception
+        six.assertRaisesRegex(self, ValueError, "not in tree", dt._remove_device, dev1)
 
-    def _set_up_storage(self):
-        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM_THINP,
-                                   Size("1 GiB"),
-                                   label="ROOT",
-                                   disks=self.blivet.disks[:])
+        dt._add_device(dev1)
+        with patch("blivet.devicetree.callbacks") as callbacks:
+            dt._remove_device(dev1)
+            self.assertTrue(callbacks.device_removed.called)
 
-    def setUp(self):
-        super(BlivetResetTestCase, self).setUp()  # pylint: disable=bad-super-call
+        self.assertFalse(dev1 in dt.devices)
+        self.assertFalse(dev1.name in dt.names)
+        self.assertTrue(dev1.remove_hook.called)  # pylint: disable=no-member
 
-        root = self.blivet.thinlvs[0]
-        snap = LVMThinSnapShotDevice("rootsnap1", parents=[root.pool],
-                                     origin=root)
-        self.blivet.create_device(snap)
-        self.blivet.do_it()
+        dev2 = StorageDevice("dev2", exists=False, parents=[dev1])
+        dt._add_device(dev1)
+        dt._add_device(dev2)
+        self.assertTrue(dev2 in dt.devices)
+        self.assertTrue(dev2.name in dt.names)
 
-        self.device_attr_dicts = []
-        self.collect_expected_data()
+        # removal of a non-leaf device raises an exception
+        six.assertRaisesRegex(self, ValueError, "non-leaf device", dt._remove_device, dev1)
+        self.assertTrue(dev1 in dt.devices)
+        self.assertTrue(dev1.name in dt.names)
+        self.assertTrue(dev2 in dt.devices)
+        self.assertTrue(dev2.name in dt.names)
 
+        # forcing removal of non-leaf device does not remove the children
+        dt._remove_device(dev1, force=True)
+        self.assertFalse(dev1 in dt.devices)
+        self.assertFalse(dev1.name in dt.names)
+        self.assertTrue(dev2 in dt.devices)
+        self.assertTrue(dev2.name in dt.names)
 
-class LVMRaidTestCase(BlivetResetTestCase):
+    def test_get_device_by_name(self):
+        dt = DeviceTree()
 
-    def _set_up_storage(self):
-        # This isn't exactly autopart, but it should be plenty close to it.
-        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   Size("500 MiB"),
-                                   disks=self.blivet.disks[:],
-                                   container_size=devicefactory.SIZE_POLICY_MAX)
+        dev1 = StorageDevice("dev1", exists=False, parents=[])
+        dev2 = StorageDevice("dev2", exists=False, parents=[dev1])
+        dt._add_device(dev1)
+        dt._add_device(dev2)
 
-    def setUp(self):
-        super(BlivetResetTestCase, self).setUp()  # pylint: disable=bad-super-call
-        vg_name = self.blivet.vgs[0].name
-        util.run_program(["lvcreate", "-n", "raid", "--type", "raid1",
-                          "-L", "100%", vg_name])
-        self.device_attr_dicts = []
-        self.collect_expected_data()
+        self.assertIsNone(dt.get_device_by_name("dev3"))
+        self.assertEqual(dt.get_device_by_name("dev2"), dev2)
+        self.assertEqual(dt.get_device_by_name("dev1"), dev1)
 
+        dev2.complete = False
+        self.assertEqual(dt.get_device_by_name("dev2"), None)
+        self.assertEqual(dt.get_device_by_name("dev2", incomplete=True), dev2)
 
-@unittest.skip("temporarily disabled due to mdadm issues")
-class MDRaid0TestCase(BlivetResetTestCase):
+        dev3 = StorageDevice("dev3", exists=True, parents=[])
+        dt._add_device(dev3)
+        dt.hide(dev3)
+        self.assertIsNone(dt.get_device_by_name("dev3"))
+        self.assertEqual(dt.get_device_by_name("dev3", hidden=True), dev3)
 
-    """ Verify correct detection of MD RAID0 arrays. """
-    level = "raid0"
-    _validate_attrs = BlivetResetTestCase._validate_attrs + ["level", "spares"]
+    def test_recursive_remove(self):
+        dt = DeviceTree()
+        dev1 = StorageDevice("dev1", exists=False, parents=[])
+        dev2 = StorageDevice("dev2", exists=False, parents=[dev1])
+        dt._add_device(dev1)
+        dt._add_device(dev2)
 
-    def set_up_disks(self):
-        level = devicelibs.mdraid.raid_levels.raid_level(self.level)
-        disk_count = level.min_members
-        self.disks = dict()
-        for i in range(disk_count):
-            name = "disk%d" % (i + 1)
-            size = Size("2 GiB")
-            self.disks[name] = size
+        # normal
+        self.assertTrue(dev1 in dt.devices)
+        self.assertTrue(dev2 in dt.devices)
+        self.assertEqual(dt.actions._actions, list())
+        dt.recursive_remove(dev1)
+        self.assertFalse(dev1 in dt.devices)
+        self.assertFalse(dev2 in dt.devices)
+        self.assertNotEqual(dt.actions._actions, list())
 
-        super(MDRaid0TestCase, self).set_up_disks()
+        dt.reset()
+        dt._add_device(dev1)
+        dt._add_device(dev2, new=False)  # restore parent/child relationships
 
-    def skip_attr(self, device, attr):
-        return (attr in ["name", "path"] and
-                getattr(device, "metadata_version", "").startswith("0.9"))
+        # remove_device clears descendants and formatting but preserves the device
+        dev1.format = get_format("swap")
+        self.assertEqual(dev1.format.type, "swap")
+        self.assertEqual(dt.actions._actions, list())
+        dt.recursive_remove(dev1, remove_device=False)
+        self.assertTrue(dev1 in dt.devices)
+        self.assertFalse(dev2 in dt.devices)
+        self.assertEqual(dev1.format.type, None)
+        self.assertNotEqual(dt.actions._actions, list())
 
-    def _set_up_storage(self):
-        device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
-                                            Size("200 MiB"),
-                                            disks=self.blivet.disks[:],
-                                            raid_level=self.level,
-                                            label="v090",
-                                            name="2")
-        device.metadata_version = "0.90"
+        dt.reset()
+        dt._add_device(dev1)
+        dt._add_device(dev2, new=False)  # restore parent/child relationships
 
-        device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
-                                            Size("200 MiB"),
-                                            disks=self.blivet.disks[:],
-                                            raid_level=self.level,
-                                            label="v1",
-                                            name="one")
-        device.metadata_version = "1.0"
+        # actions=False performs the removals without scheduling actions
+        self.assertEqual(dt.actions._actions, list())
+        dt.recursive_remove(dev1, actions=False)
+        self.assertFalse(dev1 in dt.devices)
+        self.assertFalse(dev2 in dt.devices)
+        self.assertEqual(dt.actions._actions, list())
 
-        device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
-                                            Size("200 MiB"),
-                                            disks=self.blivet.disks[:],
-                                            raid_level=self.level,
-                                            label="v11",
-                                            name="oneone")
-        device.metadata_version = "1.1"
+        dt.reset()
+        dt._add_device(dev1)
+        dt._add_device(dev2, new=False)  # restore parent/child relationships
 
-        device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
-                                            Size("200 MiB"),
-                                            disks=self.blivet.disks[:],
-                                            raid_level=self.level,
-                                            label="v12",
-                                            name="onetwo")
-        device.metadata_version = "1.2"
+        # modparent only works when actions=False is passed
+        with patch.object(dt, "_remove_device") as remove_device:
+            dt.recursive_remove(dev1, actions=False)
+            remove_device.assert_called_with(dev1, modparent=True)
 
-        device = self.blivet.factory_device(devicefactory.DEVICE_TYPE_MD,
-                                            Size("200 MiB"),
-                                            disks=self.blivet.disks[:],
-                                            raid_level=self.level,
-                                            label="vdefault",
-                                            name="default")
+            dt.recursive_remove(dev1, actions=False, modparent=False)
+            remove_device.assert_called_with(dev1, modparent=False)
 
+    def test_ignored_disk_tags(self):
+        tree = DeviceTree()
 
-@unittest.skip("temporarily disabled due to mdadm issues")
-class LVMOnMDTestCase(BlivetResetTestCase):
-    # This also tests raid1 with the default metadata version.
+        fake_ssd = Mock(name="fake_ssd", spec=StorageDevice, parents=[],
+                        tags=[Tags.ssd], exists=True)
+        fake_local = Mock(name="fake_local", spec=StorageDevice, parents=[],
+                          tags=[Tags.local], exists=True)
+        tree._devices.extend([fake_ssd, fake_local])
 
-    def _set_up_storage(self):
-        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   Size("200 MiB"),
-                                   disks=self.blivet.disks[:],
-                                   container_raid_level="raid1",
-                                   fstype="swap")
-        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM,
-                                   None,
-                                   disks=self.blivet.disks[:],
-                                   container_raid_level="raid1")
+        self.assertFalse(tree._is_ignored_disk(fake_ssd))
+        self.assertFalse(tree._is_ignored_disk(fake_local))
+        tree.ignored_disks.append("@ssd")
+        self.assertTrue(tree._is_ignored_disk(fake_ssd))
+        self.assertFalse(tree._is_ignored_disk(fake_local))
+        tree.exclusive_disks.append("@local")
+        self.assertTrue(tree._is_ignored_disk(fake_ssd))
+        self.assertFalse(tree._is_ignored_disk(fake_local))
+
+    def test_expand_taglist(self):
+        tree = DeviceTree()
+
+        sda = DiskDevice("sda")
+        sdb = DiskDevice("sdb")
+        sdc = DiskDevice("sdc")
+        sdd = DiskDevice("sdd")
+
+        tree._add_device(sda)
+        tree._add_device(sdb)
+        tree._add_device(sdc)
+        tree._add_device(sdd)
+
+        sda.tags = {Tags.remote}
+        sdb.tags = {Tags.ssd}
+        sdc.tags = {Tags.local, Tags.ssd}
+        sdd.tags = set()
+
+        self.assertEqual(tree.expand_taglist(["sda", "sdb"]), {"sda", "sdb"})
+        self.assertEqual(tree.expand_taglist(["@local"]), {"sdc"})
+        self.assertEqual(tree.expand_taglist(["@ssd"]), {"sdb", "sdc"})
+        self.assertEqual(tree.expand_taglist(["@ssd", "sdd", "@local"]), {"sdb", "sdc", "sdd"})
+        with self.assertRaises(ValueError):
+            tree.expand_taglist(["sdd", "@invalid_tag"])
+
+    def test_hide_ignored_disks(self):
+        tree = DeviceTree()
+
+        sda = DiskDevice("sda")
+        sdb = DiskDevice("sdb")
+        sdc = DiskDevice("sdc")
+
+        tree._add_device(sda)
+        tree._add_device(sdb)
+        tree._add_device(sdc)
+
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+
+        # test ignored_disks
+        tree.ignored_disks = ["sdb"]
+
+        # verify hide is called as expected
+        with patch.object(tree, "hide") as hide:
+            tree._hide_ignored_disks()
+            hide.assert_called_with(sdb)
+
+        # verify that hide works as expected
+        tree._hide_ignored_disks()
+        self.assertTrue(sda in tree.devices)
+        self.assertFalse(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+
+        # unhide sdb and make sure it works
+        tree.unhide(sdb)
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+
+        # test exclusive_disks
+        tree.ignored_disks = []
+        tree.exclusive_disks = ["sdc"]
+        with patch.object(tree, "hide") as hide:
+            tree._hide_ignored_disks()
+            hide.assert_any_call(sda)
+            hide.assert_any_call(sdb)
+
+        tree._hide_ignored_disks()
+        self.assertFalse(sda in tree.devices)
+        self.assertFalse(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+
+        tree.unhide(sda)
+        tree.unhide(sdb)
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+
+        # now test exclusive_disks special cases for multipath
+        sda.format = get_format("multipath_member", exists=True)
+        sdb.format = get_format("multipath_member", exists=True)
+        sdc.format = get_format("multipath_member", exists=True)
+        mpatha = MultipathDevice("mpatha", parents=[sda, sdb, sdc])
+        tree._add_device(mpatha)
+
+        tree.ignored_disks = []
+        tree.exclusive_disks = ["mpatha"]
+
+        with patch.object(tree, "hide") as hide:
+            tree._hide_ignored_disks()
+            self.assertFalse(hide.called)
+
+        tree._hide_ignored_disks()
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+        self.assertTrue(mpatha in tree.devices)
+
+        # all members in exclusive_disks implies the mpath in exclusive_disks
+        tree.exclusive_disks = ["sda", "sdb", "sdc"]
+        with patch.object(tree, "hide") as hide:
+            tree._hide_ignored_disks()
+            self.assertFalse(hide.called)
+
+        tree._hide_ignored_disks()
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+        self.assertTrue(mpatha in tree.devices)
+
+        tree.exclusive_disks = ["sda", "sdb"]
+        with patch.object(tree, "hide") as hide:
+            tree._hide_ignored_disks()
+            hide.assert_any_call(mpatha)
+            hide.assert_any_call(sdc)
+
+        # verify that hide works as expected
+        tree._hide_ignored_disks()
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertFalse(sdc in tree.devices)
+        self.assertFalse(mpatha in tree.devices)
+
+    def test_get_related_disks(self):
+        tree = DeviceTree()
+
+        sda = DiskDevice("sda", size=Size('300g'))
+        sdb = DiskDevice("sdb", size=Size('300g'))
+        sdc = DiskDevice("sdc", size=Size('300G'))
+
+        tree._add_device(sda)
+        tree._add_device(sdb)
+        tree._add_device(sdc)
+
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+
+        sda.format = get_format("lvmpv", device=sda.path)
+        sdb.format = get_format("lvmpv", device=sdb.path)
+        vg = LVMVolumeGroupDevice("relvg", parents=[sda, sdb])
+        tree._add_device(vg)
+
+        self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sdc), set())
+        tree.hide(sda)
+        self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
+        tree.hide(sdb)
+        self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
+        tree.unhide(sda)
+        self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))

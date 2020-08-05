@@ -114,7 +114,21 @@ class Ext2FSCK(FSCK):
                     128: "Shared library error."}
 
     ext = availability.E2FSCK_APP
-    options = ["-f", "-p", "-C", "0"]
+    # "Force checking even if the file system seems clean." (we might get false results otherwise)
+    # + "Automatically repair ("preen") the file system."
+    options = ["-f", "-p"]
+
+    def _error_message(self, rc):
+        msgs = (self._fsck_errors[c] for c in self._fsck_errors.keys() if rc & c)
+        return "\n".join(msgs) or None
+
+
+class XFSCK(FSCK):
+    _fsck_errors = {1: "Runtime error encountered during repair operation.",
+                    2: "XFS repair was unable to proceed due to a dirty log."}
+
+    ext = availability.XFSREPAIR_APP
+    options = []
 
     def _error_message(self, rc):
         msgs = (self._fsck_errors[c] for c in self._fsck_errors.keys() if rc & c)
@@ -141,6 +155,14 @@ class HFSPlusFSCK(FSCK):
 class NTFSFSCK(FSCK):
     ext = availability.NTFSRESIZE_APP
     options = ["-c"]
+
+    def _error_message(self, rc):
+        return _UNKNOWN_RC_MSG % (rc,) if rc != 0 else None
+
+
+class F2FSFSCK(FSCK):
+    ext = availability.FSCK_F2FS_APP
+    options = ["-a"]
 
     def _error_message(self, rc):
         return _UNKNOWN_RC_MSG % (rc,) if rc != 0 else None

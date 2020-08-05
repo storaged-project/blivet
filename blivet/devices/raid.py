@@ -25,11 +25,12 @@ from six import add_metaclass
 
 from .. import errors
 from ..i18n import _, P_
+from ..threads import SynchronizedABCMeta
 
 from .storage import StorageDevice
 
 
-@add_metaclass(abc.ABCMeta)
+@add_metaclass(SynchronizedABCMeta)
 class RaidDevice(StorageDevice):
 
     """ Metaclass for devices that support RAID in some form. """

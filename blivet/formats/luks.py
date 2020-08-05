@@ -21,7 +21,7 @@
 #
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -33,10 +33,22 @@ from ..devicelibs import crypto
 from . import DeviceFormat, register_device_format
 from ..flags import flags
 from ..i18n import _, N_
-from ..tasks import availability
+from ..tasks import availability, lukstasks
+from ..size import Size, KiB
+from ..static_data import luks_data
 
 import logging
 log = logging.getLogger("blivet")
+
+
+class LUKS2PBKDFArgs(object):
+    """ PBKDF arguments for LUKS 2 format """
+
+    def __init__(self, type=None, max_memory_kb=0, iterations=0, time_ms=0):  # pylint: disable=redefined-builtin
+        self.type = type
+        self.max_memory_kb = max_memory_kb
+        self.iterations = iterations
+        self.time_ms = time_ms
 
 
 class LUKS(DeviceFormat):
@@ -50,7 +62,12 @@ class LUKS(DeviceFormat):
     _linux_native = True                 # for clearpart
     _packages = ["cryptsetup"]          # required packages
     _min_size = crypto.LUKS_METADATA_SIZE
+    _max_size = Size("16 EiB")
     _plugin = availability.BLOCKDEV_CRYPTO_PLUGIN
+
+    _size_info_class = lukstasks.LUKSSize
+    _resize_class = lukstasks.LUKSResize
+    _resizable = True
 
     def __init__(self, **kwargs):
         """
@@ -74,6 +91,11 @@ class LUKS(DeviceFormat):
             :keyword min_luks_entropy: minimum entropy in bits required for
                                        format creation
             :type min_luks_entropy: int
+            :keyword luks_version: luks format version ("luks1" or "luks2")
+            :type luks_version: str
+            :keyword pbkdf_args: optional arguments for LUKS2 key derivation function
+                                 (for non-existent format only)
+            :type pbkdf_args: :class:`LUKS2PBKDFArgs`
 
             .. note::
 
@@ -85,14 +107,23 @@ class LUKS(DeviceFormat):
         """
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
-        self.cipher = kwargs.get("cipher")
-        self.key_size = kwargs.get("key_size")
-        self.map_name = kwargs.get("name")
 
-        if not self.exists and not self.cipher:
-            self.cipher = "aes-xts-plain64"
-            if not self.key_size:
-                # default to the max (512 bits) for aes-xts
+        self._size_info = self._size_info_class(self)
+        self._resize = self._resize_class(self)
+
+        self.cipher = kwargs.get("cipher")
+        self.key_size = kwargs.get("key_size") or 0
+        self.map_name = kwargs.get("name")
+        self.luks_version = kwargs.get("luks_version") or crypto.DEFAULT_LUKS_VERSION
+
+        if not self.exists and self.luks_version not in crypto.LUKS_VERSIONS.keys():
+            raise ValueError("Unknown or unsupported LUKS version '%s'" % self.luks_version)
+
+        if not self.exists:
+            if not self.cipher:
+                self.cipher = "aes-xts-plain64"
+            if not self.key_size and "xts" in self.cipher:
+                # default to the max (512 bits) for xts
                 self.key_size = 512
 
         # FIXME: these should both be lists, but managing them will be a pain
@@ -100,16 +131,36 @@ class LUKS(DeviceFormat):
         self._key_file = kwargs.get("key_file")
         self.escrow_cert = kwargs.get("escrow_cert")
         self.add_backup_passphrase = kwargs.get("add_backup_passphrase", False)
-        self.min_luks_entropy = kwargs.get("min_luks_entropy", 0)
+        self.min_luks_entropy = kwargs.get("min_luks_entropy")
 
-        if self.min_luks_entropy < 0:
-            msg = "Invalid value for minimum required entropy: %s" % self.min_luks_entropy
-            raise ValueError(msg)
+        if self.min_luks_entropy is None:
+            self.min_luks_entropy = luks_data.min_entropy
 
         if not self.map_name and self.exists and self.uuid:
             self.map_name = "luks-%s" % self.uuid
         elif not self.map_name and self.device:
             self.map_name = "luks-%s" % os.path.basename(self.device)
+
+        if flags.auto_dev_updates and self._resize.available:
+            # if you want current/min size you have to call update_size_info
+            self.update_size_info()
+
+        # add the discard option for newly created LUKS formats if requested
+        # (e.g. during the installation -- see rhbz#1421596)
+        if not self.exists and flags.discard_new:
+            if not self.options:
+                self.options = "discard"
+            elif "discard" not in self.options:
+                self.options += ",discard"
+
+        self.pbkdf_args = kwargs.get("pbkdf_args")
+        if self.pbkdf_args:
+            if self.luks_version != "luks2":
+                raise ValueError("PBKDF arguments are valid only for LUKS version 2.")
+            if self.pbkdf_args.time_ms and self.pbkdf_args.iterations:
+                log.warning("Both iterations and time_ms specified for PBKDF, number of iterations will be ignored.")
+            if self.pbkdf_args.type == "pbkdf2" and self.pbkdf_args.max_memory_kb:
+                log.warning("Memory limit is not used for pbkdf2 and it will be ignored.")
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
@@ -118,21 +169,21 @@ class LUKS(DeviceFormat):
         else:
             passphrase = "(not set)"
         s += ("  cipher = %(cipher)s  key_size = %(key_size)s"
-              "  map_name = %(map_name)s\n"
+              "  map_name = %(map_name)s\n version = %(luks_version)s"
               "  key_file = %(key_file)s  passphrase = %(passphrase)s\n"
               "  escrow_cert = %(escrow_cert)s  add_backup = %(backup)s" %
               {"cipher": self.cipher, "key_size": self.key_size,
-               "map_name": self.map_name, "key_file": self._key_file,
-               "passphrase": passphrase, "escrow_cert": self.escrow_cert,
-               "backup": self.add_backup_passphrase})
+               "map_name": self.map_name, "luks_version": self.luks_version,
+               "key_file": self._key_file, "passphrase": passphrase,
+               "escrow_cert": self.escrow_cert, "backup": self.add_backup_passphrase})
         return s
 
     @property
     def dict(self):
         d = super(LUKS, self).dict
         d.update({"cipher": self.cipher, "key_size": self.key_size,
-                  "map_name": self.map_name, "has_key": self.has_key,
-                  "escrow_cert": self.escrow_cert,
+                  "map_name": self.map_name, "version": self.luks_version,
+                  "has_key": self.has_key, "escrow_cert": self.escrow_cert,
                   "backup": self.add_backup_passphrase})
         return d
 
@@ -179,6 +230,21 @@ class LUKS(DeviceFormat):
             return False
         return os.path.exists("/dev/mapper/%s" % self.map_name)
 
+    def update_size_info(self):
+        """ Update this format's current size. """
+
+        self._resizable = False
+
+        if not self.status:
+            return
+
+        try:
+            self._size = self._size_info.do_task()
+        except LUKSError as e:
+            log.warning("Failed to obtain current size for device %s: %s", self.device, e)
+        else:
+            self._resizable = True
+
     def _pre_setup(self, **kwargs):
         if not self.configured:
             raise LUKSError("luks device not configured")
@@ -202,8 +268,15 @@ class LUKS(DeviceFormat):
         log.debug("unmapping %s", self.map_name)
         blockdev.crypto.luks_close(self.map_name)
 
+    def _pre_resize(self):
+        if self.luks_version == "luks2" and not self.has_key:
+            raise LUKSError("Passphrase or key needs to be set before resizing LUKS2 format.")
+
+        super(LUKS, self)._pre_resize()
+
     def _pre_create(self, **kwargs):
         super(LUKS, self)._pre_create(**kwargs)
+        self.map_name = None
         if not self.has_key:
             raise LUKSError("luks device has no key/passphrase")
 
@@ -211,17 +284,40 @@ class LUKS(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         super(LUKS, self)._create(**kwargs)  # set up the event sync
+
+        if not self.pbkdf_args and self.luks_version == "luks2":
+            if luks_data.pbkdf_args:
+                self.pbkdf_args = luks_data.pbkdf_args
+            else:
+                mem_limit = crypto.calculate_luks2_max_memory()
+                if mem_limit:
+                    self.pbkdf_args = LUKS2PBKDFArgs(max_memory_kb=int(mem_limit.convert_to(KiB)))
+                    luks_data.pbkdf_args = self.pbkdf_args
+                    log.info("PBKDF arguments for LUKS2 not specified, using defaults with memory limit %s", mem_limit)
+
+        if self.pbkdf_args:
+            pbkdf = blockdev.CryptoLUKSPBKDF(type=self.pbkdf_args.type,
+                                             hash=None,
+                                             max_memory_kb=self.pbkdf_args.max_memory_kb,
+                                             iterations=self.pbkdf_args.iterations,
+                                             time_ms=self.pbkdf_args.time_ms)
+            extra = blockdev.CryptoLUKSExtra(pbkdf=pbkdf)
+        else:
+            extra = None
+
         blockdev.crypto.luks_format(self.device,
                                     passphrase=self.__passphrase,
                                     key_file=self._key_file,
                                     cipher=self.cipher,
                                     key_size=self.key_size,
-                                    min_entropy=self.min_luks_entropy)
+                                    min_entropy=self.min_luks_entropy,
+                                    luks_version=crypto.LUKS_VERSIONS[self.luks_version],
+                                    extra=extra)
 
     def _post_create(self, **kwargs):
         super(LUKS, self)._post_create(**kwargs)
         self.uuid = blockdev.crypto.luks_uuid(self.device)
-        if flags.installer_mode or not self.map_name:
+        if not self.map_name:
             self.map_name = "luks-%s" % self.uuid
 
     @property
@@ -271,5 +367,69 @@ class LUKS(DeviceFormat):
                                       directory, backup_passphrase)
         log.debug("escrow: escrow_volume done for %s", repr(self.device))
 
+    def populate_ksdata(self, data):
+        super(LUKS, self).populate_ksdata(data)
+        data.luks_version = self.luks_version
+
+        if self.pbkdf_args:
+            data.pbkdf = self.pbkdf_args.type
+            data.pbkdf_memory = self.pbkdf_args.max_memory_kb
+            data.pbkdf_iterations = self.pbkdf_args.iterations
+            data.pbkdf_time = self.pbkdf_args.time_ms
+
 
 register_device_format(LUKS)
+
+
+class Integrity(DeviceFormat):
+
+    """ DM integrity format """
+    _type = "integrity"
+    _name = N_("DM Integrity")
+    _udev_types = ["DM_integrity"]
+    _supported = False                 # is supported
+    _formattable = False               # can be formatted
+    _linux_native = True               # for clearpart
+    _resizable = False                 # can be resized
+    _packages = ["cryptsetup"]         # required packages
+    _plugin = availability.BLOCKDEV_CRYPTO_PLUGIN
+
+    def __init__(self, **kwargs):
+        """
+            :keyword device: the path to the underlying device
+            :keyword uuid: the LUKS UUID
+            :keyword exists: indicates whether this is an existing format
+            :type exists: bool
+            :keyword name: the name of the mapped device
+
+            .. note::
+
+                The 'device' kwarg is required for existing formats. For non-
+                existent formats, it is only necessary that the :attr:`device`
+                attribute be set before the :meth:`create` method runs. Note
+                that you can specify the device at the last moment by specifying
+                it via the 'device' kwarg to the :meth:`create` method.
+        """
+        log_method_call(self, **kwargs)
+        DeviceFormat.__init__(self, **kwargs)
+
+        self.map_name = kwargs.get("name")
+
+    @property
+    def status(self):
+        if not self.exists or not self.map_name:
+            return False
+        return os.path.exists("/dev/mapper/%s" % self.map_name)
+
+    def _teardown(self, **kwargs):
+        """ Close, or tear down, the format. """
+        log_method_call(self, device=self.device,
+                        type=self.type, status=self.status)
+        log.debug("unmapping %s", self.map_name)
+
+        # it's safe to use luks_close here, it uses crypt_deactivate which works
+        # for all devices supported by cryptsetup
+        blockdev.crypto.luks_close(self.map_name)
+
+
+register_device_format(Integrity)

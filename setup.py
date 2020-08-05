@@ -1,13 +1,12 @@
-#!/usr/bin/python2
-# pylint: disable=interruptible-system-call
+#!/usr/bin/python3
 
+import setuptools  # pylint: disable=unused-import
 from distutils.core import setup
 from distutils import filelist
+from distutils.command.sdist import sdist
 import subprocess
 import sys
-import glob
 import os
-import re
 
 # this is copied straight from distutils.filelist.findall , but with os.stat()
 # replaced with os.lstat(), so S_ISLNK() can actually tell us something.
@@ -43,35 +42,52 @@ def findall(dirname=os.curdir):
 
 filelist.findall = findall
 
-AM_RE = r'(^.. automodule::.+?(?P<mo>^\s+?:member-order:.+?\n)?.+?:\n)\n(?(mo)NEVER)'
+# Extend the sdist command
+class blivet_sdist(sdist):
+    def run(self):
+        # Build the .mo files
+        subprocess.check_call(['make', '-C', 'po'])
+
+        # Run the parent command
+        sdist.run(self)
+
+    def make_release_tree(self, base_dir, files):
+        # Run the parent command first
+        sdist.make_release_tree(self, base_dir, files)
+
+        # Run translation-canary in release mode to remove any bad translations
+        sys.path.append('translation-canary')
+        from translation_canary.translated import testSourceTree  # pylint: disable=import-error
+        testSourceTree(base_dir, releaseMode=True)
 
 
-def generate_api_docs():
-    if subprocess.call(["sphinx-apidoc", "-o", "doc", "blivet"]):
-        sys.stderr.write("failed to generate API docs")
+data_files = [
+    ('/etc/dbus-1/system.d', ['dbus/blivet.conf']),
+    ('/usr/share/dbus-1/system-services', ['dbus/com.redhat.Blivet0.service']),
+    ('/usr/libexec', ['dbus/blivetd']),
+    ('/usr/lib/systemd/system', ['dbus/blivet.service'])
+]
 
 
-def add_member_order_option(files):
-    """ Add an automodule option to preserve source code member order. """
-    for fn in files:
-        buf = open(fn).read()
-        amended = re.sub(AM_RE,
-                         r'\1    :member-order: bysource\n\n',
-                         buf,
-                         flags=re.DOTALL | re.MULTILINE)
-        open(fn, "w").write(amended)
+with open("README.md", "r") as f:
+    long_description = f.read()
 
-data_files = []
-if os.environ.get("READTHEDOCS", False):
-    generate_api_docs()
-    rst_files = glob.glob("doc/*.rst")
-    add_member_order_option(rst_files)
-    api_doc_files = rst_files + ["doc/conf.py"]
-    data_files.append(("docs/blivet", api_doc_files))
 
-setup(name='blivet', version='2.0',
+setup(name='blivet',
+      version='2.0.2',
+      cmdclass={"sdist": blivet_sdist},
       description='Python module for system storage configuration',
+      long_description=long_description,
+      long_description_content_type="text/markdown",
       author='David Lehman', author_email='dlehman@redhat.com',
-      url='http://fedoraproject.org/wiki/blivet',
+      url='http://github.com/storaged-project/blivet',
       data_files=data_files,
-      packages=['blivet', 'blivet.devices', 'blivet.devicelibs', 'blivet.formats', 'blivet.tasks'])
+      packages=['blivet', 'blivet.dbus', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers'],
+      install_requires=['pyudev', 'six'],
+      classifiers=["Development Status :: 5 - Production/Stable",
+                   "Intended Audience :: Developers",
+                   "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
+                   "Programming Language :: Python :: 2",
+                   "Programming Language :: Python :: 3",
+                   "Operating System :: POSIX :: Linux"]
+     )

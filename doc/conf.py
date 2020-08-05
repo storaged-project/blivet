@@ -42,14 +42,14 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Blivet'
-copyright = u'2013-2014, Red Hat, Inc.'     # pylint: disable=redefined-builtin
+copyright = u'2013-2016, Red Hat, Inc.'     # pylint: disable=redefined-builtin
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '2.0'
+version = '2.0.2'
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -292,41 +292,4 @@ epub_copyright = u'2013, David Lehman'
 #extensions.extend(('sphinx.ext.inheritance_diagram', 'sphinx.ext.graphviz'))
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/2': None}
-
-# This was taken directly from here:
-# http://read-the-docs.readthedocs.org/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
-# I only added the __getitem__ method.
-# NOTE: this can be removed whenever we move to sphinx-1.3, at which point we'll
-#       be able to use autodoc_mock_imports (value is a list of modules to be
-#       mocked).
-
-
-class Mock(object):
-
-    __all__ = []
-
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def __call__(self, *args, **kwargs):
-        return Mock()
-
-    @classmethod
-    def __getattr__(cls, name):
-        if name in ('__file__', '__path__'):
-            return '/dev/null'
-        elif name[0] == name[0].upper():
-            mock_type = type(name, (), {})
-            mock_type.__module__ = __name__
-            return mock_type
-        else:
-            return Mock()
-
-    @classmethod
-    def __getitem__(cls, key):
-        return cls.__getattr__(key)
-
-MOCK_MODULES = ['parted', 'block', 'pycryptsetup', 'pykickstart', 'pykickstart.constants', '_ped', 'selinux', 'pyudev']
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = Mock()
+intersphinx_mapping = {'https://docs.python.org/3': None}

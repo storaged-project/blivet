@@ -1,282 +1,124 @@
-0. Thanks to the kernel patch submission guidelines, which were used as a
-   framework for creating this document.
+Contributor's Guide
+====================
 
-   https://www.kernel.org/doc/Documentation/SubmittingPatches
-
-I. Source
-=========
-
-A) Obtain a current source tree.
-If you do not have a repository with the current source handy, use git to obtain
-one.  All installer-related projects can be found on the RH Installer project
-page:
-
-  http://github.com/rhinstaller/
-
-In particular, the python-blivet repository can be found here:
-
-  https://github.com/rhinstaller/blivet
-
-Additional help for working within the codebase and testing changes can be found
-on the Fedoraproject wiki:
-
-  https://fedoraproject.org/wiki/Anaconda/Contribute#Helping_with_Anaconda_testing
+.. contents:: :depth: 1
 
 
-II. Commits
-===========
-    - Considerations when composing your commit message
-    - Special formatting (e.g. for RHEL patches)
-    - Etiquette: when you should split a patch
+Where the Code Lives
+---------------------
+The upstream git repo is on `GitHub <https://github.com/storaged-project/blivet>`_.
 
-A) Describe your changes clearly.
-Describe your problem.  Whether your patch is a one-line bug fix or 5000 lines
-of a new feature, there must be an underlying problem that motivated you to do
-this work.  Convince the reviewer that there is a problem worth fixing and that
-it makes sense for them to read past the first paragraph.
+Branching Model
+----------------
+Blivet uses a branching model that allows for concurrent development of
+multiple major and minor versions. Since blivet provides a public API,
+we use semantic versioning to convey basic information about the
+compatibility of various releases. Each minor release gets its own
+branch (``x.y-devel``). All work for ``2.1.2`` will be merged onto
+``2.1-devel``, for example.
 
-Describe user-visible impact.  Straight up crashes and lockups are pretty
-convincing, but not all bugs are that blatant.  Even if the problem was spotted
-during code review, describe the impact you think it can have on users.
+Releases
+^^^^^^^^^
+Releases will be made on separate branches (``x.y-release``) and marked
+by tags, eg: ``blivet-2.0.1``.
 
-Once the problem is established, describe what you are actually doing about it
-in technical detail.  It's important to describe the change in plain English for
-the reviewer to verify that the code is behaving as you intend it to.
+git-merge, git-rebase, git-cherry-pick
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Blivet's workflow is based on merges. Cherry-picking and rebasing
+(except, of course, rebasing a feature branch prior to merging) are
+to be avoided if at all possible. What we want is for all instances
+of a given commit to have the same commit id. We want to avoid
+rewriting history.
 
-Solve only one problem per patch.  If your description starts to get long,
-that's a sign that you probably need to split up your patch.
+**NOTE**: The exception to this is `rhel7-branch` and `rhel6-branch`,
+which both get most of their commits by cherry-picking.
+Perhaps this should change?
 
-When you submit or resubmit a patch or patch series, include the complete patch
-description and justification for it.  Don't just say that this is version N of
-the patch (series).  Don't expect the reviewers to refer back to earlier patch
-versions or referenced URLs to find the patch description and put that into the
-patch.
-In other words, the patch (series) and its description should be self-contained.
+Guidelines for Commits
+-----------------------
+Please make sure ``make check test`` passes with your patches applied
+before opening a pull request.
 
-Describe your changes in imperative mood, e.g. "make xyzzy do frotz" instead of
-"[This patch] makes xyzzy do frotz" or "[I] changed xyzzy to do frotz", as if
-you are giving orders to the codebase to change its behaviour.
+Commit Messages
+^^^^^^^^^^^^^^^^
+The first line should be a succinct description of what the commit
+does. If your commit is fixing a bug in Red Hat's bugzilla instance,
+you should add `` (#123456)`` to the end of the first line of the
+commit message. The next line should be blank, followed (optionally)
+by a more in-depth description of your changes. Here's an example::
 
-B) Special considerations for RHEL bugs.
+    Wait for auto-activation of LVs when lvmetad is running. (#1261621)
+
+    When lvmetad is running, activating the last PV in a VG will trigger
+    automatic activation of the LVs. This happens asynchronously, however,
+    so we have to just wait for it to be done. Since it is possible to
+    configure which VGs/LVs get auto-activated, we only wait for 30
+    seconds. After that, we will try to activate the LV ourselves.
+
+Commits for RHEL Branches
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 If you are submitting a patch for any rhel-branch, the last line of your commit
-message must identify the bugzilla bug # it fixes, using the "Resolves" or
-"Related" keyword, e.g.:
+message must identify the bugzilla bug id it fixes, using the ``Resolves`` or
+``Related`` keyword, e.g.:
 
-    Resolves: rhbz#1111111
-    or
-    Related: rhbz#1234567
+``Resolves: rhbz#1111111``
 
-Use "Resolves" if the patch fixes the core issue which caused the bug.
-Use "Related" if the patch fixes an ancillary issue that is related to, but
+or
+
+``Related: rhbz#1234567``
+
+Use ``Resolves`` if the patch fixes the core issue which caused the bug.
+Use ``Related`` if the patch fixes an ancillary issue that is related to, but
 might not actually fix the bug.
 
-C) Tracking other history in the commit log.
-In order to easily reference various items related to any patch (set), other
-information should be included in your commit message (after adequately
-describing the problem and your fix). This includes:
-    * GitHub issue, for easy reference back to any scheduled/task list items.
-      Add a line(s):
-        resolves #77
-        or
-        resolves rhinstaller/blivet#14
+**NOTE**: If you're using ``Resolves`` or ``Related`` you should omit the bug id
+reference from the first line of the commit message.
 
-D) Separate your changes.
-Separate each _logical change_ into a separate patch.
+Creating a Pull Request
+------------------------
+When creating a pull request for blivet you have to give some thought
+to what branch to base your pull request on. You should choose the
+branch corresponding to the oldest ``x.y`` release that should include
+your work. If we are currently working toward a ``2.1.0`` release and
+your pull request is a bug fix, you'll want to apply it at least as
+far back as ``2.0-devel``.
 
-For example, if your changes include both bug fixes and new functionality in a
-single area, separate those changes into two or more patches.  If your changes
-include an API update, and new code which uses that new API, separate those into
-two patches.
+Note that there is a minimum review period of 24 hours for any patch.
+The purpose of this rule is to ensure that all interested parties have
+an opportunity to review every patch.  When posting a patch before or
+after a holiday break it is important to extend this period as
+appropriate.
 
-On the other hand, if you make a single change to numerous files, group those
-changes into a single patch.  Thus a single logical change is contained within a
-single patch.  The point to remember is that each patch should make an easily
-understood change that can be verified by reviewers.
+Merging a Pull Request
+-----------------------
+After hitting the big green button, you will also need to merge your
+work to other active development branches and to ``master``.
 
-If one patch depends on another patch in order for a change to be complete, that
-is OK.  Simply note "this patch depends on patch X" in your patch description.
+- if your work is on ``x.y-devel``, merge it onto ``x.{y+1}-devel``
 
-When dividing your change into a series of patches, it is preferred that you
-ensure that the project builds and runs properly after each patch in the series.
-Developers using "git bisect" to track down a problem can end up splitting your
-patch series at any point; they will not thank you if you introduce bugs in the
-middle.
+    For example, if your pull request was against ``2.0-devel`` and
+    you already merged it, now you have to merge it to ``2.1-devel``.
+    Here's how you do it:
 
-E) Style-check your changes.
-Make sure that the style of your code matches that of the surrounding code.
+    ``git checkout 2.1-devel``
 
-F) Tests and sanity checking.
-Prior to submitting any patch for review, make sure it runs through pylint
-cleanly. The pylint test can be found in tests/pylint/runpylint.sh
+    ``git merge --no-ff 2.0-devel``
 
-Additionally, creating test files and making sure your changes pass new tests --
-and do not break existing tests -- is crucial. Run "make test" to run the test
-suite.
+    Take a look to make sure things are as expected, then...
 
+    ``git push``
 
-III. Submitting Patches
-=======================
-    - Acceptable formats for patch submission
-    - Email guidelines
-    - Pull Request guidelines
-    - Bugzilla
+- if there is no ``x.{y+1}-devel``, merge it onto ``{x+1}.y`` branches
+  as appopriate, oldest-to-newest
 
-A) Acceptable patch formats.
-GitHub pull requests are accepted.  In fact, they are the preferred format.
+  For example, if you already merged onto ``2.1-devel`` and there is
+  no ``2.2-devel``, the next place to merge would be ``3.0-devel`` if
+  it exists, followed by ``3.1-devel``, &c.
 
-Patches can also be sent to anaconda-patches@lists.fedorahosted.org, provided
-they are formatted appropriately (see section III.C).
+- after you have merged your work onto all applicable devel
+  branches, merge it from the highest-version devel branch onto
+  ``master``
 
-B) GitHub pull request guidelines
-Labels are used extensively on pull requests in GitHub. Labels make it very easy
-to visually filter a list of pull requests. Labels that we use include:
-    * rhelX-branch -- Any RHEL pull requests should be tagged with the
-      appropriate RHEL branch label (e.g. rhel6-branch, rhel7-branch)
-    * fXY-branch -- Any Fedora pull requests should be tagged with the
-      appropriate Fedora branch label (e.g. f22-branch)
-    * Python 3 check -- If a pull request introduces changes which need to be
-      verified as Python 3 compatible, set this label. (Or someone who reviews
-      your pull request might set this.)
-    * ACK -- Once somebody has reviewed your pull request, they will set the ACK
-      label if your patch is approved.
-    * NACK -- If somebody has reviewed your pull request and disapproves with
-      the patch, they will set the NACK label.
-
-If submitting a patch against multiple branches (e.g. master, rhel7-branch),
-submit the original pull request against master branch. Use labels to tag the
-request for each branch it is intended for.
-
-After approval, merge your commit to master branch. You will have to manually
-cherry pick it to any other branches. Use "git cherry-pick -x $commit" to do
-this, so there is a reference back to the original commit.
-
-C) Email guidelines.
-    i. What to include in your subjects.
-    It is common convention to prefix your subject line with
-    [$project][$branches].  This makes it clear which project the patches are
-    for and which branches the patches are intended for.
-
-    This also applies to lone patches that do not include a cover letter.
-    Examples:
-      Subject: [blivet][master] Move the Blivet class into its own module
-      Subject: [blivet][master/rhel7-branch] Do not unhide devices with hidden
-               parents (#1158643)
-
-    It is common convention to prefix patch subject lines with [PATCH].  This
-    makes clear that the message is a patch.
-
-    ii. No MIME, no links, no compression, no attachments.  Just plain text.
-    The developers need to be able to read and comment on the changes you are
-    submitting.  It is important for a developer to be able to "quote" your
-    changes, using standard e-mail tools, so that they may comment on specific
-    portions of your code.
-
-    For this reason, all patches should be submitting e-mail "inline".  WARNING:
-    Be wary of your editor's word-wrap corrupting your patch, if you choose to
-    cut-n-paste your patch.
-
-    Do not attach the patch as a MIME attachment, compressed or not.
-
-    Use "git send-email" to post your patch to the list. Git send-email is a
-    nice, command line utility that makes it easy to send a patch or patch set
-    to a mailing list.
-
-    iii. E-mail size.
-    Large changes are not appropriate for mailing listss.  If your patch,
-    uncompressed, exceeds 300 kB in size, it is preferred that you store your
-    patch on a server and provide instead a URL (link) pointing to your patch.
-    But note that if your patch exceeds 300 kB, it almost certainly needs to be
-    broken up anyway.
-
-    iv. Canonical patch format.
-    This section describes how the patch itself should be formatted.  Note that,
-    if you have your patches are stored in a git repository, proper patch
-    formatting can be had with "git format-patch".  The tools cannot create the
-    necessary text, though, so read the instructions anyway.
-
-    Cover letter subject should include the component, the relevant branches,
-    and the relevant bugzilla bug # (if applicable).
-
-    Some examples of the canonical patch subject line:
-        Subject: [PATCH 1/4][blivet][f22-branch] summary phrase (#9999999)
-        Subject: [PATCH 1/3][blivet][master] Split X out of class Y into new
-                 class Z
-
-    The canonical patch message body contains the following:
-      - A "from" line specifying the patch's original author.
-      - An empty line.
-      - The body of the explanation, which will be copied to the permanent
-        changelog to describe this patch.
-      - A marker line containing simply "---".
-      - Any additional comments not suitable for the changelog.
-      - The actual patch (diff output).
-
-    The "summary phrase" in the email's Subject should concisely describe the
-    patch which the email contains in no more than 70-75 characters.  The
-    "summary phrase" should not be a filename.  Do not use the same "summary
-    phrase" for every patch in a whole patch series (where a "patch series" is
-    an ordered sequence of multiple, related patches).  Bear in mind that the
-    "summary phrase" of your email will be the only thing that people may
-    quickly see when they are scanning through patches.
-
-    Tags enclosed in square brackets are not considered part of the "summary
-    phrase", but describe how the patch should be treated.  Common tags might
-    include the patch number/total, e.g. if there are four patches in a series,
-    they may be numbered like this: 1/4, 2/4, 3/4, 4/4.
-
-    The "from" line must be the very first line in the message body, and has the
-    form:
-        From: Original Author <author@example.com>
-
-    The "from" line specifies who will be credited as the author of the patch in
-    the permanent changelog.  If the "from" line is missing, then the "From:"
-    line from the email header will be used to determine the patch author in the
-    changelog.
-
-    Special note to back-porters: It is generally useful when cherry-picking a
-    commit from master onto another branch to use the -x option. This option
-    tells git to insert a note indicating the original commit id, and is often
-    useful.
-
-D) Bugzilla
-Once submitting a pull request, if there is an associated bug # in bugzilla,
-please set the status of the bug to POST, and add a comment with a link to your
-pull request.
-
-
-IV. The review process
-======================
-    - What to expect, and when.
-    - Behavioral conduct.
-
-A) Respond to review comments.
-Your patch will almost certainly get comments from reviewers on ways in which
-the patch can be improved.  You must respond to those comments; ignoring
-reviewers is a good way to get ignored in return.  Comments or questions that do
-not result in a code change should almost certainly bring about a comment or
-changelog entry so that the next reviewer better understands what is going on.
-
-Be sure to tell the reviewers what changes you are making and to thank them for
-their time.  Code review is a tiring and time-consuming  process, and reviewers
-sometimes get grumpy.  Even in that case, though, respond politely and address
-the problems they have pointed out.
-
-It is important to understand that patches must sometimes go through several
-iterations of review before being approved.  Not all patches will be accepted
-either.  It is important that you do not take any criticism personally.  Patch
-review is an objective and rational critique only of the content of the patch
-itself.
-
-B) Don't get discouraged - or impatient.
-After you have submitted your change, be patient and wait.  Reviewers are busy
-people and may not get to your patch right away.
-
-You should receive comments within a week or so; if that does not happen, make
-sure that you have sent your patches to the right place.  Wait for a  minimum of
-one week before resubmitting or pinging reviewers - possibly  longer during busy
-times like Fedora release stabilization.
-
-Note that there is a minimum review period of 24 hours for any patch.  The
-purpose of this rule is to ensure that all interested parties have an
-opportunity to review every patch.  When posting a patch before or after a
-holiday break it is important to extend this period as appropriate.
+If the merge of your work onto a given branch has significant
+conflicts, you should open a separate pull request against that
+branch.

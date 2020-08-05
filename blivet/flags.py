@@ -22,8 +22,6 @@
 import shlex
 import selinux
 
-from .util import open  # pylint: disable=redefined-builtin
-
 
 class Flags(object):
 
@@ -32,15 +30,12 @@ class Flags(object):
         # mode of operation
         #
         self.testing = False
-        self.installer_mode = False
         self.debug = False
 
         #
-        # minor modes (installer-specific)
+        # minor modes
         #
-        self.automated_install = False
-        self.live_install = False
-        self.image_install = False
+        self.uevents = False
 
         #
         # enable/disable functionality
@@ -55,24 +50,38 @@ class Flags(object):
         self.jfs = True
         self.reiserfs = True
 
-        self.arm_platform = None
-
-        self.gpt = False
-
+        # for this flag to take effect,
+        # blockdev.mpath.set_friendly_names(flags.multipath_friendly_names) must
+        # be called prior to calling Blivet.reset() or DeviceTree.populate()
         self.multipath_friendly_names = True
+
+        # set to False since automatic updates of a device's information
+        # or state should not be necessary by default
+        self.auto_dev_updates = False
+
+        # set to False by default since a forced reset for file contexts
+        # is ordinary not necessary
+        self.selinux_reset_fcon = False
+
+        # set to True since we want to keep these around by default
+        self.keep_empty_ext_partitions = True
 
         # set to False to suppress the default LVM behavior of saving
         # backup metadata in /etc/lvm/{archive,backup}
         self.lvm_metadata_backup = True
 
-        # whether to include nodev filesystems in the devicetree (only
-        # meaningful when flags.installer_mode is False)
+        # whether to include nodev filesystems in the devicetree
         self.include_nodev = False
+
+        # whether to enable discard for newly created devices
+        # (so far only for LUKS)
+        self.discard_new = False
 
         self.boot_cmdline = {}
 
         self.update_from_boot_cmdline()
         self.allow_imperfect_devices = True
+        self.debug_threads = False
 
     def get_boot_cmdline(self):
         buf = open("/proc/cmdline").read().strip()
@@ -84,43 +93,12 @@ class Flags(object):
 
     def update_from_boot_cmdline(self):
         self.get_boot_cmdline()
-        if "nompath" in self.boot_cmdline:
-            self.multipath = False
-
-        if "nodmraid" in self.boot_cmdline:
-            self.dmraid = False
-
-        if "noiswmd" in self.boot_cmdline:
-            self.noiswmd = True
-
-    def update_from_anaconda_flags(self, anaconda_flags):
-        self.installer_mode = True
-        # always enable the debug mode when in the installer mode so that we
-        # have more data in the logs for rare cases that are hard to reproduce
-        self.debug = True
-        self.testing = anaconda_flags.testing
-        self.automated_install = anaconda_flags.automatedInstall
-        self.live_install = anaconda_flags.livecdInstall
-        self.image_install = anaconda_flags.imageInstall
-
-        self.selinux = anaconda_flags.selinux
-
+        self.multipath = "nompath" not in self.boot_cmdline
+        self.dmraid = "nodmraid" not in self.boot_cmdline
+        self.noiswmd = "noiswmd" in self.boot_cmdline
         self.gfs2 = "gfs2" in self.boot_cmdline
         self.jfs = "jfs" in self.boot_cmdline
         self.reiserfs = "reiserfs" in self.boot_cmdline
 
-        self.arm_platform = anaconda_flags.armPlatform
-        self.gpt = anaconda_flags.gpt
-
-        self.multipath_friendly_names = anaconda_flags.mpathFriendlyNames
-        self.allow_imperfect_devices = anaconda_flags.rescue_mode
-
-        self.ibft = anaconda_flags.ibft
-        self.dmraid = anaconda_flags.dmraid
-
-        # We don't want image installs writing backups of the *image* metadata
-        # into the *host's* /etc/lvm. This can get real messy on build systems.
-        if self.image_install:
-            self.lvm_metadata_backup = False
 
 flags = Flags()

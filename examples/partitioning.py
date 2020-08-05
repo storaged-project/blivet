@@ -1,7 +1,5 @@
 import os
 
-from examples.common import print_devices
-
 import blivet
 from blivet.size import Size
 from blivet.util import set_up_logging, create_sparse_tempfile
@@ -11,9 +9,9 @@ b = blivet.Blivet()   # create an instance of Blivet (don't add system devices)
 
 # create two disk image files on which to create new devices
 disk1_file = create_sparse_tempfile("disk1", Size("100GiB"))
-b.config.disk_images["disk1"] = disk1_file
+b.disk_images["disk1"] = disk1_file
 disk2_file = create_sparse_tempfile("disk2", Size("100GiB"))
-b.config.disk_images["disk2"] = disk2_file
+b.disk_images["disk2"] = disk2_file
 
 b.reset()
 
@@ -43,11 +41,11 @@ try:
 
     # allocate the partitions (decide where and on which disks they'll reside)
     blivet.partitioning.do_partitioning(b)
-    print_devices(b)
+    print(b.devicetree)
 
     # write the new partitions to disk and format them as specified
     b.do_it()
-    print_devices(b)
+    print(b.devicetree)
 finally:
     b.devicetree.teardown_disk_images()
     os.unlink(disk1_file)

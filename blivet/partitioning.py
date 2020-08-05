@@ -25,11 +25,10 @@ from decimal import Decimal
 import functools
 
 import gi
-gi.require_version("BlockDev", "1.0")
-
-from gi.repository import BlockDev as blockdev
+gi.require_version("BlockDev", "2.0")
 
 import parted
+import _ped
 
 from .errors import DeviceError, PartitioningError, AlignmentError
 from .flags import flags
@@ -68,11 +67,11 @@ def partition_compare(part1, part2):
     elif part1_start is not None and part2_start is not None:
         return compare(part1_start, part2_start)
 
-    if part1.req_base_weight:
-        ret -= part1.req_base_weight
+    if part1.weight:
+        ret -= part1.weight
 
-    if part2.req_base_weight:
-        ret += part2.req_base_weight
+    if part2.weight:
+        ret += part2.weight
 
     # more specific disk specs to the front of the list
     # req_disks being empty is equivalent to it being an infinitely long list
@@ -113,6 +112,7 @@ def partition_compare(part1, part2):
 
     return ret
 
+
 _partition_compare_key = functools.cmp_to_key(partition_compare)
 
 
@@ -138,8 +138,6 @@ def get_next_partition_type(disk, no_primary=None):
     part_type = None
     extended = disk.getExtendedPartition()
     supports_extended = disk.supportsFeature(parted.DISK_TYPE_EXTENDED)
-    logical_count = len(disk.getLogicalPartitions())
-    max_logicals = disk.getMaxLogicalPartitions()
     primary_count = disk.primaryPartitionCount
 
     if primary_count < disk.maxPrimaryPartitionCount:
@@ -155,17 +153,17 @@ def get_next_partition_type(disk, no_primary=None):
                 # there is an extended and a free primary
                 if not no_primary:
                     part_type = parted.PARTITION_NORMAL
-                elif logical_count < max_logicals:
-                    # we have an extended with logical slots, so use one.
+                else:
+                    # we have an extended, so use it.
                     part_type = parted.PARTITION_LOGICAL
         else:
             # there are two or more primary slots left. use one unless we're
             # not supposed to make primaries.
             if not no_primary:
                 part_type = parted.PARTITION_NORMAL
-            elif extended and logical_count < max_logicals:
+            elif extended:
                 part_type = parted.PARTITION_LOGICAL
-    elif extended and logical_count < max_logicals:
+    elif extended:
         part_type = parted.PARTITION_LOGICAL
 
     return part_type
@@ -332,6 +330,8 @@ def remove_new_partitions(disks, remove, all_partitions):
     log.debug("removing all non-preexisting partitions %s from disk(s) %s",
               ["%s(id %d)" % (p.name, p.id) for p in remove],
               [d.name for d in disks])
+
+    removed_logical = []
     for part in remove:
         if part.parted_partition and part.disk in disks:
             if part.exists:
@@ -342,16 +342,37 @@ def remove_new_partitions(disks, remove, all_partitions):
                 # these get removed last
                 continue
 
+            if part.is_logical:
+                removed_logical.append(part)
             part.disk.format.parted_disk.removePartition(part.parted_partition)
             part.parted_partition = None
             part.disk = None
 
+    def _remove_extended(disk, extended):
+        """ We may want to remove extended partition from the disk too.
+            This should happen if we don't have the PartitionDevice object
+            or in installer_mode after we've removed all logical paritions.
+        """
+
+        if extended and not disk.format.logical_partitions:
+            if extended not in (p.parted_partition for p in all_partitions):
+                # extended partition is not in all_partitions -> remove it
+                return True
+            else:
+                if flags.keep_empty_ext_partitions:
+                    return False
+                else:
+                    if any(l.disk == extended.disk for l in removed_logical):
+                        # we removed all logical paritions from this extended
+                        # so we no longer need this one
+                        return True
+                    else:
+                        return False
+
     for disk in disks:
         # remove empty extended so it doesn't interfere
         extended = disk.format.extended_partition
-        if extended and not disk.format.logical_partitions and \
-           (flags.installer_mode or
-                extended not in (p.parted_partition for p in all_partitions)):
+        if _remove_extended(disk, extended):
             log.debug("removing empty extended partition from %s", disk.name)
             disk.format.parted_disk.removePartition(extended)
 
@@ -389,7 +410,11 @@ def add_partition(disklabel, free, part_type, size, start=None, end=None):
         else:
             _size = size
 
-        alignment = disklabel.get_alignment(size=_size)
+        try:
+            alignment = disklabel.get_alignment(size=_size)
+        except AlignmentError:
+            alignment = disklabel.get_minimal_alignment()
+
         end_alignment = disklabel.get_end_alignment(alignment=alignment)
     else:
         alignment = parted.Alignment(grainSize=1, offset=0)
@@ -442,8 +467,13 @@ def add_partition(disklabel, free, part_type, size, start=None, end=None):
                                  type=part_type,
                                  geometry=new_geom)
     constraint = parted.Constraint(exactGeom=new_geom)
-    disklabel.parted_disk.addPartition(partition=partition,
-                                       constraint=constraint)
+
+    try:
+        disklabel.parted_disk.addPartition(partition=partition,
+                                           constraint=constraint)
+    except _ped.PartitionException as e:
+        raise PartitioningError(_("failed to add partition to disk: %s") % str(e))
+
     return partition
 
 
@@ -531,7 +561,7 @@ def update_extended_partitions(storage, disks):
         storage.devicetree._add_device(device)
 
 
-def do_partitioning(storage):
+def do_partitioning(storage, boot_disk=None):
     """ Allocate and grow partitions.
 
         When this function returns without error, all PartitionDevice
@@ -542,10 +572,12 @@ def do_partitioning(storage):
 
         :param storage: Blivet instance
         :type storage: :class:`~.Blivet`
+        :param boot_disk: optional parameter, the disk the bootloader is on
+        :type boot_device: :class:`~.devices.StorageDevice`
         :raises: :class:`~.errors.PartitioningError`
         :returns: :const:`None`
     """
-    disks = [d for d in storage.partitioned if not d.protected]
+    disks = [d for d in storage.partitioned if d.format.supported and not d.protected]
     for disk in disks:
         try:
             disk.setup()
@@ -564,24 +596,28 @@ def do_partitioning(storage):
             storage.devicetree._remove_device(partition, modparent=False, force=True)
 
     partitions = storage.partitions[:]
-    for part in storage.partitions:
-        part.req_bootable = False
-        if not part.exists:
-            # start over with flexible-size requests
-            part.req_size = part.req_base_size
 
-    try:
-        storage.boot_device.req_bootable = True
-    except AttributeError:
-        # there's no stage2 device. hopefully it's temporary.
-        pass
+    if boot_disk:
+        # set the boot flag on boot device
+        for part in storage.partitions:
+            part.req_bootable = False
+            if not part.exists:
+                # start over with flexible-size requests
+                part.req_size = part.req_base_size
+
+        boot_device = storage.mountpoints.get("/boot", storage.mountpoints.get("/"))
+        try:
+            boot_device.req_bootable = True
+        except AttributeError:
+            # there's no stage2 device. hopefully it's temporary.
+            pass
 
     remove_new_partitions(disks, partitions, partitions)
     free = get_free_regions(disks)
     try:
-        allocate_partitions(storage, disks, partitions, free)
+        allocate_partitions(storage, disks, partitions, free, boot_disk=boot_disk)
         grow_partitions(disks, partitions, free, size_sets=storage.size_sets)
-    except Exception:
+    except Exception:  # pylint: disable=try-except-raise
         raise
     else:
         # Mark all growable requests as no longer growable.
@@ -621,12 +657,31 @@ def do_partitioning(storage):
 
 def align_size_for_disklabel(size, disklabel):
     # Align the base size to the disk's grain size.
-    grain_size = Size(disklabel.alignment.grainSize)
+    try:
+        alignment = disklabel.get_alignment(size=size)
+    except AlignmentError:
+        alignment = disklabel.get_minimal_alignment()
+
+    grain_size = Size(alignment.grainSize)
     grains, rem = divmod(size, grain_size)
     return (grains * grain_size) + (grain_size if rem else Size(0))
 
 
-def allocate_partitions(storage, disks, partitions, freespace):
+def resolve_disk_tags(disks, tags):
+    """Resolve disk tags to a disk list.
+
+        :param disks: available disks
+        :type disks: list of :class:`~.devices.StorageDevice`
+        :param tags: tags to select disks based on
+        :type tags: list of str
+
+        If tags contains multiple values it is interpeted as
+        "include disks containing *any* of these tags".
+    """
+    return [disk for disk in disks if any(tag in disk.tags for tag in tags)]
+
+
+def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
     """ Allocate partitions based on requested features.
 
         :param storage: a Blivet instance
@@ -637,6 +692,8 @@ def allocate_partitions(storage, disks, partitions, freespace):
         :type partitions: list of :class:`~.devices.PartitionDevice`
         :param freespace: list of free regions on disks
         :type freespace: list of :class:`parted.Geometry`
+        :param boot_disk: optional parameter, the disk the bootloader is on
+        :type boot_device: :class:`~.devices.StorageDevice`
         :raises: :class:`~.errors.PartitioningError`
         :returns: :const:`None`
 
@@ -677,18 +734,21 @@ def allocate_partitions(storage, disks, partitions, freespace):
         if _part.req_disks:
             # use the requested disk set
             req_disks = _part.req_disks
+        elif _part.req_disk_tags:
+            req_disks = resolve_disk_tags(disks, _part.req_disk_tags)
         else:
             # no disks specified means any disk will do
             req_disks = disks
 
-        # sort the disks, making sure the boot disk is first
         req_disks.sort(key=storage.compare_disks_key)
-        for disk in req_disks:
-            if storage.boot_disk and disk == storage.boot_disk:
-                boot_index = req_disks.index(disk)
-                req_disks.insert(0, req_disks.pop(boot_index))
+        # make sure the boot disk is at the beginning of the disk list
+        if boot_disk:
+            for disk in req_disks[:]:
+                if disk == boot_disk:
+                    boot_index = req_disks.index(disk)
+                    req_disks.insert(0, req_disks.pop(boot_index))
 
-        boot = _part.req_base_weight > 1000
+        boot = _part.weight > 1000
 
         log.debug("allocating partition: %s ; id: %d ; disks: %s ;\n"
                   "boot: %s ; primary: %s ; size: %s ; grow: %s ; "
@@ -707,7 +767,10 @@ def allocate_partitions(storage, disks, partitions, freespace):
             disklabel = disklabels[_disk.path]
             best = None
             current_free = free
-            alignment = disklabel.get_alignment(size=_part.req_size)
+            try:
+                alignment = disklabel.get_alignment(size=_part.req_size)
+            except AlignmentError:
+                alignment = disklabel.get_minimal_alignment()
 
             # for growable requests, we don't want to pass the current free
             # geometry to get_best_free_region -- this allows us to try the
@@ -916,7 +979,13 @@ def allocate_partitions(storage, disks, partitions, freespace):
         if part_type == parted.PARTITION_EXTENDED and \
            part_type != _part.req_part_type:
             log.debug("creating extended partition")
-            add_partition(disklabel, free, part_type, None)
+            ext = add_partition(disklabel, free, part_type, None)
+
+            # extedned partition took all free space - make the size request smaller
+            if aligned_size > (ext.geometry.length - disklabel.alignment.grainSize) * disklabel.sector_size:
+                log.debug("not enough free space after creating extended "
+                          "partition - shrinking the logical partition")
+                aligned_size = aligned_size - (disklabel.alignment.grainSize * disklabel.sector_size)
 
             # now the extended partition exists, so set type to logical
             part_type = parted.PARTITION_LOGICAL
@@ -1016,9 +1085,11 @@ class PartitionRequest(Request):
         sector_size = Size(partition.parted_partition.disk.device.sectorSize)
 
         if partition.req_grow:
-            limits = [l for l in [size_to_sectors(partition.req_max_size, sector_size),
-                                  size_to_sectors(partition.format.max_size, sector_size),
-                                  partition.parted_partition.disk.maxPartitionLength] if l > 0]
+            mins = [size for size in (partition.req_max_size, partition.format.max_size)
+                    if size > 0]
+            req_format_max_size = min(mins) if mins else Size(0)
+            limits = [l for l in (size_to_sectors(req_format_max_size, sector_size),
+                                  partition.parted_partition.disk.maxPartitionLength) if l > 0]
 
             if limits:
                 max_sectors = min(limits)
@@ -1039,7 +1110,7 @@ class LVRequest(Request):
 
         # Round up to nearest pe. For growable requests this will mean that
         # first growth is to fill the remainder of any unused extent.
-        self.base = int(lv.vg.align(lv.req_size, roundup=True) // lv.vg.pe_size)
+        self.base = int(lv.vg.align(lv.size, roundup=True) // lv.vg.pe_size)
 
         if lv.req_grow:
             limits = [int(l // lv.vg.pe_size) for l in
@@ -1055,11 +1126,11 @@ class LVRequest(Request):
 
     @property
     def reserve_request(self):
+        lv = self.device
         reserve = super(LVRequest, self).reserve_request
-        if self.device.cached:
-            total_cache_size = self.device.cache.size + self.device.cache.md_size
-            reserve += int(self.device.vg.align(total_cache_size, roundup=True) / self.device.vg.pe_size)
-
+        if lv.cached:
+            reserve += int(lv.vg.align(lv.cache.size, roundup=True) / lv.vg.pe_size)
+        reserve += int(lv.vg.align(lv.metadata_vg_space_used, roundup=True) / lv.vg.pe_size)
         return reserve
 
 
@@ -1472,7 +1543,7 @@ class ThinPoolChunk(VGChunk):
     def __init__(self, pool, requests=None):
         """
             :param pool: the thin pool whose free space this chunk represents
-            :type pool: :class:`~.devices.LVMThinPoolDevice`
+            :type pool: :class:`~.devices.LVMLogicalVolumeDevice`
             :keyword requests: list of requests to add initially
             :type requests: list of :class:`LVRequest`
         """
@@ -1616,7 +1687,7 @@ class SameSizeSet(object):
 
             self.devices.append(partition)
 
-        self.size = int(size / len(devices))
+        self.size = size / len(devices)
         self.grow = grow
         self.max_size = max_size
 
@@ -1923,6 +1994,7 @@ def lv_compare(lv1, lv2):
 
     return ret
 
+
 _lv_compare_key = functools.cmp_to_key(lv_compare)
 
 
@@ -1933,10 +2005,6 @@ def _apply_chunk_growth(chunk):
             continue
 
         size = chunk.length_to_size(req.base + req.growth)
-
-        # reduce the size of thin pools by the pad size
-        if hasattr(req.device, "lvs"):
-            size -= Size(blockdev.lvm.get_thpool_padding(size, req.device.vg.pe_size, included=True))
 
         # Base is pe, which means potentially rounded up by as much as
         # pesize-1. As a result, you can't just add the growth to the
@@ -1974,10 +2042,8 @@ def grow_lvm(storage):
         for lv in fatlvs:
             if lv in vg.thinpools:
                 # make sure the pool's base size is at least the sum of its lvs'
-                lv.req_size = max(lv.req_size, lv.used_space)
-
-                # add the required padding to the requested pool size
-                lv.req_size += Size(blockdev.lvm.get_thpool_padding(lv.req_size, vg.pe_size))
+                lv.req_size = max(lv.min_size, lv.req_size, lv.used_space)
+                lv.size = lv.req_size
 
         # establish sizes for the percentage-based requests (which are fixed)
         percentage_based_lvs = [lv for lv in vg.lvs if lv.req_percent]
@@ -1996,6 +2062,17 @@ def grow_lvm(storage):
         chunk = VGChunk(vg, requests=[LVRequest(l) for l in fatlvs])
         chunk.grow_requests()
         _apply_chunk_growth(chunk)
+
+        # now that we have grown all thin pools (if any), let's calculate and
+        # set their metadata size if not told otherwise
+        for pool in vg.thinpools:
+            orig_pmspare_size = vg.pmspare_size
+            if not pool.exists and pool.metadata_size == Size(0):
+                pool.autoset_md_size()
+            if vg.pmspare_size != orig_pmspare_size:
+                # pmspare size change caused by the above step, let's trade part
+                # of pool's space for it
+                pool.size -= vg.pmspare_size - orig_pmspare_size
 
         # now, grow thin lv requests within their respective pools
         for pool in vg.thinpools:

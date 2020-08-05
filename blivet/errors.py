@@ -86,6 +86,13 @@ class FormatTeardownError(DeviceFormatError):
     pass
 
 
+class FormatResizeError(DeviceFormatError):
+
+    def __init__(self, message, details):
+        DeviceFormatError.__init__(self, message)
+        self.details = details
+
+
 class DMRaidMemberError(DeviceFormatError):
     pass
 
@@ -99,6 +106,10 @@ class FSError(DeviceFormatError):
 
 
 class FSWriteLabelError(FSError):
+    pass
+
+
+class FSWriteUUIDError(FSError):
     pass
 
 
@@ -177,6 +188,10 @@ class DeviceTreeError(StorageError):
     pass
 
 
+class NoSlavesError(DeviceTreeError):
+    pass
+
+
 class DeviceNotFoundError(StorageError):
     pass
 
@@ -185,6 +200,17 @@ class UnusableConfigurationError(StorageError):
 
     """ User has an unusable initial storage configuration. """
     suggestion = ""
+
+    def __init__(self, message, dev_name=None):
+        super(UnusableConfigurationError, self).__init__(message)
+        self.dev_name = dev_name
+
+
+class DuplicateUUIDError(UnusableConfigurationError, ValueError):
+    suggestion = N_("This is usually caused by cloning the device image resulting "
+                    "in duplication of the UUID value which should be unique. "
+                    "In that case you can either disconnect one of the devices or "
+                    "reformat it.")
 
 
 class DiskLabelScanError(UnusableConfigurationError):
@@ -239,18 +265,6 @@ class UnrecognizedFSTabEntryError(StorageError):
 class FSTabTypeMismatchError(StorageError):
     pass
 
-# size
-
-
-class SizePlacesError(StorageError):
-    pass
-
-# probing
-
-
-class UnknownSourceDeviceError(StorageError):
-    pass
-
 # factories
 
 
@@ -261,4 +275,25 @@ class DeviceFactoryError(StorageError):
 class AvailabilityError(StorageError):
 
     """ Raised if problem determining availability of external resource. """
+
+
+class EventManagerError(StorageError):
     pass
+
+
+class EventParamError(StorageError):
+    pass
+
+# external dependencies
+
+
+class DependencyError(StorageError):
+    """Raised when an external dependency is missing or not available"""
+
+
+class EventHandlingError(StorageError):
+    pass
+
+
+class ThreadError(StorageError):
+    """ An error occurred in a non-main thread. """

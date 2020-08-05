@@ -392,6 +392,7 @@ class RAIDLevels(object):
     def __iter__(self):
         return iter(self._raid_levels)
 
+
 ALL_LEVELS = RAIDLevels()
 
 
@@ -422,8 +423,17 @@ class RAID0(RAIDn):
     def _get_recommended_stride(self, member_count):
         return member_count * 16
 
+
+class Striped(RAID0):
+    """ subclass with canonical lvm name """
+    name = 'striped'
+    names = [name]
+
+
 RAID0 = RAID0()
 ALL_LEVELS.add_raid_level(RAID0)
+Striped = Striped()
+ALL_LEVELS.add_raid_level(Striped)
 
 
 class RAID1(RAIDn):
@@ -451,6 +461,7 @@ class RAID1(RAIDn):
 
     def _get_recommended_stride(self, member_count):
         return None
+
 
 RAID1 = RAID1()
 ALL_LEVELS.add_raid_level(RAID1)
@@ -482,6 +493,7 @@ class RAID4(RAIDn):
     def _get_recommended_stride(self, member_count):
         return (member_count - 1) * 16
 
+
 RAID4 = RAID4()
 ALL_LEVELS.add_raid_level(RAID4)
 
@@ -511,6 +523,7 @@ class RAID5(RAIDn):
 
     def _get_recommended_stride(self, member_count):
         return (member_count - 1) * 16
+
 
 RAID5 = RAID5()
 ALL_LEVELS.add_raid_level(RAID5)
@@ -542,6 +555,7 @@ class RAID6(RAIDn):
     def _get_recommended_stride(self, member_count):
         return None
 
+
 RAID6 = RAID6()
 ALL_LEVELS.add_raid_level(RAID6)
 
@@ -572,6 +586,7 @@ class RAID10(RAIDn):
     def _get_recommended_stride(self, member_count):
         return None
 
+
 RAID10 = RAID10()
 ALL_LEVELS.add_raid_level(RAID10)
 
@@ -580,6 +595,7 @@ class Container(RAIDLevel):
     name = "container"
     names = [name]
     min_members = 1
+    nick = property(lambda s: None)
     is_uniform = property(lambda s: False)
 
     def has_redundancy(self):
@@ -601,6 +617,7 @@ class Container(RAIDLevel):
         # pylint: disable=unused-argument
         return sum(member_sizes, Size(0))
 
+
 Container = Container()
 ALL_LEVELS.add_raid_level(Container)
 
@@ -615,6 +632,7 @@ class ErsatzRAID(RAIDLevel):
         distinct subclasses which have different names.
     """
     min_members = 1
+    nick = property(lambda s: None)
     is_uniform = property(lambda s: False)
 
     def has_redundancy(self):
@@ -650,7 +668,8 @@ class Linear(ErsatzRAID):
 
     """ subclass with canonical lvm name """
     name = 'linear'
-    names = [name]
+    names = [name, 'jbod']
+
 
 Linear = Linear()
 ALL_LEVELS.add_raid_level(Linear)
@@ -661,6 +680,7 @@ class Single(ErsatzRAID):
     """ subclass with canonical btrfs name. """
     name = 'single'
     names = [name]
+
 
 Single = Single()
 ALL_LEVELS.add_raid_level(Single)
@@ -675,10 +695,12 @@ class Dup(RAIDLevel):
     name = 'dup'
     names = [name]
     min_members = 1
+    nick = property(lambda s: None)
     is_uniform = property(lambda s: False)
 
     def has_redundancy(self):
         return True
+
 
 Dup = Dup()
 ALL_LEVELS.add_raid_level(Dup)

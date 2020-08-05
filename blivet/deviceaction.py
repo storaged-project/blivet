@@ -20,10 +20,13 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+import copy
+
+from six import add_metaclass
 
 from . import util
-
 from . import udev
+from .errors import DependencyError
 from .util import get_current_entropy
 from .devices import StorageDevice
 from .devices import PartitionDevice, LVMLogicalVolumeDevice
@@ -34,6 +37,8 @@ from .callbacks import CreateFormatPreData, CreateFormatPostData
 from .callbacks import ResizeFormatPreData, ResizeFormatPostData
 from .callbacks import WaitForEntropyData, ReportProgressData
 from .size import Size
+from .threads import SynchronizedMeta
+from .static_data import luks_data
 
 import logging
 log = logging.getLogger("blivet")
@@ -46,13 +51,15 @@ ACTION_TYPE_RESIZE = 500
 ACTION_TYPE_CREATE = 100
 ACTION_TYPE_ADD = 50
 ACTION_TYPE_REMOVE = 10
+ACTION_TYPE_CONFIGURE = 5
 
 action_strings = {ACTION_TYPE_NONE: "None",
                   ACTION_TYPE_DESTROY: "Destroy",
                   ACTION_TYPE_RESIZE: "Resize",
                   ACTION_TYPE_CREATE: "Create",
                   ACTION_TYPE_ADD: "Add",
-                  ACTION_TYPE_REMOVE: "Remove"}
+                  ACTION_TYPE_REMOVE: "Remove",
+                  ACTION_TYPE_CONFIGURE: "Configure"}
 
 ACTION_OBJECT_NONE = 0
 ACTION_OBJECT_FORMAT = 1
@@ -100,6 +107,7 @@ def resize_type_from_string(type_string):
             return k
 
 
+@add_metaclass(SynchronizedMeta)
 class DeviceAction(util.ObjectID):
 
     """ An action that will be carried out in the future on a Device.
@@ -154,14 +162,19 @@ class DeviceAction(util.ObjectID):
         if not isinstance(device, StorageDevice):
             raise ValueError("arg 1 must be a StorageDevice instance")
 
-        unavailable_dependencies = device.unavailable_dependencies
-        if unavailable_dependencies:
-            dependencies_str = ", ".join(str(d) for d in unavailable_dependencies)
-            raise ValueError("device type %s requires unavailable_dependencies: %s" % (device.type, dependencies_str))
-
         self.device = device
+
+        if self.is_device:
+            self._check_device_dependencies()
+
         self.container = getattr(self.device, "container", None)
         self._applied = False
+
+    def _check_device_dependencies(self):
+        unavailable_dependencies = self.device.unavailable_dependencies
+        if unavailable_dependencies:
+            dependencies_str = ", ".join(str(d) for d in unavailable_dependencies)
+            raise DependencyError("device type %s requires unavailable_dependencies: %s" % (self.device.type, dependencies_str))
 
     def apply(self):
         """ apply changes related to the action to the device(s) """
@@ -214,6 +227,10 @@ class DeviceAction(util.ObjectID):
     @property
     def is_remove(self):
         return self.type == ACTION_TYPE_REMOVE
+
+    @property
+    def is_configure(self):
+        return self.type == ACTION_TYPE_CONFIGURE
 
     @property
     def is_device(self):
@@ -348,6 +365,10 @@ class ActionCreateDevice(DeviceAction):
             # is not taken by non-cached LVs
             if not self.device.cached and action.device.cached:
                 rc = True
+            # create non-linear LVs before linear LVs because the latter ones
+            # can be allocated anywhere
+            elif self.device.seg_type == "linear" and action.device.seg_type != "linear":
+                rc = True
         elif (action.is_add and action.container == self.container):
             rc = True
 
@@ -365,9 +386,37 @@ class ActionDestroyDevice(DeviceAction):
         # XXX should we insist that device.fs be None?
         DeviceAction.__init__(self, device)
 
+    def _check_device_dependencies(self):
+        if self.device.type == "btrfs volume":
+            # XXX destroying a btrfs volume is a special case -- we don't destroy
+            # the device, but use wipefs to destroy format on its parents so we
+            # don't need btrfs plugin or btrfs-progs for this
+            return
+
+        super(ActionDestroyDevice, self)._check_device_dependencies()
+
+    def apply(self):
+        """ apply changes related to the action to the device(s) """
+        if self._applied:
+            return
+
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation += 1
+
+        super(ActionDestroyDevice, self).apply()
+
     def execute(self, callbacks=None):
         super(ActionDestroyDevice, self).execute(callbacks=callbacks)
         self.device.destroy()
+
+    def cancel(self):
+        if not self._applied:
+            return
+
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation -= 1
+
+        super(ActionDestroyDevice, self).cancel()
 
     def requires(self, action):
         """ Return True if self requires action.
@@ -384,8 +433,8 @@ class ActionDestroyDevice(DeviceAction):
         if action.device.depends_on(self.device) and action.is_destroy:
             rc = True
         elif (action.is_destroy and action.is_device and
-              isinstance(self.device, PartitionDevice) and
-              isinstance(action.device, PartitionDevice) and
+              isinstance(self.device, PartitionDevice) and self.device.disklabel_supported and
+              isinstance(action.device, PartitionDevice) and action.device.disklabel_supported and
               self.device.disk == action.device.disk):
             # remove partitions in descending numerical order
             self_num = self.device.parted_partition.number
@@ -491,6 +540,9 @@ class ActionResizeDevice(DeviceAction):
                   this action's device depends on
                 - the other action shrinks a device (or format it contains)
                   that depends on this action's device
+                - this action is a grow action and the other action is a shrink
+                  action and the two actions' respective devices share one or more
+                  ancestors
                 - the other action removes this action's device from a container
                 - the other action adds a member to this device's container
         """
@@ -504,6 +556,9 @@ class ActionResizeDevice(DeviceAction):
                 retval = True
             elif action.is_shrink and action.device.depends_on(self.device):
                 retval = True
+            elif self.is_grow and action.is_shrink and \
+                    set(self.device.ancestors).intersection(set(action.device.ancestors)):
+                return True
         elif (action.is_remove and action.device == self.device):
             retval = True
         elif (action.is_add and action.container == self.container):
@@ -544,7 +599,7 @@ class ActionCreateFormat(DeviceAction):
             raise ValueError("specified format already exists")
 
         if not self._format.formattable:
-            raise ValueError("resource to create this format %s is unavailable" % fmt)
+            raise ValueError("resource to create this format %s is unavailable" % self._format.type)
 
     def apply(self):
         """ apply changes related to the action to the device(s) """
@@ -560,7 +615,7 @@ class ActionCreateFormat(DeviceAction):
             msg = _("Creating %(type)s on %(device)s") % {"type": self.device.format.type, "device": self.device.path}
             callbacks.create_format_pre(CreateFormatPreData(msg))
 
-        if isinstance(self.device, PartitionDevice):
+        if isinstance(self.device, PartitionDevice) and self.device.disklabel_supported:
             for flag in partitionFlag.keys():
                 # Keep the LBA flag on pre-existing partitions
                 if flag in [PARTITION_LBA, self.format.parted_flag]:
@@ -580,6 +635,7 @@ class ActionCreateFormat(DeviceAction):
             # LUKS needs to wait for random data entropy if it is too low
             min_required_entropy = self.device.format.min_luks_entropy
             current_entropy = get_current_entropy()
+
             if current_entropy < min_required_entropy:
                 force_cont = False
                 if callbacks and callbacks.wait_for_entropy:
@@ -592,7 +648,7 @@ class ActionCreateFormat(DeviceAction):
                     log.warning("Forcing LUKS creation regardless of enough "
                                 "random data entropy (%d/%d)",
                                 get_current_entropy(), min_required_entropy)
-                    self.device.format.min_luks_entropy = 0
+                    luks_data.min_entropy = 0
 
         self.device.setup()
         self.device.format.create(device=self.device.path,
@@ -615,6 +671,8 @@ class ActionCreateFormat(DeviceAction):
         if callbacks and callbacks.create_format_post:
             msg = _("Created %(type)s on %(device)s") % {"type": self.device.format.type, "device": self.device.path}
             callbacks.create_format_post(CreateFormatPostData(msg))
+
+        self.device.original_format = copy.deepcopy(self.device.format)
 
     def cancel(self):
         if not self._applied:
@@ -677,15 +735,28 @@ class ActionDestroyFormat(DeviceAction):
             return
 
         self.device.format = None
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation += 1
+
         super(ActionDestroyFormat, self).apply()
 
     def execute(self, callbacks=None):
         """ wipe the filesystem signature from the device """
+        # remove any flag if set
         super(ActionDestroyFormat, self).execute(callbacks=callbacks)
         status = self.device.status
         self.device.setup(orig=True)
+        if hasattr(self.device, 'set_rw'):
+            self.device.set_rw()
+
         self.format.destroy()
         udev.settle()
+        if isinstance(self.device, PartitionDevice) and self.device.disklabel_supported:
+            if self.format.parted_flag:
+                self.device.unset_flag(self.format.parted_flag)
+            self.device.disk.original_format.commit_to_disk()
+            udev.settle()
+
         if not status:
             self.device.teardown()
 
@@ -694,6 +765,8 @@ class ActionDestroyFormat(DeviceAction):
             return
 
         self.device.format = self.orig_format
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation -= 1
         super(ActionDestroyFormat, self).cancel()
 
     @property
@@ -789,6 +862,9 @@ class ActionResizeFormat(DeviceAction):
             return
 
         self.device.format.target_size = self._target_size
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation += 1
+
         super(ActionResizeFormat, self).apply()
 
     def execute(self, callbacks=None):
@@ -809,6 +885,9 @@ class ActionResizeFormat(DeviceAction):
             return
 
         self.device.format.target_size = self.orig_size
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation -= 1
+
         super(ActionResizeFormat, self).cancel()
 
     def requires(self, action):
@@ -973,3 +1052,110 @@ class ActionRemoveMember(DeviceAction):
             retval = True
 
         return retval
+
+
+class ActionConfigureFormat(DeviceAction):
+
+    """ An action change of an attribute of device format """
+    type = ACTION_TYPE_CONFIGURE
+    obj = ACTION_OBJECT_FORMAT
+    type_desc_str = N_("configure format")
+
+    def __init__(self, device, attr, new_value):
+        super(ActionConfigureFormat, self).__init__(device)
+
+        self.device = device
+        self.attr = attr
+        self.new_value = new_value
+
+        config_actions_map = getattr(self.device.format, "config_actions_map", None)
+        if config_actions_map is None or self.attr not in config_actions_map.keys():
+            raise ValueError("Format %s doesn't support changing '%s' attribute "
+                             "using configuration actions" % (self.device.format.type, self.attr))
+
+        if config_actions_map[self.attr] is None:
+            self._execute = None
+        else:
+            self._execute = getattr(self.device.format, config_actions_map[self.attr], None)
+            if not callable(self._execute):
+                raise RuntimeError("Invalid method for changing format attribute '%s'" % self.attr)
+
+        self.old_value = getattr(self.device.format, self.attr)
+
+        if self._execute:
+            self._execute(dry_run=True)
+
+    def apply(self):
+        if self._applied:
+            return
+
+        setattr(self.device.format, self.attr, self.new_value)
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation += 1
+
+        super(ActionConfigureFormat, self).apply()
+
+    def cancel(self):
+        if not self._applied:
+            return
+
+        setattr(self.device.format, self.attr, self.old_value)
+        if hasattr(self.device, 'ignore_skip_activation'):
+            self.device.ignore_skip_activation -= 1
+
+    def execute(self, callbacks=None):
+        super(ActionConfigureFormat, self).execute(callbacks=callbacks)
+
+        if self._execute is not None:
+            self._execute(dry_run=False)
+
+
+class ActionConfigureDevice(DeviceAction):
+
+    """ An action change of an attribute of a device """
+    type = ACTION_TYPE_CONFIGURE
+    obj = ACTION_OBJECT_FORMAT
+    type_desc_str = N_("configure device")
+
+    def __init__(self, device, attr, new_value):
+        super(ActionConfigureDevice, self).__init__(device)
+
+        self.device = device
+        self.attr = attr
+        self.new_value = new_value
+
+        config_actions_map = getattr(self.device, "config_actions_map", None)
+        if config_actions_map is None or self.attr not in config_actions_map.keys():
+            raise ValueError("Device %s doesn't support changing '%s' attribute "
+                             "using configuration actions" % (self.device.type, self.attr))
+
+        if config_actions_map[self.attr] is None:
+            self._execute = None
+        else:
+            self._execute = getattr(self.device, config_actions_map[self.attr], None)
+            if not callable(self._execute):
+                raise RuntimeError("Invalid method for changing attribute '%s'" % self.attr)
+
+        self.old_value = getattr(self.device, self.attr)
+
+        if self._execute:
+            self._execute(dry_run=True)
+
+    def apply(self):
+        if self._applied:
+            return
+
+        setattr(self.device, self.attr, self.new_value)
+        super(ActionConfigureDevice, self).apply()
+
+    def cancel(self):
+        if not self._applied:
+            return
+
+        setattr(self.device, self.attr, self.old_value)
+
+    def execute(self, callbacks=None):
+        super(ActionConfigureDevice, self).execute(callbacks=callbacks)
+
+        if self._execute is not None:
+            self._execute(dry_run=False)

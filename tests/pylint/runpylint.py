@@ -10,16 +10,16 @@ class BlivetLintConfig(PocketLintConfig):
     def __init__(self):
         PocketLintConfig.__init__(self)
 
-        self.falsePositives = [FalsePositive(r"BTRFSVolumeDevice._create: Instance of 'DeviceFormat' has no 'label' member"),
-                               FalsePositive(r"Catching an exception which doesn't inherit from BaseException: (BlockDev|DM|Crypto|Swap|LVM|Btrfs|MDRaid|G)Error$"),
-                               FalsePositive(r"Function 'run_program' has no 'called' member"),
-                               FalsePositive(r"(PartitioningTestCase|PartitionDeviceTestCase).*: Instance of 'DeviceFormat' has no .* member"),
+        self.falsePositives = [FalsePositive(r"Catching an exception which doesn't inherit from (BaseException|Exception): (BlockDev|DM|Crypto|Swap|LVM|Btrfs|MDRaid|Utils|G)Error$"),
                                FalsePositive(r"Instance of 'int' has no .* member"),
-                               FalsePositive(r"Instance of 'LUKSDevice' has no .* member"),
                                FalsePositive(r"Method 'do_task' is abstract in class 'Task' but is not overridden"),
                                FalsePositive(r"Method 'do_task' is abstract in class 'UnimplementedTask' but is not overridden"),
                                FalsePositive(r"No value for argument 'member_count' in unbound method call$"),
-                               FalsePositive(r"No value for argument 'smallest_member_size' in unbound method call$")
+                               FalsePositive(r"No value for argument 'smallest_member_size' in unbound method call$"),
+                               FalsePositive(r"Parameters differ from overridden 'do_task' method$"),
+                               FalsePositive(r"Bad option value '(subprocess-popen-preexec-fn|try-except-raise|environment-modify)'"),
+                               FalsePositive(r"Instance of '(Action.*Device|Action.*Format|Action.*Member|Device|DeviceAction|DeviceFormat|Event|ObjectID|PartitionDevice|StorageDevice|BTRFS.*Device|LoopDevice)' has no 'id' member$"),
+                               FalsePositive(r"Instance of 'GError' has no 'message' member")  # overriding currently broken local pylint disable
                                ]
 
     @property
@@ -34,6 +34,15 @@ class BlivetLintConfig(PocketLintConfig):
                 "W0614",           # Unused import %s from wildcard import
                 "I0011",           # Locally disabling %s
                 ]
+
+    @property
+    def ignoreNames(self):
+        return {"translation-canary"}
+
+    @property
+    def extraArgs(self):
+        return ["--unsafe-load-any-extension=yes"]
+
 
 if __name__ == "__main__":
     conf = BlivetLintConfig()

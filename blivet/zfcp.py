@@ -22,12 +22,11 @@
 import os
 from . import udev
 from . import util
-from .util import open  # pylint: disable=redefined-builtin
 from .i18n import _
 from .util import stringize, unicodeize
 
 import gi
-gi.require_version("BlockDev", "1.0")
+gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -40,6 +39,7 @@ def logged_write_line_to_file(fn, value):
     log.debug("echo %s > %s", value, fn)
     f.write("%s\n" % (value))
     f.close()
+
 
 zfcpsysfs = "/sys/bus/ccw/drivers/zfcp"
 scsidevsysfs = "/sys/bus/scsi/devices"
@@ -201,8 +201,8 @@ class ZFCPDevice:
                 udev.settle()
                 return
 
-        log.warn("no scsi device found to delete for zfcp %s %s %s",
-                 self.devnum, self.wwpn, self.fcplun)
+        log.warning("no scsi device found to delete for zfcp %s %s %s",
+                    self.devnum, self.wwpn, self.fcplun)
 
     def offline_device(self):
         offline = "%s/%s/online" % (zfcpsysfs, self.devnum)
@@ -275,7 +275,7 @@ class ZFCPDevice:
         return True
 
 
-class ZFCP:
+class zFCP:
 
     """ ZFCP utility class.
 
@@ -328,7 +328,7 @@ class ZFCP:
                 wwpn = fields[2]
                 fcplun = fields[4]
             else:
-                log.warn("Invalid line found in %s: %s", zfcpconf, line)
+                log.warning("Invalid line found in %s: %s", zfcpconf, line)
                 continue
 
             try:
@@ -351,7 +351,7 @@ class ZFCP:
             try:
                 d.offline_device()
             except ValueError as e:
-                log.warn("%s", str(e))
+                log.warning("%s", str(e))
 
     def startup(self):
         if not self.down:
@@ -369,7 +369,7 @@ class ZFCP:
             try:
                 d.online_device()
             except ValueError as e:
-                log.warn("%s", str(e))
+                log.warning("%s", str(e))
 
     def write(self, root):
         if len(self.fcpdevs) == 0:
@@ -383,7 +383,8 @@ class ZFCP:
         f.write("alias scsi_hostadapter zfcp\n")
         f.close()
 
+
 # Create ZFCP singleton
-ZFCP = ZFCP()
+zfcp = zFCP()
 
 # vim:tw=78:ts=4:et:sw=4

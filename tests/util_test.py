@@ -1,8 +1,12 @@
 # pylint: skip-file
+import test_compat
 
+from six.moves import mock
+import six
 import unittest
 from decimal import Decimal
 
+from blivet import errors
 from blivet import util
 
 
@@ -23,6 +27,19 @@ class MiscTest(unittest.TestCase):
             self.assertTrue(util.power_of_two(2 ** i), msg=i)
             self.assertFalse(util.power_of_two(2 ** i + 1), msg=i)
             self.assertFalse(util.power_of_two(2 ** i - 1), msg=i)
+
+    def test_dedup_list(self):
+        # no duplicates, no change
+        self.assertEqual([1, 2, 3, 4], util.dedup_list([1, 2, 3, 4]))
+        # empty list no issue
+        self.assertEqual([], util.dedup_list([]))
+
+        # real deduplication
+        self.assertEqual([1, 2, 3, 4, 5, 6], util.dedup_list([1, 2, 3, 4, 2, 2, 2, 1, 3, 5, 3, 6, 6, 2, 3, 1, 5]))
+
+    def test_detect_virt(self):
+        in_virt = not util.run_program(["systemd-detect-virt", "--vm"])
+        self.assertEqual(util.detect_virt(), in_virt)
 
 
 class TestDefaultNamedtuple(unittest.TestCase):
@@ -47,3 +64,96 @@ class TestDefaultNamedtuple(unittest.TestCase):
 
         dnt = TestTuple()
         self.assertEqual(dnt, (None, None, 5, None))
+
+
+class Test(object):
+    def __init__(self, s):
+        self._s = s
+
+    @property
+    def s(self):
+        return self._s
+
+    @property
+    def ok(self):
+        return True
+
+    @property
+    def nok(self):
+        return False
+
+    @util.requires_property("s", "hi")
+    def say_hi(self):
+        return self.s + ", guys!"
+
+    @property
+    @util.requires_property("s", "hi")
+    def hi(self):
+        return self.s
+
+    @property
+    @util.requires_property("ok")
+    def good_news(self):
+        return "Everything okay!"
+
+    @property
+    @util.requires_property("nok")
+    def bad_news(self):
+        return "Nothing okay!"
+
+
+class TestRequiresProperty(unittest.TestCase):
+    def test_requires_property(self):
+        t = Test("hi")
+
+        self.assertEqual(t.s, "hi")
+        self.assertEqual(t.say_hi(), "hi, guys!")
+        self.assertEqual(t.hi, "hi")
+
+        t = Test("hello")
+        self.assertEqual(t.s, "hello")
+        with self.assertRaises(ValueError):
+            t.say_hi()
+        with self.assertRaises(ValueError):
+            t.hi()
+
+        self.assertEqual(t.good_news, "Everything okay!")
+
+        with self.assertRaises(ValueError):
+            t.bad_news
+
+
+class TestDependencyGuard(util.DependencyGuard):
+    error_msg = "test dep not satisfied"
+
+    def _check_avail(self):
+        return False
+
+
+_requires_something = TestDependencyGuard()
+
+
+class DependencyGuardTestCase(unittest.TestCase):
+    @_requires_something(critical=True)
+    def _test_dependency_guard_critical(self):
+        return True
+
+    @_requires_something(critical=False)
+    def _test_dependency_guard_non_critical(self):
+        return True
+
+    def test_dependency_guard(self):
+        guard = TestDependencyGuard()
+        if six.PY3:
+            with self.assertLogs("blivet", level="WARNING") as cm:
+                self.assertEqual(self._test_dependency_guard_non_critical(), None)
+            self.assertTrue(TestDependencyGuard.error_msg in "\n".join(cm.output))
+        else:
+            self.assertEqual(self._test_dependency_guard_non_critical(), None)
+
+        with self.assertRaises(errors.DependencyError):
+            self._test_dependency_guard_critical()
+
+        with mock.patch.object(_requires_something, '_check_avail', return_value=True):
+            self.assertEqual(self._test_dependency_guard_non_critical(), True)
+            self.assertEqual(self._test_dependency_guard_critical(), True)

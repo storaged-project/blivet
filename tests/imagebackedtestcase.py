@@ -5,7 +5,6 @@ import unittest
 from blivet import Blivet
 from blivet import util
 from blivet.size import Size
-from blivet.flags import flags
 
 
 @unittest.skip("disabled until it can be converted to run in a vm")
@@ -44,7 +43,7 @@ class ImageBackedTestCase(unittest.TestCase):
         """
         for (name, size) in iter(self.disks.items()):
             path = util.create_sparse_tempfile(name, size)
-            self.blivet.config.disk_images[name] = path
+            self.blivet.disk_images[name] = path
 
         #
         # set up the disk images with a disklabel
@@ -59,7 +58,6 @@ class ImageBackedTestCase(unittest.TestCase):
                 The disk images should already be in a populated devicetree.
 
         """
-        pass
 
     def set_up_storage(self):
         """ Create a device stack on top of disk images for this test to run on.
@@ -94,7 +92,6 @@ class ImageBackedTestCase(unittest.TestCase):
 
     def setUp(self):
         """ Do any setup required prior to running a test. """
-        flags.image_install = True
         self.blivet = Blivet()
 
         self.addCleanup(self._clean_up)
@@ -102,10 +99,19 @@ class ImageBackedTestCase(unittest.TestCase):
 
     def _clean_up(self):
         """ Clean up any resources that may have been set up for a test. """
+
+        # XXX The only reason for this may be lvmetad
+        for disk in self.blivet.disks:
+            self.blivet.recursive_remove(disk)
+
+        try:
+            self.blivet.do_it()
+        except Exception:
+            self.blivet.reset()
+            raise
+
         self.blivet.reset()
         self.blivet.devicetree.teardown_disk_images()
-        for fn in self.blivet.config.disk_images.values():
+        for fn in self.blivet.disk_images.values():
             if os.path.exists(fn):
                 os.unlink(fn)
-
-        flags.image_install = False

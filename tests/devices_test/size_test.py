@@ -1,7 +1,8 @@
 
 import unittest
 
-from blivet.devices import StorageDevice
+from blivet.devicelibs import crypto
+from blivet.devices import StorageDevice, LUKSDevice
 from blivet import errors
 from blivet.formats import get_format
 from blivet.size import Size
@@ -87,6 +88,7 @@ class StorageDeviceSizeTest(unittest.TestCase):
         # is non-zero
         ##
         dev._resizable = True
+        dev.format._resizable = True
         dev.target_size = new_size  # verify that the target size setter works
         self.assertEqual(dev.size, new_size)
         self.assertEqual(dev.size, dev.target_size)
@@ -99,3 +101,19 @@ class StorageDeviceSizeTest(unittest.TestCase):
         dev.target_size = Size(0)
         self.assertEqual(dev.size, initial_size)
         self.assertEqual(dev.size, dev.current_size)
+
+
+class LUKSDeviceSizeTest(StorageDeviceSizeTest):
+
+    def _get_device(self, *args, **kwargs):
+        exists = kwargs.get("exists", False)
+        slave = StorageDevice(*args, size=kwargs["size"] + crypto.LUKS_METADATA_SIZE, exists=exists)
+        return LUKSDevice(*args, **kwargs, parents=[slave])
+
+    def test_size_getter(self):
+        initial_size = Size("10 GiB")
+        dev = self._get_device('sizetest', size=initial_size)
+
+        # for LUKS size depends on the backing device size
+        self.assertEqual(dev.size, initial_size)
+        self.assertEqual(dev.slave.size, initial_size + crypto.LUKS_METADATA_SIZE)

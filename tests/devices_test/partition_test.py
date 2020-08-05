@@ -1,16 +1,34 @@
 # vim:set fileencoding=utf-8
+import test_compat  # pylint: disable=unused-import
 
+from collections import namedtuple
 import os
+import six
 import unittest
 import parted
 
-from unittest.mock import patch
+from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,import-error
 
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
+from blivet.devices import StorageDevice
+from blivet.errors import DeviceError
 from blivet.formats import get_format
 from blivet.size import Size
 from blivet.util import sparsetmpfile
+
+
+Weighted = namedtuple("Weighted", ["fstype", "mountpoint", "true_funcs", "weight"])
+
+weighted = [Weighted(fstype=None, mountpoint="/", true_funcs=[], weight=0),
+            Weighted(fstype=None, mountpoint="/boot", true_funcs=[], weight=2000),
+            Weighted(fstype="biosboot", mountpoint=None, true_funcs=['is_x86'], weight=5000),
+            Weighted(fstype="efi", mountpoint="/boot/efi", true_funcs=['is_efi'], weight=5000),
+            Weighted(fstype="prepboot", mountpoint=None, true_funcs=['is_ppc', 'is_ipseries'], weight=5000),
+            Weighted(fstype="appleboot", mountpoint=None, true_funcs=['is_ppc', 'is_pmac'], weight=5000),
+            Weighted(fstype=None, mountpoint="/", true_funcs=['is_arm'], weight=-100)]
+
+arch_funcs = ['is_arm', 'is_efi', 'is_ipseries', 'is_pmac', 'is_ppc', 'is_x86']
 
 
 class PartitionDeviceTestCase(unittest.TestCase):
@@ -18,7 +36,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
     def test_target_size(self):
         with sparsetmpfile("targetsizetest", Size("10 MiB")) as disk_file:
             disk = DiskFile(disk_file)
-            disk.format = get_format("disklabel", device=disk.path)
+            disk.format = get_format("disklabel", device=disk.path, label_type="msdos")
             grain_size = Size(disk.format.alignment.grainSize)
             sector_size = Size(disk.format.parted_device.sectorSize)
             start = int(grain_size)
@@ -48,28 +66,28 @@ class PartitionDeviceTestCase(unittest.TestCase):
             self.assertEqual(device.max_size, Size("9 MiB"))
 
             # ValueError if not Size
-            with self.assertRaisesRegex(ValueError,
-                                        "new size must.*type Size"):
+            with six.assertRaisesRegex(self, ValueError,
+                                       "new size must.*type Size"):
                 device.target_size = 22
 
             self.assertEqual(device.target_size, orig_size)
 
             # ValueError if size smaller than min_size
-            with self.assertRaisesRegex(ValueError,
-                                        "size.*smaller than the minimum"):
+            with six.assertRaisesRegex(self, ValueError,
+                                       "size.*smaller than the minimum"):
                 device.target_size = Size("1 MiB")
 
             self.assertEqual(device.target_size, orig_size)
 
             # ValueError if size larger than max_size
-            with self.assertRaisesRegex(ValueError,
-                                        "size.*larger than the maximum"):
+            with six.assertRaisesRegex(self, ValueError,
+                                       "size.*larger than the maximum"):
                 device.target_size = Size("11 MiB")
 
             self.assertEqual(device.target_size, orig_size)
 
             # ValueError if unaligned
-            with self.assertRaisesRegex(ValueError, "new size.*not.*aligned"):
+            with six.assertRaisesRegex(self, ValueError, "new size.*not.*aligned"):
                 device.target_size = Size("3.1 MiB")
 
             self.assertEqual(device.target_size, orig_size)
@@ -163,7 +181,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
     def test_extended_min_size(self):
         with sparsetmpfile("extendedtest", Size("10 MiB")) as disk_file:
             disk = DiskFile(disk_file)
-            disk.format = get_format("disklabel", device=disk.path)
+            disk.format = get_format("disklabel", device=disk.path, label_type="msdos")
             grain_size = Size(disk.format.alignment.grainSize)
             sector_size = Size(disk.format.parted_device.sectorSize)
 
@@ -177,6 +195,9 @@ class PartitionDeviceTestCase(unittest.TestCase):
             extended_device.disk = disk
             extended_device.exists = True
             extended_device.parted_partition = extended
+
+            # existing extended partition should be always resizable
+            self.assertTrue(extended_device.resizable)
 
             # no logical partitions --> min size should be max of 1 KiB and grain_size
             self.assertEqual(extended_device.min_size,
@@ -197,3 +218,161 @@ class PartitionDeviceTestCase(unittest.TestCase):
             end_free = (extended_end - logical_end) * sector_size
             self.assertEqual(extended_device.min_size,
                              extended_device.align_target_size(extended_device.current_size - end_free))
+
+    @patch("blivet.devices.partition.PartitionDevice.update_size", lambda part: None)
+    @patch("blivet.devices.partition.PartitionDevice.probe", lambda part: None)
+    def test_ctor_parted_partition_error_handling(self):
+        disk = StorageDevice("testdisk", exists=True)
+        disk._partitionable = True
+        with patch.object(disk, "_format") as fmt:
+            fmt.type = "disklabel"
+            self.assertTrue(disk.partitioned)
+
+            fmt.supported = True
+
+            # Normal case, no exn.
+            device = PartitionDevice("testpart1", exists=True, parents=[disk])
+            self.assertIn(device, disk.children)
+            device.parents.remove(disk)
+            self.assertEqual(len(disk.children), 0, msg="disk has children when it should not")
+
+            # Parted doesn't find a partition, exn is raised.
+            fmt.parted_disk.getPartitionByPath.return_value = None
+            self.assertRaises(DeviceError, PartitionDevice, "testpart1", exists=True, parents=[disk])
+            self.assertEqual(len(disk.children), 0, msg="device is still attached to disk in spite of ctor error")
+
+    @patch("blivet.devices.partition.arch")
+    def test_weight_1(self, *patches):
+        arch = patches[0]
+
+        dev = PartitionDevice('req1', exists=False)
+
+        arch.is_x86.return_value = False
+        arch.is_efi.return_value = False
+        arch.is_arm.return_value = False
+        arch.is_ppc.return_value = False
+
+        dev.req_base_weight = -7
+        self.assertEqual(dev.weight, -7)
+        dev.req_base_weight = None
+
+        with patch.object(dev, "_format") as fmt:
+            fmt.mountable = True
+
+            # weights for / and /boot are not platform-specific (except for arm)
+            fmt.mountpoint = "/"
+            self.assertEqual(dev.weight, 0)
+
+            fmt.mountpoint = "/boot"
+            self.assertEqual(dev.weight, 2000)
+
+            #
+            # x86 (BIOS)
+            #
+            arch.is_x86.return_value = True
+            arch.is_efi.return_value = False
+
+            # user-specified weight should override other logic
+            dev.req_base_weight = -7
+            self.assertEqual(dev.weight, -7)
+            dev.req_base_weight = None
+
+            fmt.mountpoint = ""
+            self.assertEqual(dev.weight, 0)
+
+            fmt.type = "biosboot"
+            self.assertEqual(dev.weight, 5000)
+
+            fmt.mountpoint = "/boot/efi"
+            fmt.type = "efi"
+            self.assertEqual(dev.weight, 0)
+
+            #
+            # UEFI
+            #
+            arch.is_x86.return_value = False
+            arch.is_efi.return_value = True
+            self.assertEqual(dev.weight, 5000)
+
+            fmt.type = "biosboot"
+            self.assertEqual(dev.weight, 0)
+
+            fmt.mountpoint = "/"
+            self.assertEqual(dev.weight, 0)
+
+            #
+            # arm
+            #
+            arch.is_x86.return_value = False
+            arch.is_efi.return_value = False
+            arch.is_arm.return_value = True
+
+            fmt.mountpoint = "/"
+            self.assertEqual(dev.weight, -100)
+
+            #
+            # ppc
+            #
+            arch.is_arm.return_value = False
+            arch.is_ppc.return_value = True
+            arch.is_pmac.return_value = False
+            arch.is_ipseries.return_value = False
+
+            fmt.mountpoint = "/"
+            self.assertEqual(dev.weight, 0)
+
+            fmt.type = "prepboot"
+            self.assertEqual(dev.weight, 0)
+
+            fmt.type = "appleboot"
+            self.assertEqual(dev.weight, 0)
+
+            arch.is_pmac.return_value = True
+            self.assertEqual(dev.weight, 5000)
+
+            fmt.type = "prepboot"
+            self.assertEqual(dev.weight, 0)
+
+            arch.is_pmac.return_value = False
+            arch.is_ipseries.return_value = True
+            self.assertEqual(dev.weight, 5000)
+
+            fmt.type = "appleboot"
+            self.assertEqual(dev.weight, 0)
+
+            fmt.mountpoint = "/boot/efi"
+            fmt.type = "efi"
+            self.assertEqual(dev.weight, 0)
+
+            fmt.type = "biosboot"
+            self.assertEqual(dev.weight, 0)
+
+            fmt.mountpoint = "/"
+            self.assertEqual(dev.weight, 0)
+
+            fmt.mountpoint = "/boot"
+            self.assertEqual(dev.weight, 2000)
+
+    def test_weight_2(self):
+        for spec in weighted:
+            part = PartitionDevice('weight_test')
+            part._format = Mock(name="fmt", type=spec.fstype, mountpoint=spec.mountpoint,
+                                mountable=spec.mountpoint is not None)
+            with patch('blivet.devices.partition.arch') as _arch:
+                for func in arch_funcs:
+                    f = getattr(_arch, func)
+                    f.return_value = func in spec.true_funcs
+
+                self.assertEqual(part.weight, spec.weight)
+
+    @patch("blivet.devices.partition.PartitionDevice.update_size", lambda part: None)
+    @patch("blivet.devices.partition.PartitionDevice.probe", lambda part: None)
+    def test_disk_is_empty(self):
+        disk = StorageDevice("testdisk", exists=True)
+        disk._partitionable = True
+        with patch.object(disk, "_format") as fmt:
+            fmt.type = "disklabel"
+            self.assertTrue(disk.is_empty)
+
+            PartitionDevice("testpart1", exists=True, parents=[disk])
+            self.assertFalse(disk.is_empty)

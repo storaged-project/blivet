@@ -1,0 +1,56 @@
+#!/bin/bash
+
+if [ $# -lt 3 ]; then
+    echo "Usage: $0 ORIGIN BRANCH_TO_MERGE DEST_BRANCH1 [DEST_BRANCH2 [DEST_BRANCH3 [...]]]"
+    exit 0
+fi
+
+# terminate on any error
+set -e
+
+# fetch the origin
+origin=$1; shift
+git fetch $origin
+
+if [ $? -ne 0 ]; then
+    echo "Failed to fetch $origin!" >&2
+    exit 1
+fi
+
+# rebase the source branch
+src=$1; shift
+# checkout the $origin/$src branch to check if it exists and thus prevent
+# merging local branches
+git checkout $origin/$src
+
+if [ $? -ne 0 ]; then
+    echo "Can't checkout $src branch!" >&2
+    exit 2
+fi
+
+# make sure the $src branch is up to date
+git checkout $src
+git rebase $origin/$src
+
+# merge "upwards" to the other branches
+for dest in $@; do
+    git checkout $dest
+    git rebase $origin/$dest
+    git merge --no-ff $src
+    src=$dest
+done
+
+echo "Will push the following changes:"
+echo
+for dest in $@; do
+    echo "On branch $dest:"
+    git log --oneline $origin/$dest..$dest
+    echo "-------------------------------"
+done
+echo
+git push -n $origin $@
+echo -n "Is this okay? [y/N] "
+read answ
+if [ x"$answ" == "xy" -o x"$answ" == "xY" ]; then
+    git push $origin $@
+fi

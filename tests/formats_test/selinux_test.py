@@ -1,97 +1,67 @@
+# pylint: disable=unused-import
 import os
-import selinux
-import tempfile
+from six import PY3
+if PY3:
+    from unittest.mock import patch, ANY
+else:
+    from mock import patch, ANY
+
 import unittest
+import selinux
 
 import blivet
-from tests import loopbackedtestcase
 import blivet.formats.fs as fs
-from blivet.size import Size
 
 
-@unittest.skipUnless(selinux.is_selinux_enabled() == 1, "SELinux is disabled")
-class SELinuxContextTestCase(loopbackedtestcase.LoopBackedTestCase):
-
+class SELinuxContextTestCase(unittest.TestCase):
     """Testing SELinux contexts.
     """
 
-    def __init__(self, methodName='run_test'):
-        super(SELinuxContextTestCase, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
-
     def setUp(self):
-        self.installer_mode = blivet.flags.installer_mode
+        if not blivet.flags.flags.selinux:
+            self.skipTest("SELinux disabled.")
+        self.selinux_reset_fcon = blivet.flags.flags.selinux_reset_fcon
+        self.selinux = blivet.flags.selinux
         super(SELinuxContextTestCase, self).setUp()
+        self.addCleanup(self._clean_up)
 
-    def test_mounting_ext2fs(self):
-        """ Test that lost+found directory gets assigned correct SELinux
-            context if installer_mode is True, and retains some random old
-            context if installer_mode is False.
-        """
-        LOST_AND_FOUND_CONTEXT = 'system_u:object_r:lost_found_t:s0'
-        an_fs = fs.Ext2FS(device=self.loop_devices[0], label="test")
+    @patch("blivet.util.mount", return_value=0)
+    @patch.object(fs.FS, "_pre_setup", return_value=True)
+    @patch("os.access", return_value=True)
+    # pylint: disable=unused-argument
+    # pylint: disable=no-self-use
+    def exec_mount_selinux_format(self, formt, *args):
+        """ Test of correct selinux context parameter value when mounting """
 
-        if not an_fs.formattable or not an_fs.mountable:
-            self.skipTest("can not create or mount filesystem %s" % an_fs.name)
+        lost_found_context = "system_u:object_r:lost_found_t:s0"
+        blivet.flags.selinux = True
+        fmt = formt()
 
-        self.assertIsNone(an_fs.create())
+        # Patch selinux context setting
+        with patch("selinux.lsetfilecon") as lsetfilecon:
+            lsetfilecon.return_value = True
 
-        blivet.flags.installer_mode = False
-        mountpoint = tempfile.mkdtemp("test.selinux")
-        an_fs.mount(mountpoint=mountpoint)
+            blivet.flags.flags.selinux_reset_fcon = True
+            fmt.setup(mountpoint="dummy")  # param needed to pass string check
+            if isinstance(fmt, fs.Ext2FS):
+                lsetfilecon.assert_called_with(ANY, lost_found_context)
+            else:
+                lsetfilecon.assert_not_called()
 
-        lost_and_found = os.path.join(mountpoint, "lost+found")
-        self.assertTrue(os.path.exists(lost_and_found))
+            lsetfilecon.reset_mock()
 
-        lost_and_found_selinux_context = selinux.getfilecon(lost_and_found)
+            blivet.flags.flags.selinux_reset_fcon = False
+            fmt.setup(mountpoint="dummy")  # param needed to pass string check
+            lsetfilecon.assert_not_called()
 
-        an_fs.unmount()
-        os.rmdir(mountpoint)
+    def test_mount_selinux_ext2fs(self):
+        """ Test of correct selinux context parameter value when mounting ext2"""
+        self.exec_mount_selinux_format(fs.Ext2FS)
 
-        self.assertNotEqual(lost_and_found_selinux_context[1], LOST_AND_FOUND_CONTEXT)
+    def test_mount_selinux_xfs(self):
+        """ Test of correct selinux context parameter value when mounting XFS"""
+        self.exec_mount_selinux_format(fs.XFS)
 
-        blivet.flags.installer_mode = True
-        mountpoint = tempfile.mkdtemp("test.selinux")
-        an_fs.mount(mountpoint=mountpoint)
-
-        lost_and_found = os.path.join(mountpoint, "lost+found")
-        self.assertTrue(os.path.exists(lost_and_found))
-
-        lost_and_found_selinux_context = selinux.getfilecon(lost_and_found)
-
-        an_fs.unmount()
-        os.rmdir(mountpoint)
-
-        self.assertEqual(lost_and_found_selinux_context[1], LOST_AND_FOUND_CONTEXT)
-
-    def test_mounting_xfs(self):
-        """ XFS does not have a lost+found directory. """
-        an_fs = fs.XFS(device=self.loop_devices[0], label="test")
-
-        if not an_fs.formattable or not an_fs.mountable:
-            self.skipTest("can not create or mount filesystem %s" % an_fs.name)
-
-        self.assertIsNone(an_fs.create())
-
-        blivet.flags.installer_mode = False
-        mountpoint = tempfile.mkdtemp("test.selinux")
-        an_fs.mount(mountpoint=mountpoint)
-
-        lost_and_found = os.path.join(mountpoint, "lost+found")
-        self.assertFalse(os.path.exists(lost_and_found))
-
-        an_fs.unmount()
-        os.rmdir(mountpoint)
-
-        blivet.flags.installer_mode = True
-        mountpoint = tempfile.mkdtemp("test.selinux")
-        an_fs.mount(mountpoint=mountpoint)
-
-        lost_and_found = os.path.join(mountpoint, "lost+found")
-        self.assertFalse(os.path.exists(lost_and_found))
-
-        an_fs.unmount()
-        os.rmdir(mountpoint)
-
-    def tearDown(self):
-        super(SELinuxContextTestCase, self).tearDown()
-        blivet.flags.installer_mode = self.installer_mode
+    def _clean_up(self):
+        blivet.flags.flags.selinux_reset_fcon = self.selinux_reset_fcon
+        blivet.flags.selinux = self.selinux

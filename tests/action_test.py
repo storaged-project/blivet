@@ -1,5 +1,10 @@
-
+from six import PY3
 import unittest
+
+if PY3:
+    from unittest.mock import Mock
+else:
+    from mock import Mock
 
 from tests.storagetestcase import StorageTestCase
 import blivet
@@ -7,11 +12,19 @@ from blivet.formats import get_format
 from blivet.size import Size
 
 # device classes for brevity's sake -- later on, that is
+from blivet.devices import StorageDevice
 from blivet.devices import DiskDevice
 from blivet.devices import PartitionDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
+
+# format classes
+from blivet.formats.fs import Ext2FS
+from blivet.formats.fs import Ext3FS
+from blivet.formats.fs import Ext4FS
+from blivet.formats.fs import FATFS
+from blivet.formats.fs import XFS
 
 # action classes
 from blivet.deviceaction import ActionCreateDevice
@@ -22,6 +35,8 @@ from blivet.deviceaction import ActionResizeFormat
 from blivet.deviceaction import ActionDestroyFormat
 from blivet.deviceaction import ActionAddMember
 from blivet.deviceaction import ActionRemoveMember
+from blivet.deviceaction import ActionConfigureFormat
+from blivet.deviceaction import ActionConfigureDevice
 
 DEVICE_CLASSES = [
     DiskDevice,
@@ -31,8 +46,17 @@ DEVICE_CLASSES = [
     LVMLogicalVolumeDevice
 ]
 
+FORMAT_CLASSES = [
+    Ext2FS,
+    Ext3FS,
+    Ext4FS,
+    FATFS,
+    XFS
+]
+
 
 @unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+@unittest.skipUnless(all(x().utils_available for x in FORMAT_CLASSES), "some unsupported format classes required for this test")
 class DeviceActionTestCase(StorageTestCase):
 
     """ DeviceActionTestSuite """
@@ -128,9 +152,9 @@ class DeviceActionTestCase(StorageTestCase):
 
         # clear the disks
         self.destroy_all_devices()
-        self.assertEqual(devicetree.get_devices_by_type("lvmlv"), [])
-        self.assertEqual(devicetree.get_devices_by_type("lvmvg"), [])
-        self.assertEqual(devicetree.get_devices_by_type("partition"), [])
+        self.assertEqual([d for d in devicetree.devices if d.type == "lvmlv"], [])
+        self.assertEqual(self.storage.vgs, [])
+        self.assertEqual(self.storage.partitions, [])
 
         sda = devicetree.get_device_by_name("sda")
         self.assertNotEqual(sda, None, "failed to find disk 'sda'")
@@ -277,7 +301,7 @@ class DeviceActionTestCase(StorageTestCase):
                                name="sdc1", size=Size("100 GiB"),
                                parents=[sdc], exists=True)
 
-        sdc1_format = self.new_format("ext2", device=sdc1.path, mountpoint="/")
+        sdc1_format = self.new_format("ext2", device=sdc1.path, mountpoint="/", size=Size("100 GiB"))
         create_sdc1_format = ActionCreateFormat(sdc1, sdc1_format)
         create_sdc1_format.apply()
         with self.assertRaises(blivet.errors.DeviceTreeError):
@@ -838,6 +862,19 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(grow_lv.requires(grow_pv), True)
         self.assertEqual(grow_pv.requires(grow_lv), False)
 
+        # ActionResizeDevice
+        # an action that grows a device should require an action that shrinks
+        # a device with ancestors in common
+        testlv2 = self.new_device(device_class=LVMLogicalVolumeDevice,
+                                  exists=True, size=Size("10 GiB"),
+                                  name="testlv2", parents=[testvg])
+        testlv2.format = self.new_format("ext4", device=testlv2.path,
+                                         exists=True, device_instance=testlv2)
+        shrink_lv2 = ActionResizeDevice(testlv2, testlv2.size - Size("10 GiB") + Ext4FS._min_size)
+        shrink_lv2.apply()
+
+        self.assertTrue(grow_lv.requires(shrink_lv2))
+
         # ActionResizeFormat
         # an action that grows a format should require the action that grows
         # the format's device
@@ -988,12 +1025,28 @@ class DeviceActionTestCase(StorageTestCase):
         # ActionDestroyFormat
         original_format = lv_root.format
         action = ActionDestroyFormat(lv_root)
+        orig_ignore_skip = lv_root.ignore_skip_activation
         self.assertEqual(lv_root.format, original_format)
         self.assertNotEqual(lv_root.format.type, None)
         action.apply()
         self.assertEqual(lv_root.format.type, None)
+        self.assertEqual(lv_root.ignore_skip_activation, orig_ignore_skip + 1)
         action.cancel()
         self.assertEqual(lv_root.format, original_format)
+        self.assertEqual(lv_root.ignore_skip_activation, orig_ignore_skip)
+
+        # ActionDestroyDevice
+        action1 = ActionDestroyFormat(lv_root)
+        orig_ignore_skip = lv_root.ignore_skip_activation
+        action1.apply()
+        self.assertEqual(lv_root.ignore_skip_activation, orig_ignore_skip + 1)
+        action2 = ActionDestroyDevice(lv_root)
+        action2.apply()
+        self.assertEqual(lv_root.ignore_skip_activation, orig_ignore_skip + 2)
+        action2.cancel()
+        self.assertEqual(lv_root.ignore_skip_activation, orig_ignore_skip + 1)
+        action1.cancel()
+        self.assertEqual(lv_root.ignore_skip_activation, orig_ignore_skip)
 
         sdc = self.storage.devicetree.get_device_by_name("sdc")
         sdc.format = None
@@ -1145,4 +1198,163 @@ class DeviceActionTestCase(StorageTestCase):
 
     def test_action_sorting(self, *args, **kwargs):
         """ Verify correct functioning of action sorting. """
-        pass
+
+    def test_lv_from_lvs_actions(self):
+        self.destroy_all_devices()
+        sdc = self.storage.devicetree.get_device_by_name("sdc")
+        sdc1 = self.new_device(device_class=PartitionDevice, name="sdc1",
+                               size=Size("50 GiB"), parents=[sdc], fmt=blivet.formats.get_format("lvmpv"))
+        self.schedule_create_device(sdc1)
+
+        vg = self.new_device(device_class=LVMVolumeGroupDevice,
+                             name="vg", parents=[sdc1])
+        self.schedule_create_device(vg)
+
+        lv1 = self.new_device(device_class=LVMLogicalVolumeDevice,
+                              name="data", parents=[vg],
+                              size=Size("10 GiB"))
+        create_lv1 = self.schedule_create_device(lv1)
+        lv2 = self.new_device(device_class=LVMLogicalVolumeDevice,
+                              name="meta", parents=[vg],
+                              size=Size("1 GiB"))
+        create_lv2 = self.schedule_create_device(lv2)
+
+        self.assertEqual(set(self.storage.lvs), {lv1, lv2})
+
+        pool = self.storage.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
+        create_pool = self.schedule_create_device(pool)
+
+        self.assertTrue(create_pool.requires(create_lv1))
+        self.assertTrue(create_pool.requires(create_lv2))
+
+        self.assertEqual(set(self.storage.lvs), {pool})
+
+        # removing the action should put the LVs back into the DT
+        self.storage.devicetree.actions.remove(create_pool)
+        self.assertEqual(set(self.storage.lvs), {lv1, lv2})
+        self.assertEqual(set(self.storage.vgs[0].lvs), {lv1, lv2})
+
+        # doing everything again should just do the same changes as above
+        pool = self.storage.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
+        create_pool = self.schedule_create_device(pool)
+        self.assertTrue(create_pool.requires(create_lv1))
+        self.assertTrue(create_pool.requires(create_lv2))
+        self.assertEqual(set(self.storage.lvs), {pool})
+
+        # destroying the device should put the LVs back into the DT
+        remove_pool = self.schedule_destroy_device(pool)
+        self.assertEqual(set(self.storage.lvs), {lv1, lv2})
+        self.assertEqual(set(self.storage.vgs[0].lvs), {lv1, lv2})
+
+        # cancelling the destroy action should put the pool and its internal LVs
+        # back
+        self.storage.devicetree.actions.remove(remove_pool)
+        self.assertEqual(set(self.storage.lvs), {pool})
+        self.assertEqual(set(pool._internal_lvs), {lv1, lv2})
+
+    def test_lvm_vdo_destroy(self):
+        self.destroy_all_devices()
+        sdc = self.storage.devicetree.get_device_by_name("sdc")
+        sdc1 = self.new_device(device_class=PartitionDevice, name="sdc1",
+                               size=Size("50 GiB"), parents=[sdc],
+                               fmt=blivet.formats.get_format("lvmpv"))
+        self.schedule_create_device(sdc1)
+
+        vg = self.new_device(device_class=LVMVolumeGroupDevice,
+                             name="vg", parents=[sdc1])
+        self.schedule_create_device(vg)
+
+        pool = self.new_device(device_class=LVMLogicalVolumeDevice,
+                               name="data", parents=[vg],
+                               size=Size("10 GiB"),
+                               seg_type="vdo-pool", exists=True)
+        self.storage.devicetree._add_device(pool)
+        lv = self.new_device(device_class=LVMLogicalVolumeDevice,
+                             name="meta", parents=[pool],
+                             size=Size("50 GiB"),
+                             seg_type="vdo", exists=True)
+        self.storage.devicetree._add_device(lv)
+
+        remove_lv = self.schedule_destroy_device(lv)
+        self.assertListEqual(pool.lvs, [])
+        self.assertNotIn(lv, vg.lvs)
+
+        # cancelling the action should put lv back to both vg and pool lvs
+        self.storage.devicetree.actions.remove(remove_lv)
+        self.assertListEqual(pool.lvs, [lv])
+        self.assertIn(lv, vg.lvs)
+
+        # can't remove non-leaf pool
+        with self.assertRaises(ValueError):
+            self.schedule_destroy_device(pool)
+
+        self.schedule_destroy_device(lv)
+        self.schedule_destroy_device(pool)
+
+
+class ConfigurationActionsTest(unittest.TestCase):
+
+    def test_device_configuration(self):
+
+        mock_device = Mock(spec=StorageDevice)
+        mock_device.configure_mock(unavailable_dependencies=[])
+        mock_device.configure_mock(config_actions_map={"conf1": "do_conf1", "conf2": "do_conf2", "conf3": None})
+        attrs = {"conf1": "old_value", "do_conf1": Mock(return_value=None), "conf2": "old_value", "do_conf2": None, "conf3": "old_value"}
+        mock_device.configure_mock(**attrs)
+
+        # attribute 'conf0' not in 'config_actions_map'
+        with self.assertRaises(ValueError):
+            ActionConfigureDevice(mock_device, "conf0", "new_value")
+
+        # wrong method for 'conf2' attribute in config_actions_map -- not callable
+        with self.assertRaises(RuntimeError):
+            ActionConfigureDevice(mock_device, "conf2", "new_value")
+
+        # set 'conf1' attribute to 'new_value'
+        # action is created and right configuration function was called with 'dry_run=True'
+        ac = ActionConfigureDevice(mock_device, "conf1", "new_value")
+        mock_device.do_conf1.assert_called_once_with(dry_run=True)
+        mock_device.reset_mock()
+
+        # try to apply, cancel and execute the action
+        ac.apply()
+        self.assertEqual(mock_device.conf1, "new_value")
+
+        ac.cancel()
+        self.assertEqual(mock_device.conf1, "old_value")
+
+        ac.execute()
+        mock_device.do_conf1.assert_called_once_with(dry_run=False)
+
+    def test_format_configuration(self):
+
+        mock_format = Mock()
+        mock_device = Mock(spec=StorageDevice, format=mock_format)
+        mock_device.configure_mock(unavailable_dependencies=[])
+        mock_format.configure_mock(config_actions_map={"conf1": "do_conf1", "conf2": "do_conf2", "conf3": None})
+        attrs = {"conf1": "old_value", "do_conf1.return_value": None, "conf2": "old_value", "do_conf2": None, "conf3": "old_value"}
+        mock_format.configure_mock(**attrs)
+
+        # attribute 'conf0' not in 'config_actions_map'
+        with self.assertRaises(ValueError):
+            ActionConfigureFormat(mock_device, "conf0", "new_value")
+
+        # wrong method for 'conf2' attribute in config_actions_map -- not callable
+        with self.assertRaises(RuntimeError):
+            ActionConfigureFormat(mock_device, "conf2", "new_value")
+
+        # set 'conf1' attribute to 'new_value'
+        # action is created and right configuration function was called with 'dry_run=True'
+        ac = ActionConfigureFormat(mock_device, "conf1", "new_value")
+        mock_format.do_conf1.assert_called_once_with(dry_run=True)
+        mock_format.reset_mock()
+
+        # try to apply, cancel and execute the action
+        ac.apply()
+        self.assertEqual(mock_format.conf1, "new_value")
+
+        ac.cancel()
+        self.assertEqual(mock_format.conf1, "old_value")
+
+        ac.execute()
+        mock_format.do_conf1.assert_called_once_with(dry_run=False)

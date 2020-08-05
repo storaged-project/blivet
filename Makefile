@@ -1,82 +1,106 @@
+PYTHON?=python3
+PKG_INSTALL?=dnf
+
+L10N_REPOSITORY=https://github.com/storaged-project/blivet-weblate
+
 PKGNAME=blivet
 SPECFILE=python-blivet.spec
-VERSION=$(shell awk '/Version:/ { print $$2 }' $(SPECFILE))
-RELEASE=$(shell awk '/Release:/ { print $$2 }' $(SPECFILE) | sed -e 's|%.*$$||g')
+VERSION=$(shell $(PYTHON) setup.py --version)
+RPMVERSION=$(shell rpmspec -q --queryformat "%{version}\n" $(SPECFILE) | head -1)
+RPMRELEASE=$(shell rpmspec --undefine '%dist' -q --queryformat "%{release}\n" $(SPECFILE) | head -1)
 RC_RELEASE ?= $(shell date -u +0.1.%Y%m%d%H%M%S)
-RELEASE_TAG=$(PKGNAME)-$(VERSION)-$(RELEASE)
+RELEASE_TAG=$(PKGNAME)-$(RPMVERSION)-$(RPMRELEASE)
 VERSION_TAG=$(PKGNAME)-$(VERSION)
 
-PYTHON=python3
-COVERAGE=coverage
-PEP8=$(PYTHON)-pep8
-ifeq ($(PYTHON),python3)
-  COVERAGE=coverage3
-endif
-
-ZANATA_PULL_ARGS = --transdir ./po/
-ZANATA_PUSH_ARGS = --srcdir ./po/ --push-type source --force
+COVERAGE=$(PYTHON) -m coverage
 
 MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
-
-TEST_DEPENDENCIES = $(shell rpm --specfile python-blivet.spec --requires | cut -d' ' -f1 | grep -v ^blivet)
-TEST_DEPENDENCIES += python-mock python3-mock
-TEST_DEPENDENCIES += cryptsetup-python cryptsetup-python3
-TEST_DEPENDENCIES += python3-gobject
-TEST_DEPENDENCIES += python-coverage python3-coverage
-TEST_DEPENDENCIES += xfsprogs hfsplus-tools
-TEST_DEPENDENCIES += python3-pocketlint
-TEST_DEPENDENCIES += python3-pep8
-TEST_DEPENDENCIES := $(shell echo $(sort $(TEST_DEPENDENCIES)) | uniq)
 
 all:
 	$(MAKE) -C po
 
 po-pull:
-	rpm -q zanata-python-client &>/dev/null || ( echo "need to run: yum install zanata-python-client"; exit 1 )
-	zanata pull $(ZANATA_PULL_ARGS)
+	git submodule update --init po
+	git submodule update --remote --merge po
 
-po-empty:
-	for lingua in $$(gawk 'match($$0, /locale>(.*)<\/locale/, ary) {print ary[1]}' ./zanata.xml) ; do \
-		[ -f ./po/$$lingua.po ] || \
-		msginit -i ./po/$(PKGNAME).pot -o ./po/$$lingua.po --no-translator || \
-		exit 1 ; \
-	done
-
-check-requires:
-	@echo "*** Checking if the dependencies required for testing and analysis are available ***"
-	@status=0 ; \
-	for pkg in $(TEST_DEPENDENCIES) ; do \
-		test_output="$$(rpm -q --whatprovides "$$pkg")" ; \
-		if [ $$? != 0 ]; then \
-			echo "$$test_output" ; \
-			status=1 ; \
-		fi ; \
-	done ; \
-	exit $$status
+potfile:
+	make -C po $(PKGNAME).pot
+	# This algorithm will make these steps:
+	# - clone localization repository
+	# - copy pot file to this repository
+	# - check if pot file is changed (ignore the POT-Creation-Date otherwise it's always changed)
+	# - if not changed:
+	#   - remove cloned repository
+	# - if changed:
+	#   - add pot file
+	#   - commit pot file
+	#   - tell user to verify this file and push to the remote from the temp dir
+	TEMP_DIR=$$(mktemp --tmpdir -d $(PKGNAME)-localization-XXXXXXXXXX) || exit 1 ; \
+	git clone --depth 1 -b master -- $(L10N_REPOSITORY) $$TEMP_DIR || exit 2 ; \
+	cp po/$(PKGNAME).pot $$TEMP_DIR/ || exit 3 ; \
+	pushd $$TEMP_DIR ; \
+	git difftool --trust-exit-code -y -x "diff -u -I '^\"POT-Creation-Date: .*$$'" HEAD ./$(PKGNAME).pot &>/dev/null ; \
+	if [ $$? -eq 0  ] ; then \
+		popd ; \
+		echo "Pot file is up to date" ; \
+		rm -rf $$TEMP_DIR ; \
+		git submodule foreach git checkout -- blivet.pot ; \
+	else \
+		git add ./$(PKGNAME).pot && \
+		git commit -m "Update $(PKGNAME).pot" && \
+		popd && \
+		git submodule foreach git checkout -- blivet.pot ; \
+		echo "Pot file updated for the localization repository $(L10N_REPOSITORY)" && \
+		echo "Please confirm and push:" && \
+		echo "$$TEMP_DIR" ; \
+	fi ;
 
 install-requires:
 	@echo "*** Installing the dependencies required for testing and analysis ***"
-	dnf install -y $(TEST_DEPENDENCIES)
+	@which ansible-playbook &>/dev/null || ( echo "Please install Ansible to install testing dependencies"; exit 1 )
+	@ansible-playbook -K -i "localhost," -c local install-test-dependencies.yml --extra-vars "python=$(PYTHON)"
 
-test: check-requires
+test:
 	@echo "*** Running unittests with $(PYTHON) ***"
-	PYTHONPATH=.:tests/ $(PYTHON) -m unittest discover -v -s tests/ -p '*_test.py'
+	PYTHONPATH=.:$(PYTHONPATH) $(PYTHON) -m unittest discover -v -s tests/ -p '*_test.py'
 
-coverage: check-requires
+coverage:
 	@echo "*** Running unittests with $(COVERAGE) for $(PYTHON) ***"
 	PYTHONPATH=.:tests/ $(COVERAGE) run --branch -m unittest discover -v -s tests/ -p '*_test.py'
 	$(COVERAGE) report --include="blivet/*" --show-missing
 	$(COVERAGE) report --include="blivet/*" > coverage-report.log
 
-pylint: check-requires
+pylint:
 	@echo "*** Running pylint ***"
-	PYTHONPATH=.:tests/:$(PYTHONPATH) tests/pylint/runpylint.py
+	PYTHONPATH=.:tests/:$(PYTHONPATH) $(PYTHON) tests/pylint/runpylint.py
 
-pep8: check-requires
+pep8:
 	@echo "*** Running pep8 compliance check ***"
-	$(PEP8) --ignore=E501 blivet/ tests/ examples/
+	@if test `which pycodestyle-3` ; then \
+		pep8='pycodestyle-3' ; \
+	elif test `which pycodestyle` ; then \
+		pep8='pycodestyle' ; \
+	elif test `which pep8` ; then \
+		pep8='pep8' ; \
+	else \
+		echo "You need to install pycodestyle/pep8 to run this check."; exit 1; \
+	fi ; \
+	$$pep8 --ignore=E501,E402,E731,W504,E741 blivet/ tests/ examples/
 
-check: pylint pep8
+canary:
+	@echo "*** Running translation-canary tests ***"
+	@if [ ! -e po/$(PKGNAME).pot ]; then \
+		echo "Translation files not present. Skipping" ; \
+	else \
+		PYTHONPATH=translation-canary:$(PYTHONPATH) $(PYTHON) -m translation_canary.translatable po/$(PKGNAME).pot; \
+	fi ; \
+
+check:
+	@status=0; \
+	$(MAKE) pylint || status=1; \
+	$(MAKE) pep8 || status=1; \
+	$(MAKE) canary || status=1; \
+	exit $$status
 
 clean:
 	-rm *.tar.gz blivet/*.pyc blivet/*/*.pyc ChangeLog
@@ -91,7 +115,9 @@ ChangeLog:
 	(GIT_DIR=.git git log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
 
 tag:
-	@if test $(RELEASE) = "1" ; then \
+	@if test $(VERSION) != $(RPMVERSION) ; then \
+	  tags='$(VERSION_TAG) $(RELEASE_TAG)' ; \
+	elif test $(RPMRELEASE) = "1" ; then \
 	  tags='$(VERSION_TAG) $(RELEASE_TAG)' ; \
 	else \
 	  tags='$(RELEASE_TAG)' ; \
@@ -104,35 +130,33 @@ tag:
 release: tag archive
 
 archive: po-pull
-	@rm -f ChangeLog
-	@make ChangeLog
-	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(VERSION_TAG) > $(PKGNAME)-$(VERSION).tar
+	@make -B ChangeLog
 	mkdir $(PKGNAME)-$(VERSION)
+	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(VERSION_TAG) | tar -xf -
 	cp -r po $(PKGNAME)-$(VERSION)
 	cp ChangeLog $(PKGNAME)-$(VERSION)/
-	tar -rf $(PKGNAME)-$(VERSION).tar $(PKGNAME)-$(VERSION)
-	gzip -9 $(PKGNAME)-$(VERSION).tar
+	( cd $(PKGNAME)-$(VERSION) && $(PYTHON) setup.py -q sdist --dist-dir .. )
 	rm -rf $(PKGNAME)-$(VERSION)
-	git checkout -- po/$(PKGNAME).pot
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
+	@make tests-archive
+
+tests-archive:
+	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(VERSION_TAG) tests/ | gzip -9 > $(PKGNAME)-$(VERSION)-tests.tar.gz
+	@echo "The test archive is in $(PKGNAME)-$(VERSION)-tests.tar.gz"
 
 local: po-pull
-	@rm -f ChangeLog
-	@make ChangeLog
-	@rm -rf $(PKGNAME)-$(VERSION).tar.gz
-	@rm -rf /tmp/$(PKGNAME)-$(VERSION) /tmp/$(PKGNAME)
-	@dir=$$PWD; cp -a $$dir /tmp/$(PKGNAME)-$(VERSION)
-	@cd /tmp/$(PKGNAME)-$(VERSION) ; $(PYTHON) setup.py -q sdist
-	@cp /tmp/$(PKGNAME)-$(VERSION)/dist/$(PKGNAME)-$(VERSION).tar.gz .
-	@rm -rf /tmp/$(PKGNAME)-$(VERSION)
+	@make -B ChangeLog
+	$(PYTHON) setup.py -q sdist --dist-dir .
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
+	git ls-files tests/ | tar -T- -czf $(PKGNAME)-$(VERSION)-tests.tar.gz
+	@echo "The test archive is in $(PKGNAME)-$(VERSION)-tests.tar.gz"
 
 rpmlog:
 	@git log --pretty="format:- %s (%ae)" $(RELEASE_TAG).. |sed -e 's/@.*)/)/'
 	@echo
 
 bumpver: po-pull
-	@opts="-n $(PKGNAME) -v $(VERSION) -r $(RELEASE)" ; \
+	@opts="-n $(PKGNAME) -v $(VERSION) -r $(RPMRELEASE)" ; \
 	if [ ! -z "$(IGNORE)" ]; then \
 		opts="$${opts} -i $(IGNORE)" ; \
 	fi ; \
@@ -146,11 +170,9 @@ bumpver: po-pull
 		opts="$${opts} -d" ; \
 	fi ; \
 	( scripts/makebumpver $${opts} ) || exit 1 ; \
-	make -C po $(PKGNAME).pot ; \
-	zanata push $(ZANATA_PUSH_ARGS)
 
-scratch-bumpver: po-empty
-	@opts="-n $(PKGNAME) -v $(VERSION) -r $(RELEASE) --newrelease $(RC_RELEASE)" ; \
+scratch-bumpver:
+	@opts="-n $(PKGNAME) -v $(RPMVERSION) -r $(RPMRELEASE) --newrelease $(RC_RELEASE)" ; \
 	if [ ! -z "$(IGNORE)" ]; then \
 		opts="$${opts} -i $(IGNORE)" ; \
 	fi ; \
@@ -163,15 +185,15 @@ scratch-bumpver: po-empty
 	if [ ! -z "$(BZDEBUG)" ]; then \
 		opts="$${opts} -d" ; \
 	fi ; \
-	( scripts/makebumpver $${opts} ) || exit 1 ;
+	( scripts/makebumpver $${opts} ) || exit 1 ; \
 
-scratch: po-empty
+scratch:
 	@rm -f ChangeLog
 	@make ChangeLog
 	@rm -rf $(PKGNAME)-$(VERSION).tar.gz
 	@rm -rf /tmp/$(PKGNAME)-$(VERSION) /tmp/$(PKGNAME)
 	@dir=$$PWD; cp -a $$dir /tmp/$(PKGNAME)-$(VERSION)
-	@cd /tmp/$(PKGNAME)-$(VERSION) ; python setup.py -q sdist
+	@cd /tmp/$(PKGNAME)-$(VERSION) ; $(PYTHON) setup.py -q sdist
 	@cp /tmp/$(PKGNAME)-$(VERSION)/dist/$(PKGNAME)-$(VERSION).tar.gz .
 	@rm -rf /tmp/$(PKGNAME)-$(VERSION)
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
@@ -181,8 +203,14 @@ rc-release: scratch-bumpver scratch
 	mock -r $(MOCKCHROOT) --buildsrpm  --spec ./$(SPECFILE) --sources . --resultdir $(PWD) || exit 1
 	mock -r $(MOCKCHROOT) --rebuild *src.rpm --resultdir $(PWD)  || exit 1
 
-ci: check coverage rc-release
-	@mkdir -p repo
-	@mv *rpm repo
+srpm: local
+	rpmbuild -bs --nodeps $(SPECFILE) --define "_sourcedir `pwd`"
+	rm -f $(PKGNAME)-$(VERSION).tar.gz
+
+rpm: local
+	rpmbuild -bb --nodeps $(SPECFILE) --define "_sourcedir `pwd`"
+	rm -f $(PKGNAME)-$(VERSION).tar.gz
+
+ci: check coverage
 
 .PHONY: check clean pylint pep8 install tag archive local

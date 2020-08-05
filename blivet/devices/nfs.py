@@ -71,10 +71,12 @@ class NFSDevice(StorageDevice, NetworkStorageDevice):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
 
-    def update_size(self):
+    def update_size(self, newsize=None):
         pass
 
-    @classmethod
-    def is_name_valid(cls, name):
+    def is_name_valid(self, name):
         # Override StorageDevice.is_name_valid to allow /
         return not('\x00' in name or name == '.' or name == '..')
+
+    def update_sysfs_path(self):
+        pass

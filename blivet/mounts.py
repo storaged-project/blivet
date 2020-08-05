@@ -22,7 +22,6 @@
 from collections import defaultdict
 from .udev import resolve_devspec
 from . import util
-from .util import open  # pylint: disable=redefined-builtin
 from .devicelibs import btrfs
 
 import logging
@@ -113,7 +112,7 @@ class MountsCache(object):
             subvolspec = str(subvolspec)
 
         # devspec == None means "get 'nodev' mount points"
-        if devspec is not None:
+        if devspec not in (None, "tmpfs"):
             # use the canonical device path (if available)
             canon_devspec = resolve_devspec(devspec, sysname=True)
             if canon_devspec is not None:
@@ -152,7 +151,8 @@ class MountsCache(object):
                     continue
 
                 # use the canonical device path (if available)
-                devspec = resolve_devspec(devspec, sysname=True) or devspec
+                if devspec.startswith("/dev"):
+                    devspec = resolve_devspec(devspec, sysname=True) or devspec
 
                 if fstype == "btrfs":
                     root = mountinfo.get_root(devspec, mountpoint)
@@ -165,13 +165,14 @@ class MountsCache(object):
                     self.mountpoints[(devspec, None)].append(mountpoint)
 
     def _cache_check(self):
-        """ Computes the MD5 hash on /proc/mounts and updates the cache on change
+        """ Computes the SHA256 hash on /proc/mounts and updates the cache on change
         """
 
-        md5hash = util.md5_file("/proc/mounts")
+        sha256hash = util.sha256_file("/proc/mounts")
 
-        if md5hash != self.mounts_hash:
-            self.mounts_hash = md5hash
+        if sha256hash != self.mounts_hash:
+            self.mounts_hash = sha256hash
             self._get_active_mounts()
+
 
 mounts_cache = MountsCache()
