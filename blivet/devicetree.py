@@ -907,31 +907,48 @@ class DeviceTreeBase(object):
                 hidden.add_hook(new=False)
                 lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
 
+    def _disk_in_taglist(self, disk, taglist):
+        # Taglist is a list containing mix of disk names and tags into which disk may belong.
+        # Check if it does. Raise ValueError if unknown tag is encountered.
+        if disk.name in taglist:
+            return True
+        tags = [t[1:] for t in taglist if t.startswith("@")]
+        for tag in tags:
+            if tag not in Tags.__members__:
+                raise ValueError("unknown ignoredisk tag '@%s' encountered" % tag)
+            if Tags(tag) in disk.tags:
+                return True
+        return False
+
     def _is_ignored_disk(self, disk):
         """ Checks config for lists of exclusive and ignored disks
             and returns if the given one should be ignored
         """
-
-        def disk_in_taglist(disk, taglist):
-            # Taglist is a list containing mix of disk names and tags into which disk may belong.
-            # Check if it does. Raise ValueError if unknown tag is encountered.
-            if disk.name in taglist:
-                return True
-            tags = [t[1:] for t in taglist if t.startswith("@")]
-            for tag in tags:
-                if tag not in Tags.__members__:
-                    raise ValueError("unknown ignoredisk tag '@%s' encountered" % tag)
-                if Tags(tag) in disk.tags:
-                    return True
-            return False
-
-        return ((self.ignored_disks and disk_in_taglist(disk, self.ignored_disks)) or
-                (self.exclusive_disks and not disk_in_taglist(disk, self.exclusive_disks)))
+        return ((self.ignored_disks and self._disk_in_taglist(disk, self.ignored_disks)) or
+                (self.exclusive_disks and not self._disk_in_taglist(disk, self.exclusive_disks)))
 
     def _hide_ignored_disks(self):
         # hide any subtrees that begin with an ignored disk
         for disk in [d for d in self._devices if d.is_disk]:
-            if self._is_ignored_disk(disk):
+            is_ignored = self.ignored_disks and self._disk_in_taglist(disk, self.ignored_disks)
+            is_exclusive = self.exclusive_disks and self._disk_in_taglist(disk, self.exclusive_disks)
+
+            if is_ignored:
+                if len(disk.children) == 1:
+                    if not all(self._is_ignored_disk(d) for d in disk.children[0].parents):
+                        raise DeviceTreeError("Including only a subset of raid/multipath member disks is not allowed.")
+
+                    # and also children like fwraid or mpath
+                    self.hide(disk.children[0])
+
+                # this disk is ignored: ignore it and all it's potential parents
+                for p in disk.parents:
+                    self.hide(p)
+
+                # and finally hide the disk itself
+                self.hide(disk)
+
+            if self.exclusive_disks and not is_exclusive:
                 ignored = True
                 # If the filter allows all members of a fwraid or mpath, the
                 # fwraid or mpath itself is implicitly allowed as well. I don't
