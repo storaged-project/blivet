@@ -201,11 +201,14 @@ def __is_blacklisted_blockdev(dev_name):
 
 def device_get_name(udev_info):
     """ Return the best name for a device based on the udev db data. """
+    dev_is_partition = device_is_partition(udev_info)
+    dev_sysfs_path = device_get_sysfs_path(udev_info)
     if "DM_NAME" in udev_info:
         name = udev_info["DM_NAME"]
-    elif "MD_DEVNAME" in udev_info and os.path.exists(device_get_sysfs_path(udev_info) + "/md"):
+    elif "MD_DEVNAME" in udev_info and (os.path.exists(dev_sysfs_path + "/md")
+                                        or (dev_is_partition and os.path.exists(dev_sysfs_path))):
         mdname = udev_info["MD_DEVNAME"]
-        if device_is_partition(udev_info):
+        if dev_is_partition:
             # for partitions on named RAID we want to use the raid name, not
             # the node, e.g. "raid1" instead of "md127p1"
             partnum = udev_info["ID_PART_ENTRY_NUMBER"]
