@@ -99,3 +99,13 @@ class LUKSNodevTestCase(unittest.TestCase):
         # no default for non-XTS modes
         fmt = LUKS(cipher="aes-cbc-plain64")
         self.assertEqual(fmt.key_size, 0)
+
+    def test_sector_size(self):
+        fmt = LUKS()
+        self.assertEqual(fmt.luks_sector_size, 0)
+
+        with self.assertRaises(ValueError):
+            fmt = LUKS(luks_version="luks1", luks_sector_size=4096)
+
+        fmt = LUKS(luks_version="luks2", luks_sector_size=4096)
+        self.assertEqual(fmt.luks_sector_size, 4096)

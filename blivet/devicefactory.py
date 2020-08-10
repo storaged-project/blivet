@@ -319,6 +319,8 @@ class DeviceFactory(object):
             :type luks_version: str
             :keyword pbkdf_args: optional arguments for LUKS2 key derivation function
             :type pbkdf_args: :class:`~.formats.luks.LUKS2PBKDFArgs`
+            :keyword luks_sector_size: encryption sector size (use only with LUKS version 2)
+            :type luks_sector_size: int
 
         """
         self.storage = storage  # a Blivet instance
@@ -339,6 +341,7 @@ class DeviceFactory(object):
 
         self.luks_version = kwargs.get("luks_version") or crypto.DEFAULT_LUKS_VERSION
         self.pbkdf_args = kwargs.get("pbkdf_args", None)
+        self.luks_sector_size = kwargs.get("luks_sector_size") or 0
 
         # If a device was passed, update the defaults based on it.
         self.device = kwargs.get("device")
@@ -688,6 +691,7 @@ class DeviceFactory(object):
             fmt_args["min_luks_entropy"] = self.min_luks_entropy
             fmt_args["luks_version"] = self.luks_version
             fmt_args["pbkdf_args"] = self.pbkdf_args
+            fmt_args["luks_sector_size"] = self.luks_sector_size
         else:
             fstype = self.fstype
             mountpoint = self.mountpoint
@@ -826,7 +830,8 @@ class DeviceFactory(object):
             self.storage.format_device(self.device, get_format("luks",
                                                                min_luks_entropy=self.min_luks_entropy,
                                                                luks_version=self.luks_version,
-                                                               pbkdf_args=self.pbkdf_args))
+                                                               pbkdf_args=self.pbkdf_args,
+                                                               luks_sector_size=self.luks_sector_size))
             luks_device = LUKSDevice("luks-%s" % self.device.name,
                                      fmt=leaf_format,
                                      parents=self.device)
@@ -835,9 +840,14 @@ class DeviceFactory(object):
             if parent_container:
                 parent_container.parents.append(self.device)
                 parent_container.parents.remove(orig_device)
-        elif self.encrypted and isinstance(self.device, LUKSDevice) and \
+
+        if self.encrypted and isinstance(self.device, LUKSDevice) and \
                 self.device.slave.format.luks_version != self.luks_version:
             self.device.slave.format.luks_version = self.luks_version
+
+        if self.encrypted and isinstance(self.device, LUKSDevice) and \
+                self.device.slave.format.luks_sector_size != self.luks_sector_size:
+            self.device.slave.format.luks_sector_size = self.luks_sector_size
 
     def _set_name(self):
         if not self.device_name:
@@ -1169,7 +1179,8 @@ class PartitionSetFactory(PartitionFactory):
                 self.storage.format_device(member, get_format("luks",
                                                               min_luks_entropy=self.min_luks_entropy,
                                                               luks_version=self.luks_version,
-                                                              pbkdf_args=self.pbkdf_args))
+                                                              pbkdf_args=self.pbkdf_args,
+                                                              luks_sector_size=self.luks_sector_size))
                 luks_member = LUKSDevice("luks-%s" % member.name,
                                          parents=[member],
                                          fmt=get_format(self.fstype))
@@ -1183,7 +1194,8 @@ class PartitionSetFactory(PartitionFactory):
 
             if member_encrypted and self.encrypted and self.luks_version != member.slave.format.luks_version:
                 member.slave.format.luks_version = self.luks_version
-                continue
+            if member_encrypted and self.encrypted and self.luks_sector_size != member.slave.format.luks_sector_size:
+                member.slave.format.luks_sector_size = self.luks_sector_size
 
         ##
         # Prepare previously allocated member partitions for reallocation.
@@ -1207,6 +1219,7 @@ class PartitionSetFactory(PartitionFactory):
                 member_format = "luks"
                 fmt_args["luks_version"] = self.luks_version
                 fmt_args["pbkdf_args"] = self.pbkdf_args
+                fmt_args["luks_sector_size"] = self.luks_sector_size
             else:
                 member_format = self.fstype
 
