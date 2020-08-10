@@ -82,12 +82,10 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch.object(DMDevice, "status", return_value=True)
     @patch.object(DMDevice, "update_sysfs_path")
     @patch.object(DeviceTree, "_add_slave_devices")
-    @patch("blivet.udev.device_is_dm_livecd", return_value=False)
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_get_sysfs_path", return_value=sentinel.sysfs_path)
     def test_run(self, *args):
         """Test dm device populator."""
-        device_is_dm_livecd = args[2]
         device_get_name = args[1]
 
         devicetree = DeviceTree()
@@ -99,22 +97,13 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
         data = {"DM_UUID": sentinel.dm_uuid}
         helper = self.helper_class(devicetree, data)
 
-        self.assertEqual(helper.run(), device)
-        self.assertEqual(devicetree._add_slave_devices.call_count, 1)  # pylint: disable=no-member
-        self.assertEqual(devicetree.get_device_by_name.call_count, 1)  # pylint: disable=no-member
-        # since we faked the lookup as if the device was already in the tree
-        # the helper should not have added it, meaning it shouldn't be there
-        self.assertFalse(device in devicetree.devices)
-
-        # The other case is adding a live media image
         parent = Mock()
         parent.parents = []
         devicetree._add_slave_devices.return_value = [parent]
         devicetree._add_device(parent)
         devicetree.get_device_by_name.return_value = None
-        device_name = "livedevice"
+        device_name = "dmdevice"
         device_get_name.return_value = device_name
-        device_is_dm_livecd.return_value = True
 
         device = helper.run()
         self.assertIsInstance(device, DMDevice)

@@ -1011,4 +1011,7 @@ def device_is_nvdimm_namespace(info):
 def device_is_hidden(info):
     sysfs_path = device_get_sysfs_path(info)
     hidden = util.get_sysfs_attr(sysfs_path, "hidden")
-    return bool(hidden)
+    if not hidden or not hidden.isnumeric():
+        return False
+
+    return bool(int(hidden))
