@@ -31,7 +31,7 @@ from ... import udev
 from ...devicelibs import raid
 from ...devices import MDRaidArrayDevice, MDContainerDevice
 from ...devices import device_path_to_name
-from ...errors import DeviceError, NoSlavesError
+from ...errors import DeviceError, NoParentsError
 from ...flags import flags
 from ...storage_log import log_method_call
 from .devicepopulator import DevicePopulator
@@ -53,7 +53,7 @@ class MDDevicePopulator(DevicePopulator):
 
         try:
             self._devicetree._add_parent_devices(self.data)
-        except NoSlavesError:
+        except NoParentsError:
             log.error("no parents found for mdarray %s, skipping", name)
             return None
 

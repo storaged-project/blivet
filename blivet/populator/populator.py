@@ -31,7 +31,7 @@ gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
-from ..errors import DeviceError, DeviceTreeError, NoSlavesError
+from ..errors import DeviceError, DeviceTreeError, NoParentsError
 from ..devices import DMLinearDevice, DMRaidArrayDevice
 from ..devices import FileDevice, LoopDevice
 from ..devices import MDRaidArrayDevice
@@ -105,7 +105,7 @@ class PopulatorMixin(object):
         parent_devices = []
         if not parent_names:
             log.error("no parents found for %s", name)
-            raise NoSlavesError("no parents found for device %s" % name)
+            raise NoParentsError("no parents found for device %s" % name)
 
         for parent_name in parent_names:
             path = os.path.normpath("%s/%s" % (parent_dir, parent_name))

@@ -107,7 +107,7 @@ class DeviceFactoryTestCase(unittest.TestCase):
         if kwargs.get("encrypted", False):
             self.assertEqual(device.parents[0].format.luks_version,
                              kwargs.get("luks_version", crypto.DEFAULT_LUKS_VERSION))
-            self.assertEqual(device.slave.format.luks_sector_size,
+            self.assertEqual(device.raw_device.format.luks_sector_size,
                              kwargs.get("luks_sector_size", 0))
 
         self.assertTrue(set(device.disks).issubset(kwargs["disks"]))
