@@ -43,7 +43,7 @@ class LUKSDevicePopulator(DevicePopulator):
         return udev.device_is_dm_luks(data)
 
     def run(self):
-        parents = self._devicetree._add_slave_devices(self.data)
+        parents = self._devicetree._add_parent_devices(self.data)
         device = LUKSDevice(udev.device_get_name(self.data),
                             sysfs_path=udev.device_get_sysfs_path(self.data),
                             parents=parents,
@@ -58,7 +58,7 @@ class IntegrityDevicePopulator(DevicePopulator):
         return udev.device_is_dm_integrity(data)
 
     def run(self):
-        parents = self._devicetree._add_slave_devices(self.data)
+        parents = self._devicetree._add_parent_devices(self.data)
         device = IntegrityDevice(udev.device_get_name(self.data),
                                  sysfs_path=udev.device_get_sysfs_path(self.data),
                                  parents=parents,

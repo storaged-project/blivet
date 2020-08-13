@@ -66,17 +66,13 @@ class LUKSDevice(DMCryptDevice):
 
     @property
     def raw_device(self):
-        return self.slave
-
-    @property
-    def slave(self):
         if self._has_integrity:
             return self.parents[0].parents[0]
         return self.parents[0]
 
     def _get_size(self):
         if not self.exists:
-            size = self.slave.size - crypto.LUKS_METADATA_SIZE
+            size = self.raw_device.size - crypto.LUKS_METADATA_SIZE
         elif self.resizable and self.target_size != Size(0):
             size = self.target_size
         else:
@@ -84,8 +80,8 @@ class LUKSDevice(DMCryptDevice):
         return size
 
     def _set_size(self, newsize):
-        if not self.exists and not self.slave.exists:
-            self.slave.size = newsize + crypto.LUKS_METADATA_SIZE
+        if not self.exists and not self.raw_device.exists:
+            self.raw_device.size = newsize + crypto.LUKS_METADATA_SIZE
 
             # just run the StorageDevice._set_size to make sure we are in the format limits
             super(LUKSDevice, self)._set_size(newsize - crypto.LUKS_METADATA_SIZE)
@@ -112,22 +108,22 @@ class LUKSDevice(DMCryptDevice):
             raise ValueError("size is smaller than the minimum for this device")
 
         # don't allow larger luks than size (or target size) of backing device
-        if newsize > (self.slave.size - crypto.LUKS_METADATA_SIZE):
+        if newsize > (self.raw_device.size - crypto.LUKS_METADATA_SIZE):
             log.error("requested size %s is larger than size of the backing device %s",
-                      newsize, self.slave.size)
+                      newsize, self.raw_device.size)
             raise ValueError("size is larger than the size of the backing device")
 
         if self.align_target_size(newsize) != newsize:
             raise ValueError("new size would violate alignment requirements")
 
     def _get_target_size(self):
-        return self.slave.format.target_size
+        return self.raw_device.format.target_size
 
     @property
     def max_size(self):
         """ The maximum size this luks device can be. Maximum is based on the
             maximum size of the backing device. """
-        max_luks = self.slave.max_size - crypto.LUKS_METADATA_SIZE
+        max_luks = self.raw_device.max_size - crypto.LUKS_METADATA_SIZE
         max_format = self.format.max_size
         return min(max_luks, max_format) if max_format else max_luks
 
@@ -135,7 +131,7 @@ class LUKSDevice(DMCryptDevice):
     def resizable(self):
         """ Can this device be resized? """
         return (self._resizable and self.exists and self.format.resizable and
-                self.slave.resizable and not self._has_integrity)
+                self.raw_device.resizable and not self._has_integrity)
 
     def resize(self):
         # size of LUKSDevice depends on size of the LUKS format on backing
@@ -143,7 +139,7 @@ class LUKSDevice(DMCryptDevice):
         log_method_call(self, self.name, status=self.status)
 
     def _post_create(self):
-        self.name = self.slave.format.map_name
+        self.name = self.raw_device.format.map_name
         StorageDevice._post_create(self)
 
     def _post_teardown(self, recursive=False):
@@ -155,10 +151,10 @@ class LUKSDevice(DMCryptDevice):
         StorageDevice._post_teardown(self, recursive=recursive)
 
     def dracut_setup_args(self):
-        return set(["rd.luks.uuid=luks-%s" % self.slave.format.uuid])
+        return set(["rd.luks.uuid=luks-%s" % self.raw_device.format.uuid])
 
     def populate_ksdata(self, data):
-        self.slave.populate_ksdata(data)
+        self.raw_device.populate_ksdata(data)
         data.encrypted = True
         super(LUKSDevice, self).populate_ksdata(data)
 

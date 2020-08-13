@@ -154,11 +154,6 @@ class DMDevice(StorageDevice):
         log_method_call(self, self.name, status=self.status)
         super(DMDevice, self)._set_name(value)
 
-    @property
-    def slave(self):
-        """ This device's backing device. """
-        return self.parents[0]
-
 
 class DMLinearDevice(DMDevice):
     _type = "dm-linear"
@@ -194,8 +189,8 @@ class DMLinearDevice(DMDevice):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
-        slave_length = self.slave.current_size / LINUX_SECTOR_SIZE
-        blockdev.dm.create_linear(self.name, self.slave.path, slave_length,
+        parent_length = self.parents[0].current_size / LINUX_SECTOR_SIZE
+        blockdev.dm.create_linear(self.name, self.parents[0].path, parent_length,
                                   self.dm_uuid)
 
     def _post_setup(self):

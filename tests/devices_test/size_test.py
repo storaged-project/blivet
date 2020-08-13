@@ -107,8 +107,8 @@ class LUKSDeviceSizeTest(StorageDeviceSizeTest):
 
     def _get_device(self, *args, **kwargs):
         exists = kwargs.get("exists", False)
-        slave = StorageDevice(*args, size=kwargs["size"] + crypto.LUKS_METADATA_SIZE, exists=exists)
-        return LUKSDevice(*args, **kwargs, parents=[slave])
+        parent = StorageDevice(*args, size=kwargs["size"] + crypto.LUKS_METADATA_SIZE, exists=exists)
+        return LUKSDevice(*args, **kwargs, parents=[parent])
 
     def test_size_getter(self):
         initial_size = Size("10 GiB")
@@ -116,4 +116,4 @@ class LUKSDeviceSizeTest(StorageDeviceSizeTest):
 
         # for LUKS size depends on the backing device size
         self.assertEqual(dev.size, initial_size)
-        self.assertEqual(dev.slave.size, initial_size + crypto.LUKS_METADATA_SIZE)
+        self.assertEqual(dev.raw_device.size, initial_size + crypto.LUKS_METADATA_SIZE)
