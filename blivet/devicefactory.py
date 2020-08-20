@@ -842,12 +842,12 @@ class DeviceFactory(object):
                 parent_container.parents.remove(orig_device)
 
         if self.encrypted and isinstance(self.device, LUKSDevice) and \
-                self.device.slave.format.luks_version != self.luks_version:
-            self.device.slave.format.luks_version = self.luks_version
+                self.raw_device.format.luks_version != self.luks_version:
+            self.raw_device.format.luks_version = self.luks_version
 
         if self.encrypted and isinstance(self.device, LUKSDevice) and \
-                self.device.slave.format.luks_sector_size != self.luks_sector_size:
-            self.device.slave.format.luks_sector_size = self.luks_sector_size
+                self.raw_device.format.luks_sector_size != self.luks_sector_size:
+            self.raw_device.format.luks_sector_size = self.luks_sector_size
 
     def _set_name(self):
         if not self.device_name:
@@ -1166,11 +1166,11 @@ class PartitionSetFactory(PartitionFactory):
                     container.parents.remove(member)
                 self.storage.destroy_device(member)
                 members.remove(member)
-                self.storage.format_device(member.slave,
+                self.storage.format_device(member.raw_device,
                                            get_format(self.fstype))
-                members.append(member.slave)
+                members.append(member.raw_device)
                 if container:
-                    container.parents.append(member.slave)
+                    container.parents.append(member.raw_device)
 
                 continue
 
@@ -1192,10 +1192,10 @@ class PartitionSetFactory(PartitionFactory):
 
                 continue
 
-            if member_encrypted and self.encrypted and self.luks_version != member.slave.format.luks_version:
-                member.slave.format.luks_version = self.luks_version
-            if member_encrypted and self.encrypted and self.luks_sector_size != member.slave.format.luks_sector_size:
-                member.slave.format.luks_sector_size = self.luks_sector_size
+            if member_encrypted and self.encrypted and self.luks_version != member.raw_device.format.luks_version:
+                member.raw_device.format.luks_version = self.luks_version
+            if member_encrypted and self.encrypted and self.luks_sector_size != member.raw_device.format.luks_sector_size:
+                member.raw_device.format.luks_sector_size = self.luks_sector_size
 
         ##
         # Prepare previously allocated member partitions for reallocation.
@@ -1255,7 +1255,7 @@ class PartitionSetFactory(PartitionFactory):
 
             if isinstance(member, LUKSDevice):
                 self.storage.destroy_device(member)
-                member = member.slave
+                member = member.raw_device
 
             self.storage.destroy_device(member)
 

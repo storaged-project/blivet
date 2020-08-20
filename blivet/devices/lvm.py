@@ -1631,6 +1631,7 @@ class LVMThinPoolMixin(object):
             log.debug("Using default chunk size: %s", self._chunk_size)
 
         old_md_size = self._metadata_size
+        old_pmspare_size = self.vg.pmspare_size
         self._metadata_size = Size(blockdev.lvm.get_thpool_meta_size(self._size,
                                                                      self._chunk_size,
                                                                      100))  # snapshots
@@ -1642,7 +1643,7 @@ class LVMThinPoolMixin(object):
         if self._metadata_size == old_md_size:
             log.debug("Rounded metadata size unchanged")
         else:
-            new_size = self.size - (self._metadata_size - old_md_size)
+            new_size = self.size - (self._metadata_size - old_md_size) - (self.vg.pmspare_size - old_pmspare_size)
             log.debug("Adjusting size from %s MiB to %s MiB",
                       self.size.convert_to("MiB"), new_size.convert_to("MiB"))
             self.size = new_size
