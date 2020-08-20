@@ -1,7 +1,7 @@
 PYTHON?=python3
 PKG_INSTALL?=dnf
 
-L10N_REPOSITORY=https://github.com/storaged-project/blivet-weblate
+L10N_REPOSITORY=git@github.com:storaged-project/blivet-weblate.git
 
 PKGNAME=blivet
 SPECFILE=python-blivet.spec
