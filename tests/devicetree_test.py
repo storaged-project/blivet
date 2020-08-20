@@ -399,51 +399,6 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertTrue(sdb in tree.devices)
         self.assertTrue(sdc in tree.devices)
 
-        # now test exclusive_disks special cases for multipath
-        sda.format = get_format("multipath_member", exists=True)
-        sdb.format = get_format("multipath_member", exists=True)
-        sdc.format = get_format("multipath_member", exists=True)
-        mpatha = MultipathDevice("mpatha", parents=[sda, sdb, sdc])
-        tree._add_device(mpatha)
-
-        tree.ignored_disks = []
-        tree.exclusive_disks = ["mpatha"]
-
-        with patch.object(tree, "hide") as hide:
-            tree._hide_ignored_disks()
-            self.assertFalse(hide.called)
-
-        tree._hide_ignored_disks()
-        self.assertTrue(sda in tree.devices)
-        self.assertTrue(sdb in tree.devices)
-        self.assertTrue(sdc in tree.devices)
-        self.assertTrue(mpatha in tree.devices)
-
-        # all members in exclusive_disks implies the mpath in exclusive_disks
-        tree.exclusive_disks = ["sda", "sdb", "sdc"]
-        with patch.object(tree, "hide") as hide:
-            tree._hide_ignored_disks()
-            self.assertFalse(hide.called)
-
-        tree._hide_ignored_disks()
-        self.assertTrue(sda in tree.devices)
-        self.assertTrue(sdb in tree.devices)
-        self.assertTrue(sdc in tree.devices)
-        self.assertTrue(mpatha in tree.devices)
-
-        tree.exclusive_disks = ["sda", "sdb"]
-        with patch.object(tree, "hide") as hide:
-            tree._hide_ignored_disks()
-            hide.assert_any_call(mpatha)
-            hide.assert_any_call(sdc)
-
-        # verify that hide works as expected
-        tree._hide_ignored_disks()
-        self.assertTrue(sda in tree.devices)
-        self.assertTrue(sdb in tree.devices)
-        self.assertFalse(sdc in tree.devices)
-        self.assertFalse(mpatha in tree.devices)
-
     def test_get_related_disks(self):
         tree = DeviceTree()
 
@@ -476,3 +431,115 @@ class DeviceTreeTestCase(unittest.TestCase):
         tree.unhide(sda)
         self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
         self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
+
+
+class DeviceTreeIgnoredExclusiveMultipathTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.tree = DeviceTree()
+
+        self.sda = DiskDevice("sda")
+        self.sdb = DiskDevice("sdb")
+        self.sdc = DiskDevice("sdc")
+
+        self.tree._add_device(self.sda)
+        self.tree._add_device(self.sdb)
+        self.tree._add_device(self.sdc)
+
+        self.assertTrue(self.sda in self.tree.devices)
+        self.assertTrue(self.sdb in self.tree.devices)
+        self.assertTrue(self.sdc in self.tree.devices)
+
+        # now test exclusive_disks special cases for multipath
+        self.sda.format = get_format("multipath_member", exists=True)
+        self.sdb.format = get_format("multipath_member", exists=True)
+        self.sdc.format = get_format("multipath_member", exists=True)
+        self.mpatha = MultipathDevice("mpatha", parents=[self.sda, self.sdb, self.sdc])
+        self.tree._add_device(self.mpatha)
+
+    def test_exclusive_disks_multipath_1(self):
+        # multipath is exclusive -> all disks should be exclusive
+        self.tree.ignored_disks = []
+        self.tree.exclusive_disks = ["mpatha"]
+
+        with patch.object(self.tree, "hide") as hide:
+            self.tree._hide_ignored_disks()
+            self.assertFalse(hide.called)
+
+        self.tree._hide_ignored_disks()
+        self.assertTrue(self.sda in self.tree.devices)
+        self.assertTrue(self.sdb in self.tree.devices)
+        self.assertTrue(self.sdc in self.tree.devices)
+        self.assertTrue(self.mpatha in self.tree.devices)
+
+    def test_exclusive_disks_multipath_2(self):
+        # all disks exclusive -> mpath should also be exclusive
+        self.tree.exclusive_disks = ["sda", "sdb", "sdc"]
+        with patch.object(self.tree, "hide") as hide:
+            self.tree._hide_ignored_disks()
+            self.assertFalse(hide.called)
+
+        self.tree._hide_ignored_disks()
+        self.assertTrue(self.sda in self.tree.devices)
+        self.assertTrue(self.sdb in self.tree.devices)
+        self.assertTrue(self.sdc in self.tree.devices)
+        self.assertTrue(self.mpatha in self.tree.devices)
+
+    def test_exclusive_disks_multipath_3(self):
+        # some disks exclusive -> mpath should be hidden
+        self.tree.exclusive_disks = ["sda", "sdb"]
+        with patch.object(self.tree, "hide") as hide:
+            self.tree._hide_ignored_disks()
+            hide.assert_any_call(self.mpatha)
+            hide.assert_any_call(self.sdc)
+
+        # verify that hide works as expected
+        self.tree._hide_ignored_disks()
+        self.assertTrue(self.sda in self.tree.devices)
+        self.assertTrue(self.sdb in self.tree.devices)
+        self.assertFalse(self.sdc in self.tree.devices)
+        self.assertFalse(self.mpatha in self.tree.devices)
+
+    def test_ignored_disks_multipath_1(self):
+        # mpatha ignored -> disks should be hidden
+        self.tree.ignored_disks = ["mpatha"]
+        self.tree.exclusive_disks = []
+
+        with patch.object(self.tree, "hide") as hide:
+            self.tree._hide_ignored_disks()
+            hide.assert_any_call(self.mpatha)
+            hide.assert_any_call(self.sda)
+            hide.assert_any_call(self.sdb)
+            hide.assert_any_call(self.sdc)
+
+        self.tree._hide_ignored_disks()
+        self.assertFalse(self.sda in self.tree.devices)
+        self.assertFalse(self.sdb in self.tree.devices)
+        self.assertFalse(self.sdc in self.tree.devices)
+        self.assertFalse(self.mpatha in self.tree.devices)
+
+    def test_ignored_disks_multipath_2(self):
+        # all disks ignored -> mpath should be hidden
+        self.tree.ignored_disks = ["sda", "sdb", "sdc"]
+        self.tree.exclusive_disks = []
+
+        with patch.object(self.tree, "hide") as hide:
+            self.tree._hide_ignored_disks()
+            hide.assert_any_call(self.mpatha)
+            hide.assert_any_call(self.sda)
+            hide.assert_any_call(self.sdb)
+            hide.assert_any_call(self.sdc)
+
+        self.tree._hide_ignored_disks()
+        self.assertFalse(self.sda in self.tree.devices)
+        self.assertFalse(self.sdb in self.tree.devices)
+        self.assertFalse(self.sdc in self.tree.devices)
+        self.assertFalse(self.mpatha in self.tree.devices)
+
+    def test_ignored_disks_multipath_3(self):
+        # some disks ignored -> error
+        self.tree.ignored_disks = ["sda", "sdb"]
+        self.tree.exclusive_disks = []
+
+        with self.assertRaises(DeviceTreeError):
+            self.tree._hide_ignored_disks()
