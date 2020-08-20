@@ -1,3 +1,38 @@
+3.3.0
+======
+* `Localization Platform Change`_
+* `XFS Grow Support`_
+* `Better Handling of Unknown Device Mapper Devices`_
+* `F2FS Support`_
+* `Removed`_
+
+ * `DMDevice.slave`, `LoopDevice.slave`, `LUKSDevice.slave`
+ * `blivet.errors.NoSlavesError`
+ * `blivet.udev.device_name_blacklist`
+
+Localization Platform Change
+-----------------------------
+Localization platform has been changed from Zanata to Weblate.
+
+XFS Grow Support
+-----------------
+XFS format can now be resized by Blivet.
+
+Better Handling of Unknown Device Mapper Devices
+-------------------------------------------------
+Unknown/unsupported Device Mapper devices are now added to the
+devicetree and no longer causes errors during populate.
+
+F2FS Support
+-------------
+Blivet can now create F2FS filesystem.
+
+Removed
+--------
+* `DMDevice.slave`, `LoopDevice.slave`, `LUKSDevice.slave`
+* `blivet.errors.NoSlavesError`
+* `blivet.udev.device_name_blacklist`
+
 3.2.0
 ======
 * `Alignment to Minimal I/O Size`
