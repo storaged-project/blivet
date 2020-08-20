@@ -205,11 +205,11 @@ rc-release: scratch-bumpver scratch
 
 srpm: local
 	rpmbuild -bs --nodeps $(SPECFILE) --define "_sourcedir `pwd`"
-	rm -f $(PKGNAME)-$(VERSION).tar.gz
+	rm -f $(PKGNAME)-$(VERSION).tar.gz $(PKGNAME)-$(VERSION)-tests.tar.gz
 
 rpm: local
 	rpmbuild -bb --nodeps $(SPECFILE) --define "_sourcedir `pwd`"
-	rm -f $(PKGNAME)-$(VERSION).tar.gz
+	rm -f $(PKGNAME)-$(VERSION).tar.gz $(PKGNAME)-$(VERSION)-tests.tar.gz
 
 ci: check coverage
 
