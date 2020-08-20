@@ -28,10 +28,11 @@ import gi
 gi.require_version("BlockDev", "2.0")
 
 import parted
+import _ped
 
 from .errors import DeviceError, PartitioningError, AlignmentError
 from .flags import flags
-from .devices import Device, PartitionDevice, LUKSDevice, device_path_to_name
+from .devices import Device, PartitionDevice, device_path_to_name
 from .size import Size
 from .i18n import _
 from .util import stringize, unicodeize, compare
@@ -466,8 +467,13 @@ def add_partition(disklabel, free, part_type, size, start=None, end=None):
                                  type=part_type,
                                  geometry=new_geom)
     constraint = parted.Constraint(exactGeom=new_geom)
-    disklabel.parted_disk.addPartition(partition=partition,
-                                       constraint=constraint)
+
+    try:
+        disklabel.parted_disk.addPartition(partition=partition,
+                                           constraint=constraint)
+    except _ped.PartitionException as e:
+        raise PartitioningError(_("failed to add partition to disk: %s") % str(e))
+
     return partition
 
 
@@ -1626,15 +1632,7 @@ class TotalSizeSet(object):
             :param size: the target combined size
             :type size: :class:`~.size.Size`
         """
-        self.devices = []
-        for device in devices:
-            if isinstance(device, LUKSDevice):
-                partition = device.slave
-            else:
-                partition = device
-
-            self.devices.append(partition)
-
+        self.devices = [d.raw_device for d in devices]
         self.size = size
 
         self.requests = []
@@ -1672,15 +1670,7 @@ class SameSizeSet(object):
             :keyword max_size: the maximum size for growable devices
             :type max_size: :class:`~.size.Size`
         """
-        self.devices = []
-        for device in devices:
-            if isinstance(device, LUKSDevice):
-                partition = device.slave
-            else:
-                partition = device
-
-            self.devices.append(partition)
-
+        self.devices = [d.raw_device for d in devices]
         self.size = size / len(devices)
         self.grow = grow
         self.max_size = max_size

@@ -4,6 +4,9 @@ import unittest
 from decimal import Decimal
 import os
 
+import test_compat  # pylint: disable=unused-import
+from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
+
 import blivet
 
 from blivet import devicefactory
@@ -102,8 +105,10 @@ class DeviceFactoryTestCase(unittest.TestCase):
                          kwargs.get("encrypted", False) or
                          kwargs.get("container_encrypted", False))
         if kwargs.get("encrypted", False):
-            self.assertEqual(device.slave.format.luks_version,
+            self.assertEqual(device.parents[0].format.luks_version,
                              kwargs.get("luks_version", crypto.DEFAULT_LUKS_VERSION))
+            self.assertEqual(device.raw_device.format.luks_sector_size,
+                             kwargs.get("luks_sector_size", 0))
 
         self.assertTrue(set(device.disks).issubset(kwargs["disks"]))
 
@@ -166,6 +171,11 @@ class DeviceFactoryTestCase(unittest.TestCase):
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
+        # Change LUKS sector size
+        kwargs["luks_sector_size"] = 4096
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
     def _get_test_factory_args(self):
         """ Return kwarg dict of type-specific factory ctor args. """
         return dict()
@@ -179,7 +189,8 @@ class DeviceFactoryTestCase(unittest.TestCase):
         """
         return Size("1 MiB")
 
-    def test_get_free_disk_space(self):
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_get_free_disk_space(self, *args):  # pylint: disable=unused-argument
         # get_free_disk_space should return the total free space on disks
         kwargs = self._get_test_factory_args()
         kwargs["size"] = Size("500 MiB")
@@ -206,7 +217,8 @@ class DeviceFactoryTestCase(unittest.TestCase):
                                sum(d.size for d in self.b.disks) - device_space,
                                delta=self._get_size_delta(devices=[device]))
 
-    def test_normalize_size(self):
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_normalize_size(self, *args):  # pylint: disable=unused-argument
         # _normalize_size should adjust target size to within the format limits
         fstype = "ext2"
         ext2 = get_format(fstype)
@@ -258,7 +270,8 @@ class DeviceFactoryTestCase(unittest.TestCase):
         factory = devicefactory.get_device_factory(self.b)
         self.assertIsInstance(factory, devicefactory.LVMFactory)
 
-    def test_factory_defaults(self):
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_factory_defaults(self, *args):  # pylint: disable=unused-argument
         ctor_kwargs = self._get_test_factory_args()
         factory = devicefactory.get_device_factory(self.b, self.device_type, **ctor_kwargs)
         for setting, value in factory._default_settings.items():
@@ -322,7 +335,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         device = args[0]
 
         if kwargs.get("encrypted"):
-            container = device.slave.container
+            container = device.parents[0].container
         else:
             container = device.container
 
@@ -341,10 +354,15 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
             self.assertIsInstance(pv, member_class)
 
             if pv.encrypted:
-                self.assertEqual(pv.slave.format.luks_version,
+                self.assertEqual(pv.parents[0].format.luks_version,
                                  kwargs.get("luks_version", crypto.DEFAULT_LUKS_VERSION))
 
-    def test_device_factory(self):
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         super(LVMFactoryTestCase, self).test_device_factory()
 
         ##
@@ -459,6 +477,14 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_factory_defaults(self, *args):  # pylint: disable=unused-argument
+        super(LVMFactoryTestCase, self).test_factory_defaults()
+
     def _get_size_delta(self, devices=None):
         if not devices:
             delta = Size("2 MiB") * len(self.b.disks)
@@ -467,7 +493,12 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
 
         return delta
 
-    def test_get_container(self):
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_get_container(self, *args):  # pylint: disable=unused-argument
         for disk in self.b.disks:
             self.b.format_device(disk, get_format("lvmpv"))
 
@@ -489,6 +520,22 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         self.assertEqual(factory.get_container(), None)
         self.assertEqual(factory.get_container(allow_existing=True), vg)
 
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_get_free_disk_space(self, *args):
+        super(LVMFactoryTestCase, self).test_get_free_disk_space()
+
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_normalize_size(self, *args):  # pylint: disable=unused-argument
+        super(LVMFactoryTestCase, self).test_normalize_size()
+
 
 class LVMThinPFactoryTestCase(LVMFactoryTestCase):
     # TODO: check that the LV we get is a thin pool
@@ -502,7 +549,7 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
         device = args[0]
 
         if kwargs.get("encrypted", False):
-            thinlv = device.slave
+            thinlv = device.parents[0]
         else:
             thinlv = device
 
@@ -526,7 +573,8 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
     device_type = devicefactory.DEVICE_TYPE_MD
     device_class = MDRaidArrayDevice
 
-    def test_device_factory(self):
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         # RAID0 across two disks
         device_type = self.device_type
         kwargs = {"disks": self.b.disks,
@@ -614,7 +662,8 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
        initial commit message for this file for further details.
     """
 
-    def test_mdfactory(self):
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_mdfactory(self, *args):  # pylint: disable=unused-argument
         factory1 = devicefactory.get_device_factory(self.b,
                                                     devicefactory.DEVICE_TYPE_MD,
                                                     size=Size("1 GiB"),

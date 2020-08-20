@@ -307,7 +307,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
     def _add_log_vol(self, lv):
         """ Add an LV to this VG. """
         if lv in self._lvs:
-            raise ValueError("lv is already part of this vg")
+            raise errors.DeviceError("lv is already part of this vg")
 
         # verify we have the space, then add it
         # do not verify for growing vg (because of ks)
@@ -340,7 +340,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
     def _remove_log_vol(self, lv):
         """ Remove an LV from this VG. """
         if lv not in self.lvs:
-            raise ValueError("specified lv is not part of this vg")
+            raise errors.DeviceError("specified lv is not part of this vg")
 
         self._lvs.remove(lv)
 
@@ -411,7 +411,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
     @thpool_reserve.setter
     def thpool_reserve(self, value):
         if value is not None and not isinstance(value, ThPoolReserveSpec):
-            raise ValueError("Invalid thpool_reserve given, must be of type ThPoolReserveSpec")
+            raise AttributeError("Invalid thpool_reserve given, must be of type ThPoolReserveSpec")
         self._thpool_reserve = value
 
     @property
@@ -642,14 +642,14 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             if seg_type not in [None, "linear", "thin", "thin-pool", "cache"] + lvm.raid_seg_types:
                 raise ValueError("Invalid or unsupported segment type: %s" % seg_type)
             if seg_type and seg_type in lvm.raid_seg_types and not pvs:
-                raise ValueError("List of PVs has to be given for every non-linear LV")
+                raise errors.DeviceError("List of PVs has to be given for every non-linear LV")
             elif (not seg_type or seg_type == "linear") and pvs:
                 if not all(isinstance(pv, LVPVSpec) for pv in pvs):
-                    raise ValueError("Invalid specification of PVs for a linear LV: either no or complete "
-                                     "specification (with all space split into PVs has to be given")
+                    raise errors.DeviceError("Invalid specification of PVs for a linear LV: either no or complete "
+                                             "specification (with all space split into PVs has to be given")
                 elif sum(spec.size for spec in pvs) != size:
-                    raise ValueError("Invalid specification of PVs for a linear LV: the sum of space "
-                                     "assigned to PVs is not equal to the size of the LV")
+                    raise errors.DeviceError("Invalid specification of PVs for a linear LV: the sum of space "
+                                             "assigned to PVs is not equal to the size of the LV")
 
         # When this device's format is set in the superclass constructor it will
         # try to access self.snapshots.
@@ -698,13 +698,13 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         self._from_lvs = from_lvs
         if self._from_lvs:
             if exists:
-                raise ValueError("Only new LVs can be created from other LVs")
+                raise errors.DeviceError("Only new LVs can be created from other LVs")
             if size or maxsize or percent:
-                raise ValueError("Cannot specify size for a converted LV")
+                raise errors.DeviceError("Cannot specify size for a converted LV")
             if fmt:
-                raise ValueError("Cannot specify format for a converted LV")
+                raise errors.DeviceError("Cannot specify format for a converted LV")
             if any(lv.vg != self.vg for lv in self._from_lvs):
-                raise ValueError("Conversion of LVs only possible inside a VG")
+                raise errors.DeviceError("Conversion of LVs only possible inside a VG")
 
         self._cache = None
         if cache_request and not self.exists:
@@ -719,13 +719,13 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             elif isinstance(pv_spec, StorageDevice):
                 self._pv_specs.append(LVPVSpec(pv_spec, Size(0)))
             else:
-                raise ValueError("Invalid PV spec '%s' for the '%s' LV" % (pv_spec, self.name))
+                raise AttributeError("Invalid PV spec '%s' for the '%s' LV" % (pv_spec, self.name))
         # Make sure any destination PVs are actually PVs in this VG
         if not set(spec.pv for spec in self._pv_specs).issubset(set(self.vg.parents)):
             missing = [r.name for r in
                        set(spec.pv for spec in self._pv_specs).difference(set(self.vg.parents))]
             msg = "invalid destination PV(s) %s for LV %s" % (missing, self.name)
-            raise ValueError(msg)
+            raise errors.DeviceError(msg)
         if self._pv_specs:
             self._assign_pv_space()
 
@@ -1068,7 +1068,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         else:
             msg = "the specified internal LV '%s' doesn't belong to this LV ('%s')" % (int_lv.lv_name,
                                                                                        self.name)
-            raise ValueError(msg)
+            raise errors.DeviceError(msg)
 
     def populate_ksdata(self, data):
         super(LVMLogicalVolumeBase, self).populate_ksdata(data)
@@ -1167,7 +1167,7 @@ class LVMInternalLogicalVolumeMixin(object):
     def _init_check(self):
         # an internal LV should have no parents
         if self._parent_lv and self._parents:
-            raise ValueError("an internal LV should have no parents")
+            raise errors.DeviceError("an internal LV should have no parents")
 
     @property
     def is_internal_lv(self):
@@ -1227,7 +1227,7 @@ class LVMInternalLogicalVolumeMixin(object):
 
     @readonly.setter
     def readonly(self, value):  # pylint: disable=unused-argument
-        raise ValueError("Cannot make an internal LV read-write")
+        raise errors.DeviceError("Cannot make an internal LV read-write")
 
     @property
     def type(self):
@@ -1263,7 +1263,7 @@ class LVMInternalLogicalVolumeMixin(object):
     def _check_parents(self):
         # an internal LV should have no parents
         if self._parents:
-            raise ValueError("an internal LV should have no parents")
+            raise errors.DeviceError("an internal LV should have no parents")
 
     def _add_to_parents(self):
         # nothing to do here, an internal LV has no parents (in the DeviceTree's
@@ -1273,13 +1273,13 @@ class LVMInternalLogicalVolumeMixin(object):
     # internal LVs follow different rules limitting size
     def _set_size(self, newsize):
         if not isinstance(newsize, Size):
-            raise ValueError("new size must of type Size")
+            raise AttributeError("new size must of type Size")
 
         if not self.takes_extra_space:
             if newsize <= self.parent_lv.size:  # pylint: disable=no-member
                 self._size = newsize  # pylint: disable=attribute-defined-outside-init
             else:
-                raise ValueError("Internal LV cannot be bigger than its parent LV")
+                raise errors.DeviceError("Internal LV cannot be bigger than its parent LV")
         else:
             # same rules apply as for any other LV
             raise NotTypeSpecific()
@@ -1357,18 +1357,18 @@ class LVMSnapshotMixin(object):
             return
 
         if self.origin and not isinstance(self.origin, LVMLogicalVolumeDevice):
-            raise ValueError("lvm snapshot origin must be a logical volume")
+            raise errors.DeviceError("lvm snapshot origin must be a logical volume")
         if self.vorigin and not self.exists:
-            raise ValueError("only existing vorigin snapshots are supported")
+            raise errors.DeviceError("only existing vorigin snapshots are supported")
 
         if isinstance(self.origin, LVMLogicalVolumeDevice) and \
            isinstance(self.parents[0], LVMVolumeGroupDevice) and \
            self.origin.vg != self.parents[0]:
-            raise ValueError("lvm snapshot and origin must be in the same vg")
+            raise errors.DeviceError("lvm snapshot and origin must be in the same vg")
 
         if self.is_thin_lv:
             if self.origin and self.size and not self.exists:
-                raise ValueError("thin snapshot size is determined automatically")
+                raise errors.DeviceError("thin snapshot size is determined automatically")
 
     @property
     def is_snapshot_lv(self):
@@ -1540,7 +1540,7 @@ class LVMThinPoolMixin(object):
     def _check_from_lvs(self):
         if self._from_lvs:
             if len(self._from_lvs) != 2:
-                raise ValueError("two LVs required to create a thin pool")
+                raise errors.DeviceError("two LVs required to create a thin pool")
 
     def _convert_from_lvs(self):
         data_lv, metadata_lv = self._from_lvs
@@ -1586,7 +1586,7 @@ class LVMThinPoolMixin(object):
     def _add_log_vol(self, lv):
         """ Add an LV to this pool. """
         if lv in self._lvs:
-            raise ValueError("lv is already part of this vg")
+            raise errors.DeviceError("lv is already part of this vg")
 
         # TODO: add some checking to prevent overcommit for preexisting
         self.vg._add_log_vol(lv)
@@ -1597,7 +1597,7 @@ class LVMThinPoolMixin(object):
     def _remove_log_vol(self, lv):
         """ Remove an LV from this pool. """
         if lv not in self._lvs:
-            raise ValueError("specified lv is not part of this vg")
+            raise errors.DeviceError("specified lv is not part of this vg")
 
         self._lvs.remove(lv)
         self.vg._remove_log_vol(lv)
@@ -1631,6 +1631,7 @@ class LVMThinPoolMixin(object):
             log.debug("Using default chunk size: %s", self._chunk_size)
 
         old_md_size = self._metadata_size
+        old_pmspare_size = self.vg.pmspare_size
         self._metadata_size = Size(blockdev.lvm.get_thpool_meta_size(self._size,
                                                                      self._chunk_size,
                                                                      100))  # snapshots
@@ -1642,7 +1643,7 @@ class LVMThinPoolMixin(object):
         if self._metadata_size == old_md_size:
             log.debug("Rounded metadata size unchanged")
         else:
-            new_size = self.size - (self._metadata_size - old_md_size)
+            new_size = self.size - (self._metadata_size - old_md_size) - (self.vg.pmspare_size - old_pmspare_size)
             log.debug("Adjusting size from %s MiB to %s MiB",
                       self.size.convert_to("MiB"), new_size.convert_to("MiB"))
             self.size = new_size
@@ -1706,14 +1707,14 @@ class LVMThinLogicalVolumeMixin(object):
         """Check that this device has parents as expected"""
         if isinstance(self.parents, (list, ParentList)):
             if len(self.parents) != 1:
-                raise ValueError("constructor requires a single thin-pool LV")
+                raise errors.DeviceError("constructor requires a single thin-pool LV")
 
             container = self.parents[0]
         else:
             container = self.parents
 
         if not container or not isinstance(container, LVMLogicalVolumeDevice) or not container.is_thin_pool:
-            raise ValueError("constructor requires a thin-pool LV")
+            raise errors.DeviceError("constructor requires a thin-pool LV")
 
     @property
     def is_thin_lv(self):
@@ -1750,7 +1751,7 @@ class LVMThinLogicalVolumeMixin(object):
 
     def _set_size(self, newsize):
         if not isinstance(newsize, Size):
-            raise ValueError("new size must of type Size")
+            raise AttributeError("new size must of type Size")
 
         newsize = self.vg.align(newsize)
         newsize = self.vg.align(util.numeric_type(newsize))
@@ -1792,8 +1793,132 @@ class LVMThinLogicalVolumeMixin(object):
         data.pool_name = self.pool.lvname
 
 
+class LVMVDOPoolMixin(object):
+    def __init__(self):
+        self._lvs = []
+
+    @property
+    def is_vdo_pool(self):
+        return self.seg_type == "vdo-pool"
+
+    @property
+    def type(self):
+        return "lvmvdopool"
+
+    @property
+    def resizable(self):
+        return False
+
+    @util.requires_property("is_vdo_pool")
+    def _add_log_vol(self, lv):
+        """ Add an LV to this VDO pool. """
+        if lv in self._lvs:
+            raise ValueError("lv is already part of this VDO pool")
+
+        self.vg._add_log_vol(lv)
+        log.debug("Adding %s/%s to %s", lv.name, lv.size, self.name)
+        self._lvs.append(lv)
+
+    @util.requires_property("is_vdo_pool")
+    def _remove_log_vol(self, lv):
+        """ Remove an LV from this VDO pool. """
+        if lv not in self._lvs:
+            raise ValueError("specified lv is not part of this VDO pool")
+
+        self._lvs.remove(lv)
+        self.vg._remove_log_vol(lv)
+
+    @property
+    @util.requires_property("is_vdo_pool")
+    def lvs(self):
+        """ A list of this VDO pool's LVs """
+        return self._lvs[:]     # we don't want folks changing our list
+
+    @property
+    def direct(self):
+        """ Is this device directly accessible? """
+        return False
+
+    def _create(self):
+        """ Create the device. """
+        raise NotImplementedError
+
+
+class LVMVDOLogicalVolumeMixin(object):
+    def __init__(self):
+        pass
+
+    def _init_check(self):
+        pass
+
+    def _check_parents(self):
+        """Check that this device has parents as expected"""
+        if isinstance(self.parents, (list, ParentList)):
+            if len(self.parents) != 1:
+                raise ValueError("constructor requires a single vdo-pool LV")
+
+            container = self.parents[0]
+        else:
+            container = self.parents
+
+        if not container or not isinstance(container, LVMLogicalVolumeDevice) or not container.is_vdo_pool:
+            raise ValueError("constructor requires a vdo-pool LV")
+
+    @property
+    def vg_space_used(self):
+        return Size(0)    # the pool's size is already accounted for in the vg
+
+    @property
+    def is_vdo_lv(self):
+        return self.seg_type == "vdo"
+
+    @property
+    def vg(self):
+        # parents[0] is the pool, not the VG so set the VG here
+        return self.pool.vg
+
+    @property
+    def type(self):
+        return "vdolv"
+
+    @property
+    def resizable(self):
+        return False
+
+    @property
+    @util.requires_property("is_vdo_lv")
+    def pool(self):
+        return self.parents[0]
+
+    def _create(self):
+        """ Create the device. """
+        raise NotImplementedError
+
+    def _destroy(self):
+        # nothing to do here, VDO LV is destroyed automatically together with
+        # the VDO pool
+        pass
+
+    def remove_hook(self, modparent=True):
+        if modparent:
+            self.pool._remove_log_vol(self)
+
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeBase, self).remove_hook(modparent=modparent)
+
+    def add_hook(self, new=True):
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeBase, self).add_hook(new=new)
+        if new:
+            return
+
+        if self not in self.pool.lvs:
+            self.pool._add_log_vol(self)
+
+
 class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin, LVMSnapshotMixin,
-                             LVMThinPoolMixin, LVMThinLogicalVolumeMixin):
+                             LVMThinPoolMixin, LVMThinLogicalVolumeMixin, LVMVDOPoolMixin,
+                             LVMVDOLogicalVolumeMixin):
     """ An LVM Logical Volume """
 
     # generally resizable, see :property:`resizable` for details
@@ -1882,6 +2007,8 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         LVMLogicalVolumeBase.__init__(self, name, parents, size, uuid, seg_type,
                                       fmt, exists, sysfs_path, grow, maxsize,
                                       percent, cache_request, pvs, from_lvs)
+        LVMVDOPoolMixin.__init__(self)
+        LVMVDOLogicalVolumeMixin.__init__(self)
 
         LVMInternalLogicalVolumeMixin._init_check(self)
         LVMSnapshotMixin._init_check(self)
@@ -1908,6 +2035,10 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             ret.append(LVMThinPoolMixin)
         if self.is_thin_lv:
             ret.append(LVMThinLogicalVolumeMixin)
+        if self.is_vdo_pool:
+            ret.append(LVMVDOPoolMixin)
+        if self.is_vdo_lv:
+            ret.append(LVMVDOLogicalVolumeMixin)
         return ret
 
     def _try_specific_call(self, name, *args, **kwargs):
@@ -1975,7 +2106,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             container = self.parents
 
         if not isinstance(container, LVMVolumeGroupDevice):
-            raise ValueError("constructor requires a LVMVolumeGroupDevice")
+            raise AttributeError("constructor requires a LVMVolumeGroupDevice")
 
     @type_specific
     def _add_to_parents(self):
@@ -1986,12 +2117,12 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @type_specific
     def _check_from_lvs(self):
         """Check the LVs to create this LV from"""
-        raise ValueError("Cannot create a new LV of type '%s' from other LVs" % self.seg_type)
+        raise errors.DeviceError("Cannot create a new LV of type '%s' from other LVs" % self.seg_type)
 
     @type_specific
     def _convert_from_lvs(self):
         """Convert the LVs to create this LV from into its internal LVs"""
-        raise ValueError("Cannot create a new LV of type '%s' from other LVs" % self.seg_type)
+        raise errors.DeviceError("Cannot create a new LV of type '%s' from other LVs" % self.seg_type)
 
     @property
     @type_specific
@@ -2002,7 +2133,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @type_specific
     def _set_size(self, newsize):
         if not isinstance(newsize, Size):
-            raise ValueError("new size must be of type Size")
+            raise AttributeError("new size must be of type Size")
 
         newsize = self.vg.align(newsize)
         log.debug("trying to set lv %s size to %s", self.name, newsize)
@@ -2011,7 +2142,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         # space for it. A similar reasoning applies to shrinking the LV.
         if not self.exists and newsize > self.size and newsize > self.vg.free_space + self.vg_space_used:
             log.error("failed to set size: %s short", newsize - (self.vg.free_space + self.vg_space_used))
-            raise ValueError("not enough free space in volume group")
+            raise errors.DeviceError("not enough free space in volume group")
 
         LVMLogicalVolumeBase._set_size(self, newsize)
 
@@ -2068,6 +2199,11 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @type_specific
     def display_lv_name(self):
         return self.lvname
+
+    @property
+    @type_specific
+    def pool(self):
+        return super(LVMLogicalVolumeDevice, self).pool
 
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
@@ -2169,6 +2305,19 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
 
         udev.settle()
         blockdev.lvm.lvresize(self.vg.name, self._name, self.size)
+
+    @type_specific
+    def _add_log_vol(self, lv):
+        pass
+
+    @type_specific
+    def _remove_log_vol(self, lv):
+        pass
+
+    @property
+    @type_specific
+    def lvs(self):
+        return []
 
     @property
     @type_specific
@@ -2336,7 +2485,7 @@ class LVMCache(Cache):
                 spec.size = spec.pv.format.free
                 space_to_assign -= spec.pv.format.free
         if space_to_assign > 0:
-            raise ValueError("Not enough free space in the PVs for this cache: %s short" % space_to_assign)
+            raise errors.DeviceError("Not enough free space in the PVs for this cache: %s short" % space_to_assign)
 
     @property
     def size(self):

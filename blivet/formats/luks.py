@@ -44,11 +44,12 @@ log = logging.getLogger("blivet")
 class LUKS2PBKDFArgs(object):
     """ PBKDF arguments for LUKS 2 format """
 
-    def __init__(self, type=None, max_memory_kb=0, iterations=0, time_ms=0):  # pylint: disable=redefined-builtin
+    def __init__(self, type=None, max_memory_kb=0, iterations=0, time_ms=0, hash_fn=None):  # pylint: disable=redefined-builtin
         self.type = type
         self.max_memory_kb = max_memory_kb
         self.iterations = iterations
         self.time_ms = time_ms
+        self.hash_fn = hash_fn
 
 
 class LUKS(DeviceFormat):
@@ -96,6 +97,8 @@ class LUKS(DeviceFormat):
             :keyword pbkdf_args: optional arguments for LUKS2 key derivation function
                                  (for non-existent format only)
             :type pbkdf_args: :class:`LUKS2PBKDFArgs`
+            :keyword luks_sector_size: encryption sector size (use only with LUKS version 2)
+            :type luks_sector_size: int
 
             .. note::
 
@@ -161,6 +164,10 @@ class LUKS(DeviceFormat):
                 log.warning("Both iterations and time_ms specified for PBKDF, number of iterations will be ignored.")
             if self.pbkdf_args.type == "pbkdf2" and self.pbkdf_args.max_memory_kb:
                 log.warning("Memory limit is not used for pbkdf2 and it will be ignored.")
+
+        self.luks_sector_size = kwargs.get("luks_sector_size") or 0
+        if self.luks_sector_size and self.luks_version != "luks2":
+            raise ValueError("Sector size argument is valid only for LUKS version 2.")
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
@@ -297,13 +304,17 @@ class LUKS(DeviceFormat):
 
         if self.pbkdf_args:
             pbkdf = blockdev.CryptoLUKSPBKDF(type=self.pbkdf_args.type,
-                                             hash=None,
+                                             hash=self.pbkdf_args.hash_fn,
                                              max_memory_kb=self.pbkdf_args.max_memory_kb,
                                              iterations=self.pbkdf_args.iterations,
                                              time_ms=self.pbkdf_args.time_ms)
-            extra = blockdev.CryptoLUKSExtra(pbkdf=pbkdf)
+            extra = blockdev.CryptoLUKSExtra(pbkdf=pbkdf,
+                                             sector_size=self.luks_sector_size)
         else:
-            extra = None
+            if self.luks_sector_size:
+                extra = blockdev.CryptoLUKSExtra(sector_size=self.luks_sector_size)
+            else:
+                extra = None
 
         blockdev.crypto.luks_format(self.device,
                                     passphrase=self.__passphrase,

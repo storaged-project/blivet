@@ -60,12 +60,6 @@ from .fslib import kernel_filesystems
 import logging
 log = logging.getLogger("blivet")
 
-import gi
-gi.require_version("GLib", "2.0")
-gi.require_version("BlockDev", "2.0")
-
-from gi.repository import GLib
-from gi.repository import BlockDev
 
 AVAILABLE_FILESYSTEMS = kernel_filesystems
 
@@ -462,13 +456,13 @@ class FS(DeviceFormat):
 
         for module in self._modules:
             try:
-                succ = BlockDev.utils_have_kernel_module(module)
-            except GLib.GError as e:
+                rc = util.run_program(["modprobe", "--dry-run", module])
+            except OSError as e:
                 log.error("Could not check kernel module availability %s: %s", module, e)
                 self._supported = False
                 return
 
-            if not succ:
+            if rc:
                 log.debug("Kernel module %s not available", module)
                 self._supported = False
                 return
@@ -1089,11 +1083,14 @@ class XFS(FS):
     _formattable = True
     _linux_native = True
     _supported = True
+    _resizable = True
     _packages = ["xfsprogs"]
+    _fsck_class = fsck.XFSCK
     _info_class = fsinfo.XFSInfo
     _mkfs_class = fsmkfs.XFSMkfs
     _readlabel_class = fsreadlabel.XFSReadLabel
     _size_info_class = fssize.XFSSize
+    _resize_class = fsresize.XFSResize
     _sync_class = fssync.XFSSync
     _writelabel_class = fswritelabel.XFSWriteLabel
     _writeuuid_class = fswriteuuid.XFSWriteUUID
@@ -1221,6 +1218,31 @@ class NTFS(FS):
 
 
 register_device_format(NTFS)
+
+
+class ExFATFS(FS):
+    _type = "exfat"
+
+
+register_device_format(ExFATFS)
+
+
+class F2FS(FS):
+
+    """ f2fs filesystem. """
+    _type = "f2fs"
+    _labelfs = fslabeling.F2FSLabeling()
+    _formattable = True
+    _linux_native = True
+    _supported = True
+    _min_size = Size("1 MiB")
+    _max_size = Size("16 TiB")
+    _packages = ["f2fs-tools"]
+    _fsck_class = fsck.F2FSFSCK
+    _mkfs_class = fsmkfs.F2FSMkfs
+
+
+register_device_format(F2FS)
 
 
 # if this isn't going to be mountable it might as well not be here

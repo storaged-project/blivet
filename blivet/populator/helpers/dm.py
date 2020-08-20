@@ -22,7 +22,6 @@
 
 from ... import udev
 from ...devices import DMDevice
-from ...devicelibs import lvm
 from ...storage_log import log_method_call
 from .devicepopulator import DevicePopulator
 
@@ -47,23 +46,15 @@ class DMDevicePopulator(DevicePopulator):
         name = udev.device_get_name(self.data)
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(self.data)
-        slave_devices = self._devicetree._add_slave_devices(self.data)
+        parent_devices = self._devicetree._add_parent_devices(self.data)
         device = self._devicetree.get_device_by_name(name)
 
-        # create a device for the livecd OS image(s)
-        if device is None and udev.device_is_dm_livecd(self.data):
+        if device is None:
             device = DMDevice(name, dm_uuid=self.data.get('DM_UUID'),
                               sysfs_path=sysfs_path, exists=True,
-                              parents=[slave_devices[0]])
+                              parents=[parent_devices[0]])
             device.protected = True
             device.controllable = False
             self._devicetree._add_device(device)
-
-        # if we get here, we found all of the slave devices and
-        # something must be wrong -- if all of the slaves are in
-        # the tree, this device should be as well
-        if device is None:
-            lvm.lvm_cc_addFilterRejectRegexp(name)
-            log.warning("ignoring dm device %s", name)
 
         return device

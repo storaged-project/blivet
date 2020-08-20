@@ -95,7 +95,7 @@ class ReiserFSInfo(FSInfo):
 
 class XFSInfo(FSInfo):
     ext = availability.XFSDB_APP
-    options = ["-c", "sb 0", "-c", "p dblocks", "-c", "p blocksize"]
+    options = ["-c", "sb 0", "-c", "p dblocks", "-c", "p blocksize", "-r"]
 
 
 class UnimplementedFSInfo(fstask.UnimplementedFSTask):

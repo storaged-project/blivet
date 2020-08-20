@@ -74,7 +74,7 @@ try:
     blockdev.switch_init_checks(False)
     succ_, avail_plugs = blockdev.try_reinit(require_plugins=_requested_plugins, reload=False, log_func=log_bd_message)
 except GLib.GError as err:
-    raise RuntimeError("Failed to intialize the libblockdev library: %s" % err)
+    raise RuntimeError("Failed to initialize the libblockdev library: %s" % err)
 else:
     avail_plugs = set(avail_plugs)
 

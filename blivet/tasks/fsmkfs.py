@@ -298,6 +298,16 @@ class XFSMkfs(FSMkfs):
         return ["-f"]
 
 
+class F2FSMkfs(FSMkfs):
+    ext = availability.MKFS_F2FS_APP
+    label_option = "-l"
+    get_uuid_args = None
+
+    @property
+    def args(self):
+        return []
+
+
 class UnimplementedFSMkfs(task.UnimplementedTask, FSMkfsTask):
 
     @property

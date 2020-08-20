@@ -57,7 +57,7 @@ class LVMDevicePopulator(DevicePopulator):
             log.warning("found non-vg device with name %s", vg_name)
             device = None
 
-        self._devicetree._add_slave_devices(self.data)
+        self._devicetree._add_parent_devices(self.data)
 
         # LVM provides no means to resolve conflicts caused by duplicated VG
         # names, so we're just being optimistic here. Woo!
@@ -211,9 +211,6 @@ class LVMFormatPopulator(FormatPopulator):
                     origin = self._devicetree.get_device_by_name(origin_device_name)
 
                 lv_kwargs["origin"] = origin
-            elif lv_attr[0] == 'v':
-                # skip vorigins
-                return
             elif lv_attr[0] in 'IrielTCo' and lv_name.endswith(']'):
                 # an internal LV, add the an instance of the appropriate class
                 # to internal_lvs for later processing when non-internal LVs are
@@ -236,6 +233,19 @@ class LVMFormatPopulator(FormatPopulator):
                     add_required_lv(origin_device_name, "failed to locate origin lv")
                     origin = self._devicetree.get_device_by_name(origin_device_name)
                     lv_kwargs["origin"] = origin
+
+                lv_parents = [self._devicetree.get_device_by_name(pool_device_name)]
+            elif lv_attr[0] == 'd':
+                # vdo pool
+                # nothing to do here
+                pass
+            elif lv_attr[0] == 'v':
+                if lv_type != "vdo":
+                    # skip vorigins
+                    return
+                pool_name = blockdev.lvm.vdolvpoolname(vg_name, lv_name)
+                pool_device_name = "%s-%s" % (vg_name, pool_name)
+                add_required_lv(pool_device_name, "failed to look up VDO pool")
 
                 lv_parents = [self._devicetree.get_device_by_name(pool_device_name)]
             elif lv_name.endswith(']'):

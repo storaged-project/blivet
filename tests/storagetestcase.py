@@ -96,7 +96,16 @@ class StorageTestCase(unittest.TestCase):
     def new_device(self, *args, **kwargs):
         """ Return a new Device instance suitable for testing. """
         device_class = kwargs.pop("device_class")
-        exists = kwargs.pop("exists", False)
+
+        # we intentionally don't pass the "exists" kwarg to the constructor
+        # becauses this causes issues with some devices (especially partitions)
+        # but we still need it for some LVs like VDO because we can't create
+        # those so we need to fake their existence even for the constructor
+        if device_class is blivet.devices.LVMLogicalVolumeDevice:
+            exists = kwargs.get("exists", False)
+        else:
+            exists = kwargs.pop("exists", False)
+
         part_type = kwargs.pop("part_type", parted.PARTITION_NORMAL)
         device = device_class(*args, **kwargs)
 

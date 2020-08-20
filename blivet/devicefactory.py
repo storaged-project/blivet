@@ -319,6 +319,8 @@ class DeviceFactory(object):
             :type luks_version: str
             :keyword pbkdf_args: optional arguments for LUKS2 key derivation function
             :type pbkdf_args: :class:`~.formats.luks.LUKS2PBKDFArgs`
+            :keyword luks_sector_size: encryption sector size (use only with LUKS version 2)
+            :type luks_sector_size: int
 
         """
         self.storage = storage  # a Blivet instance
@@ -339,6 +341,7 @@ class DeviceFactory(object):
 
         self.luks_version = kwargs.get("luks_version") or crypto.DEFAULT_LUKS_VERSION
         self.pbkdf_args = kwargs.get("pbkdf_args", None)
+        self.luks_sector_size = kwargs.get("luks_sector_size") or 0
 
         # If a device was passed, update the defaults based on it.
         self.device = kwargs.get("device")
@@ -688,6 +691,7 @@ class DeviceFactory(object):
             fmt_args["min_luks_entropy"] = self.min_luks_entropy
             fmt_args["luks_version"] = self.luks_version
             fmt_args["pbkdf_args"] = self.pbkdf_args
+            fmt_args["luks_sector_size"] = self.luks_sector_size
         else:
             fstype = self.fstype
             mountpoint = self.mountpoint
@@ -826,7 +830,8 @@ class DeviceFactory(object):
             self.storage.format_device(self.device, get_format("luks",
                                                                min_luks_entropy=self.min_luks_entropy,
                                                                luks_version=self.luks_version,
-                                                               pbkdf_args=self.pbkdf_args))
+                                                               pbkdf_args=self.pbkdf_args,
+                                                               luks_sector_size=self.luks_sector_size))
             luks_device = LUKSDevice("luks-%s" % self.device.name,
                                      fmt=leaf_format,
                                      parents=self.device)
@@ -835,9 +840,14 @@ class DeviceFactory(object):
             if parent_container:
                 parent_container.parents.append(self.device)
                 parent_container.parents.remove(orig_device)
-        elif self.encrypted and isinstance(self.device, LUKSDevice) and \
-                self.device.slave.format.luks_version != self.luks_version:
-            self.device.slave.format.luks_version = self.luks_version
+
+        if self.encrypted and isinstance(self.device, LUKSDevice) and \
+                self.raw_device.format.luks_version != self.luks_version:
+            self.raw_device.format.luks_version = self.luks_version
+
+        if self.encrypted and isinstance(self.device, LUKSDevice) and \
+                self.raw_device.format.luks_sector_size != self.luks_sector_size:
+            self.raw_device.format.luks_sector_size = self.luks_sector_size
 
     def _set_name(self):
         if not self.device_name:
@@ -847,7 +857,8 @@ class DeviceFactory(object):
                 swap=(self.fstype == "swap"),
                 mountpoint=self.mountpoint)
 
-        safe_new_name = self.storage.safe_device_name(self.device_name)
+        safe_new_name = self.storage.safe_device_name(self.device_name,
+                                                      get_device_type(self.device))
         if self.device.name != safe_new_name:
             if not safe_new_name:
                 log.error("not renaming '%s' to invalid name '%s'",
@@ -1155,11 +1166,11 @@ class PartitionSetFactory(PartitionFactory):
                     container.parents.remove(member)
                 self.storage.destroy_device(member)
                 members.remove(member)
-                self.storage.format_device(member.slave,
+                self.storage.format_device(member.raw_device,
                                            get_format(self.fstype))
-                members.append(member.slave)
+                members.append(member.raw_device)
                 if container:
-                    container.parents.append(member.slave)
+                    container.parents.append(member.raw_device)
 
                 continue
 
@@ -1168,7 +1179,8 @@ class PartitionSetFactory(PartitionFactory):
                 self.storage.format_device(member, get_format("luks",
                                                               min_luks_entropy=self.min_luks_entropy,
                                                               luks_version=self.luks_version,
-                                                              pbkdf_args=self.pbkdf_args))
+                                                              pbkdf_args=self.pbkdf_args,
+                                                              luks_sector_size=self.luks_sector_size))
                 luks_member = LUKSDevice("luks-%s" % member.name,
                                          parents=[member],
                                          fmt=get_format(self.fstype))
@@ -1180,9 +1192,10 @@ class PartitionSetFactory(PartitionFactory):
 
                 continue
 
-            if member_encrypted and self.encrypted and self.luks_version != member.slave.format.luks_version:
-                member.slave.format.luks_version = self.luks_version
-                continue
+            if member_encrypted and self.encrypted and self.luks_version != member.raw_device.format.luks_version:
+                member.raw_device.format.luks_version = self.luks_version
+            if member_encrypted and self.encrypted and self.luks_sector_size != member.raw_device.format.luks_sector_size:
+                member.raw_device.format.luks_sector_size = self.luks_sector_size
 
         ##
         # Prepare previously allocated member partitions for reallocation.
@@ -1206,6 +1219,7 @@ class PartitionSetFactory(PartitionFactory):
                 member_format = "luks"
                 fmt_args["luks_version"] = self.luks_version
                 fmt_args["pbkdf_args"] = self.pbkdf_args
+                fmt_args["luks_sector_size"] = self.luks_sector_size
             else:
                 member_format = self.fstype
 
@@ -1241,7 +1255,7 @@ class PartitionSetFactory(PartitionFactory):
 
             if isinstance(member, LUKSDevice):
                 self.storage.destroy_device(member)
-                member = member.slave
+                member = member.raw_device
 
             self.storage.destroy_device(member)
 
@@ -1468,7 +1482,7 @@ class LVMFactory(DeviceFactory):
                 mountpoint=self.mountpoint)
 
         lvname = "%s-%s" % (self.vg.name, self.device_name)
-        safe_new_name = self.storage.safe_device_name(lvname)
+        safe_new_name = self.storage.safe_device_name(lvname, DEVICE_TYPE_LVM)
         if self.device.name != safe_new_name:
             if safe_new_name in self.storage.names:
                 log.error("not renaming '%s' to in-use name '%s'",

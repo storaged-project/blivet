@@ -188,7 +188,7 @@ class DeviceTreeError(StorageError):
     pass
 
 
-class NoSlavesError(DeviceTreeError):
+class NoParentsError(DeviceTreeError):
     pass
 
 
