@@ -1,7 +1,7 @@
 PYTHON?=python3
 PKG_INSTALL?=dnf
 
-L10N_REPOSITORY=https://github.com/storaged-project/blivet-weblate
+L10N_REPOSITORY=git@github.com:storaged-project/blivet-weblate.git
 
 PKGNAME=blivet
 SPECFILE=python-blivet.spec
@@ -205,11 +205,11 @@ rc-release: scratch-bumpver scratch
 
 srpm: local
 	rpmbuild -bs --nodeps $(SPECFILE) --define "_sourcedir `pwd`"
-	rm -f $(PKGNAME)-$(VERSION).tar.gz
+	rm -f $(PKGNAME)-$(VERSION).tar.gz $(PKGNAME)-$(VERSION)-tests.tar.gz
 
 rpm: local
 	rpmbuild -bb --nodeps $(SPECFILE) --define "_sourcedir `pwd`"
-	rm -f $(PKGNAME)-$(VERSION).tar.gz
+	rm -f $(PKGNAME)-$(VERSION).tar.gz $(PKGNAME)-$(VERSION)-tests.tar.gz
 
 ci: check coverage
 
