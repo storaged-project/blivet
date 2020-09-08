@@ -32,7 +32,7 @@ from gi.repository import BlockDev as blockdev
 
 from .actionlist import ActionList
 from .callbacks import callbacks
-from .errors import DeviceError, DeviceTreeError, StorageError, DuplicateUUIDError
+from .errors import DeviceError, DeviceTreeError, StorageError, DuplicateUUIDError, InvalidMultideviceSelection
 from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
 from .devices import BTRFSDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
@@ -936,7 +936,7 @@ class DeviceTreeBase(object):
             if is_ignored:
                 if len(disk.children) == 1:
                     if not all(self._is_ignored_disk(d) for d in disk.children[0].parents):
-                        raise DeviceTreeError("Including only a subset of raid/multipath member disks is not allowed.")
+                        raise InvalidMultideviceSelection("Including only a subset of raid/multipath member disks is not allowed.")
 
                     # and also children like fwraid or mpath
                     self.hide(disk.children[0])
