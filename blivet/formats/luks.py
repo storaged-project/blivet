@@ -36,6 +36,7 @@ from ..i18n import _, N_
 from ..tasks import availability, lukstasks
 from ..size import Size, KiB
 from ..static_data import luks_data
+from .. import udev
 
 import logging
 log = logging.getLogger("blivet")
@@ -275,6 +276,8 @@ class LUKS(DeviceFormat):
         log.debug("unmapping %s", self.map_name)
         blockdev.crypto.luks_close(self.map_name)
 
+        udev.settle()
+
     def _pre_resize(self):
         if self.luks_version == "luks2" and not self.has_key:
             raise LUKSError("Passphrase or key needs to be set before resizing LUKS2 format.")
@@ -441,6 +444,8 @@ class Integrity(DeviceFormat):
         # it's safe to use luks_close here, it uses crypt_deactivate which works
         # for all devices supported by cryptsetup
         blockdev.crypto.luks_close(self.map_name)
+
+        udev.settle()
 
 
 register_device_format(Integrity)
