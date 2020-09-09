@@ -27,6 +27,8 @@ from .devicelibs import btrfs
 import logging
 log = logging.getLogger("blivet")
 
+import os
+
 
 class _MountinfoCache(object):
 
@@ -113,6 +115,12 @@ class MountsCache(object):
 
         # devspec == None means "get 'nodev' mount points"
         if devspec not in (None, "tmpfs"):
+            if devspec.startswith("/dev"):
+                # try to avoid using resolve_devspec if possible
+                name = os.path.realpath(devspec).split("/")[-1]
+                if (name, subvolspec) in self.mountpoints.keys():
+                    return self.mountpoints[(name, subvolspec)]
+
             # use the canonical device path (if available)
             canon_devspec = resolve_devspec(devspec, sysname=True)
             if canon_devspec is not None:
