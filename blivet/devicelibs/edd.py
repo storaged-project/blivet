@@ -167,6 +167,8 @@ def collect_mbrs(devices):
         except OSError as e:
             log.warning("edd: error reading mbrsig from disk %s: %s",
                         dev.name, str(e))
+            if fd:
+                os.close(fd)
             continue
 
         mbrsig_str = "0x%08x" % mbrsig
