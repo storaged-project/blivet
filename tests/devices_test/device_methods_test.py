@@ -161,7 +161,6 @@ class StorageDeviceMethodsTestCase(unittest.TestCase):
 
         self.assertFalse(self.device.exists)
         self.assertEqual(self.device.update_sysfs_path.called, self.destroy_updates_sysfs_path)
-        self.assertEqual(self.patches["udev"].settle.called, self.destroy_calls_udev_settle)
         self.patches["udev"].reset_mock()
         self.device.update_sysfs_path.reset_mock()
 
@@ -228,7 +227,6 @@ class StorageDeviceMethodsTestCase(unittest.TestCase):
             self.device.teardown()
             self.assertTrue(self.teardown_method_mock.called)
 
-        self.assertEqual(self.patches["udev"].settle.called, self.teardown_calls_udev_settle)
         self.assertEqual(self.device.update_sysfs_path.called, self.teardown_updates_sysfs_path)
         self.patches["udev"].reset_mock()
         self.device.update_sysfs_path.reset_mock()

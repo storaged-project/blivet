@@ -29,6 +29,7 @@ from ..tasks import availability
 from ..tasks import fsuuid
 from . import DeviceFormat, register_device_format
 from ..size import Size
+from .. import udev
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -205,6 +206,8 @@ class SwapSpace(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         blockdev.swap.swapoff(self.device)
+
+        udev.settle()
 
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
