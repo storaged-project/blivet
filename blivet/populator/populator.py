@@ -64,6 +64,9 @@ def parted_exn_handler(exn_type, exn_options, exn_msg):
     if exn_type == parted.EXCEPTION_TYPE_ERROR and \
        exn_options == parted.EXCEPTION_OPT_YES_NO:
         ret = parted.EXCEPTION_RESOLVE_YES
+    elif exn_type == parted.EXCEPTION_TYPE_WARNING and \
+            exn_options & parted.EXCEPTION_RESOLVE_FIX:
+        ret = parted.EXCEPTION_RESOLVE_FIX
     return ret
 
 
