@@ -33,6 +33,7 @@ class BlivetLintConfig(PocketLintConfig):
                 "W0603",           # Using the global statement
                 "W0614",           # Unused import %s from wildcard import
                 "I0011",           # Locally disabling %s
+                "W0707",           # Consider explicitly re-raising using the 'from' keyword
                 ]
 
     @property
