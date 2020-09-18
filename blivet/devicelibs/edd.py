@@ -158,6 +158,7 @@ def collect_mbrs(devices):
     """
     mbr_dict = {}
     for dev in devices:
+        fd = -1
         try:
             fd = os.open(dev.path, os.O_RDONLY)
             # The signature is the unsigned integer at byte 440:
@@ -167,7 +168,7 @@ def collect_mbrs(devices):
         except OSError as e:
             log.warning("edd: error reading mbrsig from disk %s: %s",
                         dev.name, str(e))
-            if fd:
+            if fd > 0:
                 os.close(fd)
             continue
 
