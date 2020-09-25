@@ -664,6 +664,7 @@ def collect_mbrs(devices, root=None):
     """
     mbr_dict = {}
     for dev in devices:
+        fd = -1
         try:
             path = util.Path("/dev", root=root) + dev.name
             fd = os.open(path.ondisk, os.O_RDONLY)
@@ -679,7 +680,7 @@ def collect_mbrs(devices, root=None):
             testdata_log.debug("device %s data[440:443] raised %s", path, e)
             log.error("edd: could not read mbrsig from disk %s: %s",
                       dev.name, str(e))
-            if fd:
+            if fd > 0:
                 os.close(fd)
             continue
 
