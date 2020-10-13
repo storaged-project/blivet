@@ -9,4 +9,5 @@ jobs:
   metadata:
     targets:
     - fedora-all
+    - fedora-eln
   trigger: pull_request
