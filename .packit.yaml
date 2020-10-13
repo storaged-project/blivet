@@ -1,0 +1,12 @@
+actions:
+  get-current-version:
+    - "python3 ./setup.py --version"
+  create-archive:
+    - "make local"
+    - 'bash -c "ls *.tar*"'
+jobs:
+- job: tests
+  metadata:
+    targets:
+    - fedora-all
+  trigger: pull_request
