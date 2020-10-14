@@ -554,7 +554,7 @@ class Blivet(object):
                             safe_name, name)
                 name = safe_name
         else:
-            name = self.suggest_container_name()
+            name = self.suggest_container_name(container_type=devicefactory.DEVICE_TYPE_LVM)
 
         if name in self.names:
             raise ValueError("name already in use")
@@ -721,7 +721,7 @@ class Blivet(object):
             dev_class = BTRFSVolumeDevice
             # set up the volume label, using hostname if necessary
             if not name:
-                name = self.suggest_container_name()
+                name = self.suggest_container_name(container_type=devicefactory.DEVICE_TYPE_BTRFS)
             if "label" not in fmt_args:
                 fmt_args["label"] = name
             fmt_args["subvolspec"] = MAIN_VOLUME_ID
@@ -929,7 +929,7 @@ class Blivet(object):
     def _get_container_name_template(self, prefix=None):
         return prefix or ""
 
-    def suggest_container_name(self, prefix=""):
+    def suggest_container_name(self, prefix="", container_type=None):
         """ Return a reasonable, unused device name.
 
             :keyword prefix: a prefix for the container name
@@ -937,7 +937,7 @@ class Blivet(object):
             :rtype: str
         """
         if not prefix:
-            prefix = self.short_product_name
+            prefix = self.safe_device_name(self.short_product_name, container_type)
 
         template = self._get_container_name_template(prefix=prefix)
         names = self.names
