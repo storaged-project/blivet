@@ -233,6 +233,12 @@ class DuplicateVGError(UnusableConfigurationError):
                     "Hint 2: You can get the VG UUIDs by running "
                     "'pvs -o +vg_uuid'.")
 
+
+class InvalidMultideviceSelection(UnusableConfigurationError):
+    suggestion = N_("All parent devices must be selected when choosing exclusive "
+                    "or ignored disks for a multipath or firmware RAID device.")
+
+
 # DeviceAction
 
 

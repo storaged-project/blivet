@@ -425,7 +425,6 @@ class StorageDevice(Device):
             self.original_format.teardown()
         if self.format.exists:
             self.format.teardown()
-        udev.settle()
         return True
 
     def _teardown(self, recursive=None):

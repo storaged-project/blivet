@@ -614,6 +614,8 @@ class FS(DeviceFormat):
         if mountpoint == self._chrooted_mountpoint:
             self._chrooted_mountpoint = None
 
+        udev.settle()
+
     def read_label(self):
         """Read this filesystem's label.
 

@@ -6,7 +6,7 @@ import six
 import unittest
 
 from blivet.actionlist import ActionList
-from blivet.errors import DeviceTreeError, DuplicateUUIDError
+from blivet.errors import DeviceTreeError, DuplicateUUIDError, InvalidMultideviceSelection
 from blivet.deviceaction import ACTION_TYPE_DESTROY, ACTION_OBJECT_DEVICE
 from blivet.devicelibs import lvm
 from blivet.devices import DiskDevice
@@ -541,5 +541,5 @@ class DeviceTreeIgnoredExclusiveMultipathTestCase(unittest.TestCase):
         self.tree.ignored_disks = ["sda", "sdb"]
         self.tree.exclusive_disks = []
 
-        with self.assertRaises(DeviceTreeError):
+        with self.assertRaises(InvalidMultideviceSelection):
             self.tree._hide_ignored_disks()
