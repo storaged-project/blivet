@@ -199,8 +199,7 @@ configuration.
 - Start the iscsi-init service (#1880673) (vponcova)
 - Let parted fix fixable issues with partition table (vtrefny)
 - edd: Fix UnboundLocalError when trying to close fd in collect_mbrs (vtrefny)
-- Use UnusableConfigurationError for partially hidden multipath devices
-  (vtrefny)
+- Use UnusableConfigurationError for partially hidden multipath devices (vtrefny)
 - Close fd if it fails to read the device (nashok)
 - Do not run udev.settle in StorageDevice._pre_teardown (vtrefny)
 - Try to not use udev.resolve_devspec when querying MountsCache (vtrefny)
@@ -208,6 +207,9 @@ configuration.
 - Ignore new pylint warning W0707 "raise-missing-from" (vtrefny)
 - Use SSH "link" for l10n repository in Makefile (vtrefny)
 - Fix source tarball cleanup in srpm and rpm Makefile targets (vtrefny)
+
+* Wed Sep 16 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.3.0-2
+- Avoid using unnecessary udev.settle calls (#1876162)
 
 * Thu Aug 20 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.3.0-1
 - Account for pmspare grow when adjusting thinpool metadata size (vtrefny)
@@ -236,12 +238,10 @@ configuration.
 - tests: Patch LVM lvs call for some non-LVM tests (vtrefny)
 - Do not propagate ped exception from add_partition (vtrefny)
 - Do not use BlockDev.utils_have_kernel_module to check for modules (vtrefny)
-- set allowed disk labels for s390x as standard ones (msdos + gpt) plus dasd
-  (dan)
+- set allowed disk labels for s390x as standard ones (msdos + gpt) plus dasd (dan)
 - Do not use FSAVAIL and FSUSE%% options when running lsblk (vtrefny)
 - Rewrite README and add it as a long_description in setup.py (vtrefny)
-- Round down to nearest MiB value when writing ks parittion info.
-  (sbueno+anaconda)
+- Round down to nearest MiB value when writing ks parittion info. (sbueno+anaconda)
 - Add _teardown method to IntegrityDevice (vtrefny)
 - Fix status for DM Integrity format (#1814005) (vtrefny)
 - udev: Add function to get list of device's holders (vtrefny)
@@ -268,6 +268,15 @@ configuration.
 - Remove po folder (vtrefny)
 - More consistent lvm errors (API break) (japokorn)
 - Added support for device tags (japokorn)
+
+* Wed Jul 29 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.2.2-4
+- set allowed disk labels for s390x as standard ones (msdos + gpt) plus dasd
+
+* Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.2.2-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
+
+* Sat May 23 2020 Miro Hrončok <mhroncok@redhat.com> - 1:3.2.2-2
+- Rebuilt for Python 3.9
 
 * Thu May 21 2020 Jan Pokorny <japokorn@redhat.com> - 3.2.2-1
 - Allow setting size for non-existing LUKS devices (vtrefny)
