@@ -1,0 +1,296 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>formats &#8212; Blivet 3.3.1 documentation</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="DBus Interface" href="../dbus.html" />
+    <link rel="prev" title="events" href="events.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../dbus.html" title="DBus Interface"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="events.html" title="events"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../api.html" >Public API</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="blivet.html" accesskey="U">blivet</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="formats">
+<h1>formats<a class="headerlink" href="#formats" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.get_format" title="blivet.formats.get_format"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_format()</span></code></a></p></li>
+</ul>
+<ul class="simple" id="deviceformatapi">
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.controllable" title="blivet.formats.DeviceFormat.controllable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">controllable</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.current_size" title="blivet.formats.DeviceFormat.current_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">current_size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.destroyable" title="blivet.formats.DeviceFormat.destroyable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">destroyable</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.device" title="blivet.formats.DeviceFormat.device"><code class="xref py py-attr docutils literal notranslate"><span class="pre">device</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.do_resize" title="blivet.formats.DeviceFormat.do_resize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">do_resize()</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">exists</span></code></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.formattable" title="blivet.formats.DeviceFormat.formattable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">formattable</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.hidden" title="blivet.formats.DeviceFormat.hidden"><code class="xref py py-attr docutils literal notranslate"><span class="pre">hidden</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.name" title="blivet.formats.DeviceFormat.name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">name</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">label</span></code></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.label_format_ok" title="blivet.formats.DeviceFormat.label_format_ok"><code class="xref py py-attr docutils literal notranslate"><span class="pre">label_format_ok</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.labeling" title="blivet.formats.DeviceFormat.labeling"><code class="xref py py-attr docutils literal notranslate"><span class="pre">labeling</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.linux_native" title="blivet.formats.DeviceFormat.linux_native"><code class="xref py py-attr docutils literal notranslate"><span class="pre">linux_native</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.max_size" title="blivet.formats.DeviceFormat.max_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.min_size" title="blivet.formats.DeviceFormat.min_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">min_size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.mountable" title="blivet.formats.DeviceFormat.mountable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">mountable</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.options" title="blivet.formats.DeviceFormat.options"><code class="xref py py-attr docutils literal notranslate"><span class="pre">options</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.packages" title="blivet.formats.DeviceFormat.packages"><code class="xref py py-attr docutils literal notranslate"><span class="pre">packages</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.resizable" title="blivet.formats.DeviceFormat.resizable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">resizable</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.setup" title="blivet.formats.DeviceFormat.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.size" title="blivet.formats.DeviceFormat.size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.target_size" title="blivet.formats.DeviceFormat.target_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">target_size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.teardown" title="blivet.formats.DeviceFormat.teardown"><code class="xref py py-meth docutils literal notranslate"><span class="pre">teardown()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.status" title="blivet.formats.DeviceFormat.status"><code class="xref py py-attr docutils literal notranslate"><span class="pre">status</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.supported" title="blivet.formats.DeviceFormat.supported"><code class="xref py py-attr docutils literal notranslate"><span class="pre">supported</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.type" title="blivet.formats.DeviceFormat.type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">type</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat.update_size_info" title="blivet.formats.DeviceFormat.update_size_info"><code class="xref py py-attr docutils literal notranslate"><span class="pre">update_size_info</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">uuid</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#module-blivet.formats.biosboot" title="blivet.formats.biosboot"><code class="xref py py-mod docutils literal notranslate"><span class="pre">biosboot</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.biosboot.BIOSBoot" title="blivet.formats.biosboot.BIOSBoot"><code class="xref py py-class docutils literal notranslate"><span class="pre">BIOSBoot</span></code></a> (see <a class="reference internal" href="#deviceformatapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#module-blivet.formats.disklabel" title="blivet.formats.disklabel"><code class="xref py py-mod docutils literal notranslate"><span class="pre">disklabel</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel" title="blivet.formats.disklabel.DiskLabel"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskLabel</span></code></a> (see <a class="reference internal" href="#deviceformatapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel.label_type" title="blivet.formats.disklabel.DiskLabel.label_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">label_type</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel.sector_size" title="blivet.formats.disklabel.DiskLabel.sector_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">sector_size</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel.get_alignment" title="blivet.formats.disklabel.DiskLabel.get_alignment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_alignment()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel.get_end_alignment" title="blivet.formats.disklabel.DiskLabel.get_end_alignment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_end_alignment()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel.get_minimal_alignment" title="blivet.formats.disklabel.DiskLabel.get_minimal_alignment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_minimal_alignment()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel.get_optimal_alignment" title="blivet.formats.disklabel.DiskLabel.get_optimal_alignment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_optimal_alignment()</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#module-blivet.formats.dmraid" title="blivet.formats.dmraid"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dmraid</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.dmraid.DMRaidMember" title="blivet.formats.dmraid.DMRaidMember"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMRaidMember</span></code></a> (see <a class="reference internal" href="#deviceformatapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<ul class="simple" id="fsapi">
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#module-blivet.formats.fs" title="blivet.formats.fs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">fs</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a> (see <a class="reference internal" href="#deviceformatapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.FS.do_check" title="blivet.formats.fs.FS.do_check"><code class="xref py py-meth docutils literal notranslate"><span class="pre">do_check()</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">mountpoint</span></code></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.FS.system_mountpoint" title="blivet.formats.fs.FS.system_mountpoint"><code class="xref py py-attr docutils literal notranslate"><span class="pre">system_mountpoint</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.FS.write_label" title="blivet.formats.fs.FS.write_label"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_label()</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.AppleBootstrapFS" title="blivet.formats.fs.AppleBootstrapFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">AppleBootstrapFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.BindFS" title="blivet.formats.fs.BindFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">BindFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.BTRFS" title="blivet.formats.fs.BTRFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">BTRFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.BTRFS.container_uuid" title="blivet.formats.fs.BTRFS.container_uuid"><code class="xref py py-attr docutils literal notranslate"><span class="pre">container_uuid</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.DevPtsFS" title="blivet.formats.fs.DevPtsFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">DevPtsFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.EFIFS" title="blivet.formats.fs.EFIFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">EFIFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.EFIVarFS" title="blivet.formats.fs.EFIVarFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">EFIVarFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.Ext2FS" title="blivet.formats.fs.Ext2FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">Ext2FS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.Ext3FS" title="blivet.formats.fs.Ext3FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">Ext3FS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.Ext4FS" title="blivet.formats.fs.Ext4FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">Ext4FS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.FATFS" title="blivet.formats.fs.FATFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FATFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.GFS2" title="blivet.formats.fs.GFS2"><code class="xref py py-class docutils literal notranslate"><span class="pre">GFS2</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.HFS" title="blivet.formats.fs.HFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">HFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.HFSPlus" title="blivet.formats.fs.HFSPlus"><code class="xref py py-class docutils literal notranslate"><span class="pre">HFSPlus</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.Iso9660FS" title="blivet.formats.fs.Iso9660FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iso9660FS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.JFS" title="blivet.formats.fs.JFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">JFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.MacEFIFS" title="blivet.formats.fs.MacEFIFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">MacEFIFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.NFS" title="blivet.formats.fs.NFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">NFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.NFSv4" title="blivet.formats.fs.NFSv4"><code class="xref py py-class docutils literal notranslate"><span class="pre">NFSv4</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoDevFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.NTFS" title="blivet.formats.fs.NTFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">NTFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.ProcFS" title="blivet.formats.fs.ProcFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.ReiserFS" title="blivet.formats.fs.ReiserFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReiserFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.SELinuxFS" title="blivet.formats.fs.SELinuxFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">SELinuxFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.SysFS" title="blivet.formats.fs.SysFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">SysFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.TmpFS" title="blivet.formats.fs.TmpFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">TmpFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.USBFS" title="blivet.formats.fs.USBFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">USBFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.XFS" title="blivet.formats.fs.XFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">XFS</span></code></a> (see <a class="reference internal" href="#fsapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#module-blivet.formats.luks" title="blivet.formats.luks"><code class="xref py py-mod docutils literal notranslate"><span class="pre">luks</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.luks.LUKS" title="blivet.formats.luks.LUKS"><code class="xref py py-class docutils literal notranslate"><span class="pre">LUKS</span></code></a> (see <a class="reference internal" href="#deviceformatapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.luks.LUKS.add_passphrase" title="blivet.formats.luks.LUKS.add_passphrase"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_passphrase()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.luks.LUKS.configured" title="blivet.formats.luks.LUKS.configured"><code class="xref py py-attr docutils literal notranslate"><span class="pre">configured</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.luks.LUKS.has_key" title="blivet.formats.luks.LUKS.has_key"><code class="xref py py-attr docutils literal notranslate"><span class="pre">has_key</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">map_name()</span></code></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.luks.LUKS.remove_passphrase" title="blivet.formats.luks.LUKS.remove_passphrase"><code class="xref py py-meth docutils literal notranslate"><span class="pre">remove_passphrase()</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#module-blivet.formats.lvmpv" title="blivet.formats.lvmpv"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lvmpv</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.lvmpv.LVMPhysicalVolume" title="blivet.formats.lvmpv.LVMPhysicalVolume"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMPhysicalVolume</span></code></a> (see <a class="reference internal" href="#deviceformatapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.lvmpv.LVMPhysicalVolume.container_uuid" title="blivet.formats.lvmpv.LVMPhysicalVolume.container_uuid"><code class="xref py py-attr docutils literal notranslate"><span class="pre">container_uuid</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#module-blivet.formats.mdraid" title="blivet.formats.mdraid"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mdraid</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.mdraid.MDRaidMember" title="blivet.formats.mdraid.MDRaidMember"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDRaidMember</span></code></a> (see <a class="reference internal" href="#deviceformatapi"><span class="std std-ref">inherited public API</span></a>)</dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.mdraid.MDRaidMember.container_uuid" title="blivet.formats.mdraid.MDRaidMember.container_uuid"><code class="xref py py-attr docutils literal notranslate"><span class="pre">container_uuid</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#module-blivet.formats.multipath" title="blivet.formats.multipath"><code class="xref py py-mod docutils literal notranslate"><span class="pre">multipath</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.multipath.MultipathMember" title="blivet.formats.multipath.MultipathMember"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipathMember</span></code></a> (see <a class="reference internal" href="#deviceformatapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#module-blivet.formats.prepboot" title="blivet.formats.prepboot"><code class="xref py py-mod docutils literal notranslate"><span class="pre">prepboot</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.prepboot.PPCPRePBoot" title="blivet.formats.prepboot.PPCPRePBoot"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPCPRePBoot</span></code></a> (see <a class="reference internal" href="#deviceformatapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="../blivet/blivet.formats.html#module-blivet.formats.swap" title="blivet.formats.swap"><code class="xref py py-mod docutils literal notranslate"><span class="pre">swap</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.swap.SwapSpace" title="blivet.formats.swap.SwapSpace"><code class="xref py py-class docutils literal notranslate"><span class="pre">SwapSpace</span></code></a> (see <a class="reference internal" href="#deviceformatapi"><span class="std std-ref">inherited public API</span></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="events.html"
+                        title="previous chapter">events</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../dbus.html"
+                        title="next chapter">DBus Interface</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/formats.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../dbus.html" title="DBus Interface"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="events.html" title="events"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../api.html" >Public API</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="blivet.html" >blivet</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2013-2020, Red Hat, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,297 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Introduction to Blivet &#8212; Blivet 3.3.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Public API" href="api.html" />
+    <link rel="prev" title="Welcome to Blivet’s documentation!" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api.html" title="Public API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to Blivet’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.3.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="introduction-to-blivet">
+<h1>Introduction to Blivet<a class="headerlink" href="#introduction-to-blivet" title="Permalink to this headline">¶</a></h1>
+<p>Blivet is a python module for system storage configuration.</p>
+<p>The main thing that blivet offers is the ability to model a series of changes
+without necessarily commiting any of the changes to disk. You can schedule an
+arbitrarily large series of changes (called ‘actions’), seeing the effects of
+each (within the <a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTree" title="blivet.devicetree.DeviceTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceTree</span></code></a> instance) as it is scheduled.
+Nothing is written to disk, however, until you execute the actions.</p>
+<div class="section" id="building-blocks">
+<h2>Building Blocks<a class="headerlink" href="#building-blocks" title="Permalink to this headline">¶</a></h2>
+<p>Individual block devices are represented by the various subclasses of
+<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a>, while the formatting of the data they contain
+is represented by the various subclasses of <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a>.
+The hierarchy of devices is represented by <a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTree" title="blivet.devicetree.DeviceTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceTree</span></code></a>.</p>
+<p><a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskDevice</span></code></a>, <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice" title="blivet.devices.partition.PartitionDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">PartitionDevice</span></code></a>,
+<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeDevice" title="blivet.devices.lvm.LVMLogicalVolumeDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice</span></code></a>, and
+<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice" title="blivet.devices.md.MDRaidArrayDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDRaidArrayDevice</span></code></a> are some of the most important examples of
+<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> subclasses.</p>
+<p>Some examples of <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> subclasses include
+<a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.swap.SwapSpace" title="blivet.formats.swap.SwapSpace"><code class="xref py py-class docutils literal notranslate"><span class="pre">SwapSpace</span></code></a>, <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel" title="blivet.formats.disklabel.DiskLabel"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskLabel</span></code></a>,
+and subclasses of <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a> such as <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.fs.Ext4FS" title="blivet.formats.fs.Ext4FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">Ext4FS</span></code></a>
+and <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.fs.XFS" title="blivet.formats.fs.XFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">XFS</span></code></a>.</p>
+<p>Every <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> instance has a <code class="xref py py-attr docutils literal notranslate"><span class="pre">format</span></code> that contains an instance of some <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a>
+subclass – even if it is “blank” or “unformatted” (in which case it is an instance of <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> itself).</p>
+<p>Every <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> has a
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">device</span></code> attribute that is a string representing
+the path to the device node for the block device containing the formatting.
+<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> and <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> can
+represent either existent or non-existent devices and formatting.</p>
+<p><a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> and <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> share a similar API, which consists of methods to control existing devices/formats
+(<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.setup" title="blivet.devices.storage.StorageDevice.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a>,
+<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.teardown" title="blivet.devices.storage.StorageDevice.teardown"><code class="xref py py-meth docutils literal notranslate"><span class="pre">teardown()</span></code></a>), methods to create or modify
+devices/formats (<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.create" title="blivet.devices.storage.StorageDevice.create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create()</span></code></a>,
+<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.destroy" title="blivet.devices.storage.StorageDevice.destroy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">destroy()</span></code></a>, <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.resize" title="blivet.devices.storage.StorageDevice.resize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">resize()</span></code></a>)
+, and attributes to store critical data
+(<code class="xref py py-attr docutils literal notranslate"><span class="pre">status</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">exists</span></code>)
+. Some useful attributes of <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> that are not found
+in <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> include
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">parents</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">isleaf</span></code>,
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">ancestors</span></code>, and <code class="xref py py-attr docutils literal notranslate"><span class="pre">disks</span></code>.</p>
+<p><a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTree" title="blivet.devicetree.DeviceTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceTree</span></code></a> provides
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">devices</span></code> which is a list of
+<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> instances representing the current state of the
+system as configured within blivet. It also provides some methods for looking up
+devices (<a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTreeBase.get_device_by_name" title="blivet.devicetree.DeviceTreeBase.get_device_by_name"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_device_by_name()</span></code></a>) and for listing devices
+that build upon a device (<a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTreeBase.get_dependent_devices" title="blivet.devicetree.DeviceTreeBase.get_dependent_devices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_dependent_devices()</span></code></a>).</p>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="first-steps">
+<h3>First Steps<a class="headerlink" href="#first-steps" title="Permalink to this headline">¶</a></h3>
+<p>First, create an instance of the <a class="reference internal" href="blivet/blivet.html#blivet.blivet.Blivet" title="blivet.blivet.Blivet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Blivet</span></code></a> class:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">blivet</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">blivet</span><span class="o">.</span><span class="n">Blivet</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Next, scan the system’s storage configuration and store it in the tree:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">b</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now, you can do some simple things like listing the devices:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">b</span><span class="o">.</span><span class="n">devices</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To make changes to the configuration you’ll schedule actions, but
+<a class="reference internal" href="blivet/blivet.html#blivet.blivet.Blivet" title="blivet.blivet.Blivet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Blivet</span></code></a> provides some convenience methods to hide the details. Here’s an example of removing partition ‘/dev/sda3’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sda3</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">devicetree</span><span class="o">.</span><span class="n">get_device_by_name</span><span class="p">(</span><span class="s2">&quot;sda3&quot;</span><span class="p">)</span>
+<span class="n">b</span><span class="o">.</span><span class="n">destroy_device</span><span class="p">(</span><span class="n">sda3</span><span class="p">)</span>   <span class="c1"># schedules actions to destroy format and device</span>
+</pre></div>
+</div>
+<p>At this point, the StorageDevice representing sda3 is no longer in the tree.
+That means you could allocate a new partition from the newly free space if you
+wanted to (via blivet, that is, since there is not actually any free space on
+the physical disk yet – you haven’t commited the changes). If you now ran the
+following line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sda3</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">devicetree</span><span class="o">.</span><span class="n">get_device_by_name</span><span class="p">(</span><span class="s2">&quot;sda3&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>sda3 would be None since that device has been removed from the tree.</p>
+<p>When you are ready to commit your changes to disk, here’s how:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">b</span><span class="o">.</span><span class="n">do_it</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>That’s it. Now you have actually removed /dev/sda3 from the disk.</p>
+<p>Here’s an alternative approach that uses the lower-level
+<a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTree" title="blivet.devicetree.DeviceTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceTree</span></code></a> class directly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">blivet</span>
+<span class="n">dt</span> <span class="o">=</span> <span class="n">blivet</span><span class="o">.</span><span class="n">devicetree</span><span class="o">.</span><span class="n">DeviceTree</span><span class="p">()</span>
+<span class="n">dt</span><span class="o">.</span><span class="n">populate</span><span class="p">()</span>
+<span class="n">sda3</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">get_device_by_name</span><span class="p">(</span><span class="s2">&quot;sda3&quot;</span><span class="p">)</span>
+<span class="n">action1</span> <span class="o">=</span> <span class="n">ActionDestroyFormat</span><span class="p">(</span><span class="n">sda3</span><span class="p">)</span>
+<span class="n">action2</span> <span class="o">=</span> <span class="n">ActionDestroyDevice</span><span class="p">(</span><span class="n">sda3</span><span class="p">)</span>
+<span class="n">dt</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">action1</span><span class="p">)</span>
+<span class="n">dt</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">action2</span><span class="p">)</span>
+<span class="n">dt</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">process</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Here’s the Blivet approach again for comparison:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">blivet</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">blivet</span><span class="o">.</span><span class="n">Blivet</span><span class="p">()</span> <span class="c1"># contains a DeviceTree instance</span>
+<span class="n">b</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>   <span class="c1"># calls DeviceTree.populate()</span>
+<span class="n">sda3</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">devicetree</span><span class="o">.</span><span class="n">get_device_by_name</span><span class="p">(</span><span class="s2">&quot;sda3&quot;</span><span class="p">)</span>
+<span class="n">b</span><span class="o">.</span><span class="n">destroy_device</span><span class="p">(</span><span class="n">sda3</span><span class="p">)</span>   <span class="c1"># schedules actions to destroy format and device</span>
+<span class="n">b</span><span class="o">.</span><span class="n">do_it</span><span class="p">()</span>    <span class="c1"># calls DeviceTree.actions.process()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="scheduling-a-series-of-actions">
+<h3>Scheduling a Series of Actions<a class="headerlink" href="#scheduling-a-series-of-actions" title="Permalink to this headline">¶</a></h3>
+<p>Start out as before:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">blivet</span>
+<span class="kn">from</span> <span class="nn">blivet.size</span> <span class="k">import</span> <span class="n">Size</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">blivet</span><span class="o">.</span><span class="n">Blivet</span><span class="p">()</span>
+<span class="n">b</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="n">sda3</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">devicetree</span><span class="o">.</span><span class="n">get_device_by_name</span><span class="p">(</span><span class="s2">&quot;sda3&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s assume sda3 is larger than 10GiB and resize it to that size:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">b</span><span class="o">.</span><span class="n">resize_device</span><span class="p">(</span><span class="n">sda3</span><span class="p">,</span> <span class="n">Size</span><span class="p">(</span><span class="s2">&quot;10 GiB&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>And then let’s create a new ext4 filesystem there:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">new_fmt</span> <span class="o">=</span> <span class="n">blivet</span><span class="o">.</span><span class="n">formats</span><span class="o">.</span><span class="n">get_format</span><span class="p">(</span><span class="s2">&quot;ext4&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">sda3</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+<span class="n">b</span><span class="o">.</span><span class="n">format_device</span><span class="p">(</span><span class="n">sda3</span><span class="p">,</span> <span class="n">new_fmt</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you want to commit the whole set of changes in one shot, it’s easy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">b</span><span class="o">.</span><span class="n">do_it</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now you can mount the new filesystem at the directory “/mnt/test”:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sda3</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">mountpoint</span><span class="o">=</span><span class="s2">&quot;/mnt/test&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once you’re finished, unmount it as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sda3</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">teardown</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="disk-partitions">
+<h3>Disk Partitions<a class="headerlink" href="#disk-partitions" title="Permalink to this headline">¶</a></h3>
+<p>Disk partitions are a little bit tricky in that they require an extra step to
+actually allocate the partitions from free space on the disk(s). What that
+means is deciding exactly which sectors on which disk the new partition will
+occupy. Blivet offers some powerful means for deciding for you where to place
+the partitions, but it also allows you to specify an exact start and end
+sector on a specific disk if that’s how you want to do it. Here’s an example
+of letting Blivet handle the details of creating a partition of minimum size
+10GiB on either sdb or sdc that is also growable to a maximum size of 20GiB:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sdb</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">devicetree</span><span class="o">.</span><span class="n">get_device_by_name</span><span class="p">(</span><span class="s2">&quot;sdb&quot;</span><span class="p">)</span>
+<span class="n">sdc</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">devicetree</span><span class="o">.</span><span class="n">get_device_by_name</span><span class="p">(</span><span class="s2">&quot;sdc&quot;</span><span class="p">)</span>
+<span class="n">new_part</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">new_partition</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">Size</span><span class="p">(</span><span class="s2">&quot;10 GiB&quot;</span><span class="p">),</span> <span class="n">grow</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                           <span class="n">maxsize</span><span class="o">=</span><span class="n">Size</span><span class="p">(</span><span class="s2">&quot;20 GiB&quot;</span><span class="p">),</span>
+                           <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">sdb</span><span class="p">,</span> <span class="n">sdc</span><span class="p">])</span>
+<span class="n">b</span><span class="o">.</span><span class="n">create_device</span><span class="p">(</span><span class="n">new_part</span><span class="p">)</span>
+<span class="n">blivet</span><span class="o">.</span><span class="n">partitioning</span><span class="o">.</span><span class="n">do_partitioning</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now you could see where it ended up:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;partition </span><span class="si">%s</span><span class="s2"> of size </span><span class="si">%s</span><span class="s2"> on disk </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">new_part</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                 <span class="n">new_part</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+                                                 <span class="n">new_part</span><span class="o">.</span><span class="n">disk</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>From here, everything is the same as it was in the first examples. All that’s
+left is to execute the scheduled action:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">b</span><span class="o">.</span><span class="n">do_it</span><span class="p">()</span>    <span class="c1"># or b.devicetree.process_actions()</span>
+</pre></div>
+</div>
+<p>Backing up, let’s see how it looks if you want to specify the start and end
+sectors. If you specify a start sector you have to also specify a single disk
+from which to allocate the partition:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">new_part</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">new_partition</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">204802048</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">sdb</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>All the rest is the same as the previous partitioning example.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction to Blivet</a><ul>
+<li><a class="reference internal" href="#building-blocks">Building Blocks</a></li>
+<li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li><a class="reference internal" href="#first-steps">First Steps</a></li>
+<li><a class="reference internal" href="#scheduling-a-series-of-actions">Scheduling a Series of Actions</a></li>
+<li><a class="reference internal" href="#disk-partitions">Disk Partitions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to Blivet’s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api.html"
+                        title="next chapter">Public API</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/intro.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api.html" title="Public API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to Blivet’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.3.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2013-2020, Red Hat, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+    </div>
+  </body>
+</html>
