@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.3.0
+Version: 3.3.1
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -191,6 +191,24 @@ configuration.
 %endif
 
 %changelog
+* Tue Oct 20 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.3.1-1
+- Make sure the product name is safe when using it for device name (vtrefny)
+- Run packit RPM builds on Fedora ELN (vtrefny)
+- Allow specifying 'mode' for the sdist command (vtrefny)
+- Enable packit RPM builds on pull requests (vtrefny)
+- Start the iscsi-init service (#1880673) (vponcova)
+- Let parted fix fixable issues with partition table (vtrefny)
+- edd: Fix UnboundLocalError when trying to close fd in collect_mbrs (vtrefny)
+- Use UnusableConfigurationError for partially hidden multipath devices
+  (vtrefny)
+- Close fd if it fails to read the device (nashok)
+- Do not run udev.settle in StorageDevice._pre_teardown (vtrefny)
+- Try to not use udev.resolve_devspec when querying MountsCache (vtrefny)
+- Remove Zanata config file (vtrefny)
+- Ignore new pylint warning W0707 "raise-missing-from" (vtrefny)
+- Use SSH "link" for l10n repository in Makefile (vtrefny)
+- Fix source tarball cleanup in srpm and rpm Makefile targets (vtrefny)
+
 * Thu Aug 20 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.3.0-1
 - Account for pmspare grow when adjusting thinpool metadata size (vtrefny)
 - Fix ignoring disk devices with parents or children (vtrefny)
