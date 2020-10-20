@@ -135,7 +135,7 @@ archive: po-pull
 	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(VERSION_TAG) | tar -xf -
 	cp -r po $(PKGNAME)-$(VERSION)
 	cp ChangeLog $(PKGNAME)-$(VERSION)/
-	( cd $(PKGNAME)-$(VERSION) && $(PYTHON) setup.py -q sdist --dist-dir .. )
+	( cd $(PKGNAME)-$(VERSION) && $(PYTHON) setup.py -q sdist --dist-dir .. --mode release )
 	rm -rf $(PKGNAME)-$(VERSION)
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
 	@make tests-archive
@@ -146,7 +146,7 @@ tests-archive:
 
 local: po-pull
 	@make -B ChangeLog
-	$(PYTHON) setup.py -q sdist --dist-dir .
+	$(PYTHON) setup.py -q sdist --dist-dir . --mode normal
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
 	git ls-files tests/ | tar -T- -czf $(PKGNAME)-$(VERSION)-tests.tar.gz
 	@echo "The test archive is in $(PKGNAME)-$(VERSION)-tests.tar.gz"

@@ -44,6 +44,17 @@ filelist.findall = findall
 
 # Extend the sdist command
 class blivet_sdist(sdist):
+    user_options = sdist.user_options + [('mode=', None, "specify mode for sdist; one of 'release', 'normal'"),]
+
+    def initialize_options(self):
+        sdist.initialize_options(self)
+        self.mode = None
+
+    def finalize_options(self):
+        sdist.finalize_options(self)
+        if self.mode not in (None, 'release', 'normal'):
+            raise AttributeError('Unknown mode %s' % self.mode)
+
     def run(self):
         # Build the .mo files
         subprocess.check_call(['make', '-C', 'po'])
@@ -55,10 +66,11 @@ class blivet_sdist(sdist):
         # Run the parent command first
         sdist.make_release_tree(self, base_dir, files)
 
-        # Run translation-canary in release mode to remove any bad translations
-        sys.path.append('translation-canary')
-        from translation_canary.translated import testSourceTree  # pylint: disable=import-error
-        testSourceTree(base_dir, releaseMode=True)
+        if self.mode == "release":
+            # Run translation-canary in release mode to remove any bad translations
+            sys.path.append('translation-canary')
+            from translation_canary.translated import testSourceTree  # pylint: disable=import-error
+            testSourceTree(base_dir, releaseMode=True)
 
 
 data_files = [

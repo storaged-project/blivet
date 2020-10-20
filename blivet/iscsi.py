@@ -364,6 +364,9 @@ class iSCSI(object):
         if not has_iscsi():
             return
 
+        # make sure that the file /etc/iscsi/initiatorname.iscsi exists
+        util.run_program(["systemctl", "start", "iscsi-init.service"])
+
         if self._initiator == "":
             log.info("no initiator set")
             return
