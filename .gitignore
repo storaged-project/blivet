@@ -18,8 +18,11 @@ po/stamp-po
 updates.img
 updates/
 build/
+dist/
+blivet.egg-info/
 .directory
 .coverage
 coverage-report.log
 pylint-log
 tests/pylint/.pylint.d/
+MANIFEST
