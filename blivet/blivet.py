@@ -68,7 +68,6 @@ class Blivet(object):
         self.exclusive_disks = []
         self.disk_images = {}
 
-        self.__luks_devs = {}
         self.size_sets = []
         self.set_default_fstype(get_default_filesystem_type())
 
