@@ -1849,6 +1849,15 @@ class LVMVDOPoolMixin(object):
         """ Is this device directly accessible? """
         return False
 
+    def read_current_size(self):
+        log_method_call(self, exists=self.exists, path=self.path,
+                        sysfs_path=self.sysfs_path)
+        if self.size != Size(0):
+            return self.size
+        if self._vdopool_data_lv:
+            return self._vdopool_data_lv.read_current_size()
+        return Size(0)
+
     def _create(self):
         """ Create the device. """
         raise NotImplementedError
