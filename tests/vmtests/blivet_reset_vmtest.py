@@ -192,6 +192,21 @@ class LVMRaidTestCase(BlivetResetTestCase):
         self.collect_expected_data()
 
 
+class LVMVDOTestCase(BlivetResetTestCase):
+
+    def _set_up_storage(self):
+        if not devicefactory.is_supported_device_type(devicefactory.DEVICE_TYPE_LVM_VDO):
+            self.skipTest("VDO not supported, skipping")
+
+        self.blivet.factory_device(devicefactory.DEVICE_TYPE_LVM_VDO,
+                                   size=Size("10 GiB"),
+                                   fstype="ext4",
+                                   disks=self.blivet.disks[:],
+                                   name="vdolv",
+                                   pool_name="vdopool",
+                                   virtual_size=Size("40 GiB"))
+
+
 @unittest.skip("temporarily disabled due to issues with raids with metadata version 0.90")
 class MDRaid0TestCase(BlivetResetTestCase):
 
