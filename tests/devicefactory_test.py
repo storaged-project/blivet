@@ -96,10 +96,12 @@ class DeviceFactoryTestCase(unittest.TestCase):
             self.assertEqual(device.format.label,
                              kwargs.get('label'))
 
-        self.assertLessEqual(device.size, kwargs.get("size"))
-        self.assertGreaterEqual(device.size, device.format.min_size)
-        if device.format.max_size:
-            self.assertLessEqual(device.size, device.format.max_size)
+        # sizes with VDO are special, we have a special check in LVMVDOFactoryTestCase._validate_factory_device
+        if device_type != devicefactory.DEVICE_TYPE_LVM_VDO:
+            self.assertLessEqual(device.size, kwargs.get("size"))
+            self.assertGreaterEqual(device.size, device.format.min_size)
+            if device.format.max_size:
+                self.assertLessEqual(device.size, device.format.max_size)
 
         self.assertEqual(device.encrypted,
                          kwargs.get("encrypted", False) or
@@ -120,7 +122,11 @@ class DeviceFactoryTestCase(unittest.TestCase):
                   "mountpoint": '/factorytest'}
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
-        self.b.recursive_remove(device)
+
+        if device.type == "lvmvdolv":
+            self.b.recursive_remove(device.pool)
+        else:
+            self.b.recursive_remove(device)
 
         if self.encryption_supported:
             # Encrypt the leaf device
@@ -159,6 +165,12 @@ class DeviceFactoryTestCase(unittest.TestCase):
         kwargs["fstype"] = "xfs"
         kwargs["device"] = device
         kwargs["size"] = Size("650 MiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # change size up
+        kwargs["device"] = device
+        kwargs["size"] = Size("900 MiB")
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
@@ -567,6 +579,103 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
                 delta += DEFAULT_THPOOL_RESERVE.min
 
         return delta
+
+
+class LVMVDOFactoryTestCase(LVMFactoryTestCase):
+    device_class = LVMLogicalVolumeDevice
+    device_type = devicefactory.DEVICE_TYPE_LVM_VDO
+    encryption_supported = False
+
+    def _validate_factory_device(self, *args, **kwargs):
+        super(LVMVDOFactoryTestCase, self)._validate_factory_device(*args,
+                                                                    **kwargs)
+        device = args[0]
+
+        if kwargs.get("encrypted", False):
+            vdolv = device.parents[0]
+        else:
+            vdolv = device
+
+        self.assertTrue(hasattr(vdolv, "pool"))
+
+        virtual_size = kwargs.get("virtual_size", 0)
+        if virtual_size:
+            self.assertEqual(vdolv.size, virtual_size)
+        else:
+            self.assertEqual(vdolv.size, vdolv.pool.size)
+        self.assertGreaterEqual(vdolv.size, vdolv.pool.size)
+
+        compression = kwargs.get("compression", True)
+        self.assertEqual(vdolv.pool.compression, compression)
+
+        deduplication = kwargs.get("deduplication", True)
+        self.assertEqual(vdolv.pool.deduplication, deduplication)
+
+        pool_name = kwargs.get("pool_name", None)
+        if pool_name:
+            self.assertEqual(vdolv.pool.lvname, pool_name)
+
+        return device
+
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
+        device_type = self.device_type
+        kwargs = {"disks": self.b.disks,
+                  "size": Size("400 MiB"),
+                  "fstype": 'ext4',
+                  "mountpoint": '/factorytest'}
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+        self.b.recursive_remove(device.pool)
+
+        kwargs = {"disks": self.b.disks,
+                  "size": Size("400 MiB"),
+                  "fstype": 'ext4',
+                  "mountpoint": '/factorytest',
+                  "pool_name": "vdopool",
+                  "deduplication": True,
+                  "compression": True}
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # change size without specifying virtual_size: both sizes should grow
+        kwargs["size"] = Size("600 MiB")
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # change virtual size
+        kwargs["virtual_size"] = Size("6 GiB")
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # change virtual size to smaller than size
+        kwargs["virtual_size"] = Size("500 GiB")
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # change deduplication and compression
+        kwargs["deduplication"] = False
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        kwargs["compression"] = False
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # rename the pool
+        kwargs["pool_name"] = "vdopool2"
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
 
 
 class MDFactoryTestCase(DeviceFactoryTestCase):
