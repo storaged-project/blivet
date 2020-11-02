@@ -211,7 +211,7 @@ class LVMFormatPopulator(FormatPopulator):
                     origin = self._devicetree.get_device_by_name(origin_device_name)
 
                 lv_kwargs["origin"] = origin
-            elif lv_attr[0] in 'IrielTCo' and lv_name.endswith(']'):
+            elif lv_attr[0] in 'IrielTCoD' and lv_name.endswith(']'):
                 # an internal LV, add the an instance of the appropriate class
                 # to internal_lvs for later processing when non-internal LVs are
                 # processed
