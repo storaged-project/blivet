@@ -1122,7 +1122,7 @@ class LVMInternalLVtype(Enum):
 
     @classmethod
     def get_type(cls, lv_attr, lv_name):  # pylint: disable=unused-argument
-        attr_letters = {cls.data: ("T", "C"),
+        attr_letters = {cls.data: ("T", "C", "D"),
                         cls.meta: ("e",),
                         cls.log: ("l", "L"),
                         cls.image: ("i", "I"),
@@ -1827,6 +1827,13 @@ class LVMVDOPoolMixin(object):
 
         self._lvs.remove(lv)
         self.vg._remove_log_vol(lv)
+
+    @property
+    @util.requires_property("is_vdo_pool")
+    def _vdopool_data_lv(self):
+        if not self._internal_lvs:
+            return None
+        return self._internal_lvs[0]
 
     @property
     @util.requires_property("is_vdo_pool")
