@@ -689,3 +689,34 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
             with patch.object(pool, "_pre_create"):
                 pool.create()
                 self.assertTrue(lvm.thpool_convert.called)
+
+    def test_new_vdo_pool(self):
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("10 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+
+        for dev in (pv, vg):
+            b.devicetree._add_device(dev)
+
+        # check that all the above devices are in the expected places
+        self.assertEqual(set(b.devices), {pv, vg})
+        self.assertEqual(set(b.vgs), {vg})
+
+        self.assertEqual(vg.size, Size("10236 MiB"))
+
+        vdopool = b.new_lv(name="vdopool", vdo_pool=True,
+                           parents=[vg], compression=True,
+                           deduplication=True,
+                           size=blivet.size.Size("8 GiB"))
+
+        vdolv = b.new_lv(name="vdolv", vdo_lv=True,
+                         parents=[vdopool],
+                         size=blivet.size.Size("40 GiB"))
+
+        b.create_device(vdopool)
+        b.create_device(vdolv)
+
+        self.assertEqual(vdopool.children[0], vdolv)
+        self.assertEqual(vdolv.parents[0], vdopool)
+        self.assertListEqual(vg.lvs, [vdopool, vdolv])
