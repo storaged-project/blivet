@@ -1841,6 +1841,13 @@ class LVMVDOPoolMixin(object):
         return self._lvs[:]     # we don't want folks changing our list
 
     @property
+    @util.requires_property("is_vdo_pool")
+    def vdo_lv(self):
+        if not self._lvs:
+            return None
+        return self._lvs[0]
+
+    @property
     def direct(self):
         """ Is this device directly accessible? """
         return False
