@@ -372,6 +372,13 @@ BLOCKDEV_LVM = BlockDevTechInfo(plugin_name="lvm",
                                                                            blockdev.LVMTechMode.MODIFY)})
 BLOCKDEV_LVM_TECH = BlockDevMethod(BLOCKDEV_LVM)
 
+BLOCKDEV_LVM_VDO = BlockDevTechInfo(plugin_name="lvm",
+                                    check_fn=blockdev.lvm_is_tech_avail,
+                                    technologies={blockdev.LVMTech.VDO: (blockdev.LVMTechMode.CREATE |
+                                                                         blockdev.LVMTechMode.REMOVE |
+                                                                         blockdev.LVMTechMode.QUERY)})
+BLOCKDEV_LVM_TECH_VDO = BlockDevMethod(BLOCKDEV_LVM_VDO)
+
 # libblockdev mdraid plugin required technologies and modes
 BLOCKDEV_MD_ALL_MODES = (blockdev.MDTechMode.CREATE |
                          blockdev.MDTechMode.DELETE |
@@ -410,6 +417,7 @@ BLOCKDEV_DM_PLUGIN = blockdev_plugin("dm", BLOCKDEV_DM_TECH)
 BLOCKDEV_DM_PLUGIN_RAID = blockdev_plugin("dm", BLOCKDEV_DM_TECH_RAID)
 BLOCKDEV_LOOP_PLUGIN = blockdev_plugin("loop", BLOCKDEV_LOOP_TECH)
 BLOCKDEV_LVM_PLUGIN = blockdev_plugin("lvm", BLOCKDEV_LVM_TECH)
+BLOCKDEV_LVM_PLUGIN_VDO = blockdev_plugin("lvm", BLOCKDEV_LVM_TECH_VDO)
 BLOCKDEV_MDRAID_PLUGIN = blockdev_plugin("mdraid", BLOCKDEV_MD_TECH)
 BLOCKDEV_MPATH_PLUGIN = blockdev_plugin("mpath", BLOCKDEV_MPATH_TECH)
 BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("swap", BLOCKDEV_SWAP_TECH)
