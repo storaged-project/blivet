@@ -1794,6 +1794,9 @@ class LVMThinLogicalVolumeMixin(object):
 
 
 class LVMVDOPoolMixin(object):
+
+    _external_dependencies = [availability.BLOCKDEV_LVM_PLUGIN, availability.BLOCKDEV_LVM_PLUGIN_VDO]
+
     def __init__(self):
         self._lvs = []
 
@@ -1852,6 +1855,9 @@ class LVMVDOPoolMixin(object):
 
 
 class LVMVDOLogicalVolumeMixin(object):
+
+    _external_dependencies = [availability.BLOCKDEV_LVM_PLUGIN, availability.BLOCKDEV_LVM_PLUGIN_VDO]
+
     def __init__(self):
         pass
 
