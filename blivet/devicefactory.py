@@ -27,7 +27,7 @@ from .errors import DeviceFactoryError, StorageError
 from .devices import BTRFSDevice, DiskDevice
 from .devices import LUKSDevice, LVMLogicalVolumeDevice
 from .devices import PartitionDevice, MDRaidArrayDevice
-from .devices.lvm import DEFAULT_THPOOL_RESERVE
+from .devices.lvm import LVMVDOPoolMixin, DEFAULT_THPOOL_RESERVE
 from .formats import get_format
 from .devicelibs import btrfs
 from .devicelibs import mdraid
@@ -58,6 +58,7 @@ DEVICE_TYPE_PARTITION = 2
 DEVICE_TYPE_BTRFS = 3
 DEVICE_TYPE_DISK = 4
 DEVICE_TYPE_LVM_THINP = 5
+DEVICE_TYPE_LVM_VDO = 6
 
 
 def is_supported_device_type(device_type):
@@ -69,6 +70,9 @@ def is_supported_device_type(device_type):
         :returns: True if this device type is supported
         :rtype: bool
     """
+    if device_type == DEVICE_TYPE_LVM_VDO:
+        return not any(e for e in LVMVDOPoolMixin._external_dependencies if not e.available)
+
     devices = []
     if device_type == DEVICE_TYPE_BTRFS:
         devices = [BTRFSDevice]
@@ -96,7 +100,7 @@ def get_supported_raid_levels(device_type):
     pkg = None
     if device_type == DEVICE_TYPE_BTRFS:
         pkg = btrfs
-    elif device_type in (DEVICE_TYPE_LVM, DEVICE_TYPE_LVM_THINP):
+    elif device_type in (DEVICE_TYPE_LVM, DEVICE_TYPE_LVM_THINP, DEVICE_TYPE_LVM_VDO):
         pkg = lvm
     elif device_type == DEVICE_TYPE_MD:
         pkg = mdraid
@@ -116,6 +120,8 @@ def get_device_type(device):
                     "lvmlv": DEVICE_TYPE_LVM,
                     "lvmthinlv": DEVICE_TYPE_LVM_THINP,
                     "lvmthinpool": DEVICE_TYPE_LVM,
+                    "lvmvdolv": DEVICE_TYPE_LVM_VDO,
+                    "lvmvdopool": DEVICE_TYPE_LVM,
                     "btrfs subvolume": DEVICE_TYPE_BTRFS,
                     "btrfs volume": DEVICE_TYPE_BTRFS,
                     "mdarray": DEVICE_TYPE_MD}
@@ -136,6 +142,7 @@ def get_device_factory(blivet, device_type=DEVICE_TYPE_LVM, **kwargs):
                    DEVICE_TYPE_PARTITION: PartitionFactory,
                    DEVICE_TYPE_MD: MDFactory,
                    DEVICE_TYPE_LVM_THINP: LVMThinPFactory,
+                   DEVICE_TYPE_LVM_VDO: LVMVDOFactory,
                    DEVICE_TYPE_DISK: DeviceFactory}
 
     factory_class = class_table[device_type]
@@ -1736,6 +1743,95 @@ class LVMThinPFactory(LVMFactory):
         kwargs["parents"] = [self.pool]
         kwargs["thin_volume"] = True
         return super(LVMThinPFactory, self)._get_new_device(*args, **kwargs)
+
+
+class LVMVDOFactory(LVMFactory):
+
+    """ Factory for creating LVM VDO volumes.
+
+        :keyword pool_name: name for the VDO pool, if not specified unique name will be generated
+        :type pool_name: str
+        :keyword virtual_size: size for the VDO volume, usually bigger than pool size, if not
+                               specified physical size (pool size) will be used
+        :type size: :class:`~.size.Size`
+        :keyword compression: whether to enable compression (defaults to True)
+        :type compression: bool
+        :keyword deduplication: whether to enable deduplication (defaults to True)
+        :type deduplication: bool
+    """
+
+    def __init__(self, storage, **kwargs):
+        self.pool_name = kwargs.pop("pool_name", None)
+        self.virtual_size = kwargs.pop("virtual_size", None)
+        self.compression = kwargs.pop("compression", True)
+        self.deduplication = kwargs.pop("deduplication", True)
+        super(LVMVDOFactory, self).__init__(storage, **kwargs)
+
+    def _get_new_pool(self, *args, **kwargs):
+        kwargs["vdo_pool"] = True
+        return super(LVMVDOFactory, self)._get_new_device(*args, **kwargs)
+
+    def _set_device_size(self):
+        """ Set the size of the factory device. """
+        super(LVMVDOFactory, self)._set_device_size()
+
+        self.device.pool.size = self.size
+        self._reconfigure_container()
+
+        if not self.virtual_size or self.virtual_size < self.size:
+            # virtual_size is not set or smaller than current size --> it should be same as the pool size
+            self.device.size = self.size
+        else:
+            self.device.size = self.virtual_size
+
+    def _set_pool_name(self):
+        safe_new_name = self.storage.safe_device_name(self.pool_name)
+        if self.device.pool.name != safe_new_name:
+            if not safe_new_name:
+                log.error("not renaming '%s' to invalid name '%s'",
+                          self.device.pool.name, self.pool_name)
+                return
+            if safe_new_name in self.storage.names:
+                log.error("not renaming '%s' to in-use name '%s'",
+                          self.device.pool.name, safe_new_name)
+                return
+
+            log.debug("renaming device '%s' to '%s'",
+                      self.device.pool.name, safe_new_name)
+            self.device.pool.raw_device.name = safe_new_name
+
+    def _set_name(self):
+        super(LVMVDOFactory, self)._set_name()
+        if self.pool_name:
+            self._set_pool_name()
+
+    def _reconfigure_device(self):
+        super(LVMVDOFactory, self)._reconfigure_device()
+
+        self.device.pool.compression = self.compression
+        self.device.pool.deduplication = self.deduplication
+
+    #
+    # methods to configure the factory's device
+    #
+    def _get_new_device(self, *args, **kwargs):
+        """ Create and return the factory device as a StorageDevice. """
+        pool = self._get_new_pool(name=self.pool_name,
+                                  size=self.size,
+                                  parents=[self.vg],
+                                  compression=self.compression,
+                                  deduplication=self.deduplication)
+        self.storage.create_device(pool)
+
+        kwargs["parents"] = [pool]
+        kwargs["vdo_lv"] = True
+
+        if self.virtual_size:
+            vdolv_kwargs = kwargs.copy()
+            vdolv_kwargs["size"] = self.virtual_size
+        else:
+            vdolv_kwargs = kwargs
+        return super(LVMVDOFactory, self)._get_new_device(*args, **vdolv_kwargs)
 
 
 class MDFactory(DeviceFactory):
