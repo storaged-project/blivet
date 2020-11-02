@@ -1879,7 +1879,7 @@ class LVMVDOLogicalVolumeMixin(object):
 
     @property
     def type(self):
-        return "vdolv"
+        return "lvmvdolv"
 
     @property
     def resizable(self):
