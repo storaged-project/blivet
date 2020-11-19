@@ -613,9 +613,15 @@ class Blivet(object):
 
         mountpoint = kwargs.pop("mountpoint", None)
         if 'fmt_type' in kwargs:
+            fmt_args = kwargs.pop("fmt_args", {})
+            if vdo_lv and "nodiscard" not in fmt_args.keys():
+                # we don't want to run discard on VDO LV during mkfs so if user don't
+                # tell us not to do it, we should add the nodiscard option to mkfs
+                fmt_args["nodiscard"] = True
+
             kwargs["fmt"] = get_format(kwargs.pop("fmt_type"),
                                        mountpoint=mountpoint,
-                                       **kwargs.pop("fmt_args", {}))
+                                       **fmt_args)
 
         name = kwargs.pop("name", None)
         if name:
