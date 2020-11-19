@@ -307,7 +307,8 @@ class FSMethodsTestCase(FormatMethodsTestCase):
             self.format._mkfs.do_task.assert_called_with(
                 options=None,
                 label=not self.format.relabels(),
-                set_uuid=self.format.can_set_uuid()
+                set_uuid=self.format.can_set_uuid(),
+                nodiscard=self.format.can_nodiscard()
             )
 
     def _test_setup_backend(self):

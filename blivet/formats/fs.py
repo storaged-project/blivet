@@ -132,6 +132,7 @@ class FS(DeviceFormat):
         self.mountopts = kwargs.get("mountopts", "")
         self.label = kwargs.get("label")
         self.fsprofile = kwargs.get("fsprofile")
+        self._mkfs_nodiscard = kwargs.get("nodiscard", False)
 
         self._user_mountopts = self.mountopts
 
@@ -262,6 +263,14 @@ class FS(DeviceFormat):
 
     label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
                      doc="this filesystem's label")
+
+    def can_nodiscard(self):
+        """Returns True if this filesystem supports nodiscard option during
+           creation, otherwise False.
+
+           :rtype: bool
+        """
+        return self._mkfs.can_nodiscard and self._mkfs.available
 
     def can_set_uuid(self):
         """Returns True if this filesystem supports setting an UUID during
@@ -402,7 +411,8 @@ class FS(DeviceFormat):
         try:
             self._mkfs.do_task(options=kwargs.get("options"),
                                label=not self.relabels(),
-                               set_uuid=self.can_set_uuid())
+                               set_uuid=self.can_set_uuid(),
+                               nodiscard=self.can_nodiscard())
         except FSWriteLabelError as e:
             log.warning("Choosing not to apply label (%s) during creation of filesystem %s. Label format is unacceptable for this filesystem.", self.label, self.type)
         except FSWriteUUIDError as e:
