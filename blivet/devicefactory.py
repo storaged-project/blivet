@@ -1811,6 +1811,12 @@ class LVMVDOFactory(LVMFactory):
         self.device.pool.compression = self.compression
         self.device.pool.deduplication = self.deduplication
 
+    def _set_format(self):
+        super(LVMVDOFactory, self)._set_format()
+
+        # preserve nodiscard mkfs option after changing filesystem
+        self.device.format._mkfs_nodiscard = True
+
     #
     # methods to configure the factory's device
     #

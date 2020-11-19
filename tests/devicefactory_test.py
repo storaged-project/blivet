@@ -571,6 +571,10 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
         if pool_name:
             self.assertEqual(vdolv.pool.lvname, pool_name)
 
+        # nodiscard should be always set for VDO LV format
+        if vdolv.format.type:
+            self.assertTrue(vdolv.format._mkfs_nodiscard)
+
         return device
 
     @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
@@ -632,6 +636,9 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
         kwargs["device"] = device
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
+
+        # change fstype
+        kwargs["fstype"] = "xfs"
 
 
 class MDFactoryTestCase(DeviceFactoryTestCase):
