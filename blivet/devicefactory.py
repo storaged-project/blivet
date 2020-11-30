@@ -745,7 +745,7 @@ class DeviceFactory(object):
             fmt = get_format(self.fstype,
                              mountpoint=self.mountpoint,
                              **fmt_args)
-            luks_device = LUKSDevice("luks-" + device.name,
+            luks_device = LUKSDevice("luks-%d" % device.id,
                                      parents=[device], fmt=fmt)
             self.storage.create_device(luks_device)
             ret = luks_device
@@ -832,7 +832,7 @@ class DeviceFactory(object):
                                                                luks_version=self.luks_version,
                                                                pbkdf_args=self.pbkdf_args,
                                                                luks_sector_size=self.luks_sector_size))
-            luks_device = LUKSDevice("luks-%s" % self.device.name,
+            luks_device = LUKSDevice("luks-%d" % self.device.id,
                                      fmt=leaf_format,
                                      parents=self.device)
             self.storage.create_device(luks_device)
@@ -1181,7 +1181,7 @@ class PartitionSetFactory(PartitionFactory):
                                                               luks_version=self.luks_version,
                                                               pbkdf_args=self.pbkdf_args,
                                                               luks_sector_size=self.luks_sector_size))
-                luks_member = LUKSDevice("luks-%s" % member.name,
+                luks_member = LUKSDevice("luks-%d" % member.id,
                                          parents=[member],
                                          fmt=get_format(self.fstype))
                 self.storage.create_device(luks_member)
@@ -1235,7 +1235,7 @@ class PartitionSetFactory(PartitionFactory):
             self.storage.create_device(member)
             if self.encrypted:
                 fmt = get_format(self.fstype)
-                member = LUKSDevice("luks-%s" % member.name,
+                member = LUKSDevice("luks-%d" % member.id,
                                     parents=[member], fmt=fmt)
                 self.storage.create_device(member)
 
