@@ -556,7 +556,7 @@ class Blivet(object):
             name = self.suggest_container_name(container_type=devicefactory.DEVICE_TYPE_LVM)
 
         if name in self.names:
-            raise ValueError("name already in use")
+            raise ValueError("name '%s' is already in use" % name)
 
         return LVMVolumeGroupDevice(name, pvs, *args, **kwargs)
 
@@ -634,7 +634,7 @@ class Blivet(object):
                                             prefix=prefix)
 
         if "%s-%s" % (vg.name, name) in self.names:
-            raise ValueError("name already in use")
+            raise ValueError("name '%s' is already in use" % name)
 
         if thin_pool or thin_volume:
             cache_req = kwargs.pop("cache_request", None)
