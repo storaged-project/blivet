@@ -38,6 +38,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
     @patch("blivet.udev.device_is_dm_raid", return_value=False)
+    @patch("blivet.udev.device_is_dm_stratis", return_value=False)
     @patch("blivet.udev.device_is_dm", return_value=True)
     def test_match(self, *args):
         """Test matching of dm device populator."""
@@ -58,6 +59,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
     @patch("blivet.udev.device_is_dm_raid", return_value=False)
+    @patch("blivet.udev.device_is_dm_stratis", return_value=False)
     @patch("blivet.udev.device_is_md", return_value=False)
     @patch("blivet.udev.device_is_loop", return_value=False)
     @patch("blivet.udev.device_is_dm", return_value=True)

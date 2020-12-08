@@ -371,6 +371,7 @@ def device_is_disk(info):
                  device_is_dm_partition(info) or
                  device_is_dm_lvm(info) or
                  device_is_dm_crypt(info) or
+                 device_is_dm_stratis(info) or
                  (device_is_md(info) and
                   (not device_get_md_container(info) and not all(device_is_disk(d) for d in device_get_parents(info))))))
 
@@ -1027,6 +1028,15 @@ def device_is_hidden(info):
         return False
 
     return bool(int(hidden))
+
+
+def device_is_stratis_filesystem(info):
+    if not device_is_dm_stratis(info):
+        return False
+    try:
+        return info.get("DM_UUID", "").split("-")[4] == "fs"
+    except IndexError:
+        return False
 
 
 def device_is_stratis_private(info):
