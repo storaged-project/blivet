@@ -25,6 +25,8 @@ log = logging.getLogger("blivet")
 from .storage import StorageDevice
 from ..static_data import stratis_info
 from ..size import Size
+from ..storage_log import log_method_call
+from .. import devicelibs
 
 
 class StratisPoolDevice(StorageDevice):
@@ -39,8 +41,12 @@ class StratisPoolDevice(StorageDevice):
         size = Size(0)
         if self.exists and self.uuid in stratis_info.pools.keys():
             size = stratis_info.pools[self.uuid].physical_size
-
         return size
+
+    def _destroy(self):
+        """ Destroy the device. """
+        log_method_call(self, self.name, status=self.status)
+        devicelibs.stratis.remove_pool(self.uuid)
 
 
 class StratisFilesystemDevice(StorageDevice):
@@ -70,3 +76,8 @@ class StratisFilesystemDevice(StorageDevice):
             return None
 
         return self.parents[0]
+
+    def _destroy(self):
+        """ Destroy the device. """
+        log_method_call(self, self.name, status=self.status)
+        devicelibs.stratis.remove_filesystem(self.pool.uuid, self.uuid)

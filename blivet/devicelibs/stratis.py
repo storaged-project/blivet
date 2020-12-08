@@ -20,7 +20,77 @@
 # Author(s): Vojtech Trefny <vtrefny@redhat.com>
 #
 
+import gi
+gi.require_version("GLib", "2.0")
+
+from gi.repository import GLib
+
+from ..errors import StratisError
 from ..size import Size
+from ..static_data import stratis_info
+from .. import safe_dbus
+
+
+STRATIS_SERVICE = "org.storage.stratis2"
+STRATIS_PATH = "/org/storage/stratis2"
+STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool"
+STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem"
+STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev"
+STRATIS_PROPS_INTF = STRATIS_SERVICE + ".FetchProperties"
+STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager"
 
 
 STRATIS_FS_SIZE = Size("1 TiB")
+
+
+def remove_pool(pool_uuid):
+    if not safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH):
+        raise StratisError("Stratis DBus service not available")
+
+    # repopulate the stratis info cache just to be sure all values are still valid
+    stratis_info.drop_cache()
+
+    if pool_uuid not in stratis_info.pools.keys():
+        raise StratisError("Stratis pool with UUID %s not found" % pool_uuid)
+
+    pool_info = stratis_info.pools[pool_uuid]
+
+    try:
+        (succ, _uuid), rc, err = safe_dbus.call_sync(STRATIS_SERVICE,
+                                                     STRATIS_PATH,
+                                                     STRATIS_MANAGER_INTF,
+                                                     "DestroyPool",
+                                                     GLib.Variant("(o)", (pool_info.object_path,)))
+    except safe_dbus.DBusCallError as e:
+        raise StratisError("Failed to remove stratis pool: %s" % str(e))
+    else:
+        if not succ:
+            raise StratisError("Failed to remove stratis pool: %s (%d)" % (err, rc))
+
+
+def remove_filesystem(pool_uuid, fs_uuid):
+    if not safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH):
+        raise StratisError("Stratis DBus service not available")
+
+    # repopulate the stratis info cache just to be sure all values are still valid
+    stratis_info.drop_cache()
+
+    if pool_uuid not in stratis_info.pools.keys():
+        raise StratisError("Stratis pool with UUID %s not found" % pool_uuid)
+    if fs_uuid not in stratis_info.filesystems.keys():
+        raise StratisError("Stratis filesystem with UUID %s not found" % fs_uuid)
+
+    pool_info = stratis_info.pools[pool_uuid]
+    fs_info = stratis_info.filesystems[fs_uuid]
+
+    try:
+        (succ, _uuid), rc, err = safe_dbus.call_sync(STRATIS_SERVICE,
+                                                     pool_info.object_path,
+                                                     STRATIS_POOL_INTF,
+                                                     "DestroyFilesystems",
+                                                     GLib.Variant("(ao)", ([fs_info.object_path],)))
+    except safe_dbus.DBusCallError as e:
+        raise StratisError("Failed to remove stratis filesystem: %s" % str(e))
+    else:
+        if not succ:
+            raise StratisError("Failed to remove stratis filesystem: %s (%d)" % (err, rc))
