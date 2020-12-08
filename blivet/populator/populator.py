@@ -253,6 +253,10 @@ class PopulatorMixin(object):
             log.info("device %s is marked as hidden in sysfs, ignoring", name)
             return
 
+        if udev.device_is_private(info):
+            log.info("device %s is private, ignoring", name)
+            return
+
         # make sure we note the name of every device we see
         self._add_name(name)
         device = self.get_device_by_name(name)
