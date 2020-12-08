@@ -186,6 +186,33 @@ def get_property_sync(service, obj_path, iface, prop_name,
     return ret
 
 
+def get_properties_sync(service, obj_path, iface, connection=None):
+    """
+    Get all properties of a given object provided by a given service.
+
+    :param service: DBus service to use
+    :type service: str
+    :param obj_path: object path
+    :type obj_path: str
+    :param iface: interface to use
+    :type iface: str
+    :param connection: connection to use (if None, a new connection is
+                       established)
+    :type connection: Gio.DBusConnection
+    :return: unpacked value of the property
+    :rtype: tuple with elements that depend on the type of the property
+    :raise DBusCallError: when the internal dbus_call_safe_sync invocation
+                          raises an exception
+
+    """
+
+    args = GLib.Variant('(s)', (iface,))
+    ret = call_sync(service, obj_path, DBUS_PROPS_IFACE, "GetAll", args,
+                    connection)
+
+    return ret
+
+
 def check_object_available(service, obj_path, iface=None):
     intro_data = call_sync(service, obj_path, DBUS_INTRO_IFACE, "Introspect", None)
     node_info = Gio.DBusNodeInfo.new_for_xml(intro_data[0])
