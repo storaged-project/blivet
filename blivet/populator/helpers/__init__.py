@@ -17,6 +17,7 @@ from .mdraid import MDDevicePopulator, MDFormatPopulator
 from .multipath import MultipathDevicePopulator, MultipathFormatPopulator
 from .optical import OpticalDevicePopulator
 from .partition import PartitionDevicePopulator
+from .stratis import StratisFormatPopulator
 
 __all__ = ["get_device_helper", "get_format_helper"]
 

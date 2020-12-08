@@ -47,7 +47,7 @@ from ..storage_log import log_method_call
 from ..tasks import availability
 from ..threads import SynchronizedMeta
 from .helpers import get_device_helper, get_format_helper
-from ..static_data import lvs_info, pvs_info, vgs_info, luks_data, mpath_members
+from ..static_data import lvs_info, pvs_info, vgs_info, luks_data, mpath_members, stratis_info
 from ..callbacks import callbacks
 
 import logging
@@ -88,7 +88,7 @@ class PopulatorMixin(object):
             self.set_disk_images(disk_images)
 
         # initialize attributes that may later hold cached lvm info
-        self.drop_lvm_cache()
+        self.drop_device_info_cache()
 
         self._cleanup = False
 
@@ -145,6 +145,10 @@ class PopulatorMixin(object):
     def _add_name(self, name):
         if name not in self.names:
             self.names.append(name)
+
+    def _remove_name(self, name):
+        if name in self.names:
+            self.names.remove(name)
 
     def _reason_to_skip_device(self, info):
         sysfs_path = udev.device_get_sysfs_path(info)
@@ -255,6 +259,11 @@ class PopulatorMixin(object):
 
         if udev.device_is_private(info):
             log.info("device %s is private, ignoring", name)
+            return
+
+        if udev.device_is_stratis_filesystem(info):
+            log.debug("skipping %s stratis filesystem, will be handled with corresponding "
+                      "stratis block device", name)
             return
 
         # make sure we note the name of every device we see
@@ -430,8 +439,7 @@ class PopulatorMixin(object):
                  self.ignored_disks, self.exclusive_disks)
 
         disklib.update_volume_info()
-        self.drop_lvm_cache()
-        mpath_members.drop_cache()
+        self.drop_device_info_cache()
 
         if flags.auto_dev_updates and availability.BLOCKDEV_MPATH_PLUGIN.available:
             blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
@@ -471,11 +479,13 @@ class PopulatorMixin(object):
         # inconsistencies are ignored or resolved.
         self._handle_inconsistencies()
 
-    def drop_lvm_cache(self):
-        """ Drop cached lvm information. """
+    def drop_device_info_cache(self):
+        """ Drop cached device information. """
         lvs_info.drop_cache()
         pvs_info.drop_cache()
         vgs_info.drop_cache()
+        mpath_members.drop_cache()
+        stratis_info.drop_cache()
 
     def handle_nodev_filesystems(self):
         for line in open("/proc/mounts").readlines():

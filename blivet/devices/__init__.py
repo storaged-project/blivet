@@ -35,3 +35,4 @@ from .optical import OpticalDevice
 from .nodev import NoDevice, TmpFSDevice
 from .network import NetworkStorageDevice
 from .nfs import NFSDevice
+from .stratis import StratisPoolDevice, StratisFilesystemDevice

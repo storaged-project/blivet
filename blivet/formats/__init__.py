@@ -742,4 +742,4 @@ class DeviceFormat(ObjectID):
 register_device_format(DeviceFormat)
 
 # import the format modules (which register their device formats)
-from . import biosboot, disklabel, dmraid, fslib, fs, luks, lvmpv, mdraid, multipath, prepboot, swap
+from . import biosboot, disklabel, dmraid, fslib, fs, luks, lvmpv, mdraid, multipath, prepboot, swap, stratis
