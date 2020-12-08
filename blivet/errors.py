@@ -181,6 +181,11 @@ class BTRFSError(StorageError):
 class BTRFSValueError(BTRFSError, ValueError):
     pass
 
+
+class StratisError(StorageError):
+    pass
+
+
 # DeviceTree
 
 

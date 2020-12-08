@@ -24,22 +24,15 @@ from collections import namedtuple
 
 from .. import safe_dbus
 from ..size import Size
+from ..devicelibs.stratis import STRATIS_SERVICE, STRATIS_PATH, STRATIS_POOL_INTF, STRATIS_FILESYSTEM_INTF, STRATIS_BLOCKDEV_INTF, STRATIS_PROPS_INTF
 
 import logging
 log = logging.getLogger("blivet")
 
 
-STRATIS_SERVICE = "org.storage.stratis2"
-STRATIS_PATH = "/org/storage/stratis2"
-STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool"
-STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem"
-STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev"
-STRATIS_PROPS_INTF = STRATIS_SERVICE + ".FetchProperties"
-
-
-StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size"])
-StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "pool_name", "pool_uuid"])
-StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_name", "pool_uuid"])
+StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "object_path"])
+StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "pool_name", "pool_uuid", "object_path"])
+StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_name", "pool_uuid", "object_path"])
 
 
 class StratisInfo(object):
@@ -80,7 +73,7 @@ class StratisInfo(object):
             pool_size = 0
 
         return StratisPoolInfo(name=properties["Name"], uuid=properties["Uuid"],
-                               physical_size=Size(pool_size))
+                               physical_size=Size(pool_size), object_path=pool_path)
 
     def _get_filesystem_info(self, filesystem_path):
         try:
@@ -100,7 +93,8 @@ class StratisInfo(object):
             return None
 
         return StratisFilesystemInfo(name=properties["Name"], uuid=properties["Uuid"],
-                                     pool_name=pool_info.name, pool_uuid=pool_info.uuid)
+                                     pool_name=pool_info.name, pool_uuid=pool_info.uuid,
+                                     object_path=filesystem_path)
 
     def _get_blockdev_info(self, blockdev_path):
         try:
@@ -125,7 +119,8 @@ class StratisInfo(object):
             pool_name = pool_info.name
 
         return StratisBlockdevInfo(path=properties["Devnode"], uuid=properties["Uuid"],
-                                   pool_name=pool_name, pool_uuid=pool_info.uuid)
+                                   pool_name=pool_name, pool_uuid=pool_info.uuid,
+                                   object_path=blockdev_path)
 
     def _get_stratis_info(self):
         self._info_cache = dict()
