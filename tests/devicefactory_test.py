@@ -49,13 +49,18 @@ class DeviceFactoryTestCase(unittest.TestCase):
     encryption_supported = True
     """ whether encryption of this device type is supported by blivet """
 
+    factory_class = None
+    """ devicefactory class used in this test case """
+
+    _disk_size = Size("2 GiB")
+
     def setUp(self):
         if self.device_type is None:
             raise unittest.SkipTest("abstract base class")
 
         self.b = blivet.Blivet()  # don't populate it
-        self.disk_files = [create_sparse_tempfile("factorytest", Size("2 GiB")),
-                           create_sparse_tempfile("factorytest", Size("2 GiB"))]
+        self.disk_files = [create_sparse_tempfile("factorytest", self._disk_size),
+                           create_sparse_tempfile("factorytest", self._disk_size)]
         for filename in self.disk_files:
             disk = DiskFile(filename)
             self.b.devicetree._add_device(disk)
@@ -205,7 +210,7 @@ class DeviceFactoryTestCase(unittest.TestCase):
     def test_get_free_disk_space(self, *args):  # pylint: disable=unused-argument
         # get_free_disk_space should return the total free space on disks
         kwargs = self._get_test_factory_args()
-        kwargs["size"] = Size("500 MiB")
+        kwargs["size"] = max(Size("500 MiB"), self.factory_class._device_min_size)
         factory = devicefactory.get_device_factory(self.b,
                                                    self.device_type,
                                                    disks=self.b.disks,
@@ -295,7 +300,7 @@ class DeviceFactoryTestCase(unittest.TestCase):
         kwargs = self._get_test_factory_args()
         kwargs.update({"disks": self.b.disks[:],
                        "fstype": "swap",
-                       "size": Size("2GiB"),
+                       "size": max(Size("2GiB"), self.factory_class._device_min_size),
                        "label": "SWAP"})
         device = self._factory_device(self.device_type, **kwargs)
         factory = devicefactory.get_device_factory(self.b, self.device_type,
@@ -312,6 +317,7 @@ class DeviceFactoryTestCase(unittest.TestCase):
 class PartitionFactoryTestCase(DeviceFactoryTestCase):
     device_class = PartitionDevice
     device_type = devicefactory.DEVICE_TYPE_PARTITION
+    factory_class = devicefactory.PartitionFactory
 
     def test_bug1178884(self):
         # Test a change of format and size where old size is too large for the
@@ -340,6 +346,7 @@ class PartitionFactoryTestCase(DeviceFactoryTestCase):
 class LVMFactoryTestCase(DeviceFactoryTestCase):
     device_class = LVMLogicalVolumeDevice
     device_type = devicefactory.DEVICE_TYPE_LVM
+    factory_class = devicefactory.LVMFactory
 
     def _validate_factory_device(self, *args, **kwargs):
         super(LVMFactoryTestCase, self)._validate_factory_device(*args, **kwargs)
@@ -554,6 +561,7 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
     device_class = LVMLogicalVolumeDevice
     device_type = devicefactory.DEVICE_TYPE_LVM_THINP
     encryption_supported = False
+    factory_class = devicefactory.LVMThinPFactory
 
     def _validate_factory_device(self, *args, **kwargs):
         super(LVMThinPFactoryTestCase, self)._validate_factory_device(*args,
@@ -585,6 +593,8 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
     device_class = LVMLogicalVolumeDevice
     device_type = devicefactory.DEVICE_TYPE_LVM_VDO
     encryption_supported = False
+    _disk_size = Size("10 GiB")  # we need bigger disks for VDO
+    factory_class = devicefactory.LVMVDOFactory
 
     def _validate_factory_device(self, *args, **kwargs):
         super(LVMVDOFactoryTestCase, self)._validate_factory_device(*args,
@@ -629,7 +639,7 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
     def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         device_type = self.device_type
         kwargs = {"disks": self.b.disks,
-                  "size": Size("400 MiB"),
+                  "size": Size("6 GiB"),
                   "fstype": 'ext4',
                   "mountpoint": '/factorytest'}
         device = self._factory_device(device_type, **kwargs)
@@ -637,7 +647,7 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
         self.b.recursive_remove(device.pool)
 
         kwargs = {"disks": self.b.disks,
-                  "size": Size("400 MiB"),
+                  "size": Size("6 GiB"),
                   "fstype": 'ext4',
                   "mountpoint": '/factorytest',
                   "pool_name": "vdopool",
@@ -647,19 +657,19 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
         self._validate_factory_device(device, device_type, **kwargs)
 
         # change size without specifying virtual_size: both sizes should grow
-        kwargs["size"] = Size("600 MiB")
+        kwargs["size"] = Size("8 GiB")
         kwargs["device"] = device
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
         # change virtual size
-        kwargs["virtual_size"] = Size("6 GiB")
+        kwargs["virtual_size"] = Size("40 GiB")
         kwargs["device"] = device
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
         # change virtual size to smaller than size
-        kwargs["virtual_size"] = Size("500 GiB")
+        kwargs["virtual_size"] = Size("10 GiB")
         kwargs["device"] = device
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
@@ -688,6 +698,7 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
 class MDFactoryTestCase(DeviceFactoryTestCase):
     device_type = devicefactory.DEVICE_TYPE_MD
     device_class = MDRaidArrayDevice
+    factory_class = devicefactory.MDFactory
 
     @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
     def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ

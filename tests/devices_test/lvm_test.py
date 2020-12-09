@@ -705,6 +705,12 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
 
         self.assertEqual(vg.size, Size("10236 MiB"))
 
+        with self.assertRaises(ValueError):
+            vdopool = b.new_lv(name="vdopool", vdo_pool=True,
+                               parents=[vg], compression=True,
+                               deduplication=True,
+                               size=blivet.size.Size("1 GiB"))
+
         vdopool = b.new_lv(name="vdopool", vdo_pool=True,
                            parents=[vg], compression=True,
                            deduplication=True,
