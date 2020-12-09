@@ -1792,6 +1792,7 @@ class LVMThinLogicalVolumeMixin(object):
 class LVMVDOPoolMixin(object):
 
     _external_dependencies = [availability.BLOCKDEV_LVM_PLUGIN, availability.BLOCKDEV_LVM_PLUGIN_VDO]
+    _min_size = Size("5 GiB")  # 2.5 GiB for index and one 2 GiB slab rounded up to 5 GiB
 
     def __init__(self, compression=True, deduplication=True, index_memory=0, write_policy=None):
         self.compression = compression
@@ -1799,6 +1800,9 @@ class LVMVDOPoolMixin(object):
         self.index_memory = index_memory
         self.write_policy = write_policy
         self._lvs = []
+
+        if not self.exists and self.size < self.min_size:
+            raise ValueError("Requested size %s is smaller than minimum %s" % (self.size, self.min_size))
 
     @property
     def is_vdo_pool(self):
@@ -1855,6 +1859,23 @@ class LVMVDOPoolMixin(object):
     def direct(self):
         """ Is this device directly accessible? """
         return False
+
+    @property
+    @util.requires_property("is_vdo_pool")
+    def min_size(self):
+        if self.exists:
+            return self.current_size
+
+        return self._min_size
+
+    def _set_size(self, newsize):
+        if not isinstance(newsize, Size):
+            raise AttributeError("new size must of type Size")
+
+        if newsize < self.min_size:
+            raise ValueError("Requested size %s is smaller than minimum %s" % (newsize, self.min_size))
+
+        DMDevice._set_size(self, newsize)
 
     def read_current_size(self):
         log_method_call(self, exists=self.exists, path=self.path,
@@ -2228,6 +2249,11 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
                   self.vg.align(self.vg.free_space, roundup=False))
         max_format = self.format.max_size
         return min(max_lv, max_format) if max_format else max_lv
+
+    @property
+    @type_specific
+    def min_size(self):
+        return super(LVMLogicalVolumeDevice, self).min_size
 
     @property
     @type_specific

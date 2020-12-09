@@ -277,6 +277,7 @@ class DeviceFactory(object):
                          "container_size": SIZE_POLICY_AUTO,
                          "container_raid_level": None,
                          "container_encrypted": None}
+    _device_min_size = Size(0)  # no limit by default, limited only by filesystem size
 
     def __init__(self, storage, **kwargs):
         """
@@ -1759,6 +1760,8 @@ class LVMVDOFactory(LVMFactory):
         :keyword deduplication: whether to enable deduplication (defaults to True)
         :type deduplication: bool
     """
+
+    _device_min_size = LVMVDOPoolMixin._min_size
 
     def __init__(self, storage, **kwargs):
         self.pool_name = kwargs.pop("pool_name", None)
