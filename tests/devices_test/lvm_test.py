@@ -10,10 +10,13 @@ import blivet
 from blivet.devices import StorageDevice
 from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import LVMVolumeGroupDevice
+from blivet.devices.lvm import LVMVDOPoolMixin
+from blivet.devices.lvm import LVMVDOLogicalVolumeMixin
 from blivet.devices.lvm import LVMCacheRequest
 from blivet.devices.lvm import LVPVSpec, LVMInternalLVtype
 from blivet.size import Size
 from blivet.devicelibs import raid
+from blivet import devicefactory
 from blivet import errors
 
 DEVICE_CLASSES = [
@@ -690,6 +693,10 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
                 pool.create()
                 self.assertTrue(lvm.thpool_convert.called)
 
+
+@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES + [LVMVDOPoolMixin, LVMVDOLogicalVolumeMixin]), "some unsupported device classes required for this test")
+class BlivetNewLVMVDODeviceTest(unittest.TestCase):
+
     def test_new_vdo_pool(self):
         b = blivet.Blivet()
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
@@ -726,3 +733,102 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
         self.assertEqual(vdopool.children[0], vdolv)
         self.assertEqual(vdolv.parents[0], vdopool)
         self.assertListEqual(vg.lvs, [vdopool, vdolv])
+
+
+@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+class BlivetLVMVDODependenciesTest(unittest.TestCase):
+    def test_vdo_dependencies(self):
+        blivet.tasks.availability.CACHE_AVAILABILITY = False
+
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("10 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+
+        for dev in (pv, vg):
+            b.devicetree._add_device(dev)
+
+        # check that all the above devices are in the expected places
+        self.assertEqual(set(b.devices), {pv, vg})
+        self.assertEqual(set(b.vgs), {vg})
+
+        self.assertEqual(vg.size, Size("10236 MiB"))
+
+        vdopool = b.new_lv(name="vdopool", vdo_pool=True,
+                           parents=[vg], compression=True,
+                           deduplication=True,
+                           size=blivet.size.Size("8 GiB"))
+
+        vdolv = b.new_lv(name="vdolv", vdo_lv=True,
+                         parents=[vdopool],
+                         size=blivet.size.Size("40 GiB"))
+
+        # Dependencies check: for VDO types these should be combination of "normal"
+        # LVM dependencies (LVM libblockdev plugin + kpartx and DM plugin from DMDevice)
+        # and LVM VDO technology from the LVM plugin
+        lvm_vdo_dependencies = ["kpartx",
+                                "libblockdev dm plugin",
+                                "libblockdev lvm plugin",
+                                "libblockdev lvm plugin (vdo technology)"]
+        pool_deps = [d.name for d in vdopool.external_dependencies]
+        six.assertCountEqual(self, pool_deps, lvm_vdo_dependencies)
+
+        vdolv_deps = [d.name for d in vdolv.external_dependencies]
+        six.assertCountEqual(self, vdolv_deps, lvm_vdo_dependencies)
+
+        # same dependencies should be returned when checking with class not instance
+        pool_type_deps = [d.name for d in LVMVDOPoolMixin.type_external_dependencies()]
+        six.assertCountEqual(self, pool_type_deps, lvm_vdo_dependencies)
+
+        vdolv_type_deps = [d.name for d in LVMVDOLogicalVolumeMixin.type_external_dependencies()]
+        six.assertCountEqual(self, vdolv_type_deps, lvm_vdo_dependencies)
+
+        # just to be sure LVM VDO specific code didn't break "normal" LVs
+        normallv = b.new_lv(name="lvol0",
+                            parents=[vg],
+                            size=blivet.size.Size("1 GiB"))
+
+        normalvl_deps = [d.name for d in normallv.external_dependencies]
+        six.assertCountEqual(self, normalvl_deps, ["kpartx",
+                                                   "libblockdev dm plugin",
+                                                   "libblockdev lvm plugin"])
+
+        with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies",
+                   new=[blivet.tasks.availability.unavailable_resource("VDO unavailability test")]):
+            with patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies",
+                       new=[blivet.tasks.availability.unavailable_resource("VDO unavailability test")]):
+
+                pool_deps = [d.name for d in vdopool.unavailable_dependencies]
+                self.assertEqual(pool_deps, ["VDO unavailability test"])
+
+                vdolv_deps = [d.name for d in vdolv.unavailable_dependencies]
+                self.assertEqual(vdolv_deps, ["VDO unavailability test"])
+
+                # same dependencies should be returned when checking with class not instance
+                pool_type_deps = [d.name for d in LVMVDOPoolMixin.unavailable_type_dependencies()]
+                six.assertCountEqual(self, pool_type_deps, ["VDO unavailability test"])
+
+                vdolv_type_deps = [d.name for d in LVMVDOLogicalVolumeMixin.unavailable_type_dependencies()]
+                six.assertCountEqual(self, vdolv_type_deps, ["VDO unavailability test"])
+
+                normallv_deps = [d.name for d in normallv.unavailable_dependencies]
+                self.assertEqual(normallv_deps, [])
+
+                with self.assertRaises(errors.DependencyError):
+                    b.create_device(vdopool)
+                    b.create_device(vdolv)
+
+                b.create_device(normallv)
+
+    def test_vdo_dependencies_devicefactory(self):
+        with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies",
+                   new=[blivet.tasks.availability.unavailable_resource("VDO unavailability test")]):
+            with patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies",
+                       new=[blivet.tasks.availability.unavailable_resource("VDO unavailability test")]):
+
+                # shouldn't affect "normal" LVM
+                lvm_supported = devicefactory.is_supported_device_type(devicefactory.DEVICE_TYPE_LVM)
+                self.assertTrue(lvm_supported)
+
+                vdo_supported = devicefactory.is_supported_device_type(devicefactory.DEVICE_TYPE_LVM_VDO)
+                self.assertFalse(vdo_supported)
