@@ -1804,6 +1804,17 @@ class LVMVDOPoolMixin(object):
         if not self.exists and self.size < self.min_size:
             raise ValueError("Requested size %s is smaller than minimum %s" % (self.size, self.min_size))
 
+    # these two methods are defined in Device but LVMVDOPoolMixin doesn't inherit from
+    # it and we can't have this code in LVMLogicalVolumeDevice because we need to be able
+    # to get dependencies without creating instance of the class
+    @classmethod
+    def type_external_dependencies(cls):
+        return set(d for d in cls._external_dependencies) | LVMLogicalVolumeDevice.type_external_dependencies()
+
+    @classmethod
+    def unavailable_type_dependencies(cls):
+        return set(e for e in cls.type_external_dependencies() if not e.available)
+
     @property
     def is_vdo_pool(self):
         return self.seg_type == "vdo-pool"
@@ -1925,6 +1936,17 @@ class LVMVDOLogicalVolumeMixin(object):
 
         if not container or not isinstance(container, LVMLogicalVolumeDevice) or not container.is_vdo_pool:
             raise ValueError("constructor requires a vdo-pool LV")
+
+    # these two methods are defined in Device but LVMVDOLogicalVolumeMixin doesn't inherit
+    # from it and we can't have this code in LVMLogicalVolumeDevice because we need to be
+    # able to get dependencies without creating instance of the class
+    @classmethod
+    def type_external_dependencies(cls):
+        return set(d for d in cls._external_dependencies) | LVMLogicalVolumeDevice.type_external_dependencies()
+
+    @classmethod
+    def unavailable_type_dependencies(cls):
+        return set(e for e in cls.type_external_dependencies() if not e.available)
 
     @property
     def vg_space_used(self):
@@ -2216,6 +2238,15 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     def _convert_from_lvs(self):
         """Convert the LVs to create this LV from into its internal LVs"""
         raise ValueError("Cannot create a new LV of type '%s' from other LVs" % self.seg_type)
+
+    @property
+    def external_dependencies(self):
+        deps = super(LVMLogicalVolumeBase, self).external_dependencies
+        if self.is_vdo_pool:
+            deps.update(LVMVDOPoolMixin.type_external_dependencies())
+        if self.is_vdo_lv:
+            deps.update(LVMVDOLogicalVolumeMixin.type_external_dependencies())
+        return deps
 
     @property
     @type_specific

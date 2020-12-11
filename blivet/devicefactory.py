@@ -27,7 +27,7 @@ from .errors import DeviceFactoryError, StorageError
 from .devices import BTRFSDevice, DiskDevice
 from .devices import LUKSDevice, LVMLogicalVolumeDevice
 from .devices import PartitionDevice, MDRaidArrayDevice
-from .devices.lvm import LVMVDOPoolMixin, DEFAULT_THPOOL_RESERVE
+from .devices.lvm import LVMVDOPoolMixin, LVMVDOLogicalVolumeMixin, DEFAULT_THPOOL_RESERVE
 from .formats import get_format
 from .devicelibs import btrfs
 from .devicelibs import mdraid
@@ -70,9 +70,6 @@ def is_supported_device_type(device_type):
         :returns: True if this device type is supported
         :rtype: bool
     """
-    if device_type == DEVICE_TYPE_LVM_VDO:
-        return not any(e for e in LVMVDOPoolMixin._external_dependencies if not e.available)
-
     devices = []
     if device_type == DEVICE_TYPE_BTRFS:
         devices = [BTRFSDevice]
@@ -84,6 +81,8 @@ def is_supported_device_type(device_type):
         devices = [PartitionDevice]
     elif device_type == DEVICE_TYPE_MD:
         devices = [MDRaidArrayDevice]
+    elif device_type == DEVICE_TYPE_LVM_VDO:
+        devices = [LVMLogicalVolumeDevice, LVMVDOPoolMixin, LVMVDOLogicalVolumeMixin]
 
     return not any(c.unavailable_type_dependencies() for c in devices)
 
