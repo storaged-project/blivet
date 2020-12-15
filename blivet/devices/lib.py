@@ -199,6 +199,12 @@ class ParentList(object):
     def __len__(self):
         return len(self.items)
 
+    def __str__(self):
+        return str(self.items)
+
+    def __repr__(self):
+        return repr(self.items)
+
     def append(self, y):
         """ Add an item to the list after running a callback. """
         if y in self.items:
