@@ -2,7 +2,9 @@
 import test_compat
 
 from six.moves import mock
+import os
 import six
+import tempfile
 import unittest
 from decimal import Decimal
 
@@ -157,3 +159,24 @@ class DependencyGuardTestCase(unittest.TestCase):
         with mock.patch.object(_requires_something, '_check_avail', return_value=True):
             self.assertEqual(self._test_dependency_guard_non_critical(), True)
             self.assertEqual(self._test_dependency_guard_critical(), True)
+
+
+class GetSysfsAttrTestCase(unittest.TestCase):
+
+    def test_get_sysfs_attr(self):
+
+        with tempfile.TemporaryDirectory() as sysfs:
+            model_file = os.path.join(sysfs, "model")
+            with open(model_file, "w") as f:
+                f.write("test model\n")
+
+            model = util.get_sysfs_attr(sysfs, "model")
+            self.assertEqual(model, "test model")
+
+            # now with some invalid byte in the model
+            with open(model_file, "wb") as f:
+                f.write(b"test model\xef\n")
+
+            # the unicode replacement character (U+FFFD) should be used instead
+            model = util.get_sysfs_attr(sysfs, "model")
+            self.assertEqual(model, "test model\ufffd")
