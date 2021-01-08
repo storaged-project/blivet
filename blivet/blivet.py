@@ -556,7 +556,7 @@ class Blivet(object):
             name = self.suggest_container_name(container_type=devicefactory.DEVICE_TYPE_LVM)
 
         if name in self.names:
-            raise ValueError("name already in use")
+            raise ValueError("name '%s' is already in use" % name)
 
         return LVMVolumeGroupDevice(name, pvs, *args, **kwargs)
 
@@ -634,7 +634,7 @@ class Blivet(object):
                                             prefix=prefix)
 
         if "%s-%s" % (vg.name, name) in self.names:
-            raise ValueError("name already in use")
+            raise ValueError("name '%s' is already in use" % name)
 
         if thin_pool or thin_volume:
             cache_req = kwargs.pop("cache_request", None)
@@ -925,8 +925,23 @@ class Blivet(object):
 
         return tmp
 
-    def _get_container_name_template(self, prefix=None):
-        return prefix or ""
+    def unique_device_name(self, name, parent=None, name_set=True):
+        """ Turn given name into a unique one by adding numeric suffix to it """
+        if name_set:
+            if parent and "%s-%s" % (parent.name, name) not in self.names:
+                return name
+            elif not parent and name not in self.names:
+                return name
+
+        for suffix in range(100):
+            if parent:
+                if "%s-%s%02d" % (parent.name, name, suffix) not in self.names:
+                    return "%s%02d" % (name, suffix)
+            else:
+                if "%s%02d" % (name, suffix) not in self.names:
+                    return "%s%02d" % (name, suffix)
+
+        raise RuntimeError("unable to find suitable device name")
 
     def suggest_container_name(self, prefix="", container_type=None):
         """ Return a reasonable, unused device name.
@@ -938,20 +953,13 @@ class Blivet(object):
         if not prefix:
             prefix = self.safe_device_name(self.short_product_name, container_type)
 
-        template = self._get_container_name_template(prefix=prefix)
-        names = self.names
-        name = template
-        if name in names:
-            name = None
-            for i in range(100):
-                tmpname = "%s%02d" % (template, i,)
-                if tmpname not in names:
-                    name = tmpname
-                    break
-
-            if not name:
-                log.error("failed to create device name based on template '%s'", template)
-                raise RuntimeError("unable to find suitable device name")
+        name = prefix or ""
+        if name in self.names:
+            try:
+                name = self.unique_device_name(name)
+            except RuntimeError:
+                log.error("failed to create device name based on template '%s'", name)
+                raise
 
         return name
 
@@ -982,33 +990,17 @@ class Blivet(object):
         if prefix and body:
             body = "_" + body
 
-        template = self.safe_device_name(prefix + body)
-        names = self.names
-        name = template
+        name = self.safe_device_name(prefix + body)
+        full_name = "%s-%s" % (parent.name, name) if parent else name
 
-        def full_name(name, parent):
-            full = ""
-            if parent:
-                full = "%s-" % parent.name
-            full += name
-            return full
-
-        # also include names of any lvs in the parent for the case of the
-        # temporary vg in the lvm dialogs, which can contain lvs that are
-        # not yet in the devicetree and therefore not in self.names
-        if full_name(name, parent) in names or not body:
-            for i in range(100):
-                name = "%s%02d" % (template, i)
-                if full_name(name, parent) not in names:
-                    break
-                else:
-                    name = ""
-
-            if not name:
+        if full_name in self.names or not body:
+            try:
+                name = self.unique_device_name(name, parent, bool(body))
+            except RuntimeError:
                 log.error("failed to create device name based on parent '%s', "
                           "prefix '%s', mountpoint '%s', swap '%s'",
                           parent.name, prefix, mountpoint, swap)
-                raise RuntimeError("unable to find suitable device name")
+                raise
 
         return name
 
