@@ -185,9 +185,8 @@ def __is_ignored_blockdev(dev_name):
         if any(re.search(expr, dev_name) for expr in ignored_device_names):
             return True
 
-    model_path = "/sys/class/block/%s/device/model" % dev_name
-    if os.path.exists(model_path):
-        model = open(model_path, encoding="utf-8", errors="replace").read()
+    model = util.get_sysfs_attr("/sys/class/block/%s" % dev_name, "device/model")
+    if model:
         for bad in ("IBM *STMF KERNEL", "SCEI Flash-5", "DGC LUNZ"):
             if model.find(bad) != -1:
                 log.info("ignoring %s with model %s", dev_name, model)
