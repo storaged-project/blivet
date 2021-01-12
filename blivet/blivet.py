@@ -943,6 +943,9 @@ class Blivet(object):
 
         raise RuntimeError("unable to find suitable device name")
 
+    def _get_container_name_template(self, prefix=None):
+        return prefix or ""
+
     def suggest_container_name(self, prefix="", container_type=None):
         """ Return a reasonable, unused device name.
 
@@ -953,7 +956,7 @@ class Blivet(object):
         if not prefix:
             prefix = self.safe_device_name(self.short_product_name, container_type)
 
-        name = prefix or ""
+        name = self._get_container_name_template(prefix=prefix)
         if name in self.names:
             try:
                 name = self.unique_device_name(name)
