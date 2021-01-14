@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>tests package &#8212; Blivet 3.3.1 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tests package &#8212; Blivet 3.3.2 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -34,7 +35,8 @@
         <li class="right" >
           <a href="../blivet/blivet.tasks.html" title="blivet.tasks package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">tests package</a></li> 
       </ul>
     </div>  
 
@@ -123,82 +125,82 @@
 </div>
 <div class="section" id="module-tests.action_test">
 <span id="tests-action-test-module"></span><h2>tests.action_test module<a class="headerlink" href="#module-tests.action_test" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.action_test.ConfigurationActionsTest">
-<em class="property">class </em><code class="sig-prename descclassname">tests.action_test.</code><code class="sig-name descname">ConfigurationActionsTest</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.ConfigurationActionsTest" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.action_test.</code><code class="sig-name descname">ConfigurationActionsTest</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.ConfigurationActionsTest" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.ConfigurationActionsTest.test_device_configuration">
 <code class="sig-name descname">test_device_configuration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.ConfigurationActionsTest.test_device_configuration" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.ConfigurationActionsTest.test_format_configuration">
 <code class="sig-name descname">test_format_configuration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.ConfigurationActionsTest.test_format_configuration" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="tests.action_test.DeviceActionTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.action_test.</code><code class="sig-name descname">DeviceActionTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.action_test.</code><code class="sig-name descname">DeviceActionTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tests.storagetestcase.StorageTestCase" title="tests.storagetestcase.StorageTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.storagetestcase.StorageTestCase</span></code></a></p>
 <p>DeviceActionTestSuite</p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.DeviceActionTestCase.setUp">
 <code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.setUp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create something like a preexisting autopart on two disks (sda,sdb).</p>
 <p>The other two disks (sdc,sdd) are left for individual tests to use.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.DeviceActionTestCase.test_action_apply_cancel">
 <code class="sig-name descname">test_action_apply_cancel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.test_action_apply_cancel" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.DeviceActionTestCase.test_action_creation">
 <code class="sig-name descname">test_action_creation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.test_action_creation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify correct operation of action class constructors.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.DeviceActionTestCase.test_action_dependencies">
 <code class="sig-name descname">test_action_dependencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.test_action_dependencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify correct functioning of action dependencies.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.DeviceActionTestCase.test_action_obsoletes">
 <code class="sig-name descname">test_action_obsoletes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.test_action_obsoletes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify correct operation of DeviceAction.obsoletes.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.DeviceActionTestCase.test_action_pruning">
 <code class="sig-name descname">test_action_pruning</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.test_action_pruning" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify correct functioning of action pruning.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.DeviceActionTestCase.test_action_registration">
 <code class="sig-name descname">test_action_registration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.test_action_registration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify correct operation of action registration and cancelling.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.DeviceActionTestCase.test_action_sorting">
-<code class="sig-name descname">test_action_sorting</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.test_action_sorting" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">test_action_sorting</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.test_action_sorting" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify correct functioning of action sorting.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.DeviceActionTestCase.test_actions">
 <code class="sig-name descname">test_actions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.test_actions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify correct management of actions.</p>
@@ -268,17 +270,17 @@ not have a method with the specified name.</p>
 </ul>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.DeviceActionTestCase.test_container_actions">
 <code class="sig-name descname">test_container_actions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.test_container_actions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.DeviceActionTestCase.test_lv_from_lvs_actions">
 <code class="sig-name descname">test_lv_from_lvs_actions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.test_lv_from_lvs_actions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.action_test.DeviceActionTestCase.test_lvm_vdo_destroy">
 <code class="sig-name descname">test_lvm_vdo_destroy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.action_test.DeviceActionTestCase.test_lvm_vdo_destroy" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -300,9 +302,9 @@ not have a method with the specified name.</p>
 </div>
 <div class="section" id="module-tests.imagebackedtestcase">
 <span id="tests-imagebackedtestcase-module"></span><h2>tests.imagebackedtestcase module<a class="headerlink" href="#module-tests.imagebackedtestcase" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.imagebackedtestcase.ImageBackedTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.imagebackedtestcase.</code><code class="sig-name descname">ImageBackedTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.imagebackedtestcase.ImageBackedTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.imagebackedtestcase.</code><code class="sig-name descname">ImageBackedTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.imagebackedtestcase.ImageBackedTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>A class to encapsulate testing of blivet using block devices.</p>
 <p>The basic idea is you create some scratch block devices and then run
@@ -316,25 +318,25 @@ will be cleaned up and removed when each test method finishes.</p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.imagebackedtestcase.ImageBackedTestCase.disks">
 <code class="sig-name descname">disks</code><em class="property"> = {'disk1': Size (2 GiB), 'disk2': Size (2 GiB)}</em><a class="headerlink" href="#tests.imagebackedtestcase.ImageBackedTestCase.disks" title="Permalink to this definition">¶</a></dt>
 <dd><p>The names and sizes of the disk images to create/use.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.imagebackedtestcase.ImageBackedTestCase.initialize_disks">
 <code class="sig-name descname">initialize_disks</code><em class="property"> = True</em><a class="headerlink" href="#tests.imagebackedtestcase.ImageBackedTestCase.initialize_disks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether or not to create a disklabel on the disks.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.imagebackedtestcase.ImageBackedTestCase.setUp">
 <code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.imagebackedtestcase.ImageBackedTestCase.setUp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any setup required prior to running a test.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.imagebackedtestcase.ImageBackedTestCase.set_up_disks">
 <code class="sig-name descname">set_up_disks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.imagebackedtestcase.ImageBackedTestCase.set_up_disks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create disk image files to build the test’s storage on.</p>
@@ -343,7 +345,7 @@ to set the initialize_disks flag so they get a fresh disklabel when
 clear_partitions gets called from create_storage later.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.imagebackedtestcase.ImageBackedTestCase.set_up_storage">
 <code class="sig-name descname">set_up_storage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.imagebackedtestcase.ImageBackedTestCase.set_up_storage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a device stack on top of disk images for this test to run on.</p>
@@ -356,22 +358,22 @@ defined in set_up_disks.</p>
 </div>
 <div class="section" id="module-tests.lib">
 <span id="tests-lib-module"></span><h2>tests.lib module<a class="headerlink" href="#module-tests.lib" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="tests.lib.assertVerboseEqual">
-<code class="sig-prename descclassname">tests.lib.</code><code class="sig-name descname">assertVerboseEqual</code><span class="sig-paren">(</span><em class="sig-param">left</em>, <em class="sig-param">right</em>, <em class="sig-param">msg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.lib.assertVerboseEqual" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tests.lib.</code><code class="sig-name descname">assertVerboseEqual</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">left</span></em>, <em class="sig-param"><span class="n">right</span></em>, <em class="sig-param"><span class="n">msg</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.lib.assertVerboseEqual" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="tests.lib.assertVerboseListEqual">
-<code class="sig-prename descclassname">tests.lib.</code><code class="sig-name descname">assertVerboseListEqual</code><span class="sig-paren">(</span><em class="sig-param">left</em>, <em class="sig-param">right</em>, <em class="sig-param">msg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.lib.assertVerboseListEqual" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tests.lib.</code><code class="sig-name descname">assertVerboseListEqual</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">left</span></em>, <em class="sig-param"><span class="n">right</span></em>, <em class="sig-param"><span class="n">msg</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.lib.assertVerboseListEqual" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
 <div class="section" id="module-tests.loopbackedtestcase">
 <span id="tests-loopbackedtestcase-module"></span><h2>tests.loopbackedtestcase module<a class="headerlink" href="#module-tests.loopbackedtestcase" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.loopbackedtestcase.LoopBackedTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.loopbackedtestcase.</code><code class="sig-name descname">LoopBackedTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='run_test'</em>, <em class="sig-param">device_spec=None</em>, <em class="sig-param">block_size=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.loopbackedtestcase.LoopBackedTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.loopbackedtestcase.</code><code class="sig-name descname">LoopBackedTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'run_test'</span></em>, <em class="sig-param"><span class="n">device_spec</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">block_size</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.loopbackedtestcase.LoopBackedTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>LoopBackedTestCase manages loop devices.</p>
 <p>It constructs loop devices according to loop_device_spec,
@@ -384,17 +386,17 @@ sets them up, and tears them down again.</p>
 </ul>
 </dd>
 </dl>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.loopbackedtestcase.LoopBackedTestCase.DEFAULT_BLOCK_SIZE">
 <code class="sig-name descname">DEFAULT_BLOCK_SIZE</code><em class="property"> = Size (1024 B)</em><a class="headerlink" href="#tests.loopbackedtestcase.LoopBackedTestCase.DEFAULT_BLOCK_SIZE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.loopbackedtestcase.LoopBackedTestCase.DEFAULT_STORE_SIZE">
 <code class="sig-name descname">DEFAULT_STORE_SIZE</code><em class="property"> = Size (100 MiB)</em><a class="headerlink" href="#tests.loopbackedtestcase.LoopBackedTestCase.DEFAULT_STORE_SIZE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.loopbackedtestcase.LoopBackedTestCase.setUp">
 <code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.loopbackedtestcase.LoopBackedTestCase.setUp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hook method for setting up the test fixture before exercising it.</p>
@@ -402,7 +404,7 @@ sets them up, and tears them down again.</p>
 
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="tests.loopbackedtestcase.get_free_loop_dev">
 <code class="sig-prename descclassname">tests.loopbackedtestcase.</code><code class="sig-name descname">get_free_loop_dev</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.loopbackedtestcase.get_free_loop_dev" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the name of the free loop device that losetup reports.</p>
@@ -419,9 +421,9 @@ sets them up, and tears them down again.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="tests.loopbackedtestcase.make_loop_dev">
-<code class="sig-prename descclassname">tests.loopbackedtestcase.</code><code class="sig-name descname">make_loop_dev</code><span class="sig-paren">(</span><em class="sig-param">device_name</em>, <em class="sig-param">file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.loopbackedtestcase.make_loop_dev" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tests.loopbackedtestcase.</code><code class="sig-name descname">make_loop_dev</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device_name</span></em>, <em class="sig-param"><span class="n">file_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.loopbackedtestcase.make_loop_dev" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up a loop device with a backing store.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -433,9 +435,9 @@ sets them up, and tears them down again.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="tests.loopbackedtestcase.make_store">
-<code class="sig-prename descclassname">tests.loopbackedtestcase.</code><code class="sig-name descname">make_store</code><span class="sig-paren">(</span><em class="sig-param">file_name</em>, <em class="sig-param">num_blocks=102400</em>, <em class="sig-param">block_size=1024</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.loopbackedtestcase.make_store" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tests.loopbackedtestcase.</code><code class="sig-name descname">make_store</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">num_blocks</span><span class="o">=</span><span class="default_value">102400</span></em>, <em class="sig-param"><span class="n">block_size</span><span class="o">=</span><span class="default_value">1024</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.loopbackedtestcase.make_store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up the backing store for a loop device.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -448,28 +450,31 @@ sets them up, and tears them down again.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="tests.loopbackedtestcase.remove_loop_dev">
-<code class="sig-prename descclassname">tests.loopbackedtestcase.</code><code class="sig-name descname">remove_loop_dev</code><span class="sig-paren">(</span><em class="sig-param">device_name</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.loopbackedtestcase.remove_loop_dev" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tests.loopbackedtestcase.</code><code class="sig-name descname">remove_loop_dev</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.loopbackedtestcase.remove_loop_dev" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
+<div class="section" id="tests-misc-test-module">
+<h2>tests.misc_test module<a class="headerlink" href="#tests-misc-test-module" title="Permalink to this headline">¶</a></h2>
+</div>
 <div class="section" id="module-tests.parentlist_test">
 <span id="tests-parentlist-test-module"></span><h2>tests.parentlist_test module<a class="headerlink" href="#module-tests.parentlist_test" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.parentlist_test.ParentListTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.parentlist_test.</code><code class="sig-name descname">ParentListTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.parentlist_test.ParentListTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.parentlist_test.</code><code class="sig-name descname">ParentListTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.parentlist_test.ParentListTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.parentlist_test.ParentListTestCase.test_device_parents">
 <code class="sig-name descname">test_device_parents</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.parentlist_test.ParentListTestCase.test_device_parents" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify that Device.parents functions as expected.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.parentlist_test.ParentListTestCase.test_parent_list">
 <code class="sig-name descname">test_parent_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.parentlist_test.ParentListTestCase.test_parent_list" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -488,123 +493,123 @@ not have a method with the specified name.</p>
 </div>
 <div class="section" id="module-tests.size_test">
 <span id="tests-size-test-module"></span><h2>tests.size_test module<a class="headerlink" href="#module-tests.size_test" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.size_test.SizeTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.size_test.</code><code class="sig-name descname">SizeTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.size_test.</code><code class="sig-name descname">SizeTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_convert_to_precision">
 <code class="sig-name descname">test_convert_to_precision</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_convert_to_precision" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_convert_to_with_size">
 <code class="sig-name descname">test_convert_to_with_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_convert_to_with_size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_ensure_percent_reserve">
 <code class="sig-name descname">test_ensure_percent_reserve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_ensure_percent_reserve" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_exceptions">
 <code class="sig-name descname">test_exceptions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_exceptions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_floating_point_str">
 <code class="sig-name descname">test_floating_point_str</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_floating_point_str" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_human_readable">
 <code class="sig-name descname">test_human_readable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_human_readable" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_human_readable_fractional_quantities">
 <code class="sig-name descname">test_human_readable_fractional_quantities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_human_readable_fractional_quantities" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_leading_zero">
 <code class="sig-name descname">test_leading_zero</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_leading_zero" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_no_units_in_string">
 <code class="sig-name descname">test_no_units_in_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_no_units_in_string" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_partial_bytes">
 <code class="sig-name descname">test_partial_bytes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_partial_bytes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_pickling">
 <code class="sig-name descname">test_pickling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_pickling" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_scientific_notation">
 <code class="sig-name descname">test_scientific_notation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_scientific_notation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_segative">
 <code class="sig-name descname">test_segative</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_segative" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.SizeTestCase.test_white_space">
 <code class="sig-name descname">test_white_space</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.SizeTestCase.test_white_space" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="tests.size_test.TranslationTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.size_test.</code><code class="sig-name descname">TranslationTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.TranslationTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.size_test.</code><code class="sig-name descname">TranslationTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.TranslationTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.TranslationTestCase.setUp">
 <code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.TranslationTestCase.setUp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hook method for setting up the test fixture before exercising it.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.TranslationTestCase.test_human_readable_translation">
 <code class="sig-name descname">test_human_readable_translation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.TranslationTestCase.test_human_readable_translation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.TranslationTestCase.test_round_to_nearest">
 <code class="sig-name descname">test_round_to_nearest</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.TranslationTestCase.test_round_to_nearest" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.TranslationTestCase.test_translated">
 <code class="sig-name descname">test_translated</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.TranslationTestCase.test_translated" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="tests.size_test.UtilityMethodsTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.size_test.</code><code class="sig-name descname">UtilityMethodsTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.UtilityMethodsTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.size_test.</code><code class="sig-name descname">UtilityMethodsTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.UtilityMethodsTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.size_test.UtilityMethodsTestCase.test_arithmetic">
 <code class="sig-name descname">test_arithmetic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.size_test.UtilityMethodsTestCase.test_arithmetic" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -614,9 +619,9 @@ not have a method with the specified name.</p>
 </div>
 <div class="section" id="module-tests.storagetestcase">
 <span id="tests-storagetestcase-module"></span><h2>tests.storagetestcase module<a class="headerlink" href="#module-tests.storagetestcase" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.storagetestcase.StorageTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.storagetestcase.</code><code class="sig-name descname">StorageTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.storagetestcase.</code><code class="sig-name descname">StorageTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>This is a base class for storage test cases. It sets up imports of
 the blivet package, along with an Anaconda instance and a Storage
@@ -626,9 +631,9 @@ system, along with a couple of convenience methods.</p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.storagetestcase.StorageTestCase.destroy_all_devices">
-<code class="sig-name descname">destroy_all_devices</code><span class="sig-paren">(</span><em class="sig-param">disks=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.destroy_all_devices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">destroy_all_devices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">disks</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.destroy_all_devices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove all devices from the devicetree.</p>
 <p>Keyword Arguments:</p>
 <blockquote>
@@ -637,15 +642,15 @@ not have a method with the specified name.</p>
 <p>Note: this is largely ripped off from partitioning.clear_partitions.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.storagetestcase.StorageTestCase.new_device">
-<code class="sig-name descname">new_device</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.new_device" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">new_device</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.new_device" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a new Device instance suitable for testing.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.storagetestcase.StorageTestCase.new_format">
-<code class="sig-name descname">new_format</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.new_format" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">new_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.new_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a new DeviceFormat instance suitable for testing.</p>
 <p>Keyword Arguments:</p>
 <blockquote>
@@ -659,9 +664,9 @@ resizable formats.</p>
 blivet.formats.get_format.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.storagetestcase.StorageTestCase.schedule_create_device">
-<code class="sig-name descname">schedule_create_device</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.schedule_create_device" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">schedule_create_device</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.schedule_create_device" title="Permalink to this definition">¶</a></dt>
 <dd><p>Schedule an action to create the specified device.</p>
 <p>Verify that the device is not already in the tree and that the
 act of scheduling/registering the action also adds the device to
@@ -669,9 +674,9 @@ the tree.</p>
 <p>Return the DeviceAction instance.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.storagetestcase.StorageTestCase.schedule_create_format">
-<code class="sig-name descname">schedule_create_format</code><span class="sig-paren">(</span><em class="sig-param">device</em>, <em class="sig-param">fmt</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.schedule_create_format" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">schedule_create_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device</span></em>, <em class="sig-param"><span class="n">fmt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.schedule_create_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Schedule an action to write a new format to a device.</p>
 <p>Verify that the device is already in the tree, that it is not
 already set up to contain the specified format, and that the act
@@ -680,9 +685,9 @@ reflected in the tree.</p>
 <p>Return the DeviceAction instance.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.storagetestcase.StorageTestCase.schedule_destroy_device">
-<code class="sig-name descname">schedule_destroy_device</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.schedule_destroy_device" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">schedule_destroy_device</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.schedule_destroy_device" title="Permalink to this definition">¶</a></dt>
 <dd><p>Schedule an action to destroy the specified device.</p>
 <p>Verify that the device exists initially and that the act of
 scheduling/registering the action also removes the device from
@@ -690,9 +695,9 @@ the tree.</p>
 <p>Return the DeviceAction instance.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.storagetestcase.StorageTestCase.schedule_destroy_format">
-<code class="sig-name descname">schedule_destroy_format</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.schedule_destroy_format" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">schedule_destroy_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.schedule_destroy_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Schedule an action to remove a format from a device.</p>
 <p>Verify that the device is already in the tree and that the act
 of registering/scheduling the action causes the new format to be
@@ -700,7 +705,7 @@ reflected in the tree.</p>
 <p>Return the DeviceAction instance.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.storagetestcase.StorageTestCase.setUp">
 <code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.storagetestcase.StorageTestCase.setUp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hook method for setting up the test fixture before exercising it.</p>
@@ -711,12 +716,12 @@ reflected in the tree.</p>
 </div>
 <div class="section" id="module-tests.test_compat">
 <span id="tests-test-compat-module"></span><h2>tests.test_compat module<a class="headerlink" href="#module-tests.test_compat" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="tests.test_compat.add_move">
-<code class="sig-prename descclassname">tests.test_compat.</code><code class="sig-name descname">add_move</code><span class="sig-paren">(</span><em class="sig-param">mod</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_compat.add_move" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tests.test_compat.</code><code class="sig-name descname">add_move</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mod</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_compat.add_move" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="tests.test_compat.setup">
 <code class="sig-prename descclassname">tests.test_compat.</code><code class="sig-name descname">setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.test_compat.setup" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -724,14 +729,14 @@ reflected in the tree.</p>
 </div>
 <div class="section" id="module-tests.tsort_test">
 <span id="tests-tsort-test-module"></span><h2>tests.tsort_test module<a class="headerlink" href="#module-tests.tsort_test" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.tsort_test.TopologicalSortTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.tsort_test.</code><code class="sig-name descname">TopologicalSortTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.tsort_test.TopologicalSortTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.tsort_test.</code><code class="sig-name descname">TopologicalSortTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.tsort_test.TopologicalSortTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.tsort_test.TopologicalSortTestCase.run_test">
 <code class="sig-name descname">run_test</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.tsort_test.TopologicalSortTestCase.run_test" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -754,6 +759,7 @@ not have a method with the specified name.</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -772,6 +778,7 @@ not have a method with the specified name.</p>
 <li><a class="reference internal" href="#module-tests.imagebackedtestcase">tests.imagebackedtestcase module</a></li>
 <li><a class="reference internal" href="#module-tests.lib">tests.lib module</a></li>
 <li><a class="reference internal" href="#module-tests.loopbackedtestcase">tests.loopbackedtestcase module</a></li>
+<li><a class="reference internal" href="#tests-misc-test-module">tests.misc_test module</a></li>
 <li><a class="reference internal" href="#module-tests.parentlist_test">tests.parentlist_test module</a></li>
 <li><a class="reference internal" href="#tests-partitioning-test-module">tests.partitioning_test module</a></li>
 <li><a class="reference internal" href="#tests-populator-test-module">tests.populator_test module</a></li>
@@ -810,7 +817,7 @@ not have a method with the specified name.</p>
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -830,12 +837,13 @@ not have a method with the specified name.</p>
         <li class="right" >
           <a href="../blivet/blivet.tasks.html" title="blivet.tasks package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">tests package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2020, Red Hat, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

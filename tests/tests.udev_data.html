@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>tests.udev_data package &#8212; Blivet 3.3.1 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tests.udev_data package &#8212; Blivet 3.3.2 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -34,8 +35,9 @@
         <li class="right" >
           <a href="tests.tasks_test.html" title="tests.tasks_test package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="tests.html" accesskey="U">tests package</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="tests.html" accesskey="U">tests package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">tests.udev_data package</a></li> 
       </ul>
     </div>  
 
@@ -51,230 +53,230 @@
 </div>
 <div class="section" id="module-tests.udev_data.raid_data">
 <span id="tests-udev-data-raid-data-module"></span><h2>tests.udev_data.raid_data module<a class="headerlink" href="#module-tests.udev_data.raid_data" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.udev_data.raid_data.RaidOnDisk1">
 <em class="property">class </em><code class="sig-prename descclassname">tests.udev_data.raid_data.</code><code class="sig-name descname">RaidOnDisk1</code><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk1.member_assemble">
 <code class="sig-name descname">member_assemble</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-path/pci-0000:00:11.0-scsi-0:0:0:0 /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-0', 'DEVNAME': '/dev/sda', 'DEVPATH': '/devices/pci0000:00/0000:00:11.0/virtio5/host8/target8:0:0/8:0:0:0/block/sda', 'DEVTYPE': 'disk', 'ID_BUS': 'scsi', 'ID_FS_LABEL': 'localhost.localdomain:127', 'ID_FS_LABEL_ENC': 'localhost.localdomain:127', 'ID_FS_TYPE': 'linux_raid_member', 'ID_FS_USAGE': 'raid', 'ID_FS_UUID': '54956eb2-6983-8759-e2ad-4c40acc92e4b', 'ID_FS_UUID_ENC': '54956eb2-6983-8759-e2ad-4c40acc92e4b', 'ID_FS_UUID_SUB': '64f96f0b-e97c-9157-d393-1fe457f3dd59', 'ID_FS_UUID_SUB_ENC': '64f96f0b-e97c-9157-d393-1fe457f3dd59', 'ID_FS_VERSION': '1.2', 'ID_MODEL': 'QEMU_HARDDISK', 'ID_MODEL_ENC': 'QEMU\\x20HARDDISK\\x20\\x20\\x20', 'ID_PATH': 'pci-0000:00:11.0-scsi-0:0:0:0', 'ID_PATH_TAG': 'pci-0000_00_11_0-scsi-0_0_0_0', 'ID_REVISION': '2.5+', 'ID_SCSI': '1', 'ID_SERIAL': '0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-0', 'ID_SERIAL_SHORT': 'drive-scsi0-0-0-0', 'ID_TYPE': 'disk', 'ID_VENDOR': 'QEMU', 'ID_VENDOR_ENC': 'QEMU\\x20\\x20\\x20\\x20', 'MAJOR': '8', 'MINOR': '0', 'SUBSYSTEM': 'block', 'SYS_NAME': 'sda', 'SYS_PATH': '/sys/devices/pci0000:00/0000:00:11.0/virtio5/host8/target8:0:0/8:0:0:0/block/sda', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '5529231'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk1.member_assemble" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk1.member_boot">
 <code class="sig-name descname">member_boot</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-path/pci-0000:00:11.0-scsi-0:0:0:0 /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-0', 'DEVNAME': '/dev/sda', 'DEVPATH': '/devices/pci0000:00/0000:00:11.0/virtio5/host8/target8:0:0/8:0:0:0/block/sda', 'DEVTYPE': 'disk', 'ID_BUS': 'scsi', 'ID_FS_LABEL': 'localhost.localdomain:127', 'ID_FS_LABEL_ENC': 'localhost.localdomain:127', 'ID_FS_TYPE': 'linux_raid_member', 'ID_FS_USAGE': 'raid', 'ID_FS_UUID': '54956eb2-6983-8759-e2ad-4c40acc92e4b', 'ID_FS_UUID_ENC': '54956eb2-6983-8759-e2ad-4c40acc92e4b', 'ID_FS_UUID_SUB': '64f96f0b-e97c-9157-d393-1fe457f3dd59', 'ID_FS_UUID_SUB_ENC': '64f96f0b-e97c-9157-d393-1fe457f3dd59', 'ID_FS_VERSION': '1.2', 'ID_MODEL': 'QEMU_HARDDISK', 'ID_MODEL_ENC': 'QEMU\\x20HARDDISK\\x20\\x20\\x20', 'ID_PATH': 'pci-0000:00:11.0-scsi-0:0:0:0', 'ID_PATH_TAG': 'pci-0000_00_11_0-scsi-0_0_0_0', 'ID_REVISION': '2.5+', 'ID_SCSI': '1', 'ID_SERIAL': '0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-0', 'ID_SERIAL_SHORT': 'drive-scsi0-0-0-0', 'ID_TYPE': 'disk', 'ID_VENDOR': 'QEMU', 'ID_VENDOR_ENC': 'QEMU\\x20\\x20\\x20\\x20', 'MAJOR': '8', 'MD_DEVICE': 'md127', 'MD_DEVNAME': '127', 'MD_FOREIGN': 'no', 'MD_STARTED': 'unsafe', 'MINOR': '0', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdadm-last-resort&#64;md127.timer', 'SYS_NAME': 'sda', 'SYS_PATH': '/sys/devices/pci0000:00/0000:00:11.0/virtio5/host8/target8:0:0/8:0:0:0/block/sda', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '5529231'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk1.member_boot" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk1.member_name">
 <code class="sig-name descname">member_name</code><em class="property"> = 'sda'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk1.member_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk1.metadata_version">
 <code class="sig-name descname">metadata_version</code><em class="property"> = '1.2'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk1.metadata_version" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk1.raid_device">
 <code class="sig-name descname">raid_device</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-id/md-name-localhost.localdomain:127 /dev/disk/by-id/md-uuid-54956eb2:69838759:e2ad4c40:acc92e4b /dev/md/127', 'DEVNAME': '/dev/md127', 'DEVPATH': '/devices/virtual/block/md127', 'DEVTYPE': 'disk', 'ID_PART_TABLE_TYPE': 'dos', 'ID_PART_TABLE_UUID': '4eec0361', 'MAJOR': '9', 'MD_DEVICES': '2', 'MD_DEVICE_ev_sda_DEV': '/dev/sda', 'MD_DEVICE_ev_sda_ROLE': '0', 'MD_DEVICE_ev_sdb_DEV': '/dev/sdb', 'MD_DEVICE_ev_sdb_ROLE': '1', 'MD_DEVNAME': '127', 'MD_LEVEL': 'raid1', 'MD_METADATA': '1.2', 'MD_NAME': 'localhost.localdomain:127', 'MD_UUID': '54956eb2:69838759:e2ad4c40:acc92e4b', 'MINOR': '127', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdmonitor.service', 'SYS_NAME': 'md127', 'SYS_PATH': '/sys/devices/virtual/block/md127', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '603606045'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk1.raid_device" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk1.raid_name">
 <code class="sig-name descname">raid_name</code><em class="property"> = '127'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk1.raid_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk1.raid_node">
 <code class="sig-name descname">raid_node</code><em class="property"> = 'md127'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk1.raid_node" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk1.raid_partition">
 <code class="sig-name descname">raid_partition</code><em class="property"> = {'DEVLINKS': '/dev/md/127p1 /dev/disk/by-id/md-uuid-54956eb2:69838759:e2ad4c40:acc92e4b-part1 /dev/disk/by-id/md-name-localhost.localdomain:127-part1', 'DEVNAME': '/dev/md127p1', 'DEVPATH': '/devices/virtual/block/md127/md127p1', 'DEVTYPE': 'partition', 'ID_PART_ENTRY_DISK': '9:127', 'ID_PART_ENTRY_NUMBER': '1', 'ID_PART_ENTRY_OFFSET': '2048', 'ID_PART_ENTRY_SCHEME': 'dos', 'ID_PART_ENTRY_SIZE': '2091008', 'ID_PART_ENTRY_TYPE': '0x83', 'ID_PART_ENTRY_UUID': '4eec0361-01', 'MAJOR': '259', 'MD_DEVICES': '2', 'MD_DEVICE_ev_sda_DEV': '/dev/sda', 'MD_DEVICE_ev_sda_ROLE': '0', 'MD_DEVICE_ev_sdb_DEV': '/dev/sdb', 'MD_DEVICE_ev_sdb_ROLE': '1', 'MD_DEVNAME': '127', 'MD_LEVEL': 'raid1', 'MD_METADATA': '1.2', 'MD_NAME': 'localhost.localdomain:127', 'MD_UUID': '54956eb2:69838759:e2ad4c40:acc92e4b', 'MINOR': '2', 'PARTN': '1', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdmonitor.service', 'SYS_NAME': 'md127p1', 'SYS_PATH': '/sys/devices/virtual/block/md127/md127p1', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '603714783'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk1.raid_partition" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="tests.udev_data.raid_data.RaidOnDisk2">
 <em class="property">class </em><code class="sig-prename descclassname">tests.udev_data.raid_data.</code><code class="sig-name descname">RaidOnDisk2</code><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk2.member_assemble">
 <code class="sig-name descname">member_assemble</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-4 /dev/disk/by-path/pci-0000:00:11.0-scsi-0:0:0:4', 'DEVNAME': '/dev/sdc', 'DEVPATH': '/devices/pci0000:00/0000:00:11.0/virtio5/host8/target8:0:0/8:0:0:4/block/sdc', 'DEVTYPE': 'disk', 'ID_BUS': 'scsi', 'ID_FS_LABEL': 'localhost.localdomain:name', 'ID_FS_LABEL_ENC': 'localhost.localdomain:name', 'ID_FS_TYPE': 'linux_raid_member', 'ID_FS_USAGE': 'raid', 'ID_FS_UUID': '143d480c-12c3-909f-5476-98a9f94a1c4f', 'ID_FS_UUID_ENC': '143d480c-12c3-909f-5476-98a9f94a1c4f', 'ID_FS_UUID_SUB': '121f2b71-3634-4183-dc9c-08bfceda765c', 'ID_FS_UUID_SUB_ENC': '121f2b71-3634-4183-dc9c-08bfceda765c', 'ID_FS_VERSION': '1.2', 'ID_MODEL': 'QEMU_HARDDISK', 'ID_MODEL_ENC': 'QEMU\\x20HARDDISK\\x20\\x20\\x20', 'ID_PATH': 'pci-0000:00:11.0-scsi-0:0:0:4', 'ID_PATH_TAG': 'pci-0000_00_11_0-scsi-0_0_0_4', 'ID_REVISION': '2.5+', 'ID_SCSI': '1', 'ID_SERIAL': '0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-4', 'ID_SERIAL_SHORT': 'drive-scsi0-0-0-4', 'ID_TYPE': 'disk', 'ID_VENDOR': 'QEMU', 'ID_VENDOR_ENC': 'QEMU\\x20\\x20\\x20\\x20', 'MAJOR': '8', 'MINOR': '32', 'SUBSYSTEM': 'block', 'SYS_NAME': 'sdc', 'SYS_PATH': '/sys/devices/pci0000:00/0000:00:11.0/virtio5/host8/target8:0:0/8:0:0:4/block/sdc', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '6109555'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk2.member_assemble" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk2.member_boot">
 <code class="sig-name descname">member_boot</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-4 /dev/disk/by-path/pci-0000:00:11.0-scsi-0:0:0:4', 'DEVNAME': '/dev/sdc', 'DEVPATH': '/devices/pci0000:00/0000:00:11.0/virtio5/host8/target8:0:0/8:0:0:4/block/sdc', 'DEVTYPE': 'disk', 'ID_BUS': 'scsi', 'ID_FS_LABEL': 'localhost.localdomain:name', 'ID_FS_LABEL_ENC': 'localhost.localdomain:name', 'ID_FS_TYPE': 'linux_raid_member', 'ID_FS_USAGE': 'raid', 'ID_FS_UUID': '143d480c-12c3-909f-5476-98a9f94a1c4f', 'ID_FS_UUID_ENC': '143d480c-12c3-909f-5476-98a9f94a1c4f', 'ID_FS_UUID_SUB': '121f2b71-3634-4183-dc9c-08bfceda765c', 'ID_FS_UUID_SUB_ENC': '121f2b71-3634-4183-dc9c-08bfceda765c', 'ID_FS_VERSION': '1.2', 'ID_MODEL': 'QEMU_HARDDISK', 'ID_MODEL_ENC': 'QEMU\\x20HARDDISK\\x20\\x20\\x20', 'ID_PATH': 'pci-0000:00:11.0-scsi-0:0:0:4', 'ID_PATH_TAG': 'pci-0000_00_11_0-scsi-0_0_0_4', 'ID_REVISION': '2.5+', 'ID_SCSI': '1', 'ID_SERIAL': '0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-4', 'ID_SERIAL_SHORT': 'drive-scsi0-0-0-4', 'ID_TYPE': 'disk', 'ID_VENDOR': 'QEMU', 'ID_VENDOR_ENC': 'QEMU\\x20\\x20\\x20\\x20', 'MAJOR': '8', 'MD_DEVICE': 'md127', 'MD_DEVNAME': 'name', 'MD_FOREIGN': 'no', 'MD_STARTED': 'yes', 'MINOR': '32', 'SUBSYSTEM': 'block', 'SYS_NAME': 'sdc', 'SYS_PATH': '/sys/devices/pci0000:00/0000:00:11.0/virtio5/host8/target8:0:0/8:0:0:4/block/sdc', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '6109555'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk2.member_boot" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk2.member_name">
 <code class="sig-name descname">member_name</code><em class="property"> = 'sdc'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk2.member_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk2.metadata_version">
 <code class="sig-name descname">metadata_version</code><em class="property"> = '1.2'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk2.metadata_version" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk2.raid_device">
 <code class="sig-name descname">raid_device</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-id/md-name-localhost.localdomain:name /dev/disk/by-id/md-uuid-143d480c:12c3909f:547698a9:f94a1c4f /dev/md/name', 'DEVNAME': '/dev/md127', 'DEVPATH': '/devices/virtual/block/md127', 'DEVTYPE': 'disk', 'ID_PART_TABLE_TYPE': 'dos', 'ID_PART_TABLE_UUID': '19e9cb5b', 'MAJOR': '9', 'MD_DEVICES': '2', 'MD_DEVICE_ev_sdc_DEV': '/dev/sdc', 'MD_DEVICE_ev_sdc_ROLE': '0', 'MD_DEVICE_ev_sdd_DEV': '/dev/sdd', 'MD_DEVICE_ev_sdd_ROLE': '1', 'MD_DEVNAME': 'name', 'MD_LEVEL': 'raid1', 'MD_METADATA': '1.2', 'MD_NAME': 'localhost.localdomain:name', 'MD_UUID': '143d480c:12c3909f:547698a9:f94a1c4f', 'MINOR': '127', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdmonitor.service', 'SYS_NAME': 'md127', 'SYS_PATH': '/sys/devices/virtual/block/md127', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '5844744'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk2.raid_device" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk2.raid_name">
 <code class="sig-name descname">raid_name</code><em class="property"> = 'name'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk2.raid_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk2.raid_node">
 <code class="sig-name descname">raid_node</code><em class="property"> = 'md127'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk2.raid_node" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk2.raid_partition">
 <code class="sig-name descname">raid_partition</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-id/md-uuid-143d480c:12c3909f:547698a9:f94a1c4f-part1 /dev/disk/by-id/md-name-localhost.localdomain:name-part1 /dev/md/name1', 'DEVNAME': '/dev/md127p1', 'DEVPATH': '/devices/virtual/block/md127/md127p1', 'DEVTYPE': 'partition', 'ID_PART_ENTRY_DISK': '9:127', 'ID_PART_ENTRY_NUMBER': '1', 'ID_PART_ENTRY_OFFSET': '2048', 'ID_PART_ENTRY_SCHEME': 'dos', 'ID_PART_ENTRY_SIZE': '2091008', 'ID_PART_ENTRY_TYPE': '0x83', 'ID_PART_ENTRY_UUID': '19e9cb5b-01', 'ID_PART_TABLE_TYPE': 'dos', 'ID_PART_TABLE_UUID': 'ec985633', 'MAJOR': '259', 'MD_DEVICES': '2', 'MD_DEVICE_ev_sdc_DEV': '/dev/sdc', 'MD_DEVICE_ev_sdc_ROLE': '0', 'MD_DEVICE_ev_sdd_DEV': '/dev/sdd', 'MD_DEVICE_ev_sdd_ROLE': '1', 'MD_DEVNAME': 'name', 'MD_LEVEL': 'raid1', 'MD_METADATA': '1.2', 'MD_NAME': 'localhost.localdomain:name', 'MD_UUID': '143d480c:12c3909f:547698a9:f94a1c4f', 'MINOR': '1', 'PARTN': '1', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdmonitor.service', 'SYS_NAME': 'md127p1', 'SYS_PATH': '/sys/devices/virtual/block/md127/md127p1', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '5928255'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk2.raid_partition" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="tests.udev_data.raid_data.RaidOnDisk3">
 <em class="property">class </em><code class="sig-prename descclassname">tests.udev_data.raid_data.</code><code class="sig-name descname">RaidOnDisk3</code><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk3.member_assemble">
 <code class="sig-name descname">member_assemble</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-1 /dev/disk/by-path/pci-0000:00:11.0-scsi-0:0:0:1', 'DEVNAME': '/dev/sde', 'DEVPATH': '/devices/pci0000:00/0000:00:11.0/virtio5/host8/target8:0:0/8:0:0:1/block/sde', 'DEVTYPE': 'disk', 'ID_BUS': 'scsi', 'ID_FS_TYPE': 'linux_raid_member', 'ID_FS_USAGE': 'raid', 'ID_FS_UUID': 'c4ef60f5-e374-5f70-bfe7-8010bc810f04', 'ID_FS_UUID_ENC': 'c4ef60f5-e374-5f70-bfe7-8010bc810f04', 'ID_FS_VERSION': '0.90.0', 'ID_MODEL': 'QEMU_HARDDISK', 'ID_MODEL_ENC': 'QEMU\\x20HARDDISK\\x20\\x20\\x20', 'ID_PATH': 'pci-0000:00:11.0-scsi-0:0:0:1', 'ID_PATH_TAG': 'pci-0000_00_11_0-scsi-0_0_0_1', 'ID_REVISION': '2.5+', 'ID_SCSI': '1', 'ID_SERIAL': '0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-1', 'ID_SERIAL_SHORT': 'drive-scsi0-0-0-1', 'ID_TYPE': 'disk', 'ID_VENDOR': 'QEMU', 'ID_VENDOR_ENC': 'QEMU\\x20\\x20\\x20\\x20', 'MAJOR': '8', 'MINOR': '64', 'SUBSYSTEM': 'block', 'SYS_NAME': 'sde', 'SYS_PATH': '/sys/devices/pci0000:00/0000:00:11.0/virtio5/host8/target8:0:0/8:0:0:1/block/sde', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '5538551'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk3.member_assemble" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk3.member_boot">
 <code class="sig-name descname">member_boot</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-1 /dev/disk/by-path/pci-0000:00:11.0-scsi-0:0:0:1', 'DEVNAME': '/dev/sde', 'DEVPATH': '/devices/pci0000:00/0000:00:11.0/virtio5/host8/target8:0:0/8:0:0:1/block/sde', 'DEVTYPE': 'disk', 'ID_BUS': 'scsi', 'ID_FS_TYPE': 'linux_raid_member', 'ID_FS_USAGE': 'raid', 'ID_FS_UUID': 'c4ef60f5-e374-5f70-bfe7-8010bc810f04', 'ID_FS_UUID_ENC': 'c4ef60f5-e374-5f70-bfe7-8010bc810f04', 'ID_FS_VERSION': '0.90.0', 'ID_MODEL': 'QEMU_HARDDISK', 'ID_MODEL_ENC': 'QEMU\\x20HARDDISK\\x20\\x20\\x20', 'ID_PATH': 'pci-0000:00:11.0-scsi-0:0:0:1', 'ID_PATH_TAG': 'pci-0000_00_11_0-scsi-0_0_0_1', 'ID_REVISION': '2.5+', 'ID_SCSI': '1', 'ID_SERIAL': '0QEMU_QEMU_HARDDISK_drive-scsi0-0-0-1', 'ID_SERIAL_SHORT': 'drive-scsi0-0-0-1', 'ID_TYPE': 'disk', 'ID_VENDOR': 'QEMU', 'ID_VENDOR_ENC': 'QEMU\\x20\\x20\\x20\\x20', 'MAJOR': '8', 'MD_DEVICE': 'md125', 'MD_DEVNAME': '125', 'MD_FOREIGN': 'no', 'MD_STARTED': 'unsafe', 'MINOR': '64', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdadm-last-resort&#64;md125.timer', 'SYS_NAME': 'sde', 'SYS_PATH': '/sys/devices/pci0000:00/0000:00:11.0/virtio5/host8/target8:0:0/8:0:0:1/block/sde', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '5538551'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk3.member_boot" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk3.member_name">
 <code class="sig-name descname">member_name</code><em class="property"> = 'sde'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk3.member_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk3.metadata_version">
 <code class="sig-name descname">metadata_version</code><em class="property"> = '0.9'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk3.metadata_version" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk3.raid_device">
 <code class="sig-name descname">raid_device</code><em class="property"> = {'DEVLINKS': '/dev/md/125 /dev/disk/by-id/md-uuid-c4ef60f5:e3745f70:bfe78010:bc810f04', 'DEVNAME': '/dev/md125', 'DEVPATH': '/devices/virtual/block/md125', 'DEVTYPE': 'disk', 'ID_PART_TABLE_TYPE': 'dos', 'ID_PART_TABLE_UUID': 'e74877cd', 'MAJOR': '9', 'MD_DEVICES': '2', 'MD_DEVICE_ev_sde_DEV': '/dev/sde', 'MD_DEVICE_ev_sde_ROLE': '0', 'MD_DEVICE_ev_sdf_DEV': '/dev/sdf', 'MD_DEVICE_ev_sdf_ROLE': '1', 'MD_DEVNAME': '125', 'MD_LEVEL': 'raid1', 'MD_METADATA': '0.90', 'MD_UUID': 'c4ef60f5:e3745f70:bfe78010:bc810f04', 'MINOR': '125', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdmonitor.service', 'SYS_NAME': 'md125', 'SYS_PATH': '/sys/devices/virtual/block/md125', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '5786380'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk3.raid_device" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk3.raid_name">
 <code class="sig-name descname">raid_name</code><em class="property"> = '125'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk3.raid_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk3.raid_node">
 <code class="sig-name descname">raid_node</code><em class="property"> = 'md125'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk3.raid_node" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnDisk3.raid_partition">
 <code class="sig-name descname">raid_partition</code><em class="property"> = {'DEVLINKS': '/dev/md/125p1 /dev/disk/by-id/md-uuid-c4ef60f5:e3745f70:bfe78010:bc810f04-part1', 'DEVNAME': '/dev/md125p1', 'DEVPATH': '/devices/virtual/block/md125/md125p1', 'DEVTYPE': 'partition', 'ID_PART_ENTRY_DISK': '9:125', 'ID_PART_ENTRY_NUMBER': '1', 'ID_PART_ENTRY_OFFSET': '2048', 'ID_PART_ENTRY_SCHEME': 'dos', 'ID_PART_ENTRY_SIZE': '2094976', 'ID_PART_ENTRY_TYPE': '0x83', 'ID_PART_ENTRY_UUID': 'e74877cd-01', 'MAJOR': '259', 'MD_DEVICES': '2', 'MD_DEVICE_ev_sde_DEV': '/dev/sde', 'MD_DEVICE_ev_sde_ROLE': '0', 'MD_DEVICE_ev_sdf_DEV': '/dev/sdf', 'MD_DEVICE_ev_sdf_ROLE': '1', 'MD_DEVNAME': '125', 'MD_LEVEL': 'raid1', 'MD_METADATA': '0.90', 'MD_UUID': 'c4ef60f5:e3745f70:bfe78010:bc810f04', 'MINOR': '3', 'PARTN': '1', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdmonitor.service', 'SYS_NAME': 'md125p1', 'SYS_PATH': '/sys/devices/virtual/block/md125/md125p1', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '8808457'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnDisk3.raid_partition" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="tests.udev_data.raid_data.RaidOnPartition1">
 <em class="property">class </em><code class="sig-prename descclassname">tests.udev_data.raid_data.</code><code class="sig-name descname">RaidOnPartition1</code><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition1.member_assemble">
 <code class="sig-name descname">member_assemble</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-path/pci-0000:00:07.0-scsi-0:0:2:0-part3 /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi1-0-2-part3 /dev/disk/by-partuuid/73eb11a9-03', 'DEVNAME': '/dev/sdh3', 'DEVPATH': '/devices/pci0000:00/0000:00:07.0/host9/target9:0:2/9:0:2:0/block/sdh/sdh3', 'DEVTYPE': 'partition', 'ID_BUS': 'scsi', 'ID_FS_LABEL': 'localhost.localdomain:122', 'ID_FS_LABEL_ENC': 'localhost.localdomain:122', 'ID_FS_TYPE': 'linux_raid_member', 'ID_FS_USAGE': 'raid', 'ID_FS_UUID': '0628d995-eb60-ebd1-a767-51730b16f212', 'ID_FS_UUID_ENC': '0628d995-eb60-ebd1-a767-51730b16f212', 'ID_FS_UUID_SUB': 'b301779b-f759-ad7d-5324-b38d4b6d944d', 'ID_FS_UUID_SUB_ENC': 'b301779b-f759-ad7d-5324-b38d4b6d944d', 'ID_FS_VERSION': '1.2', 'ID_MODEL': 'QEMU_HARDDISK', 'ID_MODEL_ENC': 'QEMU\\x20HARDDISK\\x20\\x20\\x20', 'ID_PART_ENTRY_DISK': '8:112', 'ID_PART_ENTRY_NUMBER': '3', 'ID_PART_ENTRY_OFFSET': '411648', 'ID_PART_ENTRY_SCHEME': 'dos', 'ID_PART_ENTRY_SIZE': '204800', 'ID_PART_ENTRY_TYPE': '0x83', 'ID_PART_ENTRY_UUID': '73eb11a9-03', 'ID_PART_TABLE_TYPE': 'dos', 'ID_PART_TABLE_UUID': '73eb11a9', 'ID_PATH': 'pci-0000:00:07.0-scsi-0:0:2:0', 'ID_PATH_TAG': 'pci-0000_00_07_0-scsi-0_0_2_0', 'ID_REVISION': '2.5+', 'ID_SCSI': '1', 'ID_SERIAL': '0QEMU_QEMU_HARDDISK_drive-scsi1-0-2', 'ID_SERIAL_SHORT': 'drive-scsi1-0-2', 'ID_TYPE': 'disk', 'ID_VENDOR': 'QEMU', 'ID_VENDOR_ENC': 'QEMU\\x20\\x20\\x20\\x20', 'MAJOR': '8', 'MINOR': '115', 'PARTN': '3', 'SUBSYSTEM': 'block', 'SYS_NAME': 'sdh3', 'SYS_PATH': '/sys/devices/pci0000:00/0000:00:07.0/host9/target9:0:2/9:0:2:0/block/sdh/sdh3', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '8920462'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition1.member_assemble" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition1.member_boot">
 <code class="sig-name descname">member_boot</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-path/pci-0000:00:07.0-scsi-0:0:2:0-part3 /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi1-0-2-part3 /dev/disk/by-partuuid/73eb11a9-03', 'DEVNAME': '/dev/sdh3', 'DEVPATH': '/devices/pci0000:00/0000:00:07.0/host9/target9:0:2/9:0:2:0/block/sdh/sdh3', 'DEVTYPE': 'partition', 'ID_BUS': 'scsi', 'ID_FS_LABEL': 'localhost.localdomain:122', 'ID_FS_LABEL_ENC': 'localhost.localdomain:122', 'ID_FS_TYPE': 'linux_raid_member', 'ID_FS_USAGE': 'raid', 'ID_FS_UUID': '0628d995-eb60-ebd1-a767-51730b16f212', 'ID_FS_UUID_ENC': '0628d995-eb60-ebd1-a767-51730b16f212', 'ID_FS_UUID_SUB': 'b301779b-f759-ad7d-5324-b38d4b6d944d', 'ID_FS_UUID_SUB_ENC': 'b301779b-f759-ad7d-5324-b38d4b6d944d', 'ID_FS_VERSION': '1.2', 'ID_MODEL': 'QEMU_HARDDISK', 'ID_MODEL_ENC': 'QEMU\\x20HARDDISK\\x20\\x20\\x20', 'ID_PART_ENTRY_DISK': '8:112', 'ID_PART_ENTRY_NUMBER': '3', 'ID_PART_ENTRY_OFFSET': '411648', 'ID_PART_ENTRY_SCHEME': 'dos', 'ID_PART_ENTRY_SIZE': '204800', 'ID_PART_ENTRY_TYPE': '0x83', 'ID_PART_ENTRY_UUID': '73eb11a9-03', 'ID_PART_TABLE_TYPE': 'dos', 'ID_PART_TABLE_UUID': '73eb11a9', 'ID_PATH': 'pci-0000:00:07.0-scsi-0:0:2:0', 'ID_PATH_TAG': 'pci-0000_00_07_0-scsi-0_0_2_0', 'ID_REVISION': '2.5+', 'ID_SCSI': '1', 'ID_SERIAL': '0QEMU_QEMU_HARDDISK_drive-scsi1-0-2', 'ID_SERIAL_SHORT': 'drive-scsi1-0-2', 'ID_TYPE': 'disk', 'ID_VENDOR': 'QEMU', 'ID_VENDOR_ENC': 'QEMU\\x20\\x20\\x20\\x20', 'MAJOR': '8', 'MD_DEVICE': 'md122', 'MD_DEVNAME': '122', 'MD_FOREIGN': 'no', 'MD_STARTED': 'yes', 'MINOR': '115', 'PARTN': '3', 'SUBSYSTEM': 'block', 'SYS_NAME': 'sdh3', 'SYS_PATH': '/sys/devices/pci0000:00/0000:00:07.0/host9/target9:0:2/9:0:2:0/block/sdh/sdh3', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '8920462'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition1.member_boot" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition1.member_name">
 <code class="sig-name descname">member_name</code><em class="property"> = 'sdh3'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition1.member_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition1.metadata_version">
 <code class="sig-name descname">metadata_version</code><em class="property"> = '1.2'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition1.metadata_version" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition1.raid_device">
 <code class="sig-name descname">raid_device</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-id/md-uuid-0628d995:eb60ebd1:a7675173:0b16f212 /dev/disk/by-id/md-name-localhost.localdomain:122 /dev/md/122', 'DEVNAME': '/dev/md122', 'DEVPATH': '/devices/virtual/block/md122', 'DEVTYPE': 'disk', 'ID_PART_TABLE_TYPE': 'dos', 'ID_PART_TABLE_UUID': '6dc80b3b', 'MAJOR': '9', 'MD_DEVICES': '2', 'MD_DEVICE_ev_sdh3_DEV': '/dev/sdh3', 'MD_DEVICE_ev_sdh3_ROLE': '0', 'MD_DEVICE_ev_sdh5_DEV': '/dev/sdh5', 'MD_DEVICE_ev_sdh5_ROLE': '1', 'MD_DEVNAME': '122', 'MD_LEVEL': 'raid1', 'MD_METADATA': '1.2', 'MD_NAME': 'localhost.localdomain:122', 'MD_UUID': '0628d995:eb60ebd1:a7675173:0b16f212', 'MINOR': '122', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdmonitor.service', 'SYS_NAME': 'md122', 'SYS_PATH': '/sys/devices/virtual/block/md122', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '8770105'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition1.raid_device" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition1.raid_name">
 <code class="sig-name descname">raid_name</code><em class="property"> = '122'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition1.raid_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition1.raid_node">
 <code class="sig-name descname">raid_node</code><em class="property"> = 'md122'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition1.raid_node" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition1.raid_partition">
 <code class="sig-name descname">raid_partition</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-id/md-uuid-0628d995:eb60ebd1:a7675173:0b16f212-part1 /dev/disk/by-id/md-name-localhost.localdomain:122-part1 /dev/md/122p1', 'DEVNAME': '/dev/md122p1', 'DEVPATH': '/devices/virtual/block/md122/md122p1', 'DEVTYPE': 'partition', 'ID_PART_ENTRY_DISK': '9:122', 'ID_PART_ENTRY_NUMBER': '1', 'ID_PART_ENTRY_OFFSET': '2048', 'ID_PART_ENTRY_SCHEME': 'dos', 'ID_PART_ENTRY_SIZE': '200704', 'ID_PART_ENTRY_TYPE': '0x83', 'ID_PART_ENTRY_UUID': '6dc80b3b-01', 'MAJOR': '259', 'MD_DEVICES': '2', 'MD_DEVICE_ev_sdh3_DEV': '/dev/sdh3', 'MD_DEVICE_ev_sdh3_ROLE': '0', 'MD_DEVICE_ev_sdh5_DEV': '/dev/sdh5', 'MD_DEVICE_ev_sdh5_ROLE': '1', 'MD_DEVNAME': '122', 'MD_LEVEL': 'raid1', 'MD_METADATA': '1.2', 'MD_NAME': 'localhost.localdomain:122', 'MD_UUID': '0628d995:eb60ebd1:a7675173:0b16f212', 'MINOR': '6', 'PARTN': '1', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdmonitor.service', 'SYS_NAME': 'md122p1', 'SYS_PATH': '/sys/devices/virtual/block/md122/md122p1', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '9003885'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition1.raid_partition" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="tests.udev_data.raid_data.RaidOnPartition2">
 <em class="property">class </em><code class="sig-prename descclassname">tests.udev_data.raid_data.</code><code class="sig-name descname">RaidOnPartition2</code><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition2.member_assemble">
 <code class="sig-name descname">member_assemble</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-path/pci-0000:00:07.0-scsi-0:0:2:0-part1 /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi1-0-2-part1 /dev/disk/by-partuuid/73eb11a9-01', 'DEVNAME': '/dev/sdh1', 'DEVPATH': '/devices/pci0000:00/0000:00:07.0/host9/target9:0:2/9:0:2:0/block/sdh/sdh1', 'DEVTYPE': 'partition', 'ID_BUS': 'scsi', 'ID_FS_TYPE': 'linux_raid_member', 'ID_FS_USAGE': 'raid', 'ID_FS_UUID': '335b35e0-f1af-8e86-bfe7-8010bc810f04', 'ID_FS_UUID_ENC': '335b35e0-f1af-8e86-bfe7-8010bc810f04', 'ID_FS_VERSION': '0.90.0', 'ID_MODEL': 'QEMU_HARDDISK', 'ID_MODEL_ENC': 'QEMU\\x20HARDDISK\\x20\\x20\\x20', 'ID_PART_ENTRY_DISK': '8:112', 'ID_PART_ENTRY_NUMBER': '1', 'ID_PART_ENTRY_OFFSET': '2048', 'ID_PART_ENTRY_SCHEME': 'dos', 'ID_PART_ENTRY_SIZE': '204800', 'ID_PART_ENTRY_TYPE': '0x83', 'ID_PART_ENTRY_UUID': '73eb11a9-01', 'ID_PART_TABLE_TYPE': 'dos', 'ID_PART_TABLE_UUID': '73eb11a9', 'ID_PATH': 'pci-0000:00:07.0-scsi-0:0:2:0', 'ID_PATH_TAG': 'pci-0000_00_07_0-scsi-0_0_2_0', 'ID_REVISION': '2.5+', 'ID_SCSI': '1', 'ID_SERIAL': '0QEMU_QEMU_HARDDISK_drive-scsi1-0-2', 'ID_SERIAL_SHORT': 'drive-scsi1-0-2', 'ID_TYPE': 'disk', 'ID_VENDOR': 'QEMU', 'ID_VENDOR_ENC': 'QEMU\\x20\\x20\\x20\\x20', 'MAJOR': '8', 'MINOR': '113', 'PARTN': '1', 'SUBSYSTEM': 'block', 'SYS_NAME': 'sdh1', 'SYS_PATH': '/sys/devices/pci0000:00/0000:00:07.0/host9/target9:0:2/9:0:2:0/block/sdh/sdh1', 'TAGS': ':systemd:', 'UDISKS_MD_MEMBER_DEVICES': '2', 'UDISKS_MD_MEMBER_EVENTS': '18', 'UDISKS_MD_MEMBER_LEVEL': 'raid1', 'UDISKS_MD_MEMBER_UPDATE_TIME': '1597143914', 'UDISKS_MD_MEMBER_UUID': '335b35e0:f1af8e86:bfe78010:bc810f04', 'USEC_INITIALIZED': '8778733'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition2.member_assemble" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition2.member_boot">
 <code class="sig-name descname">member_boot</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-path/pci-0000:00:07.0-scsi-0:0:2:0-part1 /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi1-0-2-part1 /dev/disk/by-partuuid/73eb11a9-01', 'DEVNAME': '/dev/sdh1', 'DEVPATH': '/devices/pci0000:00/0000:00:07.0/host9/target9:0:2/9:0:2:0/block/sdh/sdh1', 'DEVTYPE': 'partition', 'ID_BUS': 'scsi', 'ID_FS_TYPE': 'linux_raid_member', 'ID_FS_USAGE': 'raid', 'ID_FS_UUID': '335b35e0-f1af-8e86-bfe7-8010bc810f04', 'ID_FS_UUID_ENC': '335b35e0-f1af-8e86-bfe7-8010bc810f04', 'ID_FS_VERSION': '0.90.0', 'ID_MODEL': 'QEMU_HARDDISK', 'ID_MODEL_ENC': 'QEMU\\x20HARDDISK\\x20\\x20\\x20', 'ID_PART_ENTRY_DISK': '8:112', 'ID_PART_ENTRY_NUMBER': '1', 'ID_PART_ENTRY_OFFSET': '2048', 'ID_PART_ENTRY_SCHEME': 'dos', 'ID_PART_ENTRY_SIZE': '204800', 'ID_PART_ENTRY_TYPE': '0x83', 'ID_PART_ENTRY_UUID': '73eb11a9-01', 'ID_PART_TABLE_TYPE': 'dos', 'ID_PART_TABLE_UUID': '73eb11a9', 'ID_PATH': 'pci-0000:00:07.0-scsi-0:0:2:0', 'ID_PATH_TAG': 'pci-0000_00_07_0-scsi-0_0_2_0', 'ID_REVISION': '2.5+', 'ID_SCSI': '1', 'ID_SERIAL': '0QEMU_QEMU_HARDDISK_drive-scsi1-0-2', 'ID_SERIAL_SHORT': 'drive-scsi1-0-2', 'ID_TYPE': 'disk', 'ID_VENDOR': 'QEMU', 'ID_VENDOR_ENC': 'QEMU\\x20\\x20\\x20\\x20', 'MAJOR': '8', 'MD_DEVICE': 'md123', 'MD_DEVNAME': '123', 'MD_FOREIGN': 'no', 'MD_STARTED': 'unsafe', 'MINOR': '113', 'PARTN': '1', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdadm-last-resort&#64;md123.timer', 'SYS_NAME': 'sdh1', 'SYS_PATH': '/sys/devices/pci0000:00/0000:00:07.0/host9/target9:0:2/9:0:2:0/block/sdh/sdh1', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '8778733'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition2.member_boot" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition2.member_name">
 <code class="sig-name descname">member_name</code><em class="property"> = 'sdh1'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition2.member_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition2.metadata_version">
 <code class="sig-name descname">metadata_version</code><em class="property"> = '0.9'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition2.metadata_version" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition2.raid_device">
 <code class="sig-name descname">raid_device</code><em class="property"> = {'DEVLINKS': '/dev/md/123 /dev/disk/by-id/md-uuid-335b35e0:f1af8e86:bfe78010:bc810f04', 'DEVNAME': '/dev/md123', 'DEVPATH': '/devices/virtual/block/md123', 'DEVTYPE': 'disk', 'ID_PART_TABLE_TYPE': 'dos', 'ID_PART_TABLE_UUID': '653f84c8', 'MAJOR': '9', 'MD_DEVICES': '2', 'MD_DEVICE_ev_sdh1_DEV': '/dev/sdh1', 'MD_DEVICE_ev_sdh1_ROLE': '0', 'MD_DEVICE_ev_sdh2_DEV': '/dev/sdh2', 'MD_DEVICE_ev_sdh2_ROLE': '1', 'MD_DEVNAME': '123', 'MD_LEVEL': 'raid1', 'MD_METADATA': '0.90', 'MD_UUID': '335b35e0:f1af8e86:bfe78010:bc810f04', 'MINOR': '123', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdmonitor.service', 'SYS_NAME': 'md123', 'SYS_PATH': '/sys/devices/virtual/block/md123', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '8760382'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition2.raid_device" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition2.raid_name">
 <code class="sig-name descname">raid_name</code><em class="property"> = '123'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition2.raid_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition2.raid_node">
 <code class="sig-name descname">raid_node</code><em class="property"> = 'md123'</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition2.raid_node" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="tests.udev_data.raid_data.RaidOnPartition2.raid_partition">
 <code class="sig-name descname">raid_partition</code><em class="property"> = {'DEVLINKS': '/dev/disk/by-id/md-uuid-335b35e0:f1af8e86:bfe78010:bc810f04-part1 /dev/md/123p1', 'DEVNAME': '/dev/md123p1', 'DEVPATH': '/devices/virtual/block/md123/md123p1', 'DEVTYPE': 'partition', 'ID_PART_ENTRY_DISK': '9:123', 'ID_PART_ENTRY_NUMBER': '1', 'ID_PART_ENTRY_OFFSET': '2048', 'ID_PART_ENTRY_SCHEME': 'dos', 'ID_PART_ENTRY_SIZE': '202624', 'ID_PART_ENTRY_TYPE': '0x83', 'ID_PART_ENTRY_UUID': '653f84c8-01', 'MAJOR': '259', 'MD_DEVICES': '2', 'MD_DEVICE_ev_sdh1_DEV': '/dev/sdh1', 'MD_DEVICE_ev_sdh1_ROLE': '0', 'MD_DEVICE_ev_sdh2_DEV': '/dev/sdh2', 'MD_DEVICE_ev_sdh2_ROLE': '1', 'MD_DEVNAME': '123', 'MD_LEVEL': 'raid1', 'MD_METADATA': '0.90', 'MD_UUID': '335b35e0:f1af8e86:bfe78010:bc810f04', 'MINOR': '5', 'PARTN': '1', 'SUBSYSTEM': 'block', 'SYSTEMD_WANTS': 'mdmonitor.service', 'SYS_NAME': 'md123p1', 'SYS_PATH': '/sys/devices/virtual/block/md123/md123p1', 'TAGS': ':systemd:', 'USEC_INITIALIZED': '8952876'}</em><a class="headerlink" href="#tests.udev_data.raid_data.RaidOnPartition2.raid_partition" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -288,6 +290,7 @@
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -325,7 +328,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -345,13 +348,14 @@
         <li class="right" >
           <a href="tests.tasks_test.html" title="tests.tasks_test package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="tests.html" >tests package</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="tests.html" >tests package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">tests.udev_data package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2020, Red Hat, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

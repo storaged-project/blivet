@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>Introduction to Blivet &#8212; Blivet 3.3.1 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Introduction to Blivet &#8212; Blivet 3.3.2 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -34,7 +35,8 @@
         <li class="right" >
           <a href="index.html" title="Welcome to Blivet’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.3.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Introduction to Blivet</a></li> 
       </ul>
     </div>  
 
@@ -65,10 +67,10 @@ The hierarchy of devices is represented by <a class="reference internal" href="b
 <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.swap.SwapSpace" title="blivet.formats.swap.SwapSpace"><code class="xref py py-class docutils literal notranslate"><span class="pre">SwapSpace</span></code></a>, <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel" title="blivet.formats.disklabel.DiskLabel"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskLabel</span></code></a>,
 and subclasses of <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a> such as <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.fs.Ext4FS" title="blivet.formats.fs.Ext4FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">Ext4FS</span></code></a>
 and <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.fs.XFS" title="blivet.formats.fs.XFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">XFS</span></code></a>.</p>
-<p>Every <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> instance has a <code class="xref py py-attr docutils literal notranslate"><span class="pre">format</span></code> that contains an instance of some <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a>
+<p>Every <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> instance has a <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.format" title="blivet.devices.storage.StorageDevice.format"><code class="xref py py-attr docutils literal notranslate"><span class="pre">format</span></code></a> that contains an instance of some <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a>
 subclass – even if it is “blank” or “unformatted” (in which case it is an instance of <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> itself).</p>
 <p>Every <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> has a
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">device</span></code> attribute that is a string representing
+<a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat.device" title="blivet.formats.DeviceFormat.device"><code class="xref py py-attr docutils literal notranslate"><span class="pre">device</span></code></a> attribute that is a string representing
 the path to the device node for the block device containing the formatting.
 <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> and <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> can
 represent either existent or non-existent devices and formatting.</p>
@@ -78,13 +80,13 @@ represent either existent or non-existent devices and formatting.</p>
 devices/formats (<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.create" title="blivet.devices.storage.StorageDevice.create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create()</span></code></a>,
 <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.destroy" title="blivet.devices.storage.StorageDevice.destroy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">destroy()</span></code></a>, <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.resize" title="blivet.devices.storage.StorageDevice.resize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">resize()</span></code></a>)
 , and attributes to store critical data
-(<code class="xref py py-attr docutils literal notranslate"><span class="pre">status</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">exists</span></code>)
+(<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.status" title="blivet.devices.storage.StorageDevice.status"><code class="xref py py-attr docutils literal notranslate"><span class="pre">status</span></code></a>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">exists</span></code>)
 . Some useful attributes of <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> that are not found
 in <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> include
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">parents</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">isleaf</span></code>,
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">ancestors</span></code>, and <code class="xref py py-attr docutils literal notranslate"><span class="pre">disks</span></code>.</p>
+<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.device.Device.parents" title="blivet.devices.device.Device.parents"><code class="xref py py-attr docutils literal notranslate"><span class="pre">parents</span></code></a>, <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.device.Device.isleaf" title="blivet.devices.device.Device.isleaf"><code class="xref py py-attr docutils literal notranslate"><span class="pre">isleaf</span></code></a>,
+<a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.device.Device.ancestors" title="blivet.devices.device.Device.ancestors"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ancestors</span></code></a>, and <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.disks" title="blivet.devices.storage.StorageDevice.disks"><code class="xref py py-attr docutils literal notranslate"><span class="pre">disks</span></code></a>.</p>
 <p><a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTree" title="blivet.devicetree.DeviceTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceTree</span></code></a> provides
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">devices</span></code> which is a list of
+<a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTreeBase.devices" title="blivet.devicetree.DeviceTreeBase.devices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">devices</span></code></a> which is a list of
 <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> instances representing the current state of the
 system as configured within blivet. It also provides some methods for looking up
 devices (<a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTreeBase.get_device_by_name" title="blivet.devicetree.DeviceTreeBase.get_device_by_name"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_device_by_name()</span></code></a>) and for listing devices
@@ -155,7 +157,7 @@ following line:</p>
 <h3>Scheduling a Series of Actions<a class="headerlink" href="#scheduling-a-series-of-actions" title="Permalink to this headline">¶</a></h3>
 <p>Start out as before:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">blivet</span>
-<span class="kn">from</span> <span class="nn">blivet.size</span> <span class="k">import</span> <span class="n">Size</span>
+<span class="kn">from</span> <span class="nn">blivet.size</span> <span class="kn">import</span> <span class="n">Size</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">blivet</span><span class="o">.</span><span class="n">Blivet</span><span class="p">()</span>
 <span class="n">b</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 <span class="n">sda3</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">devicetree</span><span class="o">.</span><span class="n">get_device_by_name</span><span class="p">(</span><span class="s2">&quot;sda3&quot;</span><span class="p">)</span>
@@ -225,6 +227,7 @@ from which to allocate the partition:</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -266,7 +269,7 @@ from which to allocate the partition:</p>
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -286,12 +289,13 @@ from which to allocate the partition:</p>
         <li class="right" >
           <a href="index.html" title="Welcome to Blivet’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.3.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Introduction to Blivet</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2020, Red Hat, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

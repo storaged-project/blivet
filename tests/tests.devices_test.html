@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>tests.devices_test package &#8212; Blivet 3.3.1 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tests.devices_test package &#8212; Blivet 3.3.2 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -34,8 +35,9 @@
         <li class="right" >
           <a href="tests.devicelibs_test.html" title="tests.devicelibs_test package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="tests.html" accesskey="U">tests package</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="tests.html" accesskey="U">tests package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">tests.devices_test package</a></li> 
       </ul>
     </div>  
 
@@ -51,80 +53,80 @@
 </div>
 <div class="section" id="module-tests.devices_test.dependencies_test">
 <span id="tests-devices-test-dependencies-test-module"></span><h2>tests.devices_test.dependencies_test module<a class="headerlink" href="#module-tests.devices_test.dependencies_test" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.devices_test.dependencies_test.DeviceDependenciesTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.dependencies_test.</code><code class="sig-name descname">DeviceDependenciesTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.DeviceDependenciesTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.dependencies_test.</code><code class="sig-name descname">DeviceDependenciesTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.DeviceDependenciesTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Test external device dependencies.</p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.dependencies_test.DeviceDependenciesTestCase.test_dependencies">
 <code class="sig-name descname">test_dependencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.DeviceDependenciesTestCase.test_dependencies" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.dependencies_test.</code><code class="sig-name descname">MissingWeakDependenciesTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.dependencies_test.</code><code class="sig-name descname">MissingWeakDependenciesTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase.load_all_plugins">
 <code class="sig-name descname">load_all_plugins</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase.load_all_plugins" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase.setUp">
 <code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase.setUp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hook method for setting up the test fixture before exercising it.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase.test_weak_dependencies">
 <code class="sig-name descname">test_weak_dependencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase.test_weak_dependencies" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase.unload_all_plugins">
 <code class="sig-name descname">unload_all_plugins</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase.unload_all_plugins" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase1">
-<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.dependencies_test.</code><code class="sig-name descname">MockingDeviceDependenciesTestCase1</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase1" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.dependencies_test.</code><code class="sig-name descname">MockingDeviceDependenciesTestCase1</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Test availability of external device dependencies.</p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase1.setUp">
 <code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase1.setUp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hook method for setting up the test fixture before exercising it.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase1.test_availability_mdraidplugin">
 <code class="sig-name descname">test_availability_mdraidplugin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase1.test_availability_mdraidplugin" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase2">
-<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.dependencies_test.</code><code class="sig-name descname">MockingDeviceDependenciesTestCase2</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase2" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.dependencies_test.</code><code class="sig-name descname">MockingDeviceDependenciesTestCase2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase2.test_dependencies_handling">
 <code class="sig-name descname">test_dependencies_handling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.dependencies_test.MockingDeviceDependenciesTestCase2.test_dependencies_handling" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -140,15 +142,15 @@ not have a method with the specified name.</p>
 </div>
 <div class="section" id="module-tests.devices_test.device_packages_test">
 <span id="tests-devices-test-device-packages-test-module"></span><h2>tests.devices_test.device_packages_test module<a class="headerlink" href="#module-tests.devices_test.device_packages_test" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.devices_test.device_packages_test.DevicePackagesTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.device_packages_test.</code><code class="sig-name descname">DevicePackagesTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_packages_test.DevicePackagesTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.device_packages_test.</code><code class="sig-name descname">DevicePackagesTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_packages_test.DevicePackagesTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Test device name validation</p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.device_packages_test.DevicePackagesTestCase.test_packages">
 <code class="sig-name descname">test_packages</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.device_packages_test.DevicePackagesTestCase.test_packages" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -167,19 +169,19 @@ not have a method with the specified name.</p>
 </div>
 <div class="section" id="module-tests.devices_test.md_test">
 <span id="tests-devices-test-md-test-module"></span><h2>tests.devices_test.md_test module<a class="headerlink" href="#module-tests.devices_test.md_test" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.devices_test.md_test.MDRaidArrayDeviceTest">
-<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.md_test.</code><code class="sig-name descname">MDRaidArrayDeviceTest</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.md_test.MDRaidArrayDeviceTest" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.md_test.</code><code class="sig-name descname">MDRaidArrayDeviceTest</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.md_test.MDRaidArrayDeviceTest" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.md_test.MDRaidArrayDeviceTest.test_chunk_size1">
 <code class="sig-name descname">test_chunk_size1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.md_test.MDRaidArrayDeviceTest.test_chunk_size1" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.md_test.MDRaidArrayDeviceTest.test_chunk_size2">
 <code class="sig-name descname">test_chunk_size2</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.md_test.MDRaidArrayDeviceTest.test_chunk_size2" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -189,9 +191,9 @@ not have a method with the specified name.</p>
 </div>
 <div class="section" id="module-tests.devices_test.network_test">
 <span id="tests-devices-test-network-test-module"></span><h2>tests.devices_test.network_test module<a class="headerlink" href="#module-tests.devices_test.network_test" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.devices_test.network_test.FakeNetDev">
-<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.network_test.</code><code class="sig-name descname">FakeNetDev</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">fmt=None</em>, <em class="sig-param">uuid=None</em>, <em class="sig-param">size=None</em>, <em class="sig-param">major=None</em>, <em class="sig-param">minor=None</em>, <em class="sig-param">sysfs_path=''</em>, <em class="sig-param">parents=None</em>, <em class="sig-param">exists=False</em>, <em class="sig-param">serial=None</em>, <em class="sig-param">vendor=''</em>, <em class="sig-param">model=''</em>, <em class="sig-param">bus=''</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.network_test.FakeNetDev" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.network_test.</code><code class="sig-name descname">FakeNetDev</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.network_test.FakeNetDev" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a>, <a class="reference internal" href="../blivet/blivet.devices.html#blivet.devices.network.NetworkStorageDevice" title="blivet.devices.network.NetworkStorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.network.NetworkStorageDevice</span></code></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -214,32 +216,32 @@ not have a method with the specified name.</p>
 </dl>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="tests.devices_test.network_test.NetDevMountOptionTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.network_test.</code><code class="sig-name descname">NetDevMountOptionTestCase</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.network_test.NetDevMountOptionTestCase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.network_test.</code><code class="sig-name descname">NetDevMountOptionTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.network_test.NetDevMountOptionTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.network_test.NetDevMountOptionTestCase.test_net_dev_setting">
 <code class="sig-name descname">test_net_dev_setting</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.network_test.NetDevMountOptionTestCase.test_net_dev_setting" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify netdev mount option setting after format assignment.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.network_test.NetDevMountOptionTestCase.test_net_dev_update">
 <code class="sig-name descname">test_net_dev_update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.network_test.NetDevMountOptionTestCase.test_net_dev_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify netdev mount option setting after device creation.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.network_test.NetDevMountOptionTestCase.test_net_dev_update_remove">
 <code class="sig-name descname">test_net_dev_update_remove</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.network_test.NetDevMountOptionTestCase.test_net_dev_update_remove" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify netdev mount option is removed after removing the netdev parent.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.network_test.NetDevMountOptionTestCase.test_net_device_manual">
 <code class="sig-name descname">test_net_device_manual</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.network_test.NetDevMountOptionTestCase.test_net_device_manual" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify netdev mount option is not removed if explicitly set by the user.</p>
@@ -253,33 +255,33 @@ not have a method with the specified name.</p>
 </div>
 <div class="section" id="module-tests.devices_test.size_test">
 <span id="tests-devices-test-size-test-module"></span><h2>tests.devices_test.size_test module<a class="headerlink" href="#module-tests.devices_test.size_test" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="tests.devices_test.size_test.LUKSDeviceSizeTest">
-<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.size_test.</code><code class="sig-name descname">LUKSDeviceSizeTest</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.size_test.LUKSDeviceSizeTest" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.size_test.</code><code class="sig-name descname">LUKSDeviceSizeTest</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.size_test.LUKSDeviceSizeTest" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tests.devices_test.size_test.StorageDeviceSizeTest" title="tests.devices_test.size_test.StorageDeviceSizeTest"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.devices_test.size_test.StorageDeviceSizeTest</span></code></a></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.size_test.LUKSDeviceSizeTest.test_size_getter">
 <code class="sig-name descname">test_size_getter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.size_test.LUKSDeviceSizeTest.test_size_getter" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="tests.devices_test.size_test.StorageDeviceSizeTest">
-<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.size_test.</code><code class="sig-name descname">StorageDeviceSizeTest</code><span class="sig-paren">(</span><em class="sig-param">methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.size_test.StorageDeviceSizeTest" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.size_test.</code><code class="sig-name descname">StorageDeviceSizeTest</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.size_test.StorageDeviceSizeTest" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.size_test.StorageDeviceSizeTest.test_size_getter">
 <code class="sig-name descname">test_size_getter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.size_test.StorageDeviceSizeTest.test_size_getter" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="tests.devices_test.size_test.StorageDeviceSizeTest.test_size_setter">
 <code class="sig-name descname">test_size_setter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.size_test.StorageDeviceSizeTest.test_size_setter" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -296,6 +298,7 @@ not have a method with the specified name.</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -344,7 +347,7 @@ not have a method with the specified name.</p>
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -364,13 +367,14 @@ not have a method with the specified name.</p>
         <li class="right" >
           <a href="tests.devicelibs_test.html" title="tests.devicelibs_test package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="tests.html" >tests package</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="tests.html" >tests package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">tests.devices_test package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2020, Red Hat, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>
