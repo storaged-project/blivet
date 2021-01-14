@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.3.1
+Version: 3.3.2
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -191,6 +191,23 @@ configuration.
 %endif
 
 %changelog
+* Thu Jan 14 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.3.2-1
+- Fix "suggest_container_name" for Anaconda (vtrefny)
+- Add test for util.get_sysfs_attr (vtrefny)
+- Use util.get_sysfs_attr in __is_ignored_blockdev to read device mode
+  (vtrefny)
+- Fix possible UnicodeDecodeError when reading sysfs attributes (vtrefny)
+- Update LUKS device name after parent partition name change (vtrefny)
+- TFT is still broken so let's avoid failures by just doing a build (jkonecny)
+- Fix logging information about ignoring hidden devices (vtrefny)
+- Add __repr__ and __str__ methods to ParentList (vtrefny)
+- Make sure LV name is unique when adding it in device factory (vtrefny)
+- In name checks add name which is already in use to error message (vtrefny)
+- Refactor suggest device/container name functions (vtrefny)
+- Remove an unused attribute from the Blivet class (vponcova)
+- Add PyPI build artifacts to .gitignore (vtrefny)
+- Sync spec with downstream (vtrefny)
+
 * Tue Oct 20 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.3.1-1
 - Make sure the product name is safe when using it for device name (vtrefny)
 - Run packit RPM builds on Fedora ELN (vtrefny)
