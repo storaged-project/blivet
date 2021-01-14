@@ -48,6 +48,9 @@ class StratisPoolDevice(StorageDevice):
         log_method_call(self, self.name, status=self.status)
         devicelibs.stratis.remove_pool(self.uuid)
 
+    def dracut_setup_args(self):
+        return set(["stratis.rootfs.pool_uuid=%s" % self.uuid])
+
 
 class StratisFilesystemDevice(StorageDevice):
     """ A stratis pool device """
@@ -81,3 +84,6 @@ class StratisFilesystemDevice(StorageDevice):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
         devicelibs.stratis.remove_filesystem(self.pool.uuid, self.uuid)
+
+    def dracut_setup_args(self):
+        return set(["root=%s" % self.path])
