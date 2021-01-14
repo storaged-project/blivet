@@ -1471,6 +1471,10 @@ class LVMFactory(DeviceFactory):
 
     def _get_new_device(self, *args, **kwargs):
         """ Create and return the factory device as a StorageDevice. """
+
+        name = kwargs.pop("name", "")
+        kwargs["name"] = self.storage.unique_device_name(name, parent=self.vg, name_set=True)
+
         return self.storage.new_lv(*args, **kwargs)
 
     def _set_name(self):

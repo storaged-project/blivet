@@ -440,11 +440,16 @@ class PartitionDevice(StorageDevice):
 
     def update_name(self):
         if self.disk and not self.disklabel_supported:
-            pass
+            return
         elif self.parted_partition is None:
             self.name = self.req_name
         else:
             self.name = device_path_to_name(self.parted_partition.path)
+
+        if self.children and self.children[0].type == "luks/dm-crypt" and not self.children[0].exists:
+            # non-existing LUKS devices name is based on the partition name ("luks-<name>")
+            # so we need to update it too
+            self.children[0].update_name()
 
     def depends_on(self, dep):
         """ Return True if this device depends on dep. """

@@ -150,6 +150,17 @@ class LUKSDevice(DMCryptDevice):
 
         StorageDevice._post_teardown(self, recursive=recursive)
 
+    def update_name(self):
+        if self.exists:
+            return
+
+        if self.parents and self.parents[0].type == "partition" and not self.name.endswith(self.parents[0].name):
+            # partition this LUKS device is on was renamed
+            new_name = "luks-%s" % self.parents[0].name
+            log.debug("updating luks name after partition name change from %s to %s",
+                      self.name, new_name)
+            self.name = new_name
+
     def dracut_setup_args(self):
         return set(["rd.luks.uuid=luks-%s" % self.raw_device.format.uuid])
 

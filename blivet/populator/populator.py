@@ -250,7 +250,7 @@ class PopulatorMixin(object):
 
         log.info("scanning %s (%s)...", name, sysfs_path)
         if udev.device_is_hidden(info):
-            log.info("device %s is marked as hidden in sysfs, ignoring")
+            log.info("device %s is marked as hidden in sysfs, ignoring", name)
             return
 
         # make sure we note the name of every device we see
