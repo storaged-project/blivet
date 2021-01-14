@@ -37,6 +37,7 @@ class FSMkfsTask(fstask.FSTask):
 
     can_label = abc.abstractproperty(doc="whether this task labels")
     can_set_uuid = abc.abstractproperty(doc="whether this task can set UUID")
+    can_nodiscard = abc.abstractproperty(doc="whether this task can set nodiscard option")
 
 
 @add_metaclass(abc.ABCMeta)
@@ -47,6 +48,9 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
 
     label_option = abc.abstractproperty(
         doc="Option for setting a filesystem label.")
+
+    nodiscard_option = abc.abstractproperty(
+        doc="Option for setting nodiscrad option for mkfs.")
 
     args = abc.abstractproperty(doc="options for creating filesystem")
 
@@ -81,6 +85,15 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
         return self.get_uuid_args is not None
 
     @property
+    def can_nodiscard(self):
+        """Whether this task can set nodiscard option for a filesystem.
+
+           :returns: True if nodiscard can be set
+           :rtype: bool
+        """
+        return self.nodiscard_option is not None
+
+    @property
     def _label_options(self):
         """ Any labeling options that a particular filesystem may use.
 
@@ -101,6 +114,23 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
             raise FSWriteLabelError("Choosing not to apply label (%s) during creation of filesystem %s. Label format is unacceptable for this filesystem." % (self.fs.label, self.fs.type))
 
     @property
+    def _nodiscard_option(self):
+        """ Any nodiscard options that a particular filesystem may use.
+
+            :returns: nodiscard options
+            :rtype: list of str
+        """
+        # Do not know how to set nodiscard while formatting.
+        if self.nodiscard_option is None:
+            return []
+
+        # nodiscard option not requested
+        if not self.fs._mkfs_nodiscard:
+            return []
+
+        return self.nodiscard_option
+
+    @property
     def _uuid_options(self):
         """Any UUID options that a particular filesystem may use.
 
@@ -119,7 +149,7 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
                                    " is unacceptable for this filesystem."
                                    % (self.fs.uuid, self.fs.type))
 
-    def _format_options(self, options=None, label=False, set_uuid=False):
+    def _format_options(self, options=None, label=False, set_uuid=False, nodiscard=False):
         """Get a list of format options to be used when creating the
            filesystem.
 
@@ -135,11 +165,12 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
 
         label_options = self._label_options if label else []
         uuid_options = self._uuid_options if set_uuid else []
+        nodiscard_option = self._nodiscard_option if nodiscard else []
         create_options = shlex.split(self.fs.create_options or "")
         return (options + self.args + label_options + uuid_options +
-                create_options + [self.fs.device])
+                nodiscard_option + create_options + [self.fs.device])
 
-    def _mkfs_command(self, options, label, set_uuid):
+    def _mkfs_command(self, options, label, set_uuid, nodiscard):
         """Return the command to make the filesystem.
 
            :param options: any special options
@@ -148,12 +179,14 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
            :type label: bool
            :param set_uuid: whether to set an UUID
            :type set_uuid: bool
+           :param nodiscard: whether to run mkfs with nodiscard option
+           :type nodiscard: bool
            :returns: the mkfs command
            :rtype: list of str
         """
-        return [str(self.ext)] + self._format_options(options, label, set_uuid)
+        return [str(self.ext)] + self._format_options(options, label, set_uuid, nodiscard)
 
-    def do_task(self, options=None, label=False, set_uuid=False):
+    def do_task(self, options=None, label=False, set_uuid=False, nodiscard=False):
         """Create the format on the device and label if possible and desired.
 
            :param options: any special options, may be None
@@ -168,7 +201,7 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
             raise FSError("\n".join(error_msgs))
 
         options = options or []
-        cmd = self._mkfs_command(options, label, set_uuid)
+        cmd = self._mkfs_command(options, label, set_uuid, nodiscard)
         try:
             ret = util.run_program(cmd)
         except OSError as e:
@@ -181,6 +214,7 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
 class BTRFSMkfs(FSMkfs):
     ext = availability.MKFS_BTRFS_APP
     label_option = None
+    nodiscard_option = ["--nodiscard"]
 
     def get_uuid_args(self, uuid):
         return ["-U", uuid]
@@ -193,6 +227,7 @@ class BTRFSMkfs(FSMkfs):
 class Ext2FSMkfs(FSMkfs):
     ext = availability.MKE2FS_APP
     label_option = "-L"
+    nodiscard_option = ["-E", "nodiscard"]
 
     _opts = []
 
@@ -215,6 +250,7 @@ class Ext4FSMkfs(Ext3FSMkfs):
 class FATFSMkfs(FSMkfs):
     ext = availability.MKDOSFS_APP
     label_option = "-n"
+    nodiscard_option = None
 
     def get_uuid_args(self, uuid):
         return ["-i", uuid.replace('-', '')]
@@ -227,6 +263,7 @@ class FATFSMkfs(FSMkfs):
 class GFS2Mkfs(FSMkfs):
     ext = availability.MKFS_GFS2_APP
     label_option = None
+    nodiscard_option = None
     get_uuid_args = None
 
     @property
@@ -237,6 +274,7 @@ class GFS2Mkfs(FSMkfs):
 class HFSMkfs(FSMkfs):
     ext = availability.HFORMAT_APP
     label_option = "-l"
+    nodiscard_option = None
     get_uuid_args = None
 
     @property
@@ -247,6 +285,7 @@ class HFSMkfs(FSMkfs):
 class HFSPlusMkfs(FSMkfs):
     ext = availability.MKFS_HFSPLUS_APP
     label_option = "-v"
+    nodiscard_option = None
     get_uuid_args = None
 
     @property
@@ -257,6 +296,7 @@ class HFSPlusMkfs(FSMkfs):
 class JFSMkfs(FSMkfs):
     ext = availability.MKFS_JFS_APP
     label_option = "-L"
+    nodiscard_option = None
     get_uuid_args = None
 
     @property
@@ -267,6 +307,7 @@ class JFSMkfs(FSMkfs):
 class NTFSMkfs(FSMkfs):
     ext = availability.MKNTFS_APP
     label_option = "-L"
+    nodiscard_option = None
     get_uuid_args = None
 
     @property
@@ -277,6 +318,7 @@ class NTFSMkfs(FSMkfs):
 class ReiserFSMkfs(FSMkfs):
     ext = availability.MKREISERFS_APP
     label_option = "-l"
+    nodiscard_option = None
 
     def get_uuid_args(self, uuid):
         return ["-u", uuid]
@@ -289,6 +331,7 @@ class ReiserFSMkfs(FSMkfs):
 class XFSMkfs(FSMkfs):
     ext = availability.MKFS_XFS_APP
     label_option = "-L"
+    nodiscard_option = ["-K"]
 
     def get_uuid_args(self, uuid):
         return ["-m", "uuid=" + uuid]
@@ -301,6 +344,7 @@ class XFSMkfs(FSMkfs):
 class F2FSMkfs(FSMkfs):
     ext = availability.MKFS_F2FS_APP
     label_option = "-l"
+    nodiscard_option = ["-t", "nodiscard"]
     get_uuid_args = None
 
     @property
@@ -316,4 +360,8 @@ class UnimplementedFSMkfs(task.UnimplementedTask, FSMkfsTask):
 
     @property
     def can_set_uuid(self):
+        return False
+
+    @property
+    def can_nodiscard(self):
         return False
