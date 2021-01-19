@@ -19,6 +19,8 @@
 # Red Hat Author(s): Vojtech Trefny <vtrefny@redhat.com>
 #
 
+import uuid
+
 import logging
 log = logging.getLogger("blivet")
 
@@ -50,7 +52,7 @@ class StratisPoolDevice(StorageDevice):
 
     def dracut_setup_args(self):
         return set(["stratis.rootfs.pool_uuid=%s" % self.uuid] +
-                   ["stratis.rootfs.uuids_paths=/dev/disk/by-uuid/%s" % p.uuid for p in self.parents])
+                   ["stratis.rootfs.uuids_paths=/dev/disk/by-uuid/%s" % str(uuid.UUID(p.uuid)) for p in self.parents])
 
 
 class StratisFilesystemDevice(StorageDevice):
