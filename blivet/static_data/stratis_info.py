@@ -20,6 +20,8 @@
 # Red Hat Author(s): Vojtech Trefny <vtrefny@redhat.com>
 #
 
+import os
+
 from collections import namedtuple
 
 from .. import safe_dbus
@@ -191,6 +193,21 @@ class StratisInfo(object):
 
     def drop_cache(self):
         self._info_cache = None
+
+    def get_pool_info(self, pool_name):
+        for pool in self.pools.values():
+            if pool.name == pool_name:
+                return pool
+
+    def get_filesystem_info(self, pool_name, fs_name):
+        for fs in self.filesystems.values():
+            if fs.pool_name == pool_name and fs.name == fs_name:
+                return fs
+
+    def get_blockdev_info(self, bd_path):
+        for bd in self.blockdevs.values():
+            if bd.path == bd_path or bd.path == os.path.realpath(bd_path):
+                return bd
 
 
 stratis_info = StratisInfo()

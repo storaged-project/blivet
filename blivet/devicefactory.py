@@ -59,6 +59,7 @@ DEVICE_TYPE_BTRFS = 3
 DEVICE_TYPE_DISK = 4
 DEVICE_TYPE_LVM_THINP = 5
 DEVICE_TYPE_LVM_VDO = 6
+DEVICE_TYPE_STRATIS = 7
 
 
 def is_supported_device_type(device_type):
