@@ -24,10 +24,19 @@ from collections import namedtuple
 
 from .. import safe_dbus
 from ..size import Size
-from ..devicelibs.stratis import STRATIS_SERVICE, STRATIS_PATH, STRATIS_POOL_INTF, STRATIS_FILESYSTEM_INTF, STRATIS_BLOCKDEV_INTF, STRATIS_PROPS_INTF
 
 import logging
 log = logging.getLogger("blivet")
+
+
+# XXX we can't import these from devicelibs.stratis, circular imports make python mad
+STRATIS_SERVICE = "org.storage.stratis2"
+STRATIS_PATH = "/org/storage/stratis2"
+STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool"
+STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem"
+STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev"
+STRATIS_PROPS_INTF = STRATIS_SERVICE + ".FetchProperties"
+STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r2"
 
 
 StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "object_path"])
