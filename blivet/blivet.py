@@ -31,6 +31,7 @@ from .storage_log import log_method_call, log_exception_info
 from .devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from .devices import MDRaidArrayDevice, PartitionDevice, TmpFSDevice, device_path_to_name
+from .devices import StratisPoolDevice, StratisFilesystemDevice
 from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyDevice
 from .deviceaction import ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
 from .devicelibs.edd import get_edd_dict
@@ -771,6 +772,77 @@ class Blivet(object):
         kwargs["subvol"] = True
         return self.new_btrfs(*args, **kwargs)
 
+    def new_stratis_pool(self, *args, **kwargs):
+        """ Return a new StratisPoolDevice instance.
+
+            :returns: the new Stratis pool device
+            :rtype: :class:`~.devices.StratisPoolDevice`
+
+            All arguments are passed on to the
+            :class:`~.devices.StratisPoolDevice` constructor.
+
+            If a name is not specified, one will be generated based on the
+            hostname, and/or product name.
+        """
+        blockdevs = kwargs.pop("parents", [])
+
+        name = kwargs.pop("name", None)
+        if name:
+            safe_name = self.safe_device_name(name, devicefactory.DEVICE_TYPE_STRATIS)
+            if safe_name != name:
+                log.warning("using '%s' instead of specified name '%s'",
+                            safe_name, name)
+                name = safe_name
+        else:
+            name = self.suggest_container_name(container_type=devicefactory.DEVICE_TYPE_STRATIS)
+
+        if name in self.names:
+            raise ValueError("name '%s' is already in use" % name)
+
+        return StratisPoolDevice(name, parents=blockdevs, *args, **kwargs)
+
+    def new_stratis_filesystem(self, *args, **kwargs):
+        """ Return a new StratisFilesystemDevice instance.
+
+            :keyword mountpoint: mountpoint for filesystem
+            :type mountpoint: str
+            :returns: the new device
+            :rtype: :class:`~.devices.StratisFilesystemDevice`
+
+            All other arguments are passed on to the appropriate
+            :class:`~.devices.StratisFilesystemDevice` constructor.
+
+            If a name is not specified, one will be generated based on the
+            format type and/or mountpoint.
+        """
+        pool = kwargs.get("parents", [None])[0]
+
+        mountpoint = kwargs.pop("mountpoint", None)
+        name = kwargs.pop("name", None)
+        if name:
+            # make sure the specified name is sensible
+            full_name = "%s/%s" % (pool.name, name)
+            safe_name = self.safe_device_name(full_name, devicefactory.DEVICE_TYPE_STRATIS)
+            if safe_name != full_name:
+                new_name = safe_name[len(pool.name) + 1:]
+                log.warning("using '%s' instead of specified name '%s'",
+                            new_name, name)
+                name = new_name
+        else:
+            name = self.suggest_device_name(parent=pool,
+                                            mountpoint=mountpoint,
+                                            device_type=devicefactory.DEVICE_TYPE_STRATIS)
+
+        if "%s/%s" % (pool.name, name) in self.names:
+            raise ValueError("name '%s' is already in use" % name)
+
+        device = StratisFilesystemDevice(name, *args, **kwargs)
+
+        # XFS will be created automatically on the device so lets just add it here
+        device.format = get_format("stratis_xfs", mountpoint=mountpoint)
+
+        return device
+
     def new_tmp_fs(self, *args, **kwargs):
         """ Return a new TmpFSDevice. """
         return TmpFSDevice(*args, **kwargs)
@@ -918,6 +990,8 @@ class Blivet(object):
             allowed = devicelibs.mdraid.safe_name_characters
         elif device_type == devicefactory.DEVICE_TYPE_BTRFS:
             allowed = devicelibs.btrfs.safe_name_characters
+        elif device_type == devicefactory.DEVICE_TYPE_STRATIS:
+            allowed = devicelibs.stratis.safe_name_characters
         else:
             allowed = "0-9a-zA-Z._-"
 
@@ -941,17 +1015,23 @@ class Blivet(object):
 
         return tmp
 
-    def unique_device_name(self, name, parent=None, name_set=True):
+    def unique_device_name(self, name, parent=None, name_set=True, device_type=None):
         """ Turn given name into a unique one by adding numeric suffix to it """
+
+        if device_type == devicefactory.DEVICE_TYPE_STRATIS:
+            parent_separator = "/"
+        else:
+            parent_separator = "-"
+
         if name_set:
-            if parent and "%s-%s" % (parent.name, name) not in self.names:
+            if parent and "%s%s%s" % (parent.name, parent_separator, name) not in self.names:
                 return name
             elif not parent and name not in self.names:
                 return name
 
         for suffix in range(100):
             if parent:
-                if "%s-%s%02d" % (parent.name, name, suffix) not in self.names:
+                if "%s%s%s%02d" % (parent.name, parent_separator, name, suffix) not in self.names:
                     return "%s%02d" % (name, suffix)
             else:
                 if "%s%02d" % (name, suffix) not in self.names:
@@ -975,7 +1055,7 @@ class Blivet(object):
         name = self._get_container_name_template(prefix=prefix)
         if name in self.names:
             try:
-                name = self.unique_device_name(name)
+                name = self.unique_device_name(name, device_type=container_type)
             except RuntimeError:
                 log.error("failed to create device name based on template '%s'", name)
                 raise
@@ -983,7 +1063,8 @@ class Blivet(object):
         return name
 
     def suggest_device_name(self, parent=None, swap=None,
-                            mountpoint=None, prefix=""):
+                            mountpoint=None, prefix="",
+                            device_type=None):
         """ Return a suitable, unused name for a new device.
 
             :keyword parent: the parent device
@@ -1009,12 +1090,18 @@ class Blivet(object):
         if prefix and body:
             body = "_" + body
 
-        name = self.safe_device_name(prefix + body)
-        full_name = "%s-%s" % (parent.name, name) if parent else name
+        name = self.safe_device_name(prefix + body, device_type)
+
+        if device_type == devicefactory.DEVICE_TYPE_STRATIS:
+            parent_separator = "/"
+        else:
+            parent_separator = "-"
+
+        full_name = "%s%s%s" % (parent.name, parent_separator, name) if parent else name
 
         if full_name in self.names or not body:
             try:
-                name = self.unique_device_name(name, parent, bool(body))
+                name = self.unique_device_name(name, parent, bool(body), device_type)
             except RuntimeError:
                 log.error("failed to create device name based on parent '%s', "
                           "prefix '%s', mountpoint '%s', swap '%s'",

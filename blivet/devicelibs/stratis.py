@@ -37,10 +37,13 @@ STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool"
 STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem"
 STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev"
 STRATIS_PROPS_INTF = STRATIS_SERVICE + ".FetchProperties"
-STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager"
+STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r2"
 
 
 STRATIS_FS_SIZE = Size("1 TiB")
+
+
+safe_name_characters = "0-9a-zA-Z._-"
 
 
 def remove_pool(pool_uuid):
@@ -94,3 +97,49 @@ def remove_filesystem(pool_uuid, fs_uuid):
     else:
         if not succ:
             raise StratisError("Failed to remove stratis filesystem: %s (%d)" % (err, rc))
+
+
+def create_pool(name, devices):
+    if not safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH):
+        raise StratisError("Stratis DBus service not available")
+
+    raid_opt = GLib.Variant("(bq)", (False, 0))
+    key_opt = GLib.Variant("(bs)", (False, ""))
+
+    try:
+        ((succ, _paths), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
+                                                        STRATIS_PATH,
+                                                        STRATIS_MANAGER_INTF,
+                                                        "CreatePool",
+                                                        GLib.Variant("(s(bq)as(bs))", (name, raid_opt,
+                                                                                       devices, key_opt)))
+    except safe_dbus.DBusCallError as e:
+        raise StratisError("Failed to create stratis pool: %s" % str(e))
+    else:
+        if not succ:
+            raise StratisError("Failed to create stratis pool: %s (%d)" % (err, rc))
+
+
+def create_filesystem(name, pool_uuid):
+    if not safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH):
+        raise StratisError("Stratis DBus service not available")
+
+    # repopulate the stratis info cache just to be sure all values are still valid
+    stratis_info.drop_cache()
+
+    if pool_uuid not in stratis_info.pools.keys():
+        raise StratisError("Stratis pool with UUID %s not found" % pool_uuid)
+
+    pool_info = stratis_info.pools[pool_uuid]
+
+    try:
+        ((succ, _paths), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
+                                                        pool_info.object_path,
+                                                        STRATIS_POOL_INTF,
+                                                        "CreateFilesystems",
+                                                        GLib.Variant("(as)", ([name],)))
+    except safe_dbus.DBusCallError as e:
+        raise StratisError("Failed to create stratis filesystem on '%s': %s" % (pool_info.name, str(e)))
+    else:
+        if not succ:
+            raise StratisError("Failed to create stratis filesystem on '%s': %s (%d)" % (pool_info.name, err, rc))

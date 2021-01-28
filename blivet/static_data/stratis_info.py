@@ -192,5 +192,15 @@ class StratisInfo(object):
     def drop_cache(self):
         self._info_cache = None
 
+    def get_pool_info(self, pool_name):
+        for pool in self.pools.values():
+            if pool.name == pool_name:
+                return pool
+
+    def get_filesystem_info(self, pool_name, fs_name):
+        for fs in self.filesystems.values():
+            if fs.pool_name == pool_name and fs.name == fs_name:
+                return fs
+
 
 stratis_info = StratisInfo()

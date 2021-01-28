@@ -26,8 +26,8 @@ log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 from ..static_data import stratis_info
-from ..size import Size
 from ..storage_log import log_method_call
+from ..errors import DeviceError
 from .. import devicelibs
 
 
@@ -39,11 +39,33 @@ class StratisPoolDevice(StorageDevice):
     _packages = ["stratisd", "stratis-cli"]
     _dev_dir = "/dev/stratis"
 
-    def read_current_size(self):
-        size = Size(0)
-        if self.exists and self.uuid in stratis_info.pools.keys():
-            size = stratis_info.pools[self.uuid].physical_size
-        return size
+    @property
+    def size(self):
+        """ The size of this pool """
+        # sum up the sizes of the block devices
+        return sum(parent.size for parent in self.parents)
+
+    def _create(self):
+        """ Create the device. """
+        log_method_call(self, self.name, status=self.status)
+        bd_list = [bd.path for bd in self.parents]
+        devicelibs.stratis.create_pool(self.name, bd_list)
+
+    def _post_create(self):
+        super(StratisPoolDevice, self)._post_create()
+        self.format.exists = True
+
+        # refresh stratis info
+        stratis_info.drop_cache()
+
+        pool_info = stratis_info.get_pool_info(self.name)
+        if not pool_info:
+            raise DeviceError("Failed to get information about newly created pool %s" % self.name)
+        self.uuid = pool_info.uuid
+
+        for parent in self.parents:
+            parent.format.pool_name = self.name
+            parent.format.pool_uuid = self.uuid
 
     def _destroy(self):
         """ Destroy the device. """
@@ -62,6 +84,12 @@ class StratisFilesystemDevice(StorageDevice):
     _resizable = False
     _packages = ["stratisd", "stratis-cli"]
     _dev_dir = "/dev/stratis"
+
+    def __init__(self, *args, **kwargs):
+        if kwargs.get("size") is None and not kwargs.get("exists"):
+            kwargs["size"] = devicelibs.stratis.STRATIS_FS_SIZE
+
+        super(StratisFilesystemDevice, self).__init__(*args, **kwargs)
 
     def _get_name(self):
         """ This device's name. """
@@ -86,6 +114,22 @@ class StratisFilesystemDevice(StorageDevice):
     @property
     def path(self):
         return "%s/%s/%s" % (self._dev_dir, self.pool.name, self.fsname)
+
+    def _create(self):
+        """ Create the device. """
+        log_method_call(self, self.name, status=self.status)
+        devicelibs.stratis.create_filesystem(self.fsname, self.pool.uuid)
+
+    def _post_create(self):
+        super(StratisFilesystemDevice, self)._post_create()
+
+        # refresh stratis info
+        stratis_info.drop_cache()
+
+        fs_info = stratis_info.get_filesystem_info(self.pool.name, self.fsname)
+        if not fs_info:
+            raise DeviceError("Failed to get information about newly created filesystem %s" % self.name)
+        self.uuid = fs_info.uuid
 
     def _destroy(self):
         """ Destroy the device. """

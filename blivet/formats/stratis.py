@@ -35,7 +35,7 @@ class StratisBlockdev(DeviceFormat):
     _type = "stratis"
     _name = N_("Stratis block device")
     _udev_types = ["stratis"]
-    _formattable = False                 # can be formatted
+    _formattable = True                  # can be formatted
     _supported = True                    # is supported
     _linux_native = True                 # for clearpart
     _min_size = Size("1 GiB")
