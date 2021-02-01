@@ -20,7 +20,6 @@
 #
 
 import shlex
-import selinux
 
 
 class Flags(object):
@@ -40,7 +39,13 @@ class Flags(object):
         #
         # enable/disable functionality
         #
-        self.selinux = selinux.is_selinux_enabled()
+        try:
+            import selinux
+        except ImportError:
+            self.selinux = False
+        else:
+            self.selinux = selinux.is_selinux_enabled()
+
         self.multipath = True
         self.dmraid = True
         self.ibft = True

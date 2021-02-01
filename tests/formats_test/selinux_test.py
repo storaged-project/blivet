@@ -7,7 +7,6 @@ else:
     from mock import patch, ANY
 
 import unittest
-import selinux
 
 import blivet
 import blivet.formats.fs as fs
@@ -37,6 +36,7 @@ class SELinuxContextTestCase(unittest.TestCase):
         blivet.flags.selinux = True
         fmt = formt()
 
+        import selinux
         # Patch selinux context setting
         with patch("selinux.lsetfilecon") as lsetfilecon:
             lsetfilecon.return_value = True
