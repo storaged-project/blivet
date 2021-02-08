@@ -1131,6 +1131,30 @@ class XFS(FS):
 register_device_format(XFS)
 
 
+class StratisXFS(XFS):
+    """ XFS on top of Stratis filesystem device """
+
+    _type = "stratis_xfs"
+
+    _resize_class = fsresize.UnimplementedFSResize
+    _size_info_class = fssize.UnimplementedFSSize
+    _info_class = fsinfo.UnimplementedFSInfo
+    _minsize_class = fsminsize.UnimplementedFSMinSize
+    _writelabel_class = fswritelabel.UnimplementedFSWriteLabel
+    _writeuuid_class = fswriteuuid.UnimplementedFSWriteUUID
+
+    def _create(self, **kwargs):   # pylint: disable=unused-argument
+        # format is created together with the stratis filesystem device
+        pass
+
+    def _destroy(self, **kwargs):   # pylint: disable=unused-argument
+        # format is destroyed together with the stratis filesystem device
+        pass
+
+
+register_device_format(StratisXFS)
+
+
 class HFS(FS):
     _type = "hfs"
     _modules = ["hfs"]

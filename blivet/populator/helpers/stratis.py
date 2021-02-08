@@ -24,6 +24,7 @@ import copy
 
 from ...callbacks import callbacks
 from ... import udev
+from ...formats import get_format
 from ...devices.stratis import StratisPoolDevice, StratisFilesystemDevice
 from ...devicelibs.stratis import STRATIS_FS_SIZE
 from ...storage_log import log_method_call
@@ -119,3 +120,29 @@ class StratisFormatPopulator(FormatPopulator):
         log_method_call(self, pv=self.device.name)
         super(StratisFormatPopulator, self).run()
         self._add_pool_device()
+
+
+class StratisXFSFormatPopulator(FormatPopulator):
+    priority = 100
+    _type_specifier = "stratis_xfs"
+
+    @classmethod
+    def match(cls, data, device):  # pylint: disable=arguments-differ,unused-argument
+        """ Return True if this helper is appropriate for the given device.
+
+            :param :class:`pyudev.Device` data: udev data describing a device
+            :param device: device instance corresponding to the udev data
+            :type device: :class:`~.devices.StorageDevice`
+            :returns: whether this class is appropriate for the specified device
+            :rtype: bool
+        """
+        if device.type == "stratis_filesystem" and udev.device_get_format(data) == "xfs":
+            return True
+
+        return False
+
+    def run(self):
+        """ Create a format instance and associate it with the device instance. """
+        kwargs = self._get_kwargs()
+        log.info("type detected on '%s' is '%s'", self.device.name, self.type_spec)
+        self.device.format = get_format(self.type_spec, **kwargs)

@@ -45,7 +45,10 @@ class FormatPopulator(PopulatorHelper):
             :returns: whether this class is appropriate for the specified device
             :rtype: bool
         """
-        ret = False
+        if device.type == "stratis_filesystem":
+            # XFS on stratis filesystem device handled in StratisXFSFormatPopulator
+            return False
+
         if cls is FormatPopulator:
             ret = True
         else:
