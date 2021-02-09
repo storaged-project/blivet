@@ -143,6 +143,10 @@ class BindFSMount(FSMount):
         return ",".join(["bind", options])
 
 
+class BTRFSMount(FSMount):
+    options = ["compress=zstd:1"]
+
+
 class DevPtsFSMount(FSMount):
     options = ["gid=5", "mode=620"]
 

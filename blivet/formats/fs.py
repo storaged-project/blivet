@@ -963,6 +963,7 @@ class BTRFS(FS):
     _min_size = Size("256 MiB")
     _max_size = Size("16 EiB")
     _mkfs_class = fsmkfs.BTRFSMkfs
+    _mount_class = fsmount.BTRFSMount
     _metadata_size_factor = 0.80  # btrfs metadata may take 20% of space
     # FIXME parted needs to be taught about btrfs so that we can set the
     # partition table type correctly for btrfs partitions
