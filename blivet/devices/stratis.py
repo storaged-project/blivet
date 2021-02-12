@@ -38,6 +38,7 @@ class StratisPoolDevice(StorageDevice):
     _resizable = False
     _packages = ["stratisd", "stratis-cli"]
     _dev_dir = "/dev/stratis"
+    _format_immutable = True
 
     @property
     def size(self):
