@@ -316,6 +316,17 @@ class Blivet(object):
                       key=lambda d: d.name)
 
     @property
+    def stratis_pools(self):
+        """ A list of the Stratis pools in the device tree.
+
+            This is based on the current state of the device tree and
+            does not necessarily reflect the actual on-disk state of the
+            system's disks.
+        """
+        return sorted((d for d in self.devices if d.type == "stratis_pool"),
+                      key=lambda d: d.name)
+
+    @property
     def swaps(self):
         """ A list of the swap devices in the device tree.
 

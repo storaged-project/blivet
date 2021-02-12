@@ -28,6 +28,7 @@ from .devices import BTRFSDevice, DiskDevice
 from .devices import LUKSDevice, LVMLogicalVolumeDevice
 from .devices import PartitionDevice, MDRaidArrayDevice
 from .devices.lvm import LVMVDOPoolMixin, LVMVDOLogicalVolumeMixin, DEFAULT_THPOOL_RESERVE
+from .devices import StratisFilesystemDevice, StratisPoolDevice
 from .formats import get_format
 from .devicelibs import btrfs
 from .devicelibs import mdraid
@@ -84,6 +85,8 @@ def is_supported_device_type(device_type):
         devices = [MDRaidArrayDevice]
     elif device_type == DEVICE_TYPE_LVM_VDO:
         devices = [LVMLogicalVolumeDevice, LVMVDOPoolMixin, LVMVDOLogicalVolumeMixin]
+    elif device_type == DEVICE_TYPE_STRATIS:
+        devices = [StratisFilesystemDevice, StratisPoolDevice]
 
     return not any(c.unavailable_type_dependencies() for c in devices)
 
@@ -124,7 +127,8 @@ def get_device_type(device):
                     "lvmvdopool": DEVICE_TYPE_LVM,
                     "btrfs subvolume": DEVICE_TYPE_BTRFS,
                     "btrfs volume": DEVICE_TYPE_BTRFS,
-                    "mdarray": DEVICE_TYPE_MD}
+                    "mdarray": DEVICE_TYPE_MD,
+                    "stratis_filesystem": DEVICE_TYPE_STRATIS}
 
     use_dev = device.raw_device
     if use_dev.is_disk:
@@ -143,7 +147,8 @@ def get_device_factory(blivet, device_type=DEVICE_TYPE_LVM, **kwargs):
                    DEVICE_TYPE_MD: MDFactory,
                    DEVICE_TYPE_LVM_THINP: LVMThinPFactory,
                    DEVICE_TYPE_LVM_VDO: LVMVDOFactory,
-                   DEVICE_TYPE_DISK: DeviceFactory}
+                   DEVICE_TYPE_DISK: DeviceFactory,
+                   DEVICE_TYPE_STRATIS: StratisFactory}
 
     factory_class = class_table[device_type]
     log.debug("instantiating %s: %s, %s, %s", factory_class,
@@ -599,6 +604,8 @@ class DeviceFactory(object):
                 container = device.volume
             elif hasattr(device, "subvolumes"):
                 container = device
+            elif device.type == "stratis_filesystem":
+                container = device.pool
         elif name:
             for c in self.storage.devices:
                 if c.name == name and c in self.container_list:
@@ -2015,3 +2022,142 @@ class BTRFSFactory(DeviceFactory):
             return
 
         super(BTRFSFactory, self)._reconfigure_device()
+
+
+class StratisFactory(DeviceFactory):
+
+    """ Factory for creating Stratis filesystems with partition block devices. """
+    child_factory_class = PartitionSetFactory
+    child_factory_fstype = "stratis"
+    size_set_class = TotalSizeSet
+
+    def __init__(self, storage, **kwargs):
+        # override default size policy, AUTO doesn't make sense for Stratis
+        self._default_settings["container_size"] = SIZE_POLICY_MAX
+        super(StratisFactory, self).__init__(storage, **kwargs)
+
+    @property
+    def pool(self):
+        return self.container
+
+    @property
+    def container_list(self):
+        return self.storage.stratis_pools[:]
+
+    def _reconfigure_container(self):
+        """ Reconfigure a defined container required by this factory device. """
+        if getattr(self.container, "exists", False):
+            return
+
+        self._set_container_members()
+
+    #
+    # methods related to device size and disk space requirements
+    #
+    def _get_total_space(self):
+        """ Return the total space need for this factory's device/container.
+
+            This is used for the size argument to the child factory constructor
+            and also to construct the size set in PartitionSetFactory.configure.
+        """
+
+        if self.container_size == SIZE_POLICY_AUTO:
+            raise DeviceFactoryError("Automatic size is not support for Stratis pools")
+        elif self.container_size == SIZE_POLICY_MAX:
+            space = Size(0)
+            # grow the container as large as possible
+            if self.pool:
+                space += sum(p.size for p in self.pool.parents)
+                log.debug("size bumped to %s to include Stratis pool parents", space)
+
+            space += self._get_free_disk_space()
+            log.debug("size bumped to %s to include free disk space", space)
+
+            return space
+        else:
+            return self.container_size
+
+    def _get_device_space(self):
+        """ The total disk space required for the factory device. """
+        return Size(0)  # FIXME
+
+    def _normalize_size(self):
+        pass
+
+    def _handle_no_size(self):
+        """ Set device size so that it grows to the largest size possible. """
+
+    def _get_new_container(self, *args, **kwargs):
+        return self.storage.new_stratis_pool(*args, **kwargs)
+
+    #
+    # methods to configure the factory's device
+    #
+    def _create_device(self):
+        """ Create the factory device. """
+        if self.device_name:
+            kwa = {"name": self.device_name}
+        else:
+            kwa = {}
+
+        parents = self._get_parent_devices()
+        try:
+            # pylint: disable=assignment-from-no-return
+            device = self._get_new_device(parents=parents,
+                                          mountpoint=self.mountpoint,
+                                          **kwa)
+        except (StorageError, ValueError) as e:
+            log.error("device instance creation failed: %s", e)
+            raise
+
+        self.storage.create_device(device)
+        try:
+            self._post_create()
+        except (StorageError, blockdev.BlockDevError) as e:
+            log.error("device post-create method failed: %s", e)
+            self.storage.destroy_device(device)
+            raise_from(StorageError(e), e)
+        else:
+            if not device.size:
+                self.storage.destroy_device(device)
+                raise StorageError("failed to create device")
+
+        self.device = device
+
+    def _get_new_device(self, *args, **kwargs):
+        """ Create and return the factory device as a StorageDevice. """
+
+        name = kwargs.pop("name", "")
+        kwargs["name"] = self.storage.unique_device_name(name, parent=self.pool, name_set=True)
+
+        return self.storage.new_stratis_filesystem(*args, **kwargs)
+
+    def _set_name(self):
+        if not self.device_name:
+            #  pylint: disable=attribute-defined-outside-init
+            self.device_name = self.storage.suggest_device_name(
+                parent=self.pool,
+                swap=False,
+                mountpoint=self.mountpoint)
+
+        fsname = "%s/%s" % (self.pool.name, self.device_name)
+        safe_new_name = self.storage.safe_device_name(fsname, DEVICE_TYPE_STRATIS)
+        if self.device.name != safe_new_name:
+            if safe_new_name in self.storage.names:
+                log.error("not renaming '%s' to in-use name '%s'",
+                          self.device.name, safe_new_name)
+                return
+
+            if not safe_new_name.startswith(self.pool.name):
+                log.error("device rename failure (%s)", safe_new_name)
+                return
+
+            # strip off the vg name before setting
+            safe_new_name = safe_new_name[len(self.pool.name) + 1:]
+            log.debug("renaming device '%s' to '%s'",
+                      self.device.name, safe_new_name)
+            self.raw_device.name = safe_new_name
+
+    def _configure(self):
+        self._set_container()  # just sets self.container based on the specs
+        super(StratisFactory, self)._configure()
