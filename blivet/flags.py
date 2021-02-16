@@ -81,6 +81,10 @@ class Flags(object):
 
         self.update_from_boot_cmdline()
         self.allow_imperfect_devices = True
+
+        # compression option for btrfs filesystems
+        self.btrfs_compression = None
+
         self.debug_threads = False
 
     def get_boot_cmdline(self):
