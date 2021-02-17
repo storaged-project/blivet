@@ -85,7 +85,8 @@ class StratisFormatPopulator(FormatPopulator):
                                             parents=[self.device],
                                             uuid=pool_info.uuid,
                                             size=pool_info.physical_size,
-                                            exists=True)
+                                            exists=True,
+                                            encrypted=pool_info.encrypted)
             self._devicetree._add_device(pool_device)
 
         # now add filesystems on this pool

@@ -19,13 +19,15 @@
 # Red Hat Author(s): Vojtech Trefny <vtrefny@redhat.com>
 #
 
+import os
+
 import logging
 log = logging.getLogger("blivet")
 
 from .storage import StorageDevice
 from ..static_data import stratis_info
 from ..storage_log import log_method_call
-from ..errors import DeviceError
+from ..errors import DeviceError, StratisError
 from .. import devicelibs
 
 
@@ -38,17 +40,47 @@ class StratisPoolDevice(StorageDevice):
     _dev_dir = "/dev/stratis"
     _format_immutable = True
 
+    def __init__(self, *args, **kwargs):
+        """
+            :encrypted: whether this pool is encrypted or not
+            :type encrypted: bool
+            :keyword passphrase: device passphrase
+            :type passphrase: str
+            :keyword key_file: path to a file containing a key
+            :type key_file: str
+        """
+        self._encrypted = kwargs.pop("encrypted", False)
+        self.__passphrase = kwargs.pop("passphrase", None)
+        self._key_file = kwargs.pop("key_file", None)
+
+        super(StratisPoolDevice, self).__init__(*args, **kwargs)
+
     @property
     def size(self):
         """ The size of this pool """
         # sum up the sizes of the block devices
         return sum(parent.size for parent in self.parents)
 
+    @property
+    def has_key(self):
+        return ((self.__passphrase not in ["", None]) or
+                (self._key_file and os.access(self._key_file, os.R_OK)))
+
+    def _pre_create(self, **kwargs):
+        super(StratisPoolDevice, self)._pre_create(**kwargs)
+
+        if self._encrypted and not self.has_key:
+            raise StratisError("cannot create encrypted stratis pool without key")
+
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         bd_list = [bd.path for bd in self.parents]
-        devicelibs.stratis.create_pool(self.name, bd_list)
+        devicelibs.stratis.create_pool(name=self.name,
+                                       devices=bd_list,
+                                       encrypted=self._encrypted,
+                                       passphrase=self.__passphrase,
+                                       key_file=self._key_file)
 
     def _post_create(self):
         super(StratisPoolDevice, self)._post_create()

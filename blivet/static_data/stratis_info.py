@@ -34,14 +34,14 @@ log = logging.getLogger("blivet")
 # XXX we can't import these from devicelibs.stratis, circular imports make python mad
 STRATIS_SERVICE = "org.storage.stratis2"
 STRATIS_PATH = "/org/storage/stratis2"
-STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool"
+STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool.r1"
 STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem"
 STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev"
 STRATIS_PROPS_INTF = STRATIS_SERVICE + ".FetchProperties"
 STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r2"
 
 
-StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "object_path"])
+StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "object_path", "encrypted"])
 StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "pool_name", "pool_uuid", "object_path"])
 StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_name", "pool_uuid", "object_path"])
 
@@ -84,7 +84,8 @@ class StratisInfo(object):
             pool_size = 0
 
         return StratisPoolInfo(name=properties["Name"], uuid=properties["Uuid"],
-                               physical_size=Size(pool_size), object_path=pool_path)
+                               physical_size=Size(pool_size), object_path=pool_path,
+                               encrypted=properties["Encrypted"])
 
     def _get_filesystem_info(self, filesystem_path):
         try:

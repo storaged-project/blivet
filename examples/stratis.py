@@ -33,6 +33,11 @@ try:
     pool = b.new_stratis_pool(name="stratis_pool", parents=[bd, bd2])
     b.create_device(pool)
 
+    # # encrypted stratis pool can be created by adding "encrypted" and "passphrase"
+    # # keywords, only the entire pool can be encrypted:
+    # pool = b.new_stratis_pool(name="stratis_pool", parents=[bd, bd2], encrypted=True, passphrase="secret")
+    # b.create_device(pool)
+
     fs = b.new_stratis_filesystem(name="stratis_filesystem", parents=[pool])
     b.create_device(fs)
 
