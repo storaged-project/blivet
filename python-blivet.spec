@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.3.2
+Version: 3.3.3
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -191,6 +191,10 @@ configuration.
 %endif
 
 %changelog
+* Thu Feb 18 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.3.3-1
+- apply compression settings from blivet.flags.btrfs_compression (#1926892)
+  (michel)
+
 * Thu Jan 14 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.3.2-1
 - Fix "suggest_container_name" for Anaconda (vtrefny)
 - Add test for util.get_sysfs_attr (vtrefny)

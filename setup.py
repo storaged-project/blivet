@@ -86,7 +86,7 @@ with open("README.md", "r") as f:
 
 
 setup(name='blivet',
-      version='3.3.2',
+      version='3.3.3',
       cmdclass={"sdist": blivet_sdist},
       description='Python module for system storage configuration',
       long_description=long_description,
