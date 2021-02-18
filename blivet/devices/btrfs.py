@@ -494,11 +494,18 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
         # propagate mount options specified for members via kickstart
         opts = "subvol=%s" % self.name
+        has_compress = False
         if self.volume.format.mountopts:
             for opt in self.volume.format.mountopts.split(","):
                 # do not add members subvol spec
                 if not opt.startswith("subvol"):
                     opts += ",%s" % opt
+                if opt.startswith("compress"):
+                    has_compress = True
+
+        # add default compression settings
+        if flags.btrfs_compression and not has_compress:
+            opts += ",compress=%s" % flags.btrfs_compression
 
         self.format.mountopts = opts
 
