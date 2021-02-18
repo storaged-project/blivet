@@ -31,6 +31,10 @@ License: LGPLv2+
 Source0: http://github.com/storaged-project/blivet/archive/%{realname}-%{realversion}.tar.gz
 Source1: http://github.com/storaged-project/blivet/archive/%{realname}-%{realversion}-tests.tar.gz
 
+%if 0%{?rhel} >= 9
+Patch0: 0001-remove-btrfs-plugin.patch
+%endif
+
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
 %global partedver 1.8.1
@@ -49,6 +53,7 @@ storage configuration.
 %package -n %{realname}-data
 Summary: Data for the %{realname} python module.
 
+BuildRequires: make
 BuildRequires: systemd
 
 Conflicts: python-blivet < 1:2.0.0
@@ -192,14 +197,15 @@ configuration.
 
 %changelog
 * Thu Feb 18 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.3.3-1
-- apply compression settings from blivet.flags.btrfs_compression (#1926892)
-  (michel)
+- apply compression settings from blivet.flags.btrfs_compression (#1926892) (michel)
+
+* Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.3.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
 
 * Thu Jan 14 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.3.2-1
 - Fix "suggest_container_name" for Anaconda (vtrefny)
 - Add test for util.get_sysfs_attr (vtrefny)
-- Use util.get_sysfs_attr in __is_ignored_blockdev to read device mode
-  (vtrefny)
+- Use util.get_sysfs_attr in __is_ignored_blockdev to read device mode (vtrefny)
 - Fix possible UnicodeDecodeError when reading sysfs attributes (vtrefny)
 - Update LUKS device name after parent partition name change (vtrefny)
 - TFT is still broken so let's avoid failures by just doing a build (jkonecny)
@@ -211,6 +217,9 @@ configuration.
 - Remove an unused attribute from the Blivet class (vponcova)
 - Add PyPI build artifacts to .gitignore (vtrefny)
 - Sync spec with downstream (vtrefny)
+
+* Wed Nov 11 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.3.1-2
+- Remove btrfs from requested libblockdev plugins on RHEL 9
 
 * Tue Oct 20 2020 Vojtech Trefny <vtrefny@redhat.com> - 3.3.1-1
 - Make sure the product name is safe when using it for device name (vtrefny)
