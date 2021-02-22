@@ -12,7 +12,8 @@ TESTS = ["tests.vmtests.blivet_reset_vmtest.LVMTestCase",
          "tests.vmtests.blivet_reset_vmtest.LVMThinSnapShotTestCase",
          "tests.vmtests.blivet_reset_vmtest.LVMRaidTestCase",
          "tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase",
-         "tests.vmtests.blivet_reset_vmtest.LVMOnMDTestCase"]
+         "tests.vmtests.blivet_reset_vmtest.LVMOnMDTestCase",
+         "tests.vmtests.blivet_reset_vmtest.LVMVDOTestCase"]
 
 SNAP_NAME = "snapshot"
 

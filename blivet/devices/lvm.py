@@ -311,7 +311,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # verify we have the space, then add it
         # do not verify for growing vg (because of ks)
-        if not lv.exists and not self.growable and not lv.is_thin_lv and lv.size > self.free_space:
+        if not lv.exists and not self.growable and not (lv.is_thin_lv or lv.is_vdo_lv) and lv.size > self.free_space:
             raise errors.DeviceError("new lv is too large to fit in free space", self.name)
 
         log.debug("Adding %s/%s to %s", lv.name, lv.size, self.name)
@@ -639,7 +639,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
                  percent=None, cache_request=None, pvs=None, from_lvs=None):
 
         if not exists:
-            if seg_type not in [None, "linear", "thin", "thin-pool", "cache"] + lvm.raid_seg_types:
+            if seg_type not in [None, "linear", "thin", "thin-pool", "cache", "vdo-pool", "vdo"] + lvm.raid_seg_types:
                 raise ValueError("Invalid or unsupported segment type: %s" % seg_type)
             if seg_type and seg_type in lvm.raid_seg_types and not pvs:
                 raise ValueError("List of PVs has to be given for every non-linear LV")
@@ -1119,7 +1119,7 @@ class LVMInternalLVtype(Enum):
 
     @classmethod
     def get_type(cls, lv_attr, lv_name):  # pylint: disable=unused-argument
-        attr_letters = {cls.data: ("T", "C"),
+        attr_letters = {cls.data: ("T", "C", "D"),
                         cls.meta: ("e",),
                         cls.log: ("l", "L"),
                         cls.image: ("i", "I"),
@@ -1790,8 +1790,30 @@ class LVMThinLogicalVolumeMixin(object):
 
 
 class LVMVDOPoolMixin(object):
-    def __init__(self):
+
+    _external_dependencies = [availability.BLOCKDEV_LVM_PLUGIN, availability.BLOCKDEV_LVM_PLUGIN_VDO]
+    _min_size = Size("5 GiB")  # 2.5 GiB for index and one 2 GiB slab rounded up to 5 GiB
+
+    def __init__(self, compression=True, deduplication=True, index_memory=0, write_policy=None):
+        self.compression = compression
+        self.deduplication = deduplication
+        self.index_memory = index_memory
+        self.write_policy = write_policy
         self._lvs = []
+
+        if not self.exists and self.size < self.min_size:
+            raise ValueError("Requested size %s is smaller than minimum %s" % (self.size, self.min_size))
+
+    # these two methods are defined in Device but LVMVDOPoolMixin doesn't inherit from
+    # it and we can't have this code in LVMLogicalVolumeDevice because we need to be able
+    # to get dependencies without creating instance of the class
+    @classmethod
+    def type_external_dependencies(cls):
+        return set(d for d in cls._external_dependencies) | LVMLogicalVolumeDevice.type_external_dependencies()
+
+    @classmethod
+    def unavailable_type_dependencies(cls):
+        return set(e for e in cls.type_external_dependencies() if not e.available)
 
     @property
     def is_vdo_pool(self):
@@ -1826,21 +1848,76 @@ class LVMVDOPoolMixin(object):
 
     @property
     @util.requires_property("is_vdo_pool")
+    def _vdopool_data_lv(self):
+        if not self._internal_lvs:
+            return None
+        return self._internal_lvs[0]
+
+    @property
+    @util.requires_property("is_vdo_pool")
     def lvs(self):
         """ A list of this VDO pool's LVs """
         return self._lvs[:]     # we don't want folks changing our list
+
+    @property
+    @util.requires_property("is_vdo_pool")
+    def vdo_lv(self):
+        if not self._lvs:
+            return None
+        return self._lvs[0]
 
     @property
     def direct(self):
         """ Is this device directly accessible? """
         return False
 
+    @property
+    @util.requires_property("is_vdo_pool")
+    def min_size(self):
+        if self.exists:
+            return self.current_size
+
+        return self._min_size
+
+    def _set_size(self, newsize):
+        if not isinstance(newsize, Size):
+            raise AttributeError("new size must of type Size")
+
+        if newsize < self.min_size:
+            raise ValueError("Requested size %s is smaller than minimum %s" % (newsize, self.min_size))
+
+        DMDevice._set_size(self, newsize)
+
+    def read_current_size(self):
+        log_method_call(self, exists=self.exists, path=self.path,
+                        sysfs_path=self.sysfs_path)
+        if self.size != Size(0):
+            return self.size
+        if self._vdopool_data_lv:
+            return self._vdopool_data_lv.read_current_size()
+        return Size(0)
+
     def _create(self):
         """ Create the device. """
-        raise NotImplementedError
+
+        if not self.vdo_lv:
+            raise errors.DeviceError("Cannot create new VDO pool without a VDO LV.")
+
+        if self.write_policy:
+            write_policy = blockdev.lvm_get_vdo_write_policy_str(self.write_policy)
+        else:
+            write_policy = blockdev.LVMVDOWritePolicy.AUTO
+
+        blockdev.lvm.vdo_pool_create(self.vg.name, self.vdo_lv.lvname, self.lvname,
+                                     self.size, self.vdo_lv.size, self.index_memory,
+                                     self.compression, self.deduplication,
+                                     write_policy)
 
 
 class LVMVDOLogicalVolumeMixin(object):
+
+    _external_dependencies = [availability.BLOCKDEV_LVM_PLUGIN, availability.BLOCKDEV_LVM_PLUGIN_VDO]
+
     def __init__(self):
         pass
 
@@ -1860,6 +1937,17 @@ class LVMVDOLogicalVolumeMixin(object):
         if not container or not isinstance(container, LVMLogicalVolumeDevice) or not container.is_vdo_pool:
             raise ValueError("constructor requires a vdo-pool LV")
 
+    # these two methods are defined in Device but LVMVDOLogicalVolumeMixin doesn't inherit
+    # from it and we can't have this code in LVMLogicalVolumeDevice because we need to be
+    # able to get dependencies without creating instance of the class
+    @classmethod
+    def type_external_dependencies(cls):
+        return set(d for d in cls._external_dependencies) | LVMLogicalVolumeDevice.type_external_dependencies()
+
+    @classmethod
+    def unavailable_type_dependencies(cls):
+        return set(e for e in cls.type_external_dependencies() if not e.available)
+
     @property
     def vg_space_used(self):
         return Size(0)    # the pool's size is already accounted for in the vg
@@ -1875,7 +1963,7 @@ class LVMVDOLogicalVolumeMixin(object):
 
     @property
     def type(self):
-        return "vdolv"
+        return "lvmvdolv"
 
     @property
     def resizable(self):
@@ -1886,9 +1974,26 @@ class LVMVDOLogicalVolumeMixin(object):
     def pool(self):
         return self.parents[0]
 
+    def _set_size(self, newsize):
+        if not isinstance(newsize, Size):
+            raise AttributeError("new size must of type Size")
+
+        newsize = self.vg.align(newsize)
+        newsize = self.vg.align(util.numeric_type(newsize))
+        # just make sure the size is set (no VG size/free space check needed for
+        # a VDO LV)
+        DMDevice._set_size(self, newsize)
+
+    def _pre_create(self):
+        # skip LVMLogicalVolumeDevice's _pre_create() method as it checks for a
+        # free space in a VG which doesn't make sense for a VDO LV and causes a
+        # bug by limitting the VDO LV's size to VG free space which is nonsense
+        super(LVMLogicalVolumeBase, self)._pre_create()  # pylint: disable=bad-super-call
+
     def _create(self):
-        """ Create the device. """
-        raise NotImplementedError
+        # nothing to do here, VDO LV is created automatically together with
+        # the VDO pool
+        pass
 
     def _destroy(self):
         # nothing to do here, VDO LV is destroyed automatically together with
@@ -1924,7 +2029,9 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
                  fmt=None, exists=False, sysfs_path='', grow=None, maxsize=None,
                  percent=None, cache_request=None, pvs=None,
                  parent_lv=None, int_type=None, origin=None, vorigin=False,
-                 metadata_size=None, chunk_size=None, profile=None, from_lvs=None):
+                 metadata_size=None, chunk_size=None, profile=None, from_lvs=None,
+                 compression=False, deduplication=False, index_memory=0,
+                 write_policy=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -1983,6 +2090,17 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             :keyword from_lvs: LVs to create the new LV from (in the (data_lv, metadata_lv) order)
             :type from_lvs: tuple of :class:`LVMLogicalVolumeDevice`
 
+            For VDO pools only:
+
+            :keyword compression: whether to enable compression on the VDO pool
+            :type compression: bool
+            :keyword dudplication: whether to enable dudplication on the VDO pool
+            :type dudplication: bool
+            :keyword index_memory: amount of index memory (in bytes) or 0 for default
+            :type index_memory: int
+            :keyword write_policy: write policy for the volume or None for default
+            :type write_policy: str
+
         """
 
         if isinstance(parents, (list, ParentList)):
@@ -2003,7 +2121,8 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         LVMLogicalVolumeBase.__init__(self, name, parents, size, uuid, seg_type,
                                       fmt, exists, sysfs_path, grow, maxsize,
                                       percent, cache_request, pvs, from_lvs)
-        LVMVDOPoolMixin.__init__(self)
+        LVMVDOPoolMixin.__init__(self, compression, deduplication, index_memory,
+                                 write_policy)
         LVMVDOLogicalVolumeMixin.__init__(self)
 
         LVMInternalLogicalVolumeMixin._init_check(self)
@@ -2121,6 +2240,15 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         raise ValueError("Cannot create a new LV of type '%s' from other LVs" % self.seg_type)
 
     @property
+    def external_dependencies(self):
+        deps = super(LVMLogicalVolumeBase, self).external_dependencies
+        if self.is_vdo_pool:
+            deps.update(LVMVDOPoolMixin.type_external_dependencies())
+        if self.is_vdo_lv:
+            deps.update(LVMVDOLogicalVolumeMixin.type_external_dependencies())
+        return deps
+
+    @property
     @type_specific
     def vg(self):
         """This Logical Volume's Volume Group."""
@@ -2152,6 +2280,11 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
                   self.vg.align(self.vg.free_space, roundup=False))
         max_format = self.format.max_size
         return min(max_lv, max_format) if max_format else max_lv
+
+    @property
+    @type_specific
+    def min_size(self):
+        return super(LVMLogicalVolumeDevice, self).min_size
 
     @property
     @type_specific
