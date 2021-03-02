@@ -820,6 +820,15 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
 
                 b.create_device(normallv)
 
+        with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies", new=[]):
+            with patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies", new=[]):
+                b.create_device(vdopool)
+                b.create_device(vdolv)
+
+        # LVM VDO specific dependencies shouldn't be needed for removing, "normal" LVM is enough
+        b.destroy_device(vdolv)
+        b.destroy_device(vdopool)
+
     def test_vdo_dependencies_devicefactory(self):
         with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies",
                    new=[blivet.tasks.availability.unavailable_resource("VDO unavailability test")]):
