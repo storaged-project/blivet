@@ -448,11 +448,11 @@ def get_cow_sysfs_path(dev_path, dev_sysfsPath):
 ##
 
 
-def match_path_context(path):
+def match_path_context(path, mode=0):
     """ Return the default SELinux context for the given path. """
     context = None
     try:
-        context = selinux.matchpathcon(os.path.normpath(path), 0)[1]
+        context = selinux.matchpathcon(os.path.normpath(path), mode)[1]
     except OSError as e:
         log.info("failed to get default SELinux context for %s: %s", path, e)
 
@@ -491,7 +491,7 @@ def set_file_context(path, context, root=None):
     return rc
 
 
-def reset_file_context(path, root=None):
+def reset_file_context(path, root=None, mode=0):
     """ Restore the SELinux context of a file to its default value.
 
         Arguments:
@@ -501,12 +501,13 @@ def reset_file_context(path, root=None):
         Keyword Arguments:
 
             root        an optional chroot string
+            mode        an optional mode to use
 
         Return Value:
 
             If successful, returns the file's new/default context.
     """
-    context = match_path_context(path)
+    context = match_path_context(path, mode)
     if context:
         if set_file_context(path, context, root=root):
             return context

@@ -27,6 +27,7 @@ import os
 import tempfile
 import uuid as uuid_mod
 import random
+import stat
 
 from parted import fileSystemType, PARTITION_BOOT
 
@@ -582,7 +583,7 @@ class FS(DeviceFormat):
         mountpoint = kwargs.get("mountpoint") or self.mountpoint
 
         if self._selinux_supported and flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
-            ret = util.reset_file_context(mountpoint, chroot)
+            ret = util.reset_file_context(mountpoint, chroot, stat.S_IFDIR)
             if not ret:
                 log.warning("Failed to reset SElinux context for newly mounted filesystem root directory to default.")
 
