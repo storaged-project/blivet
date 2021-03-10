@@ -49,6 +49,7 @@ storage configuration.
 %package -n %{realname}-data
 Summary: Data for the %{realname} python module.
 
+BuildRequires: make
 BuildRequires: systemd
 
 Conflicts: python-blivet < 1:2.0.0
