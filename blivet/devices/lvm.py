@@ -87,6 +87,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
     _format_class_name = property(lambda s: "lvmpv")
     _format_uuid_attr = property(lambda s: "vg_uuid")
     _format_immutable = True
+    _renamable = True
 
     @staticmethod
     def get_supported_pe_sizes():
@@ -391,6 +392,21 @@ class LVMVolumeGroupDevice(ContainerDevice):
         super(LVMVolumeGroupDevice, self)._remove_parent(parent)
         parent.format.free = None
         parent.format.container_uuid = None
+
+    def _rename(self, old_name, new_name, dry_run=False):
+        """ Rename this device
+        """
+        if not self.exists:
+            raise ValueError("device has not been created")
+        if old_name == new_name:
+            raise ValueError("device is already named '%s'" % old_name)
+        if not lvm.is_lvm_name_valid(new_name):
+            raise ValueError("'%s' is not a valid name for %s" % (new_name, self.type))
+
+        if not dry_run:
+            blockdev.lvm.vgrename(old_name, new_name)
+            for pv in self.pvs:
+                pv.format.vg_name = new_name
 
     # We can't rely on lvm to tell us about our size, free space, &c
     # since we could have modifications queued, unless the VG and all of
@@ -962,6 +978,17 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         else:
             return super(LVMLogicalVolumeBase, self)._get_name()
 
+    def _set_name(self, value):
+        """Set the device's name.
+
+            :param value: the new device name
+        """
+
+        if self.vg and value.startswith("%s-" % self.vg.name):
+            value = value[len(self.vg.name) + 1:]
+
+        super(LVMLogicalVolumeBase, self)._set_name(value)
+
     def check_size(self):
         """ Check to make sure the size of the device is allowed by the
             format used.
@@ -1039,6 +1066,30 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     def set_rw(self):
         """ Run lvchange as needed to ensure the lv is not read-only. """
         lvm.ensure_lv_is_writable(self.vg.name, self.lvname)
+
+    def _rename(self, old_name, new_name, dry_run=False):
+        """ Rename this device
+        """
+        if not self.exists:
+            raise ValueError("device has not been created")
+        if not self.vg:
+            raise ValueError("device is not in a volume group")
+
+        # XXX to make things easier we allow to change "name" which
+        # also contains the VG name, but we need only the LV name
+        # for lvrename
+        if old_name.startswith("%s-" % self.vg.name):
+            old_name = old_name[len(self.vg.name) + 1:]
+        if new_name.startswith("%s-" % self.vg.name):
+            new_name = new_name[len(self.vg.name) + 1:]
+
+        if old_name == new_name:
+            raise ValueError("device is already named '%s'" % old_name)
+        if not lvm.is_lvm_name_valid(self.name):
+            raise ValueError("'%s' is not a valid name for %s" % (new_name, self.type))
+
+        if not dry_run:
+            blockdev.lvm.lvrename(self.vg.name, old_name, new_name)
 
     @property
     def lvname(self):
@@ -2028,6 +2079,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
 
     # generally resizable, see :property:`resizable` for details
     _resizable = True
+    _renamable = True
 
     def __init__(self, name, parents=None, size=None, uuid=None, seg_type=None,
                  fmt=None, exists=False, sysfs_path='', grow=None, maxsize=None,

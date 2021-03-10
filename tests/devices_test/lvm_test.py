@@ -832,3 +832,64 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
 
                 vdo_supported = devicefactory.is_supported_device_type(devicefactory.DEVICE_TYPE_LVM_VDO)
                 self.assertFalse(vdo_supported)
+
+
+@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+class BlivetLVMConfigureActionsTest(unittest.TestCase):
+
+    def test_vg_rename(self):
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("10 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], exists=True)
+
+        for dev in (pv, vg, lv):
+            b.devicetree._add_device(dev)
+
+        ac = blivet.deviceaction.ActionConfigureDevice(device=vg, attr="name", new_value="newname")
+        b.devicetree.actions.add(ac)
+        self.assertEqual(vg.name, "newname")
+        self.assertEqual(lv.name, "newname-%s" % lv.lvname)
+        self.assertIn(vg.name, b.devicetree.names)
+        self.assertIn(lv.name, b.devicetree.names)
+
+        # try to remove the action and make sure the name is changed back
+        b.devicetree.actions.remove(ac)
+        self.assertEqual(vg.name, "testvg")
+        self.assertEqual(lv.name, "testvg-%s" % lv.lvname)
+
+        # re-add the action and make the change
+        b.devicetree.actions.add(ac)
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            b.do_it()
+            lvm.vgrename.assert_called_with("testvg", "newname")
+
+        self.assertEqual(pv.format.vg_name, "newname")
+
+    def test_lv_rename(self):
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("10 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], exists=True)
+
+        for dev in (pv, vg, lv):
+            b.devicetree._add_device(dev)
+
+        ac = blivet.deviceaction.ActionConfigureDevice(device=lv, attr="name", new_value="newname")
+        b.devicetree.actions.add(ac)
+        self.assertEqual(lv.name, "%s-newname" % vg.name)
+        self.assertEqual(lv.lvname, "newname")
+        self.assertIn(lv.name, b.devicetree.names)
+
+        # try to remove the action and make sure the name is changed back
+        b.devicetree.actions.remove(ac)
+        self.assertEqual(lv.name, "%s-testlv" % vg.name)
+        self.assertEqual(lv.lvname, "testlv")
+
+        # re-add the action and make the change
+        b.devicetree.actions.add(ac)
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            b.do_it()
+            lvm.lvrename.assert_called_with(vg.name, "testlv", "newname")
