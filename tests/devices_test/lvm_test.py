@@ -374,25 +374,25 @@ class LVMDeviceTest(unittest.TestCase):
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
             with patch.object(lv, "_pre_setup"):
                 lv.setup()
-                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=False))
+                lvm.lvactivate.assert_called_with(vg.name, lv.lvname, ignore_skip=False)
 
         lv.ignore_skip_activation += 1
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
             with patch.object(lv, "_pre_setup"):
                 lv.setup()
-                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=True))
+                lvm.lvactivate.assert_called_with(vg.name, lv.lvname, ignore_skip=True)
 
         lv.ignore_skip_activation += 1
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
             with patch.object(lv, "_pre_setup"):
                 lv.setup()
-                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=True))
+                lvm.lvactivate.assert_called_with(vg.name, lv.lvname, ignore_skip=True)
 
         lv.ignore_skip_activation -= 2
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
             with patch.object(lv, "_pre_setup"):
                 lv.setup()
-                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=False))
+                lvm.lvactivate.assert_called_with(vg.name, lv.lvname, ignore_skip=False)
 
     def test_vg_is_empty(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
