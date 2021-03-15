@@ -97,7 +97,7 @@ class ZFCPDevice:
             f.close()
             if devonline != "1":
                 logged_write_line_to_file(online, "1")
-        except IOError as e:
+        except OSError as e:
             raise ValueError(_("Could not set zFCP device %(devnum)s "
                                "online (%(e)s).")
                              % {'devnum': self.devnum, 'e': e})
@@ -108,7 +108,7 @@ class ZFCPDevice:
                 try:
                     logged_write_line_to_file(portadd, self.wwpn)
                     udev.settle()
-                except IOError as e:
+                except OSError as e:
                     raise ValueError(_("Could not add WWPN %(wwpn)s to zFCP "
                                        "device %(devnum)s (%(e)s).")
                                      % {'wwpn': self.wwpn,
@@ -130,7 +130,7 @@ class ZFCPDevice:
             try:
                 logged_write_line_to_file(unitadd, self.fcplun)
                 udev.settle()
-            except IOError as e:
+            except OSError as e:
                 raise ValueError(_("Could not add LUN %(fcplun)s to WWPN "
                                    "%(wwpn)s on zFCP device %(devnum)s "
                                    "(%(e)s).")
@@ -148,7 +148,7 @@ class ZFCPDevice:
             f = open(failed, "r")
             fail = f.readline().strip()
             f.close()
-        except IOError as e:
+        except OSError as e:
             raise ValueError(_("Could not read failed attribute of LUN "
                                "%(fcplun)s at WWPN %(wwpn)s on zFCP device "
                                "%(devnum)s (%(e)s).")
@@ -214,7 +214,7 @@ class ZFCPDevice:
 
         try:
             self.offline_scsi_device()
-        except IOError as e:
+        except OSError as e:
             raise ValueError(_("Could not correctly delete SCSI device of "
                                "zFCP %(devnum)s %(wwpn)s %(fcplun)s "
                                "(%(e)s).")
@@ -223,7 +223,7 @@ class ZFCPDevice:
 
         try:
             logged_write_line_to_file(unitremove, self.fcplun)
-        except IOError as e:
+        except OSError as e:
             raise ValueError(_("Could not remove LUN %(fcplun)s at WWPN "
                                "%(wwpn)s on zFCP device %(devnum)s "
                                "(%(e)s).")
@@ -241,7 +241,7 @@ class ZFCPDevice:
 
             try:
                 logged_write_line_to_file(portremove, self.wwpn)
-            except IOError as e:
+            except OSError as e:
                 raise ValueError(_("Could not remove WWPN %(wwpn)s on zFCP "
                                    "device %(devnum)s (%(e)s).")
                                  % {'wwpn': self.wwpn,
@@ -267,7 +267,7 @@ class ZFCPDevice:
 
         try:
             logged_write_line_to_file(offline, "0")
-        except IOError as e:
+        except OSError as e:
             raise ValueError(_("Could not set zFCP device %(devnum)s "
                                "offline (%(e)s).")
                              % {'devnum': self.devnum, 'e': e})
@@ -304,7 +304,7 @@ class zFCP:
     def read_config(self):
         try:
             f = open(zfcpconf, "r")
-        except IOError:
+        except OSError:
             log.info("no %s; not configuring zfcp", zfcpconf)
             return
 
