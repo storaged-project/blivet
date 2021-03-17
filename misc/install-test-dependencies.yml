@@ -50,6 +50,8 @@
       - libselinux-python3
       - python3-blockdev
       - python3-bytesize
+      - python3-libvirt
+      - python3-paramiko
     when: ansible_distribution == 'Fedora'
 
 ####### CentOS 8
@@ -98,6 +100,13 @@
       - libselinux-python3
       - python3-blockdev
       - python3-bytesize
+      - python3-libvirt
+      - python3-paramiko
+      - python3-pip
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+
+  - name: Install pocketlint using pip (CentOS 8)
+    pip: name=pocketlint executable=pip3
     when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
 
 ####### Debian/Ubuntu
