@@ -754,14 +754,15 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
 
         self.assertEqual(vg.size, Size("10236 MiB"))
 
-        vdopool = b.new_lv(name="vdopool", vdo_pool=True,
-                           parents=[vg], compression=True,
-                           deduplication=True,
-                           size=blivet.size.Size("8 GiB"))
+        with patch("blivet.blivet.Blivet.names", new=[]):
+            vdopool = b.new_lv(name="vdopool", vdo_pool=True,
+                               parents=[vg], compression=True,
+                               deduplication=True,
+                               size=blivet.size.Size("8 GiB"))
 
-        vdolv = b.new_lv(name="vdolv", vdo_lv=True,
-                         parents=[vdopool],
-                         size=blivet.size.Size("40 GiB"))
+            vdolv = b.new_lv(name="vdolv", vdo_lv=True,
+                             parents=[vdopool],
+                             size=blivet.size.Size("40 GiB"))
 
         # Dependencies check: for VDO types these should be combination of "normal"
         # LVM dependencies (LVM libblockdev plugin + kpartx and DM plugin from DMDevice)
@@ -783,10 +784,11 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
         vdolv_type_deps = [d.name for d in LVMVDOLogicalVolumeMixin.type_external_dependencies()]
         six.assertCountEqual(self, vdolv_type_deps, lvm_vdo_dependencies)
 
-        # just to be sure LVM VDO specific code didn't break "normal" LVs
-        normallv = b.new_lv(name="lvol0",
-                            parents=[vg],
-                            size=blivet.size.Size("1 GiB"))
+        with patch("blivet.blivet.Blivet.names", new=[]):
+            # just to be sure LVM VDO specific code didn't break "normal" LVs
+            normallv = b.new_lv(name="lvol0",
+                                parents=[vg],
+                                size=blivet.size.Size("1 GiB"))
 
         normalvl_deps = [d.name for d in normallv.external_dependencies]
         six.assertCountEqual(self, normalvl_deps, ["kpartx",
