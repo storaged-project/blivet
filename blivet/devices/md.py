@@ -441,7 +441,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             state = open(state_file).read().strip()
             if state in self._true_status_strings:
                 status = True
-        except IOError:
+        except OSError:
             status = False
 
         return status
@@ -454,7 +454,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         path = "/sys/%s/md/dev-%s/state" % (self.sysfs_path, member_name)
         try:
             state = open(path).read().strip()
-        except IOError:
+        except OSError:
             state = None
 
         return state
