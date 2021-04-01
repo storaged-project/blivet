@@ -1042,10 +1042,10 @@ def device_is_stratis_filesystem(info):
 
 
 def device_is_stratis_private(info):
-    if not device_is_dm_stratis(info):
+    if not (device_is_dm_stratis(info) or device_is_dm_luks(info)):
         return False
     try:
-        return info.get("DM_UUID", "").split("-")[2] == "private"
+        return info.get("DM_NAME", "").split("-")[2] == "private"
     except IndexError:
         return False
 
