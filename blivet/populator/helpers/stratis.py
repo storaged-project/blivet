@@ -40,12 +40,34 @@ class StratisFormatPopulator(FormatPopulator):
     priority = 100
     _type_specifier = "stratis"
 
+    @classmethod
+    def match(cls, data, device):  # pylint: disable=arguments-differ,unused-argument
+        if super(StratisFormatPopulator, cls).match(data, device):
+            return True
+
+        # locked stratis pools are managed here
+        for pool in stratis_info.locked_pools:
+            if device.path in pool.devices:
+                return True
+
+        return False
+
     def _get_kwargs(self):
         kwargs = super(StratisFormatPopulator, self)._get_kwargs()
 
-        bd_info = stratis_info.blockdevs.get(self.device.path)
-
         name = udev.device_get_name(self.data)
+        uuid = udev.device_get_uuid(self.data)
+
+        # stratis block device hosting an encrypted pool
+        kwargs["locked_pool"] = False
+        for pool in stratis_info.locked_pools:
+            if self.device.path in pool.devices:
+                kwargs["locked_pool"] = True
+                kwargs["pool_uuid"] = pool.uuid
+                kwargs["locked_pool_key_desc"] = pool.key_desc
+                return kwargs
+
+        bd_info = stratis_info.blockdevs.get(uuid)
         if bd_info:
             if bd_info.pool_name:
                 kwargs["pool_name"] = bd_info.pool_name
@@ -120,7 +142,9 @@ class StratisFormatPopulator(FormatPopulator):
     def run(self):
         log_method_call(self, pv=self.device.name)
         super(StratisFormatPopulator, self).run()
-        self._add_pool_device()
+
+        if not self.device.format.locked_pool:
+            self._add_pool_device()
 
 
 class StratisXFSFormatPopulator(FormatPopulator):

@@ -20,6 +20,11 @@
 # Red Hat Author(s): Vojtech Trefny <vtrefny@redhat.com>
 #
 
+import gi
+gi.require_version("GLib", "2.0")
+
+from gi.repository import GLib
+
 from collections import namedtuple
 
 from .. import safe_dbus
@@ -35,13 +40,14 @@ STRATIS_PATH = "/org/storage/stratis2"
 STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool.r1"
 STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem"
 STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev"
-STRATIS_PROPS_INTF = STRATIS_SERVICE + ".FetchProperties"
+STRATIS_PROPS_INTF = STRATIS_SERVICE + ".FetchProperties.r4"
 STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r2"
 
 
 StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "object_path", "encrypted"])
 StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "pool_name", "pool_uuid", "object_path"])
 StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_name", "pool_uuid", "object_path"])
+StratisLockedPoolInfo = namedtuple("StratisLockedPoolInfo", ["uuid", "key_desc", "devices"])
 
 
 class StratisInfo(object):
@@ -132,11 +138,36 @@ class StratisInfo(object):
                                    pool_name=pool_name, pool_uuid=pool_info.uuid,
                                    object_path=blockdev_path)
 
+    def _get_locked_pools_info(self):
+        locked_pools = []
+
+        try:
+            props = safe_dbus.call_sync(STRATIS_SERVICE,
+                                        STRATIS_PATH,
+                                        STRATIS_PROPS_INTF,
+                                        "GetProperties",
+                                        GLib.Variant("(as)", (["LockedPoolsWithDevs"],)))[0]
+        except safe_dbus.DBusCallError as e:
+            log.error("Failed to get list of locked Stratis pools: %s", str(e))
+            return locked_pools
+
+        if props and "LockedPoolsWithDevs" in props.keys():
+            valid, pools_info = props["LockedPoolsWithDevs"]
+            if valid:
+                for pool_uuid in pools_info.keys():
+                    info = StratisLockedPoolInfo(uuid=pool_uuid,
+                                                 key_desc=pools_info[pool_uuid]["key_description"],
+                                                 devices=[d["devnode"] for d in pools_info[pool_uuid]["devs"]])
+                    locked_pools.append(info)
+
+        return locked_pools
+
     def _get_stratis_info(self):
         self._info_cache = dict()
         self._info_cache["pools"] = dict()
         self._info_cache["blockdevs"] = dict()
         self._info_cache["filesystems"] = dict()
+        self._info_cache["locked_pools"] = []
 
         try:
             ret = safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH)
@@ -169,6 +200,8 @@ class StratisInfo(object):
                 if bd_info:
                     self._info_cache["blockdevs"][bd_info.uuid] = bd_info
 
+        self._info_cache["locked_pools"] = self._get_locked_pools_info()
+
     @property
     def pools(self):
         if self._info_cache is None:
@@ -189,6 +222,13 @@ class StratisInfo(object):
             self._get_stratis_info()
 
         return self._info_cache["blockdevs"]
+
+    @property
+    def locked_pools(self):
+        if self._info_cache is None:
+            self._get_stratis_info()
+
+        return self._info_cache["locked_pools"]
 
     def drop_cache(self):
         self._info_cache = None
