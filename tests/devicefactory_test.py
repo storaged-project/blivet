@@ -938,6 +938,8 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
                                    sum(d.size - Size("2 MiB") for d in self.b.disks),
                                    delta=self._get_size_delta())
 
+        self.assertEqual(device.pool.encrypted, kwargs.get("container_encrypted", False))
+
         return device
 
     @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
@@ -964,6 +966,16 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
         kwargs = {"disks": self.b.disks,
                   "mountpoint": "/factorytest",
                   "container_size": Size("2.5 GiB")}
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # enable encryption on the container
+        kwargs["container_encrypted"] = True
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # disable encryption on the container
+        kwargs["container_encrypted"] = False
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
