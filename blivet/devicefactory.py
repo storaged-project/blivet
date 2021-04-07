@@ -385,6 +385,9 @@ class DeviceFactory(object):
         self.__names = []
         self.__roots = []
 
+    def _is_container_encrypted(self):
+        return all(isinstance(p, LUKSDevice) for p in self.device.container.parents)
+
     def _update_defaults_from_device(self):
         """ Update default settings based on passed in device, if provided. """
         if self.device is None:
@@ -415,8 +418,7 @@ class DeviceFactory(object):
                   len(self.device.container.pvs) == 1 and
                   hasattr(self.device.container.pvs[0].raw_device, "level")):
                 self.container_raid_level = self.device.container.pvs[0].raw_device.level
-            self.container_encrypted = all(isinstance(p, LUKSDevice)
-                                           for p in self.device.container.parents)
+            self.container_encrypted = self._is_container_encrypted()
 
     @property
     def encrypted(self):
@@ -2049,6 +2051,7 @@ class StratisFactory(DeviceFactory):
         if getattr(self.container, "exists", False):
             return
 
+        self.container.encrypted = self.container_encrypted or False
         self._set_container_members()
 
     #
@@ -2088,6 +2091,10 @@ class StratisFactory(DeviceFactory):
         """ Set device size so that it grows to the largest size possible. """
 
     def _get_new_container(self, *args, **kwargs):
+        if self.container_encrypted:
+            kwargs["encrypted"] = True
+        else:
+            kwargs["encrypted"] = False
         return self.storage.new_stratis_pool(*args, **kwargs)
 
     #
@@ -2161,3 +2168,6 @@ class StratisFactory(DeviceFactory):
     def _configure(self):
         self._set_container()  # just sets self.container based on the specs
         super(StratisFactory, self)._configure()
+
+    def _is_container_encrypted(self):
+        return self.container.encrypted

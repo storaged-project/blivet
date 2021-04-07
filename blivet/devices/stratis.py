@@ -63,6 +63,26 @@ class StratisPoolDevice(StorageDevice):
         return sum(parent.size for parent in self.parents)
 
     @property
+    def encrypted(self):
+        """ True if this device is encrypted. """
+        return self._encrypted
+
+    @encrypted.setter
+    def encrypted(self, encrypted):
+        self._encrypted = encrypted
+
+    @property
+    def key_file(self):
+        """ Path to key file to be used in /etc/crypttab """
+        return self._key_file
+
+    def _set_passphrase(self, passphrase):
+        """ Set the passphrase used to access this device. """
+        self.__passphrase = passphrase
+
+    passphrase = property(fset=_set_passphrase)
+
+    @property
     def has_key(self):
         return ((self.__passphrase not in ["", None]) or
                 (self._key_file and os.access(self._key_file, os.R_OK)))
@@ -70,7 +90,7 @@ class StratisPoolDevice(StorageDevice):
     def _pre_create(self, **kwargs):
         super(StratisPoolDevice, self)._pre_create(**kwargs)
 
-        if self._encrypted and not self.has_key:
+        if self.encrypted and not self.has_key:
             raise StratisError("cannot create encrypted stratis pool without key")
 
     def _create(self):
@@ -79,7 +99,7 @@ class StratisPoolDevice(StorageDevice):
         bd_list = [bd.path for bd in self.parents]
         devicelibs.stratis.create_pool(name=self.name,
                                        devices=bd_list,
-                                       encrypted=self._encrypted,
+                                       encrypted=self.encrypted,
                                        passphrase=self.__passphrase,
                                        key_file=self._key_file)
 
