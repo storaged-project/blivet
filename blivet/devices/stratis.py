@@ -124,6 +124,23 @@ class StratisPoolDevice(StorageDevice):
         log_method_call(self, self.name, status=self.status)
         devicelibs.stratis.remove_pool(self.uuid)
 
+    def add_hook(self, new=True):
+        super(StratisPoolDevice, self).add_hook(new=new)
+        if new:
+            return
+
+        for parent in self.parents:
+            parent.format.pool_name = self.name
+            parent.format.pool_uuid = self.uuid
+
+    def remove_hook(self, modparent=True):
+        if modparent:
+            for parent in self.parents:
+                parent.format.pool_name = None
+                parent.format.pool_uuid = None
+
+        super(StratisPoolDevice, self).remove_hook(modparent=modparent)
+
     def dracut_setup_args(self):
         return set(["stratis.rootfs.pool_uuid=%s" % self.uuid] +
                    ["stratis.rootfs.uuids_paths=/dev/disk/by-uuid/%s" % str(uuid.UUID(p.uuid)) for p in self.parents])
