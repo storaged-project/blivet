@@ -90,6 +90,10 @@ class StratisBlockdev(DeviceFormat):
         return s
 
     @property
+    def status(self):
+        return self.exists and (self.pool_name or self.pool_uuid)
+
+    @property
     def dict(self):
         d = super(StratisBlockdev, self).dict
         d.update({"pool_name": self.pool_name, "pool_uuid": self.pool_uuid})
