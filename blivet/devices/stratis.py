@@ -56,6 +56,11 @@ class StratisPoolDevice(StorageDevice):
         super(StratisPoolDevice, self).__init__(*args, **kwargs)
 
     @property
+    def blockdevs(self):
+        """ A list of this pool block devices """
+        return self.parents[:]
+
+    @property
     def size(self):
         """ The size of this pool """
         # sum up the sizes of the block devices
