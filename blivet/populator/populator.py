@@ -266,6 +266,11 @@ class PopulatorMixin(object):
                       "stratis block device", name)
             return
 
+        if udev.device_is_dm_luks(info) and udev.device_is_stratis_private(info):
+            log.debug("skipping %s stratis private crypto device, will be handled with "
+                      "corresponding stratis block device", name)
+            return
+
         # make sure we note the name of every device we see
         self._add_name(name)
         device = self.get_device_by_name(name)
