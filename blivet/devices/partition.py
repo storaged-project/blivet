@@ -935,7 +935,13 @@ class PartitionDevice(StorageDevice):
         max_part_size = self._unaligned_max_part_size
         max_format_size = self.format.max_size
         unaligned_max = min(max_format_size, max_part_size) if max_format_size else max_part_size
-        return self.align_target_size(unaligned_max)
+        try:
+            max_size = self.align_target_size(unaligned_max)
+        except ArithmeticError:
+            log.debug("failed to align max size down; returning current size")
+            max_size = self.current_size
+
+        return max_size
 
     @property
     def resizable(self):
