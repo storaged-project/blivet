@@ -367,14 +367,14 @@ class LVMVolumeGroupDevice(ContainerDevice):
                 sector_sizes[ss].append(name)
             if len(sector_sizes.keys()) != 1:
                 if not self.exists:
-                    msg = "The specified volume group cannot be created because inconsistent " \
-                          "sector sizes have been detected on the following disks:\n"
+                    msg = "Cannot create volume group '%s'. "\
+                          "The following disks have inconsistent sector size:\n" % self.name
                     for sector_size in sector_sizes.keys():
-                        msg += "%d: %s\n" % (sector_size, ", ".join(sector_sizes[sector_size]))
+                        msg += "%s: %d\n" % (", ".join(sector_sizes[sector_size]), sector_size)
                 else:
                     msg = "Disk %s cannot be added to this volume group. LVM doesn't " \
                           "allow using physical volumes with inconsistent (logical) sector sizes." % parent.name
-                raise ValueError(msg)
+                raise errors.InconsistentPVSectorSize(msg)
 
         if (self.exists and parent.format.exists and
                 len(self.parents) + 1 == self.pv_count):

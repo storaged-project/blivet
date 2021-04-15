@@ -362,7 +362,7 @@ class LVMDeviceTest(unittest.TestCase):
 
         with patch("blivet.devices.StorageDevice.sector_size", new_callable=PropertyMock) as mock_property:
             mock_property.__get__ = lambda _mock, pv, _class: 512 if pv.name == "pv1" else 4096
-            with six.assertRaisesRegex(self, ValueError, "The volume group testvg cannot be created."):
+            with six.assertRaisesRegex(self, ValueError, "Cannot create volume group"):
                 LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
 
     def test_skip_activate(self):
