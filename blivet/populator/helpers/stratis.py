@@ -50,6 +50,14 @@ class StratisFormatPopulator(FormatPopulator):
             if device.path in pool.devices:
                 return True
 
+        # unlocked encrypted pools are also managed here
+        if udev.device_get_format(data) == "crypto_LUKS":
+            holders = udev.device_get_holders(data)
+            if holders:
+                fs = udev.device_get_format(holders[0])
+                if fs == cls._type_specifier:
+                    return True
+
         return False
 
     def _get_blockdev_uuid(self):

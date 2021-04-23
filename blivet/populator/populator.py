@@ -266,6 +266,20 @@ class PopulatorMixin(object):
                       "stratis block device", name)
             return
 
+        if udev.device_is_dm_luks(info) and udev.device_is_stratis_private(info):
+            log.debug("skipping %s stratis private crypto device, will be handled with "
+                      "corresponding stratis block device", name)
+
+            # XXX for newly unlocked stratis pools we need to force run handle_format
+            # on one of the parent block devices to add the pool to the tree
+            parents = udev.device_get_parents(info)
+            if parents:
+                bname = udev.device_get_name(parents[0])
+                bdev = self.get_device_by_name(bname)
+                if bdev:
+                    self.handle_format(info, bdev, force=True)
+            return
+
         # make sure we note the name of every device we see
         self._add_name(name)
         device = self.get_device_by_name(name)
@@ -298,7 +312,7 @@ class PopulatorMixin(object):
         device.device_links = udev.device_get_symlinks(info)
         callbacks.device_scanned(device_name=name)
 
-    def handle_format(self, info, device):
+    def handle_format(self, info, device, force=False):
         log_method_call(self, name=getattr(device, "name", None))
 
         if not info:
@@ -313,7 +327,7 @@ class PopulatorMixin(object):
         name = udev.device_get_name(info)
         if (not device or
             (not udev.device_get_format(info) and not udev.device_get_disklabel_type(info)) or
-           device.format.type):
+           (device.format.type and not force)):
             # this device has no formatting or it has already been set up
             log.debug("no type or existing type for %s, bailing", name)
             return

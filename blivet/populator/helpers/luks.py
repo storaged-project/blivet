@@ -81,6 +81,15 @@ class LUKSFormatPopulator(FormatPopulator):
             if device.path in pool.devices:
                 return False
 
+        # unlocked stratis pools are also managed in the StratisFormatPopulator
+        holders = udev.device_get_holders(data)
+        if holders:
+            fs = udev.device_get_format(holders[0])
+            if fs == "stratis":
+                log.debug("ignoring LUKS format on %s, it appears to be an encrypted Stratis pool",
+                          device.name)
+                return False
+
         return True
 
     def _get_kwargs(self):
