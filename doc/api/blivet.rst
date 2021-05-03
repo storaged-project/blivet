@@ -48,6 +48,8 @@ blivet
         * :meth:`~blivet.blivet.Blivet.new_lv_from_lvs`
         * :meth:`~blivet.blivet.Blivet.new_mdarray`
         * :meth:`~blivet.blivet.Blivet.new_partition`
+        * :meth:`~blivet.blivet.Blivet.new_stratis_filesystem`
+        * :meth:`~blivet.blivet.Blivet.new_stratis_pool`
         * :meth:`~blivet.blivet.Blivet.new_tmp_fs`
         * :meth:`~blivet.blivet.Blivet.new_vg`
         * :attr:`~blivet.blivet.Blivet.partitioned`
@@ -61,6 +63,7 @@ blivet
         * :meth:`~blivet.blivet.Blivet.save_passphrase`
         * :meth:`~blivet.blivet.Blivet.set_default_fstype`
         * :meth:`~blivet.blivet.Blivet.shutdown`
+        * :attr:`~blivet.blivet.Blivet.stratis_pools`
         * :meth:`~blivet.blivet.Blivet.suggest_container_name`
         * :meth:`~blivet.blivet.Blivet.suggest_device_name`
         * :attr:`~blivet.blivet.Blivet.swaps`
@@ -86,6 +89,7 @@ blivet
     * :const:`~blivet.devicefactory.DEVICE_TYPE_DISK`
     * :const:`~blivet.devicefactory.DEVICE_TYPE_LVM_THINP`
     * :const:`~blivet.devicefactory.DEVICE_TYPE_LVM_VDO`
+    * :const:`~blivet.devicefactory.DEVICE_TYPE_STRATIS`
     * :func:`~blivet.devicefactory.is_supported_device_type`
     * :func:`~blivet.devicefactory.get_device_factory`
     * :func:`~blivet.devicefactory.get_device_type`
@@ -179,6 +183,7 @@ blivet
     * :class:`~blivet.errors.SinglePhysicalVolumeError`
     * :class:`~blivet.errors.SizePlacesError`
     * :class:`~blivet.errors.StorageError`
+    * :class:`~blivet.errors.StratisError`
     * :class:`~blivet.errors.SwapSpaceError`
     * :class:`~blivet.errors.ThreadError`
     * :class:`~blivet.errors.UdevError`
