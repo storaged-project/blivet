@@ -3,6 +3,7 @@ import os
 import blivet
 from blivet.size import Size
 from blivet.util import set_up_logging, create_sparse_tempfile
+from blivet.devices import LUKSDevice
 
 set_up_logging()
 b = blivet.Blivet()   # create an instance of Blivet (don't add system devices)
@@ -40,6 +41,18 @@ try:
     # new lv with a fixed size of 2GiB formatted as swap space
     dev = b.new_lv(fmt_type="swap", size=Size("2GiB"), parents=[vg])
     b.create_device(dev)
+
+    # new LUKS encrypted lv with fixed size of 10GiB and ext4 filesystem
+    dev = b.new_lv(fmt_type="luks", fmt_args={"passphrase": "12345"},
+                   size=Size("10GiB"), parents=[vg], name="encrypted")
+    b.create_device(dev)
+
+    luks_dev = LUKSDevice(name="luks-%s" % dev.name,
+                          size=dev.size, parents=[dev])
+    b.create_device(luks_dev)
+
+    luks_fmt = blivet.formats.get_format(fmt_type="ext4", device=luks_dev.path)
+    b.format_device(luks_dev, luks_fmt)
 
     # allocate the growable lvs
     blivet.partitioning.grow_lvm(b)
