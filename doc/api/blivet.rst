@@ -85,6 +85,7 @@ blivet
     * :const:`~blivet.devicefactory.DEVICE_TYPE_BTRFS`
     * :const:`~blivet.devicefactory.DEVICE_TYPE_DISK`
     * :const:`~blivet.devicefactory.DEVICE_TYPE_LVM_THINP`
+    * :const:`~blivet.devicefactory.DEVICE_TYPE_LVM_VDO`
     * :func:`~blivet.devicefactory.is_supported_device_type`
     * :func:`~blivet.devicefactory.get_device_factory`
     * :func:`~blivet.devicefactory.get_device_type`

@@ -63,6 +63,10 @@ class DeviceTeardownError(DeviceError):
 class DeviceUserDeniedFormatError(DeviceError):
     pass
 
+
+class InconsistentPVSectorSize(DeviceError, ValueError):
+    pass
+
 # DeviceFormat
 
 
