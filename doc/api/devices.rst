@@ -54,6 +54,8 @@ devices
         * :attr:`~blivet.devices.lvm.LVMSnapshotMixin.is_snapshot_lv`
         * :attr:`~blivet.devices.lvm.LVMThinLogicalVolumeMixin.is_thin_lv`
         * :attr:`~blivet.devices.lvm.LVMThinPoolMixin.is_thin_pool`
+        * :attr:`~blivet.devices.lvm.LVMVDOLogicalVolumeMixin.is_vdo_lv`
+        * :attr:`~blivet.devices.lvm.LVMVDOPoolMixin.is_vdo_pool`
         * :attr:`~blivet.devices.dm.DMDevice.map_name`
         * :attr:`~blivet.devices.lvm.LVMLogicalVolumeBase.metadata_size`
         * :attr:`~blivet.devices.lvm.LVMLogicalVolumeDevice.vg`
