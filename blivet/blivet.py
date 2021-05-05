@@ -59,7 +59,6 @@ class Blivet(object):
 
     def __init__(self):
         # storage configuration variables
-        self.encryption_passphrase = None
         self.edd_dict = {}
 
         self.ignored_disks = []
