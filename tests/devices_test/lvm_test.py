@@ -365,7 +365,7 @@ class LVMDeviceTest(unittest.TestCase):
 
         with patch("blivet.devices.StorageDevice.sector_size", new_callable=PropertyMock) as mock_property:
             mock_property.__get__ = lambda _mock, pv, _class: 512 if pv.name == "pv1" else 4096
-            with six.assertRaisesRegex(self, ValueError, "The volume group testvg cannot be created."):
+            with six.assertRaisesRegex(self, ValueError, "Cannot create volume group"):
                 LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
 
     def test_skip_activate(self):
@@ -377,25 +377,25 @@ class LVMDeviceTest(unittest.TestCase):
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
             with patch.object(lv, "_pre_setup"):
                 lv.setup()
-                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=False))
+                lvm.lvactivate.assert_called_with(vg.name, lv.lvname, ignore_skip=False)
 
         lv.ignore_skip_activation += 1
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
             with patch.object(lv, "_pre_setup"):
                 lv.setup()
-                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=True))
+                lvm.lvactivate.assert_called_with(vg.name, lv.lvname, ignore_skip=True)
 
         lv.ignore_skip_activation += 1
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
             with patch.object(lv, "_pre_setup"):
                 lv.setup()
-                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=True))
+                lvm.lvactivate.assert_called_with(vg.name, lv.lvname, ignore_skip=True)
 
         lv.ignore_skip_activation -= 2
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
             with patch.object(lv, "_pre_setup"):
                 lv.setup()
-                self.assertTrue(lvm.lvactivate.called_with(vg.name, lv.lvname, ignore_skip=False))
+                lvm.lvactivate.assert_called_with(vg.name, lv.lvname, ignore_skip=False)
 
     def test_vg_is_empty(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
@@ -754,14 +754,15 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
 
         self.assertEqual(vg.size, Size("10236 MiB"))
 
-        vdopool = b.new_lv(name="vdopool", vdo_pool=True,
-                           parents=[vg], compression=True,
-                           deduplication=True,
-                           size=blivet.size.Size("8 GiB"))
+        with patch("blivet.blivet.Blivet.names", new=[]):
+            vdopool = b.new_lv(name="vdopool", vdo_pool=True,
+                               parents=[vg], compression=True,
+                               deduplication=True,
+                               size=blivet.size.Size("8 GiB"))
 
-        vdolv = b.new_lv(name="vdolv", vdo_lv=True,
-                         parents=[vdopool],
-                         size=blivet.size.Size("40 GiB"))
+            vdolv = b.new_lv(name="vdolv", vdo_lv=True,
+                             parents=[vdopool],
+                             size=blivet.size.Size("40 GiB"))
 
         # Dependencies check: for VDO types these should be combination of "normal"
         # LVM dependencies (LVM libblockdev plugin + kpartx and DM plugin from DMDevice)
@@ -783,10 +784,11 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
         vdolv_type_deps = [d.name for d in LVMVDOLogicalVolumeMixin.type_external_dependencies()]
         six.assertCountEqual(self, vdolv_type_deps, lvm_vdo_dependencies)
 
-        # just to be sure LVM VDO specific code didn't break "normal" LVs
-        normallv = b.new_lv(name="lvol0",
-                            parents=[vg],
-                            size=blivet.size.Size("1 GiB"))
+        with patch("blivet.blivet.Blivet.names", new=[]):
+            # just to be sure LVM VDO specific code didn't break "normal" LVs
+            normallv = b.new_lv(name="lvol0",
+                                parents=[vg],
+                                size=blivet.size.Size("1 GiB"))
 
         normalvl_deps = [d.name for d in normallv.external_dependencies]
         six.assertCountEqual(self, normalvl_deps, ["kpartx",
@@ -819,6 +821,15 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
                     b.create_device(vdolv)
 
                 b.create_device(normallv)
+
+        with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies", new=[]):
+            with patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies", new=[]):
+                b.create_device(vdopool)
+                b.create_device(vdolv)
+
+        # LVM VDO specific dependencies shouldn't be needed for removing, "normal" LVM is enough
+        b.destroy_device(vdolv)
+        b.destroy_device(vdopool)
 
     def test_vdo_dependencies_devicefactory(self):
         with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies",

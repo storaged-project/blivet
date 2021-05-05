@@ -33,7 +33,7 @@ Source1: http://github.com/storaged-project/blivet/archive/%{realname}-%{realver
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
-%global partedver 1.8.1
+%global partedver 3.2
 %global pypartedver 3.10.4
 %global utillinuxver 2.15.1
 %global libblockdevver 2.24
@@ -49,6 +49,7 @@ storage configuration.
 %package -n %{realname}-data
 Summary: Data for the %{realname} python module.
 
+BuildRequires: make
 BuildRequires: systemd
 
 Conflicts: python-blivet < 1:2.0.0

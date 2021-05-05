@@ -83,7 +83,9 @@ class EddTestCase(unittest.TestCase):
         edd.log = self._edd_logger
         edd.log.setLevel(self._edd_logger_level)
         edd.log.removeHandler(self.log_handler)
+        os.remove(self.log_handler.baseFilename)
         edd.testdata_log.removeHandler(self.td_log_handler)
+        os.remove(self.td_log_handler.baseFilename)
 
     def check_logs(self, debugs=None, infos=None, warnings=None, errors=None):
         def check(left, right_object):

@@ -430,6 +430,14 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         else:
             self.format.vol_uuid = udev.device_get_uuid(info)
 
+        if not self.format.vol_uuid:
+            try:
+                bd_info = blockdev.btrfs.filesystem_info(self.parents[0].path)
+            except blockdev.BtrfsError as e:
+                log.error("failed to get filesystem info for new btrfs volume %s", e)
+            else:
+                self.format.vol_uuid = bd_info.uuid
+
         self.format.exists = True
         self.original_format.exists = True
 

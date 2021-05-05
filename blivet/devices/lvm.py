@@ -25,7 +25,7 @@ import pprint
 import re
 import os
 import time
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from functools import wraps
 from enum import Enum
 import six
@@ -362,15 +362,19 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # we are creating new VG or adding a new PV to an existing (complete) one
         if not self.exists or (self.exists and self._complete):
-            parent_sectors = set([p.sector_size for p in self.pvs] + [parent.sector_size])
-            if len(parent_sectors) != 1:
+            sector_sizes = defaultdict(list)
+            for ss, name in [(p.sector_size, p.name) for p in self.pvs + [parent]]:
+                sector_sizes[ss].append(name)
+            if len(sector_sizes.keys()) != 1:
                 if not self.exists:
-                    msg = "The volume group %s cannot be created. Selected disks have " \
-                          "inconsistent sector sizes (%s)." % (self.name, parent_sectors)
+                    msg = "Cannot create volume group '%s'. "\
+                          "The following disks have inconsistent sector size:\n" % self.name
+                    for sector_size in sector_sizes.keys():
+                        msg += "%s: %d\n" % (", ".join(sector_sizes[sector_size]), sector_size)
                 else:
                     msg = "Disk %s cannot be added to this volume group. LVM doesn't " \
                           "allow using physical volumes with inconsistent (logical) sector sizes." % parent.name
-                raise ValueError(msg)
+                raise errors.InconsistentPVSectorSize(msg)
 
         if (self.exists and parent.format.exists and
                 len(self.parents) + 1 == self.pv_count):

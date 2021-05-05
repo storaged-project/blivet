@@ -27,8 +27,15 @@ import os
 import tempfile
 import uuid as uuid_mod
 import random
+import stat
 
-from parted import fileSystemType, PARTITION_BOOT
+from parted import fileSystemType
+
+try:
+    from parted import PARTITION_ESP
+except ImportError:
+    # this flag is sometimes not available in pyparted, see https://github.com/dcantrell/pyparted/issues/80
+    PARTITION_ESP = 18
 
 from ..tasks import fsck
 from ..tasks import fsinfo
@@ -582,7 +589,7 @@ class FS(DeviceFormat):
         mountpoint = kwargs.get("mountpoint") or self.mountpoint
 
         if self._selinux_supported and flags.selinux and "ro" not in self._mount.mount_options(options).split(",") and flags.selinux_reset_fcon:
-            ret = util.reset_file_context(mountpoint, chroot)
+            ret = util.reset_file_context(mountpoint, chroot, stat.S_IFDIR)
             if not ret:
                 log.warning("Failed to reset SElinux context for newly mounted filesystem root directory to default.")
 
@@ -941,7 +948,7 @@ class EFIFS(FATFS):
     _min_size = Size("50 MiB")
     _check = True
     _mount_class = fsmount.EFIFSMount
-    parted_flag = PARTITION_BOOT
+    parted_flag = PARTITION_ESP
 
     @property
     def supported(self):
