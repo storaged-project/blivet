@@ -431,6 +431,14 @@ E2FSPROGS_INFO = AppVersionInfo(app_name="e2fsck",
                                 version_regex=r"e2fsck ([0-9+\.]+) .*")
 E2FSPROGS_VERSION = VersionMethod(E2FSPROGS_INFO)
 
+
+# new version of dosftools changed behaviour of many tools
+DOSFSTOOLS_INFO = AppVersionInfo(app_name="mkdosfs",
+                                 required_version="4.2",
+                                 version_opt="--help",
+                                 version_regex=r"mkfs\.fat ([0-9+\.]+) .*")
+DOSFSTOOLS_VERSION = VersionMethod(DOSFSTOOLS_INFO)
+
 # applications
 DEBUGREISERFS_APP = application("debugreiserfs")
 DF_APP = application("df")
@@ -444,6 +452,7 @@ HFORMAT_APP = application("hformat")
 JFSTUNE_APP = application("jfs_tune")
 KPARTX_APP = application("kpartx")
 MKDOSFS_APP = application("mkdosfs")
+MKDOSFS_NEW_APP = application_by_version("mkdosfs", DOSFSTOOLS_VERSION)
 MKE2FS_APP = application_by_version("mke2fs", E2FSPROGS_VERSION)
 MKFS_BTRFS_APP = application("mkfs.btrfs")
 MKFS_GFS2_APP = application("mkfs.gfs2")
