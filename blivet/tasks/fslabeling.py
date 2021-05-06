@@ -23,6 +23,8 @@ import abc
 
 from six import add_metaclass
 
+from . import availability
+
 
 @add_metaclass(abc.ABCMeta)
 class FSLabeling(object):
@@ -55,7 +57,7 @@ class Ext2FSLabeling(FSLabeling):
 
 class FATFSLabeling(FSLabeling):
 
-    default_label = "NO NAME"
+    default_label = "" if availability.MKDOSFS_NEW_APP.available else "NO NAME"
 
     @classmethod
     def label_format_ok(cls, label):
