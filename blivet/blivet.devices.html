@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>blivet.devices package &#8212; Blivet 3.3.2 documentation</title>
+    <title>blivet.devices package &#8212; Blivet 3.4.0 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="blivet.devicelibs.html" title="blivet.devicelibs package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devices package</a></li> 
       </ul>
@@ -2376,6 +2376,17 @@ format used.</p>
 <dd class="field-odd"><p><strong>from_lvs</strong> (tuple of <a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeDevice" title="blivet.devices.lvm.LVMLogicalVolumeDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice</span></code></a>) – LVs to create the new LV from (in the (data_lv, metadata_lv) order)</p>
 </dd>
 </dl>
+<p>For VDO pools only:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>compression</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to enable compression on the VDO pool</p></li>
+<li><p><strong>dudplication</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to enable dudplication on the VDO pool</p></li>
+<li><p><strong>index_memory</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – amount of index memory (in bytes) or 0 for default</p></li>
+<li><p><strong>write_policy</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – write policy for the volume or None for default</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt id="blivet.devices.lvm.LVMLogicalVolumeDevice.add_hook">
 <code class="sig-name descname">add_hook</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.add_hook" title="Permalink to this definition">¶</a></dt>
@@ -2439,6 +2450,12 @@ the DiskDevice on which it resides.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt id="blivet.devices.lvm.LVMLogicalVolumeDevice.external_dependencies">
+<em class="property">property </em><code class="sig-name descname">external_dependencies</code><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.external_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="blivet.devices.lvm.LVMLogicalVolumeDevice.format_immutable">
 <em class="property">property </em><code class="sig-name descname">format_immutable</code><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.format_immutable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an attribute of instance, which is of type owner.</p>
@@ -2466,6 +2483,12 @@ the DiskDevice on which it resides.</p>
 <dt id="blivet.devices.lvm.LVMLogicalVolumeDevice.max_size">
 <em class="property">property </em><code class="sig-name descname">max_size</code><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.max_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum size this lv can be.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="blivet.devices.lvm.LVMLogicalVolumeDevice.min_size">
+<em class="property">property </em><code class="sig-name descname">min_size</code><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.min_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2801,6 +2824,16 @@ and sets it while subtracting the size from self.size.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt id="blivet.devices.lvm.LVMVDOLogicalVolumeMixin.type_external_dependencies">
+<em class="property">classmethod </em><code class="sig-name descname">type_external_dependencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMVDOLogicalVolumeMixin.type_external_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="blivet.devices.lvm.LVMVDOLogicalVolumeMixin.unavailable_type_dependencies">
+<em class="property">classmethod </em><code class="sig-name descname">unavailable_type_dependencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMVDOLogicalVolumeMixin.unavailable_type_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt id="blivet.devices.lvm.LVMVDOLogicalVolumeMixin.vg">
 <em class="property">property </em><code class="sig-name descname">vg</code><a class="headerlink" href="#blivet.devices.lvm.LVMVDOLogicalVolumeMixin.vg" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -2814,7 +2847,7 @@ and sets it while subtracting the size from self.size.</p>
 
 <dl class="py class">
 <dt id="blivet.devices.lvm.LVMVDOPoolMixin">
-<em class="property">class </em><code class="sig-prename descclassname">blivet.devices.lvm.</code><code class="sig-name descname">LVMVDOPoolMixin</code><a class="headerlink" href="#blivet.devices.lvm.LVMVDOPoolMixin" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">blivet.devices.lvm.</code><code class="sig-name descname">LVMVDOPoolMixin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">compression</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">deduplication</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">index_memory</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">write_policy</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMVDOPoolMixin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt id="blivet.devices.lvm.LVMVDOPoolMixin.direct">
@@ -2834,6 +2867,16 @@ and sets it while subtracting the size from self.size.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="blivet.devices.lvm.LVMVDOPoolMixin.min_size">
+<em class="property">property </em><code class="sig-name descname">min_size</code><a class="headerlink" href="#blivet.devices.lvm.LVMVDOPoolMixin.min_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="blivet.devices.lvm.LVMVDOPoolMixin.read_current_size">
+<code class="sig-name descname">read_current_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMVDOPoolMixin.read_current_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt id="blivet.devices.lvm.LVMVDOPoolMixin.resizable">
 <em class="property">property </em><code class="sig-name descname">resizable</code><a class="headerlink" href="#blivet.devices.lvm.LVMVDOPoolMixin.resizable" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -2841,6 +2884,21 @@ and sets it while subtracting the size from self.size.</p>
 <dl class="py method">
 <dt id="blivet.devices.lvm.LVMVDOPoolMixin.type">
 <em class="property">property </em><code class="sig-name descname">type</code><a class="headerlink" href="#blivet.devices.lvm.LVMVDOPoolMixin.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="blivet.devices.lvm.LVMVDOPoolMixin.type_external_dependencies">
+<em class="property">classmethod </em><code class="sig-name descname">type_external_dependencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMVDOPoolMixin.type_external_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="blivet.devices.lvm.LVMVDOPoolMixin.unavailable_type_dependencies">
+<em class="property">classmethod </em><code class="sig-name descname">unavailable_type_dependencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMVDOPoolMixin.unavailable_type_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="blivet.devices.lvm.LVMVDOPoolMixin.vdo_lv">
+<em class="property">property </em><code class="sig-name descname">vdo_lv</code><a class="headerlink" href="#blivet.devices.lvm.LVMVDOPoolMixin.vdo_lv" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -4668,13 +4726,13 @@ the size from /sys.</p>
         <li class="right" >
           <a href="blivet.devicelibs.html" title="blivet.devicelibs package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devices package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2020, Red Hat, Inc..
+        &#169; Copyright 2013-2021, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>

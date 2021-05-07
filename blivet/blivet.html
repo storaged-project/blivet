@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>blivet package &#8212; Blivet 3.3.2 documentation</title>
+    <title>blivet package &#8212; Blivet 3.4.0 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="../testing.html" title="Testing Blivet"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet package</a></li> 
       </ul>
     </div>  
@@ -833,6 +833,8 @@ contain the volume you want to contain the subvolume.</p>
 <li><p><strong>mountpoint</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – mountpoint for format (filesystem)</p></li>
 <li><p><strong>thin_pool</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to create a thin pool</p></li>
 <li><p><strong>thin_volume</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to create a thin volume</p></li>
+<li><p><strong>vdo_pool</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to create a vdo pool</p></li>
+<li><p><strong>vdo_lv</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to create a vdo lv</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -2721,6 +2723,56 @@ LUKS format creation</p></li>
 </dd></dl>
 
 <dl class="py class">
+<dt id="blivet.devicefactory.LVMVDOFactory">
+<em class="property">class </em><code class="sig-prename descclassname">blivet.devicefactory.</code><code class="sig-name descname">LVMVDOFactory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">storage</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicefactory.LVMVDOFactory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devicefactory.LVMFactory" title="blivet.devicefactory.LVMFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devicefactory.LVMFactory</span></code></a></p>
+<p>Factory for creating LVM VDO volumes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pool_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – name for the VDO pool, if not specified unique name will be generated</p></li>
+<li><p><strong>virtual_size</strong> – size for the VDO volume, usually bigger than pool size, if not
+specified physical size (pool size) will be used</p></li>
+<li><p><strong>compression</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to enable compression (defaults to True)</p></li>
+<li><p><strong>deduplication</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to enable deduplication (defaults to True)</p></li>
+<li><p><strong>storage</strong> (<a class="reference internal" href="#blivet.blivet.Blivet" title="blivet.blivet.Blivet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Blivet</span></code></a>) – a Blivet instance</p></li>
+<li><p><strong>size</strong> (<a class="reference internal" href="#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the desired size for the device</p></li>
+<li><p><strong>disks</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – the set of disks to use</p></li>
+<li><p><strong>fstype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – filesystem type</p></li>
+<li><p><strong>mountpoint</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – filesystem mount point</p></li>
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – filesystem label text</p></li>
+<li><p><strong>raid_level</strong> (<em>any valid RAID level descriptor</em>) – raid level descriptor</p></li>
+<li><p><strong>encrypted</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to encrypt (boolean)</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – name of requested device</p></li>
+<li><p><strong>device</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – an already-defined but non-existent device to
+adjust instead of creating a new device</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>any device passed must be of the appropriate type for the
+factory class it is passed to</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>container_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – name of requested container</p></li>
+<li><p><strong>container_raid_level</strong> (<em>any valid RAID level descriptor</em>) – raid level for container</p></li>
+<li><p><strong>container_encrypted</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to encrypt the container</p></li>
+<li><p><strong>container_size</strong> (<a class="reference internal" href="#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>, <code class="xref py py-const docutils literal notranslate"><span class="pre">SIZE_POLICY_AUTO</span></code> (the default),
+or <code class="xref py py-const docutils literal notranslate"><span class="pre">SIZE_POLICY_MAX</span></code>) – requested container size</p></li>
+<li><p><strong>min_luks_entropy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – minimum entropy in bits required for
+LUKS format creation</p></li>
+<li><p><strong>luks_version</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – luks format version (“luks1” or “luks2”)</p></li>
+<li><p><strong>pbkdf_args</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.luks.LUKS2PBKDFArgs" title="blivet.formats.luks.LUKS2PBKDFArgs"><code class="xref py py-class docutils literal notranslate"><span class="pre">LUKS2PBKDFArgs</span></code></a>) – optional arguments for LUKS2 key derivation function</p></li>
+<li><p><strong>luks_sector_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – encryption sector size (use only with LUKS version 2)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
 <dt id="blivet.devicefactory.MDFactory">
 <em class="property">class </em><code class="sig-prename descclassname">blivet.devicefactory.</code><code class="sig-name descname">MDFactory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">storage</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicefactory.MDFactory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#blivet.devicefactory.DeviceFactory" title="blivet.devicefactory.DeviceFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devicefactory.DeviceFactory</span></code></a></p>
@@ -3633,6 +3685,12 @@ automatically.</p>
 <dt id="blivet.errors.FormatTeardownError">
 <em class="property">exception </em><code class="sig-prename descclassname">blivet.errors.</code><code class="sig-name descname">FormatTeardownError</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.errors.FormatTeardownError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#blivet.errors.DeviceFormatError" title="blivet.errors.DeviceFormatError"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.errors.DeviceFormatError</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="blivet.errors.InconsistentPVSectorSize">
+<em class="property">exception </em><code class="sig-prename descclassname">blivet.errors.</code><code class="sig-name descname">InconsistentPVSectorSize</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.errors.InconsistentPVSectorSize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.errors.DeviceError" title="blivet.errors.DeviceError"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.errors.DeviceError</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
 </dd></dl>
 
 <dl class="py exception">
@@ -6201,7 +6259,7 @@ whatnot and then normalizes repeated slashes.</p>
 
 <dl class="py function">
 <dt id="blivet.util.match_path_context">
-<code class="sig-prename descclassname">blivet.util.</code><code class="sig-name descname">match_path_context</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.util.match_path_context" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">blivet.util.</code><code class="sig-name descname">match_path_context</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.util.match_path_context" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the default SELinux context for the given path.</p>
 </dd></dl>
 
@@ -6259,7 +6317,7 @@ properties with evaluation of the given property.</p>
 
 <dl class="py function">
 <dt id="blivet.util.reset_file_context">
-<code class="sig-prename descclassname">blivet.util.</code><code class="sig-name descname">reset_file_context</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">root</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.util.reset_file_context" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">blivet.util.</code><code class="sig-name descname">reset_file_context</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">root</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.util.reset_file_context" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restore the SELinux context of a file to its default value.</p>
 <p>Arguments:</p>
 <blockquote>
@@ -6267,7 +6325,8 @@ properties with evaluation of the given property.</p>
 </div></blockquote>
 <p>Keyword Arguments:</p>
 <blockquote>
-<div><p>root        an optional chroot string</p>
+<div><p>root        an optional chroot string
+mode        an optional mode to use</p>
 </div></blockquote>
 <p>Return Value:</p>
 <blockquote>
@@ -6596,12 +6655,12 @@ devices it is implemented as a Singleton.</p>
         <li class="right" >
           <a href="../testing.html" title="Testing Blivet"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2020, Red Hat, Inc..
+        &#169; Copyright 2013-2021, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>

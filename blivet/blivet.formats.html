@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>blivet.formats package &#8212; Blivet 3.3.2 documentation</title>
+    <title>blivet.formats package &#8212; Blivet 3.4.0 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="blivet.events.html" title="blivet.events package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.formats package</a></li> 
       </ul>
@@ -620,7 +620,7 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 </div>
 <dl class="py attribute">
 <dt id="blivet.formats.fs.EFIFS.parted_flag">
-<code class="sig-name descname">parted_flag</code><em class="property"> = 1</em><a class="headerlink" href="#blivet.formats.fs.EFIFS.parted_flag" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">parted_flag</code><em class="property"> = 18</em><a class="headerlink" href="#blivet.formats.fs.EFIFS.parted_flag" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -910,6 +910,18 @@ by metadata.</p>
 <code class="sig-name descname">can_modify_uuid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FS.can_modify_uuid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if it’s possible to set the UUID of this filesystem
 after it has been created, otherwise False.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="blivet.formats.fs.FS.can_nodiscard">
+<code class="sig-name descname">can_nodiscard</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FS.can_nodiscard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this filesystem supports nodiscard option during
+creation, otherwise False.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></p>
@@ -2859,13 +2871,13 @@ for an exhaustive list of the arguments that can be passed.</p>
         <li class="right" >
           <a href="blivet.events.html" title="blivet.events package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.formats package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2020, Red Hat, Inc..
+        &#169; Copyright 2013-2021, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>

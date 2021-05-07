@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; Blivet 3.3.2 documentation</title>
+    <title>Index &#8212; Blivet 3.4.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -27,7 +27,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>  
@@ -1335,6 +1335,16 @@
       </ul></li>
       <li><a href="blivet/blivet.formats.html#blivet.formats.fs.FS.can_modify_uuid">can_modify_uuid() (blivet.formats.fs.FS method)</a>
 </li>
+      <li><a href="blivet/blivet.formats.html#blivet.formats.fs.FS.can_nodiscard">can_nodiscard() (blivet.formats.fs.FS method)</a>
+
+      <ul>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.FSMkfs.can_nodiscard">(blivet.tasks.fsmkfs.FSMkfs property)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.FSMkfsTask.can_nodiscard">(blivet.tasks.fsmkfs.FSMkfsTask property)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.UnimplementedFSMkfs.can_nodiscard">(blivet.tasks.fsmkfs.UnimplementedFSMkfs property)</a>
+</li>
+      </ul></li>
       <li><a href="tests/tests.formats_test.html#tests.formats_test.fs_test.XFSTestCase.can_resize">can_resize() (tests.formats_test.fs_test.XFSTestCase method)</a>
 
       <ul>
@@ -1431,10 +1441,10 @@
         <li><a href="blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.chunk_size">(blivet.devices.md.MDRaidArrayDevice property)</a>
 </li>
       </ul></li>
-      <li><a href="blivet/blivet.static_data.html#blivet.static_data.luks_data.LUKS_Data.clear_passphrases">clear_passphrases() (blivet.static_data.luks_data.LUKS_Data method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="blivet/blivet.static_data.html#blivet.static_data.luks_data.LUKS_Data.clear_passphrases">clear_passphrases() (blivet.static_data.luks_data.LUKS_Data method)</a>
+</li>
       <li><a href="blivet/blivet.html#blivet.threads.clear_thread_exception">clear_thread_exception() (in module blivet.threads)</a>
 </li>
       <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.edd.collect_edd_data">collect_edd_data() (in module blivet.devicelibs.edd)</a>
@@ -2010,6 +2020,8 @@
       <li><a href="blivet/blivet.html#blivet.deviceaction.DeviceAction">DeviceAction (class in blivet.deviceaction)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.errors.DeviceActionError">DeviceActionError</a>
+</li>
+      <li><a href="tests/tests.html#tests.action_test.DeviceActionLVMVDOTestCase">DeviceActionLVMVDOTestCase (class in tests.action_test)</a>
 </li>
       <li><a href="tests/tests.html#tests.action_test.DeviceActionTestCase">DeviceActionTestCase (class in tests.action_test)</a>
 </li>
@@ -2606,7 +2618,11 @@
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.extents">extents() (blivet.devices.lvm.LVMVolumeGroupDevice property)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.device.Device.external_dependencies">external_dependencies() (blivet.devices.device.Device property)</a>
+
+      <ul>
+        <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeDevice.external_dependencies">(blivet.devices.lvm.LVMLogicalVolumeDevice property)</a>
 </li>
+      </ul></li>
       <li><a href="blivet/blivet.tasks.html#blivet.tasks.availability.ExternalResource">ExternalResource (class in blivet.tasks.availability)</a>
 </li>
   </ul></td>
@@ -3217,6 +3233,8 @@
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.task.UnimplementedTask.implemented">(blivet.tasks.task.UnimplementedTask attribute)</a>
 </li>
       </ul></li>
+      <li><a href="blivet/blivet.html#blivet.errors.InconsistentPVSectorSize">InconsistentPVSectorSize</a>
+</li>
       <li><a href="blivet/blivet.html#blivet.util.indent">indent() (in module blivet.util)</a>
 </li>
       <li><a href="tests/tests.formats_test.html#tests.formats_test.labeling_test.InitializationTestCase">InitializationTestCase (class in tests.formats_test.labeling_test)</a>
@@ -3623,10 +3641,10 @@
 </li>
       <li><a href="blivet/blivet.html#blivet.storage_log.log_method_return">log_method_return() (in module blivet.storage_log)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeBase.log_size">log_size() (blivet.devices.lvm.LVMLogicalVolumeBase property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.html#blivet.zfcp.logged_write_line_to_file">logged_write_line_to_file() (in module blivet.zfcp)</a>
 </li>
       <li><a href="blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel.logical_partitions">logical_partitions() (blivet.formats.disklabel.DiskLabel property)</a>
@@ -3723,9 +3741,13 @@
 </li>
       <li><a href="tests/tests.vmtests.html#tests.vmtests.blivet_reset_vmtest.LVMThinSnapShotTestCase">LVMThinSnapShotTestCase (class in tests.vmtests.blivet_reset_vmtest)</a>
 </li>
+      <li><a href="blivet/blivet.html#blivet.devicefactory.LVMVDOFactory">LVMVDOFactory (class in blivet.devicefactory)</a>
+</li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVDOLogicalVolumeMixin">LVMVDOLogicalVolumeMixin (class in blivet.devices.lvm)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVDOPoolMixin">LVMVDOPoolMixin (class in blivet.devices.lvm)</a>
+</li>
+      <li><a href="tests/tests.vmtests.html#tests.vmtests.blivet_reset_vmtest.LVMVDOTestCase">LVMVDOTestCase (class in tests.vmtests.blivet_reset_vmtest)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice">LVMVolumeGroupDevice (class in blivet.devices.lvm)</a>
 </li>
@@ -4015,9 +4037,13 @@
 </li>
       <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.raid.RAIDLevel.min_members">min_members() (blivet.devicelibs.raid.RAIDLevel property)</a>
 </li>
-      <li><a href="blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.min_size">min_size() (blivet.devices.partition.PartitionDevice property)</a>
+      <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeDevice.min_size">min_size() (blivet.devices.lvm.LVMLogicalVolumeDevice property)</a>
 
       <ul>
+        <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVDOPoolMixin.min_size">(blivet.devices.lvm.LVMVDOPoolMixin property)</a>
+</li>
+        <li><a href="blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.min_size">(blivet.devices.partition.PartitionDevice property)</a>
+</li>
         <li><a href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.min_size">(blivet.devices.storage.StorageDevice property)</a>
 </li>
         <li><a href="blivet/blivet.formats.html#blivet.formats.DeviceFormat.min_size">(blivet.formats.DeviceFormat property)</a>
@@ -4528,8 +4554,6 @@
         <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.raid.RAIDn.nick">(blivet.devicelibs.raid.RAIDn property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.html#blivet.iscsi.NodeInfo">NodeInfo (class in blivet.iscsi)</a>
 </li>
       <li><a href="blivet/blivet.formats.html#blivet.formats.fs.NoDevFS">NoDevFS (class in blivet.formats.fs)</a>
@@ -4539,6 +4563,34 @@
       <li><a href="tests/tests.formats_test.html#tests.formats_test.fs_test.NoDevFSTestCase">NoDevFSTestCase (class in tests.formats_test.fs_test)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.nodev.NoDevice">NoDevice (class in blivet.devices.nodev)</a>
+</li>
+      <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.BTRFSMkfs.nodiscard_option">nodiscard_option (blivet.tasks.fsmkfs.BTRFSMkfs attribute)</a>
+
+      <ul>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.Ext2FSMkfs.nodiscard_option">(blivet.tasks.fsmkfs.Ext2FSMkfs attribute)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.F2FSMkfs.nodiscard_option">(blivet.tasks.fsmkfs.F2FSMkfs attribute)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.FATFSMkfs.nodiscard_option">(blivet.tasks.fsmkfs.FATFSMkfs attribute)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.GFS2Mkfs.nodiscard_option">(blivet.tasks.fsmkfs.GFS2Mkfs attribute)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.HFSMkfs.nodiscard_option">(blivet.tasks.fsmkfs.HFSMkfs attribute)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.HFSPlusMkfs.nodiscard_option">(blivet.tasks.fsmkfs.HFSPlusMkfs attribute)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.JFSMkfs.nodiscard_option">(blivet.tasks.fsmkfs.JFSMkfs attribute)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.NTFSMkfs.nodiscard_option">(blivet.tasks.fsmkfs.NTFSMkfs attribute)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.ReiserFSMkfs.nodiscard_option">(blivet.tasks.fsmkfs.ReiserFSMkfs attribute)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.XFSMkfs.nodiscard_option">(blivet.tasks.fsmkfs.XFSMkfs attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.FSMkfs.nodiscard_option">nodiscard_option() (blivet.tasks.fsmkfs.FSMkfs property)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.errors.NoDisksError">NoDisksError</a>
 </li>
@@ -5200,6 +5252,8 @@
         <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeDevice.read_current_size">(blivet.devices.lvm.LVMLogicalVolumeDevice method)</a>
 </li>
         <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMSnapshotMixin.read_current_size">(blivet.devices.lvm.LVMSnapshotMixin method)</a>
+</li>
+        <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVDOPoolMixin.read_current_size">(blivet.devices.lvm.LVMVDOPoolMixin method)</a>
 </li>
         <li><a href="blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.read_current_size">(blivet.devices.partition.PartitionDevice method)</a>
 </li>
@@ -6192,7 +6246,7 @@
 </li>
       <li><a href="tests/tests.html#tests.action_test.DeviceActionTestCase.test_lv_from_lvs_actions">test_lv_from_lvs_actions() (tests.action_test.DeviceActionTestCase method)</a>
 </li>
-      <li><a href="tests/tests.html#tests.action_test.DeviceActionTestCase.test_lvm_vdo_destroy">test_lvm_vdo_destroy() (tests.action_test.DeviceActionTestCase method)</a>
+      <li><a href="tests/tests.html#tests.action_test.DeviceActionLVMVDOTestCase.test_lvm_vdo_destroy">test_lvm_vdo_destroy() (tests.action_test.DeviceActionLVMVDOTestCase method)</a>
 </li>
       <li><a href="tests/tests.devicelibs_test.html#tests.devicelibs_test.mdraid_test.MDRaidTestCase.test_mdraid">test_mdraid() (tests.devicelibs_test.mdraid_test.MDRaidTestCase method)</a>
 </li>
@@ -6306,10 +6360,10 @@
 </li>
       <li><a href="tests/tests.formats_test.html#tests.formats_test.device_test.DeviceValueTestCase.test_value">test_value() (tests.formats_test.device_test.DeviceValueTestCase method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tests/tests.devices_test.html#tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase.test_weak_dependencies">test_weak_dependencies() (tests.devices_test.dependencies_test.MissingWeakDependenciesTestCase method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tests/tests.html#tests.size_test.SizeTestCase.test_white_space">test_white_space() (tests.size_test.SizeTestCase method)</a>
 </li>
       <li>
@@ -6727,7 +6781,13 @@
       <li><a href="blivet/blivet.devices.html#blivet.devices.device.Device.type_description">type_description() (blivet.devices.device.Device property)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.device.Device.type_external_dependencies">type_external_dependencies() (blivet.devices.device.Device class method)</a>
+
+      <ul>
+        <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVDOLogicalVolumeMixin.type_external_dependencies">(blivet.devices.lvm.LVMVDOLogicalVolumeMixin class method)</a>
 </li>
+        <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVDOPoolMixin.type_external_dependencies">(blivet.devices.lvm.LVMVDOPoolMixin class method)</a>
+</li>
+      </ul></li>
       <li><a href="blivet/blivet.populator.helpers.html#blivet.populator.helpers.formatpopulator.FormatPopulator.type_spec">type_spec() (blivet.populator.helpers.formatpopulator.FormatPopulator property)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeDevice.type_specific">type_specific() (blivet.devices.lvm.LVMLogicalVolumeDevice method)</a>
@@ -6751,7 +6811,13 @@
       <li><a href="blivet/blivet.tasks.html#blivet.tasks.availability.unavailable_resource">unavailable_resource() (in module blivet.tasks.availability)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.device.Device.unavailable_type_dependencies">unavailable_type_dependencies() (blivet.devices.device.Device class method)</a>
+
+      <ul>
+        <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVDOLogicalVolumeMixin.unavailable_type_dependencies">(blivet.devices.lvm.LVMVDOLogicalVolumeMixin class method)</a>
 </li>
+        <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVDOPoolMixin.unavailable_type_dependencies">(blivet.devices.lvm.LVMVDOPoolMixin class method)</a>
+</li>
+      </ul></li>
       <li><a href="blivet/blivet.html#blivet.devicetree.DeviceTreeBase.unhide">unhide() (blivet.devicetree.DeviceTreeBase method)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.util.unicodeize">unicodeize() (in module blivet.util)</a>
@@ -6834,10 +6900,10 @@
       </ul></li>
       <li><a href="blivet/blivet.static_data.html#blivet.static_data.mpath_info.MpathMembers.update_cache">update_cache() (blivet.static_data.mpath_info.MpathMembers method)</a>
 </li>
-      <li><a href="blivet/blivet.html#blivet.partitioning.update_extended_partitions">update_extended_partitions() (in module blivet.partitioning)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="blivet/blivet.html#blivet.partitioning.update_extended_partitions">update_extended_partitions() (in module blivet.partitioning)</a>
+</li>
       <li><a href="blivet/blivet.html#blivet.flags.Flags.update_from_boot_cmdline">update_from_boot_cmdline() (blivet.flags.Flags method)</a>
 </li>
       <li><a href="blivet/blivet.formats.html#blivet.formats.fslib.update_kernel_filesystems">update_kernel_filesystems() (in module blivet.formats.fslib)</a>
@@ -6952,6 +7018,8 @@
 </li>
       <li><a href="blivet/blivet.html#blivet.util.variable_copy">variable_copy() (in module blivet.util)</a>
 </li>
+      <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVDOPoolMixin.vdo_lv">vdo_lv() (blivet.devices.lvm.LVMVDOPoolMixin property)</a>
+</li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.disk.MultipathDevice.vendor">vendor() (blivet.devices.disk.MultipathDevice property)</a>
 
       <ul>
@@ -6976,6 +7044,8 @@
         <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVDOLogicalVolumeMixin.vg">(blivet.devices.lvm.LVMVDOLogicalVolumeMixin property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMCache.vg_space_used">vg_space_used() (blivet.devices.lvm.LVMCache property)</a>
 
       <ul>
@@ -6990,8 +7060,6 @@
         <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMWriteCache.vg_space_used">(blivet.devices.lvm.LVMWriteCache property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.html#blivet.partitioning.VGChunk">VGChunk (class in blivet.partitioning)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.blivet.Blivet.vgs">vgs() (blivet.blivet.Blivet property)</a>
@@ -7140,12 +7208,12 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.3.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2020, Red Hat, Inc..
+        &#169; Copyright 2013-2021, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
