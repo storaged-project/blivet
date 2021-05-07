@@ -81,6 +81,7 @@ class Flags(object):
 
         self.update_from_boot_cmdline()
         self.allow_imperfect_devices = True
+        self.allow_inconsistent_config = True
         self.debug_threads = False
 
     def get_boot_cmdline(self):

@@ -40,6 +40,7 @@ from .devices.lib import Tags
 from . import formats
 from .devicelibs import lvm
 from .events.handler import EventHandlerMixin
+from .flags import flags
 from . import util
 from .populator import PopulatorMixin
 from .storage_log import log_method_call, log_method_return
@@ -137,8 +138,9 @@ class DeviceTreeBase(object):
                 continue
 
             if device.uuid and device.uuid in [d.uuid for d in devices] and \
+               not flags.allow_inconsistent_config and \
                not isinstance(device, NoDevice):
-                raise DeviceTreeError("duplicate uuids in device tree")
+                raise DuplicateUUIDError("duplicate uuids in device tree")
 
             devices.append(device)
 
@@ -159,7 +161,7 @@ class DeviceTreeBase(object):
             dev = self.get_device_by_uuid(newdev.uuid, incomplete=True, hidden=True)
             if dev.name == newdev.name:
                 raise DeviceTreeError("Trying to add already existing device.")
-            else:
+            elif not flags.allow_inconsistent_config:
                 raise DuplicateUUIDError("Duplicate UUID '%s' found for devices: "
                                          "'%s' and '%s'." % (newdev.uuid, newdev.name, dev.name))
 
@@ -510,7 +512,14 @@ class DeviceTreeBase(object):
         result = None
         if uuid:
             devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-            result = six.next((d for d in devices if d.uuid == uuid or d.format.uuid == uuid), None)
+            matches = [d for d in devices if d.uuid == uuid or d.format.uuid == uuid]
+            if len(matches) > 1:
+                log.error("found non-unique UUID %s: %s", uuid, [m.name for m in matches])
+                raise DuplicateUUIDError("Duplicate UUID '%s' found for devices: %s"
+                                         % (uuid, [m.name for m in matches]))
+            elif matches:
+                result = matches[0]
+
         log_method_return(self, result)
         return result
 
