@@ -1,3 +1,13 @@
+3.4.0
+======
+* `LVM VDO Support`_
+
+LVM VDO Support
+----------------
+Blivet can now create LVM VDO Pools and Volumes.
+This also includes devicefactory support for deduplicated and
+compressed volumes using LVM VDO.
+
 3.3.0
 ======
 * `Localization Platform Change`_

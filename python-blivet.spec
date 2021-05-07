@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.3.3
+Version: 3.4.0
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -196,6 +196,50 @@ configuration.
 %endif
 
 %changelog
+* Fri May 07 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.4.0-1
+- Fix setting SELinux flag in SELinuxContextTestCase (vtrefny)
+- Allow running blivet without Python SELinux module (vtrefny)
+- Adapt to dosfstools 4.2 FAT label changes (vtrefny)
+- Add LVM VDO to public API (vtrefny)
+- Add a special exception type for LVM inconsistent sector sizes (vtrefny)
+- Remove the "encryption_passphrase" attribute from Blivet class (vtrefny)
+- Use PARTITION_ESP flag for EFIFS partitions (#1930486) (vtrefny)
+- Provide better error message for LVM with inconsistent sector sizes (vtrefny)
+- Avoid AttributeError for DiskLabel formats without disklabel type (vtrefny)
+- Ignore ArithmeticError when trying to align partition size down (vtrefny)
+- Do not log entire exception when trying to get ISCSI initiator name (vtrefny)
+- Fix running BlivetLVMVDODependenciesTest test case as non-root (vtrefny)
+- Remove EDD test logs after the tests finish (vtrefny)
+- Replace IOError with OSError around file operations (vslavik)
+- spec: Add 'make' to BuildRequires (vtrefny)
+- Fix usage of assert_called_with in lvm_test (vtrefny)
+- apply directory's SELinux context to freshly created mount points (rmetrich)
+- Try to get Btrfs volume UUID using libblockdev if UDev lookup fails (vtrefny)
+- Allow removing LVM VDO devices without VDO support (vtrefny)
+- Sync spec with downstream (vtrefny)
+- Use real paths to Python site packages (vponcova)
+- Fix excessive logging in udev.__is_ignored_blockdev (vtrefny)
+- Make sure we use size >= LVM VDO min size in test_lv_unique_name (vtrefny)
+- Replace pocketlint by a custom script (vtrefny)
+- Fix pylint errors in translation canary (jkonecny)
+- Bump required libblockdev version to 2.24 (vtrefny)
+- Fix external dependencies for LVM VDO devices (vtrefny)
+- Use better description for libblockdev plugins in tasks.availability (vtrefny)
+- Set minimum size for LVM VDO pool devices (vtrefny)
+- Add LVM VDO documentation (vtrefny)
+- Add LVM VDO example (vtrefny)
+- Add nodiscard option by default when creating VDO logical volumes (vtrefny)
+- Allow adding nodiscard option when running mkfs (vtrefny)
+- Add VM test for LVM VDO (vtrefny)
+- Add LVM VDO device factory (vtrefny)
+- Allow creating LVM VDO pools and volumes using "blivet.new_lv" (vtrefny)
+- Add support for creating LVM VDO pools and LVM VDO volumes (vtrefny)
+- Add "vdo_lv" property to LVMVDOPoolMixin (vtrefny)
+- Read the LVM VDO pool current size from the internal data LV (vtrefny)
+- Add availability functions for LVM VDO (vtrefny)
+- Add VDO pool data LV to internal LVs during populate (vtrefny)
+- Fix type of LVM VDO logical volumes (vtrefny)
+
 * Thu Feb 18 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.3.3-1
 - apply compression settings from blivet.flags.btrfs_compression (#1926892) (michel)
 
