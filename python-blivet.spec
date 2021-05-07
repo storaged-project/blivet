@@ -37,10 +37,10 @@ Patch0: 0001-remove-btrfs-plugin.patch
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
-%global partedver 1.8.1
+%global partedver 3.2
 %global pypartedver 3.10.4
 %global utillinuxver 2.15.1
-%global libblockdevver 2.19
+%global libblockdevver 2.24
 %global libbytesizever 0.3
 %global pyudevver 0.18
 

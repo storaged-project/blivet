@@ -66,7 +66,13 @@ class DosFSWriteLabel(FSWriteLabel):
 
     @property
     def args(self):
-        return [self.fs.device, self.fs.label]
+        if availability.MKDOSFS_NEW_APP.available:
+            if self.fs.label:
+                return [self.fs.device, self.fs.label]
+            else:
+                return [self.fs.device, "--reset"]
+        else:
+            return [self.fs.device, self.fs.label]
 
 
 class Ext2FSWriteLabel(FSWriteLabel):

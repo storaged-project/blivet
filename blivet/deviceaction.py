@@ -392,6 +392,14 @@ class ActionDestroyDevice(DeviceAction):
             # the device, but use wipefs to destroy format on its parents so we
             # don't need btrfs plugin or btrfs-progs for this
             return
+        elif self.device.type in ("lvmvdopool", "lvmvdolv"):
+            # XXX only "normal" LVM tools are needed to destroy LVM VDO devices
+            # vdo and kvdo is needed only for creating and managing
+            unavailable_dependencies = LVMLogicalVolumeDevice.unavailable_type_dependencies()
+            if unavailable_dependencies:
+                dependencies_str = ", ".join(str(d) for d in unavailable_dependencies)
+                raise DependencyError("device type %s requires unavailable_dependencies: %s" % (self.device.type, dependencies_str))
+            return
 
         super(ActionDestroyDevice, self)._check_device_dependencies()
 

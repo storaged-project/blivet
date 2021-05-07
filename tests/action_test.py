@@ -18,6 +18,8 @@ from blivet.devices import PartitionDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
+from blivet.devices.lvm import LVMVDOPoolMixin
+from blivet.devices.lvm import LVMVDOLogicalVolumeMixin
 
 # format classes
 from blivet.formats.fs import Ext2FS
@@ -1251,6 +1253,11 @@ class DeviceActionTestCase(StorageTestCase):
         self.storage.devicetree.actions.remove(remove_pool)
         self.assertEqual(set(self.storage.lvs), {pool})
         self.assertEqual(set(pool._internal_lvs), {lv1, lv2})
+
+
+@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES + [LVMVDOPoolMixin, LVMVDOLogicalVolumeMixin]), "some unsupported device classes required for this test")
+@unittest.skipUnless(all(x().utils_available for x in FORMAT_CLASSES), "some unsupported format classes required for this test")
+class DeviceActionLVMVDOTestCase(DeviceActionTestCase):
 
     def test_lvm_vdo_destroy(self):
         self.destroy_all_devices()

@@ -61,7 +61,6 @@ class Blivet(object):
 
     def __init__(self):
         # storage configuration variables
-        self.encryption_passphrase = None
         self.edd_dict = {}
 
         self.ignored_disks = []
@@ -573,6 +572,10 @@ class Blivet(object):
             :type thin_pool: bool
             :keyword thin_volume: whether to create a thin volume
             :type thin_volume: bool
+            :keyword vdo_pool: whether to create a vdo pool
+            :type vdo_pool: bool
+            :keyword vdo_lv: whether to create a vdo lv
+            :type vdo_lv: bool
             :returns: the new device
             :rtype: :class:`~.devices.LVMLogicalVolumeDevice`
 
@@ -589,8 +592,10 @@ class Blivet(object):
         """
         thin_volume = kwargs.pop("thin_volume", False)
         thin_pool = kwargs.pop("thin_pool", False)
+        vdo_pool = kwargs.pop("vdo_pool", False)
+        vdo_lv = kwargs.pop("vdo_lv", False)
         parent = kwargs.get("parents", [None])[0]
-        if thin_volume and parent:
+        if (thin_volume or vdo_lv) and parent:
             # kwargs["parents"] will contain the pool device, so...
             vg = parent.vg
         else:
@@ -600,12 +605,22 @@ class Blivet(object):
             kwargs["seg_type"] = "thin"
         if thin_pool:
             kwargs["seg_type"] = "thin-pool"
+        if vdo_pool:
+            kwargs["seg_type"] = "vdo-pool"
+        if vdo_lv:
+            kwargs["seg_type"] = "vdo"
 
         mountpoint = kwargs.pop("mountpoint", None)
         if 'fmt_type' in kwargs:
+            fmt_args = kwargs.pop("fmt_args", {})
+            if vdo_lv and "nodiscard" not in fmt_args.keys():
+                # we don't want to run discard on VDO LV during mkfs so if user don't
+                # tell us not to do it, we should add the nodiscard option to mkfs
+                fmt_args["nodiscard"] = True
+
             kwargs["fmt"] = get_format(kwargs.pop("fmt_type"),
                                        mountpoint=mountpoint,
-                                       **kwargs.pop("fmt_args", {}))
+                                       **fmt_args)
 
         name = kwargs.pop("name", None)
         if name:
@@ -625,7 +640,7 @@ class Blivet(object):
                 swap = False
 
             prefix = ""
-            if thin_pool:
+            if thin_pool or vdo_pool:
                 prefix = "pool"
 
             name = self.suggest_device_name(parent=vg,
@@ -636,10 +651,10 @@ class Blivet(object):
         if "%s-%s" % (vg.name, name) in self.names:
             raise ValueError("name '%s' is already in use" % name)
 
-        if thin_pool or thin_volume:
+        if thin_pool or thin_volume or vdo_pool or vdo_lv:
             cache_req = kwargs.pop("cache_request", None)
             if cache_req:
-                raise ValueError("Creating cached thin volumes and pools is not supported")
+                raise ValueError("Creating cached thin and VDO volumes and pools is not supported")
 
         return LVMLogicalVolumeDevice(name, *args, **kwargs)
 

@@ -292,8 +292,11 @@ class DiskLabel(DeviceFormat):
             if self._label_type:
                 lt = self._label_type
             else:
-                lt = self._get_best_label_type()
-
+                try:
+                    lt = self._get_best_label_type()
+                except Exception:  # pylint: disable=broad-except
+                    log_exception_info()
+                    lt = self._label_type
             return lt
 
         try:
@@ -313,13 +316,14 @@ class DiskLabel(DeviceFormat):
 
     @property
     def name(self):
+        if not self.label_type:
+            return "%(name)s" % {"name": _(self._name)}
+
         if self.supported:
-            _str = "%(name)s (%(type)s)"
+            return "%(name)s (%(type)s)" % {"name": _(self._name), "type": self.label_type.upper()}
         else:
             # Translators: Name for an unsupported disklabel; e.g. "Unsupported partition table"
-            _str = _("Unsupported %(name)s")
-
-        return _str % {"name": _(self._name), "type": self.label_type.upper()}
+            return _("Unsupported %(name)s") % {"name": _(self._name)}
 
     @property
     def size(self):
