@@ -1,0 +1,160 @@
+# This is a simple ansible playbook for installing packages needed by the
+# libblockdev test suite.
+# You can do this by using 'make install-requires' or manually using
+# 'ansible-playbook -K -i "localhost," -c local install-test-dependencies.yml'
+# Currently only Fedora, CentOS 8 and Debian/Ubuntu are supported by this playbook.
+
+---
+- hosts: all
+  become: true
+
+  tasks:
+####### Fedora
+  - name: Install basic build tools (Fedora)
+    package:
+      state: present
+      name:
+        - make
+        - python3-ipython
+    when: ansible_distribution == 'Fedora'
+
+  - name: Install dnf-plugins-core for dnf builddep (Fedora)
+    package: name=dnf-plugins-core state=present
+    when: ansible_distribution == 'Fedora'
+
+  - name: Install build dependencies (Fedora)
+    command: "dnf -y builddep python3-blivet --nogpgcheck"
+    args:
+      warn: false
+    when: ansible_distribution == 'Fedora'
+
+  - name: Install blivet to get all dependencies (Fedora)
+    package: name=python3-blivet state=present
+    when: ansible_distribution == 'Fedora'
+
+  - name: Install test dependencies (Fedora)
+    package:
+      state: present
+      name:
+        - dosfstools
+        - e2fsprogs
+        - xfsprogs
+        - hfsplus-tools
+        - python3-mock
+        - python3-coverage
+        - python3-pocketlint
+        - python3-bugzilla
+        - python3-pycodestyle
+        - python3-six
+        - python3-kickstart
+        - python3-pyudev
+        - python3-pyparted
+        - libselinux-python3
+        - python3-blockdev
+        - python3-bytesize
+        - python3-libvirt
+        - python3-paramiko
+    when: ansible_distribution == 'Fedora'
+
+####### CentOS 8
+  - name: Install basic build tools (CentOS 8)
+    package: name=make state=present
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+
+  - name: Enable EPEL repository (CentOS 8)
+    package: name=epel-release state=present
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+
+  - name: Enable powertools repository (CentOS 8)
+    command: yum config-manager --set-enabled powertools
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+
+  - name: Install dnf-plugins-core for dnf builddep (CentOS 8)
+    package: name=dnf-plugins-core state=present
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+
+  - name: Install build dependencies (CentOS 8)
+    command: "dnf -y builddep python3-blivet --nogpgcheck"
+    args:
+      warn: false
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+
+  - name: Install blivet to get all dependencies (CentOS 8)
+    package: name=python3-blivet state=present
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+
+  - name: Install test dependencies (CentOS 8)
+    package:
+      state: present
+      name:
+        - dosfstools
+        - e2fsprogs
+        - xfsprogs
+        - python3-mock
+        - python3-coverage
+        - python3-bugzilla
+        - python3-pycodestyle
+        - python3-six
+        - python3-kickstart
+        - python3-pyudev
+        - python3-pyparted
+        - libselinux-python3
+        - python3-blockdev
+        - python3-bytesize
+        - python3-libvirt
+        - python3-paramiko
+        - python3-pip
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+
+  - name: Install pocketlint using pip (CentOS 8)
+    pip: name=pocketlint executable=pip3
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+
+####### Debian/Ubuntu
+  - name: Update apt cache (Debian/Ubuntu)
+    apt:
+      update_cache: yes
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+  - name: Install basic build tools (Debian/Ubuntu)
+    package: name=make state=present
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+  - name: Install dependencies (Debian/Ubuntu)
+    package:
+      state: present
+      name:
+        - python3-blockdev
+        - libblockdev2
+        - libblockdev-plugins-all
+        - gir1.2-blockdev-2.0
+        - python3-bytesize
+        - python3-mock
+        - python3-selinux
+        - python3-pyudev
+        - python3-parted
+        - lvm2-dbusd
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+  - name: Install test dependencies (Debian/Ubuntu)
+    package:
+      state: present
+      name:
+        - dosfstools
+        - e2fsprogs
+        - xfsprogs
+        - python3-mock
+        - python3-coverage
+        - python3-pycodestyle
+        - pycodestyle
+        - gettext
+        - python3-polib
+        - python3-paramiko
+        - python3-bugzilla
+        - python3-libvirt
+        - python3-pip
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+  - name: Install pocketlint using pip (Debian/Ubuntu)
+    pip: name=pocketlint executable=pip3
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
