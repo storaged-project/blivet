@@ -1137,6 +1137,7 @@ class StratisXFS(XFS):
 
     _type = "stratis xfs"
 
+    _mount_class = fsmount.StratisXFSMount
     _resize_class = fsresize.UnimplementedFSResize
     _size_info_class = fssize.UnimplementedFSSize
     _info_class = fsinfo.UnimplementedFSInfo
