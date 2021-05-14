@@ -193,6 +193,8 @@ class StratisFilesystemDevice(StorageDevice):
             raise DeviceError("Failed to get information about newly created filesystem %s" % self.name)
         self.uuid = fs_info.uuid
 
+        self.format.pool_uuid = fs_info.pool_uuid
+
     def _destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)

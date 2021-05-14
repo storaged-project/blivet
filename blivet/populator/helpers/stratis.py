@@ -186,5 +186,6 @@ class StratisXFSFormatPopulator(FormatPopulator):
     def run(self):
         """ Create a format instance and associate it with the device instance. """
         kwargs = self._get_kwargs()
+        kwargs["pool_uuid"] = self.device.pool.uuid
         log.info("type detected on '%s' is '%s'", self.device.name, self.type_spec)
         self.device.format = get_format(self.type_spec, **kwargs)
