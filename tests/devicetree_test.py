@@ -51,6 +51,9 @@ class DeviceTreeTestCase(unittest.TestCase):
         dev3 = StorageDevice("sdp2", exists=True)
         dt._add_device(dev3)
 
+        dev4 = StorageDevice("10", exists=True)
+        dt._add_device(dev4)
+
         dt.edd_dict.update({"dev1": 0x81,
                             "dev2": 0x82})
 
@@ -64,6 +67,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertEqual(dt.resolve_device("0x82"), dev2)
 
         self.assertEqual(dt.resolve_device(dev3.name), dev3)
+        self.assertEqual(dt.resolve_device(dev4.name), dev4)
 
     def test_device_name(self):
         # check that devicetree.names property contains all device's names
