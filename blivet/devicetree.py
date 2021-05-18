@@ -634,20 +634,20 @@ class DeviceTreeBase(object):
                     (label.startswith("'") and label.endswith("'"))):
                 label = label[1:-1]
             device = self.labels.get(label)
-        elif re.match(r'(0x)?[A-Fa-f0-9]{2}(p\d+)?$', devspec):
-            # BIOS drive number
-            (drive, _p, partnum) = devspec.partition("p")
-            spec = int(drive, 16)
-            for (edd_name, edd_number) in self.edd_dict.items():
-                if edd_number == spec:
-                    device = self.get_device_by_name(edd_name + partnum)
-                    break
         elif options and "nodev" in options.split(","):
             device = self.get_device_by_name(devspec)
             if not device:
                 device = self.get_device_by_path(devspec)
         else:
-            if not devspec.startswith("/dev/"):
+            if re.match(r'(0x)?[A-Fa-f0-9]{2}(p\d+)?$', devspec):
+                # BIOS drive number
+                (drive, _p, partnum) = devspec.partition("p")
+                spec = int(drive, 16)
+                for (edd_name, edd_number) in self.edd_dict.items():
+                    if edd_number == spec:
+                        device = self.get_device_by_name(edd_name + partnum)
+                        break
+            if not device and not devspec.startswith("/dev/"):
                 device = self.get_device_by_name(devspec)
                 if not device:
                     devspec = "/dev/" + devspec
