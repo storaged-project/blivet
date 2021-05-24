@@ -72,8 +72,8 @@ safe_name_characters = "0-9a-zA-Z._-"
 # Theoretically we can handle all that can be handled with the LVM --config
 # argument.  For every time we call an lvm_cc (lvm compose config) funciton
 # we regenerate the config_args with all global info.
-config_args_data = {"filterRejects": [],    # regular expressions to reject.
-                    "filterAccepts": []}   # regexp to accept
+config_args_data = {"filterRejects": set(),    # regular expressions to reject.
+                    "filterAccepts": set()}    # regexp to accept
 
 
 def _set_global_config():
@@ -125,7 +125,7 @@ def needs_config_refresh(fn):
 def lvm_cc_addFilterRejectRegexp(regexp):
     """ Add a regular expression to the --config string."""
     log.debug("lvm filter: adding %s to the reject list", regexp)
-    config_args_data["filterRejects"].append(regexp)
+    config_args_data["filterRejects"].add(regexp)
 
 
 @needs_config_refresh
@@ -134,15 +134,15 @@ def lvm_cc_removeFilterRejectRegexp(regexp):
     log.debug("lvm filter: removing %s from the reject list", regexp)
     try:
         config_args_data["filterRejects"].remove(regexp)
-    except ValueError:
+    except KeyError:
         log.debug("%s wasn't in the reject list", regexp)
         return
 
 
 @needs_config_refresh
 def lvm_cc_resetFilter():
-    config_args_data["filterRejects"] = []
-    config_args_data["filterAccepts"] = []
+    config_args_data["filterRejects"] = set()
+    config_args_data["filterAccepts"] = set()
 
 
 def determine_parent_lv(internal_lv, lvs, lv_info):
