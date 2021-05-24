@@ -119,7 +119,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         dt.actions._actions.append(Mock(name="fake action"))
 
         lvm.lvm_cc_addFilterRejectRegexp("xxx")
-        lvm.config_args_data["filterAccepts"].append("yyy")
+        lvm.config_args_data["filterAccepts"].add("yyy")
 
         dt.ignored_disks.append(names[0])
         dt.exclusive_disks.append(names[1])
@@ -138,8 +138,8 @@ class DeviceTreeTestCase(unittest.TestCase):
 
         self.assertEqual(dt._hidden, empty_list)
 
-        self.assertEqual(lvm.config_args_data["filterAccepts"], empty_list)
-        self.assertEqual(lvm.config_args_data["filterRejects"], empty_list)
+        self.assertEqual(lvm.config_args_data["filterAccepts"], set())
+        self.assertEqual(lvm.config_args_data["filterRejects"], set())
 
         self.assertEqual(dt.exclusive_disks, empty_list)
         self.assertEqual(dt.ignored_disks, empty_list)
