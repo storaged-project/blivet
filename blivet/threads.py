@@ -63,11 +63,12 @@ class SynchronizedMeta(type):
     """
     def __new__(cls, name, bases, dct):
         new_dct = {}
+        blacklist = dct.get('_unsynchronized_methods', [])
 
         for n in dct:
             obj = dct[n]
             # Do not decorate class or static methods.
-            if n in dct.get('_unsynchronized_methods', []):
+            if n in blacklist:
                 pass
             elif isinstance(obj, FunctionType):
                 obj = exclusive(obj)

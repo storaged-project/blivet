@@ -73,7 +73,7 @@ class LoopDevice(StorageDevice):
 
     def update_name(self):
         """ Update this device's name. """
-        if not self.parents[0].status:
+        if not self.slave.status:
             # if the backing device is inactive, so are we
             return self.name
 
@@ -81,7 +81,7 @@ class LoopDevice(StorageDevice):
             # if our name is loopN we must already be active
             return self.name
 
-        name = blockdev.loop.get_loop_name(self.parents[0].path)
+        name = blockdev.loop.get_loop_name(self.slave.path)
         if name.startswith("loop"):
             self.name = name
 
@@ -89,24 +89,24 @@ class LoopDevice(StorageDevice):
 
     @property
     def status(self):
-        return (self.parents[0].status and
+        return (self.slave.status and
                 self.name.startswith("loop") and
-                blockdev.loop.get_loop_name(self.parents[0].path) == self.name)
+                blockdev.loop.get_loop_name(self.slave.path) == self.name)
 
     @property
     def size(self):
-        return self.parents[0].size
+        return self.slave.size
 
     def _pre_setup(self, orig=False):
-        if not os.path.exists(self.parents[0].path):
-            raise errors.DeviceError("specified file (%s) does not exist" % self.parents[0].path)
+        if not os.path.exists(self.slave.path):
+            raise errors.DeviceError("specified file (%s) does not exist" % self.slave.path)
         return StorageDevice._pre_setup(self, orig=orig)
 
     def _setup(self, orig=False):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
-        blockdev.loop.setup(self.parents[0].path)
+        blockdev.loop.setup(self.slave.path)
 
     def _post_setup(self):
         StorageDevice._post_setup(self)
@@ -123,3 +123,7 @@ class LoopDevice(StorageDevice):
         StorageDevice._post_teardown(self, recursive=recursive)
         self.name = "tmploop%d" % self.id
         self.sysfs_path = ''
+
+    @property
+    def slave(self):
+        return self.parents[0]
