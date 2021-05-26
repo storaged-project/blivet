@@ -50,7 +50,7 @@ class VMBackedTestCase(unittest.TestCase):
             defined in set_up_disks.
         """
 
-        udev.ignored_device_names = [r'^zram']
+        udev.device_name_blacklist = [r'^zram']
 
         #
         # create disk images

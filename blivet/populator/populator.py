@@ -31,7 +31,7 @@ gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
-from ..errors import DeviceError, DeviceTreeError, NoParentsError
+from ..errors import DeviceError, DeviceTreeError, NoSlavesError
 from ..devices import DMLinearDevice, DMRaidArrayDevice
 from ..devices import FileDevice, LoopDevice
 from ..devices import MDRaidArrayDevice
@@ -92,55 +92,56 @@ class PopulatorMixin(object):
 
         self._cleanup = False
 
-    def _add_parent_devices(self, info):
-        """ Add all parents of a device, raising DeviceTreeError on failure.
+    def _add_slave_devices(self, info):
+        """ Add all slaves of a device, raising DeviceTreeError on failure.
 
             :param :class:`pyudev.Device` info: the device's udev info
-            :raises: :class:`~.errors.DeviceTreeError if no parents are found or
-                     if we fail to add any parent
-            :returns: a list of parent devices
+            :raises: :class:`~.errors.DeviceTreeError if no slaves are found or
+                     if we fail to add any slave
+            :returns: a list of slave devices
             :rtype: list of :class:`~.StorageDevice`
         """
         name = udev.device_get_name(info)
         sysfs_path = udev.device_get_sysfs_path(info)
-        parent_dir = os.path.normpath("%s/slaves" % sysfs_path)
-        parent_names = os.listdir(parent_dir)
-        parent_devices = []
-        if not parent_names:
-            log.error("no parents found for %s", name)
-            raise NoParentsError("no parents found for device %s" % name)
+        slave_dir = os.path.normpath("%s/slaves" % sysfs_path)
+        slave_names = os.listdir(slave_dir)
+        slave_devices = []
+        if not slave_names:
+            log.error("no slaves found for %s", name)
+            raise NoSlavesError("no slaves found for device %s" % name)
 
-        for parent_name in parent_names:
-            path = os.path.normpath("%s/%s" % (parent_dir, parent_name))
-            parent_info = udev.get_device(os.path.realpath(path))
+        for slave_name in slave_names:
+            path = os.path.normpath("%s/%s" % (slave_dir, slave_name))
+            slave_info = udev.get_device(os.path.realpath(path))
 
-            if not parent_info:
-                msg = "unable to get udev info for %s" % parent_name
+            if not slave_info:
+                msg = "unable to get udev info for %s" % slave_name
                 raise DeviceTreeError(msg)
 
             # cciss in sysfs is "cciss!cXdYpZ" but we need "cciss/cXdYpZ"
-            parent_name = udev.device_get_name(parent_info).replace("!", "/")
+            slave_name = udev.device_get_name(slave_info).replace("!", "/")
 
-            parent_dev = self.get_device_by_name(parent_name)
-            if not parent_dev and parent_info:
-                # we haven't scanned the parent yet, so do it now
-                self.handle_device(parent_info)
-                parent_dev = self.get_device_by_name(parent_name)
-                if parent_dev is None:
+            slave_dev = self.get_device_by_name(slave_name)
+            if not slave_dev and slave_info:
+                # we haven't scanned the slave yet, so do it now
+                self.handle_device(slave_info)
+                slave_dev = self.get_device_by_name(slave_name)
+                if slave_dev is None:
                     if udev.device_is_dm_lvm(info):
-                        if parent_name not in lvs_info.cache:
+                        if slave_name not in lvs_info.cache:
                             # we do not expect hidden lvs to be in the tree
                             continue
 
-                    # if the current parent is still not in
+                    # if the current slave is still not in
                     # the tree, something has gone wrong
-                    log.error("failure scanning device %s: could not add parent %s", name, parent_name)
-                    msg = "failed to add parent %s of device %s" % (parent_name, name)
+                    log.error("failure scanning device %s: could not add slave %s", name, slave_name)
+                    msg = "failed to add slave %s of device %s" % (slave_name,
+                                                                   name)
                     raise DeviceTreeError(msg)
 
-            parent_devices.append(parent_dev)
+            slave_devices.append(slave_dev)
 
-        return parent_devices
+        return slave_devices
 
     def _add_name(self, name):
         if name not in self.names:
@@ -317,7 +318,7 @@ class PopulatorMixin(object):
                 continue
 
             # Make sure lvm doesn't get confused by PVs that belong to
-            # incomplete VGs. We will remove the PVs from the reject list when/if
+            # incomplete VGs. We will remove the PVs from the blacklist when/if
             # the time comes to remove the incomplete VG and its PVs.
             for pv in vg.pvs:
                 lvm.lvm_cc_addFilterRejectRegexp(pv.name)

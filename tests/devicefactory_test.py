@@ -112,9 +112,9 @@ class DeviceFactoryTestCase(unittest.TestCase):
                          kwargs.get("encrypted", False) or
                          kwargs.get("container_encrypted", False))
         if kwargs.get("encrypted", False):
-            self.assertEqual(device.parents[0].format.luks_version,
+            self.assertEqual(device.slave.format.luks_version,
                              kwargs.get("luks_version", crypto.DEFAULT_LUKS_VERSION))
-            self.assertEqual(device.raw_device.format.luks_sector_size,
+            self.assertEqual(device.slave.format.luks_sector_size,
                              kwargs.get("luks_sector_size", 0))
 
         self.assertTrue(set(device.disks).issubset(kwargs["disks"]))
@@ -354,7 +354,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         device = args[0]
 
         if kwargs.get("encrypted"):
-            container = device.parents[0].container
+            container = device.slave.container
         else:
             container = device.container
 
@@ -373,7 +373,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
             self.assertIsInstance(pv, member_class)
 
             if pv.encrypted:
-                self.assertEqual(pv.parents[0].format.luks_version,
+                self.assertEqual(pv.slave.format.luks_version,
                                  kwargs.get("luks_version", crypto.DEFAULT_LUKS_VERSION))
 
     @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
@@ -589,7 +589,7 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
         device = args[0]
 
         if kwargs.get("encrypted", False):
-            thinlv = device.parents[0]
+            thinlv = device.slave
         else:
             thinlv = device
 

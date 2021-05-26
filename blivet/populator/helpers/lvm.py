@@ -57,7 +57,7 @@ class LVMDevicePopulator(DevicePopulator):
             log.warning("found non-vg device with name %s", vg_name)
             device = None
 
-        self._devicetree._add_parent_devices(self.data)
+        self._devicetree._add_slave_devices(self.data)
 
         # LVM provides no means to resolve conflicts caused by duplicated VG
         # names, so we're just being optimistic here. Woo!

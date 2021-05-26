@@ -46,13 +46,13 @@ class DMDevicePopulator(DevicePopulator):
         name = udev.device_get_name(self.data)
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(self.data)
-        parent_devices = self._devicetree._add_parent_devices(self.data)
+        slave_devices = self._devicetree._add_slave_devices(self.data)
         device = self._devicetree.get_device_by_name(name)
 
         if device is None:
             device = DMDevice(name, dm_uuid=self.data.get('DM_UUID'),
                               sysfs_path=sysfs_path, exists=True,
-                              parents=[parent_devices[0]])
+                              parents=[slave_devices[0]])
             device.protected = True
             device.controllable = False
             self._devicetree._add_device(device)

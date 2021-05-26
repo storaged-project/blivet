@@ -39,7 +39,7 @@ from gi.repository import BlockDev as blockdev
 global_udev = pyudev.Context()
 log = logging.getLogger("blivet")
 
-ignored_device_names = []
+device_name_blacklist = []
 """ device name regexes to ignore; this should be empty by default """
 
 
@@ -77,7 +77,7 @@ def get_devices(subsystem="block"):
 
     result = []
     for device in global_udev.list_devices(subsystem=subsystem):
-        if not __is_ignored_blockdev(device.sys_name):
+        if not __is_blacklisted_blockdev(device.sys_name):
             dev = device_to_dict(device)
             result.append(dev)
 
@@ -176,13 +176,13 @@ def resolve_glob(glob):
     return ret
 
 
-def __is_ignored_blockdev(dev_name):
+def __is_blacklisted_blockdev(dev_name):
     """Is this a blockdev we never want for an install?"""
     if dev_name.startswith("ram") or dev_name.startswith("fd"):
         return True
 
-    if ignored_device_names:
-        if any(re.search(expr, dev_name) for expr in ignored_device_names):
+    if device_name_blacklist:
+        if any(re.search(expr, dev_name) for expr in device_name_blacklist):
             return True
 
     dev_path = "/sys/class/block/%s" % dev_name
@@ -374,7 +374,7 @@ def device_is_disk(info):
                  device_is_dm_lvm(info) or
                  device_is_dm_crypt(info) or
                  (device_is_md(info) and
-                  (not device_get_md_container(info) and not all(device_is_disk(d) for d in device_get_parents(info))))))
+                  (not device_get_md_container(info) and not all(device_is_disk(d) for d in device_get_slaves(info))))))
 
 
 def device_is_partition(info):
@@ -453,18 +453,18 @@ def device_get_devname(info):
     return info.get('DEVNAME')
 
 
-def device_get_parents(info):
-    """ Return a list of udev device objects representing this device's parents. """
-    parents_dir = device_get_sysfs_path(info) + "/slaves/"
+def device_get_slaves(info):
+    """ Return a list of udev device objects representing this device's slaves. """
+    slaves_dir = device_get_sysfs_path(info) + "/slaves/"
     names = list()
-    if os.path.isdir(parents_dir):
-        names = os.listdir(parents_dir)
+    if os.path.isdir(slaves_dir):
+        names = os.listdir(slaves_dir)
 
-    parents = list()
+    slaves = list()
     for name in names:
-        parents.append(get_device(device_node="/dev/" + name))
+        slaves.append(get_device(device_node="/dev/" + name))
 
-    return parents
+    return slaves
 
 
 def device_get_holders(info):
@@ -736,7 +736,7 @@ def device_get_partition_disk(info):
     disk = None
     majorminor = info.get("ID_PART_ENTRY_DISK")
     sysfs_path = device_get_sysfs_path(info)
-    parents_dir = "%s/slaves" % sysfs_path
+    slaves_dir = "%s/slaves" % sysfs_path
     if majorminor:
         major, minor = majorminor.split(":")
         for device in get_devices():
@@ -744,8 +744,8 @@ def device_get_partition_disk(info):
                 disk = device_get_name(device)
                 break
     elif device_is_dm_partition(info):
-        if os.path.isdir(parents_dir):
-            parents = os.listdir(parents_dir)
+        if os.path.isdir(slaves_dir):
+            parents = os.listdir(slaves_dir)
             if len(parents) == 1:
                 disk = resolve_devspec(parents[0].replace('!', '/'))
     else:
