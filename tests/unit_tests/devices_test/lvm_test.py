@@ -32,10 +32,10 @@ class LVMDeviceTest(unittest.TestCase):
         lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
                                     fmt=blivet.formats.get_format("xfs"))
 
-        with six.assertRaisesRegex(self, errors.DeviceError, "lvm snapshot origin must be a logical volume"):
+        with six.assertRaisesRegex(self, ValueError, "lvm snapshot origin must be a logical volume"):
             LVMLogicalVolumeDevice("snap1", parents=[vg], origin=pv)
 
-        with six.assertRaisesRegex(self, errors.DeviceError, "only existing vorigin snapshots are supported"):
+        with six.assertRaisesRegex(self, ValueError, "only existing vorigin snapshots are supported"):
             LVMLogicalVolumeDevice("snap1", parents=[vg], vorigin=True)
 
         lv.exists = True
@@ -60,7 +60,7 @@ class LVMDeviceTest(unittest.TestCase):
         pool = LVMLogicalVolumeDevice("pool1", parents=[vg], size=Size("500 MiB"), seg_type="thin-pool")
         thinlv = LVMLogicalVolumeDevice("thinlv", parents=[pool], size=Size("200 MiB"), seg_type="thin")
 
-        with six.assertRaisesRegex(self, errors.DeviceError, "lvm snapshot origin must be a logical volume"):
+        with six.assertRaisesRegex(self, ValueError, "lvm snapshot origin must be a logical volume"):
             LVMLogicalVolumeDevice("snap1", parents=[pool], origin=pv, seg_type="thin")
 
         # now make the constructor succeed so we can test some properties
@@ -310,21 +310,21 @@ class LVMDeviceTest(unittest.TestCase):
         vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
 
         # pvs have to be specified for non-linear LVs
-        with self.assertRaises(errors.DeviceError):
+        with self.assertRaises(ValueError):
             lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
                                         fmt=blivet.formats.get_format("xfs"),
                                         exists=False, seg_type="raid1")
-        with self.assertRaises(errors.DeviceError):
+        with self.assertRaises(ValueError):
             lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
                                         fmt=blivet.formats.get_format("xfs"),
                                         exists=False, seg_type="striped")
 
         # no or complete specification has to be given for linear LVs
-        with self.assertRaises(errors.DeviceError):
+        with self.assertRaises(ValueError):
             lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
                                         fmt=blivet.formats.get_format("xfs"),
                                         exists=False, pvs=[pv])
-        with self.assertRaises(errors.DeviceError):
+        with self.assertRaises(ValueError):
             pv_spec = LVPVSpec(pv, Size("256 MiB"))
             pv_spec2 = LVPVSpec(pv2, Size("250 MiB"))
             lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
