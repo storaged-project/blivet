@@ -764,6 +764,8 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
         growth = 0  # in sectors
         # loop through disks
         for _disk in req_disks:
+            if _disk.path not in disklabels:
+                continue
             disklabel = disklabels[_disk.path]
             best = None
             current_free = free
