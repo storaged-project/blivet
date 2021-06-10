@@ -1,9 +1,9 @@
 # pylint: disable=unused-import
 import os
-from six import PY3
-if PY3:
+
+try:
     from unittest.mock import patch, ANY
-else:
+except ImportError:
     from mock import patch, ANY
 
 import unittest
