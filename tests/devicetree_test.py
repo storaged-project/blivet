@@ -1,6 +1,8 @@
-import test_compat  # pylint: disable=unused-import
+try:
+    from unittest.mock import patch, Mock, PropertyMock, sentinel
+except ImportError:
+    from mock import patch, Mock, PropertyMock, sentinel
 
-from six.moves.mock import Mock, patch, PropertyMock, sentinel  # pylint: disable=no-name-in-module,import-error
 import os
 import six
 import unittest

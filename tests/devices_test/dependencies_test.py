@@ -1,8 +1,6 @@
-# vim:set fileencoding=utf-8
-from six import PY3
-if PY3:
+try:
     from unittest.mock import patch, PropertyMock
-else:
+except ImportError:
     from mock import patch, PropertyMock
 
 import unittest
