@@ -363,7 +363,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # we are creating new VG or adding a new PV to an existing (complete) one
         if not self.exists or (self.exists and self._complete):
             sector_sizes = defaultdict(list)
-            for ss, name in [(p.sector_size, p.name) for p in self.pvs + [parent]]:
+            for ss, name in [(p.sector_size, p.name) for p in self.pvs + [parent]]:  # pylint: disable=no-member
                 sector_sizes[ss].append(name)
             if len(sector_sizes.keys()) != 1:
                 if not self.exists:
