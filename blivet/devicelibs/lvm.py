@@ -91,6 +91,10 @@ def _set_global_config():
     if filter_string:
         devices_string += " %s" % filter_string
 
+    # for now ignore the LVM devices file and rely on our filters
+    if availability.LVMDEVICES.available:
+        devices_string += " use_devicesfile=0"
+
     # devices_string can have (inside the brackets) "dir", "scan",
     # "preferred_names", "filter", "cache_dir", "write_cache_state",
     # "types", "sysfs_scan", "md_component_detection".  see man lvm.conf.
