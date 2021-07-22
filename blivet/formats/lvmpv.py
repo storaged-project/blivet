@@ -125,6 +125,8 @@ class LVMPhysicalVolume(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
 
+        lvm._set_global_config()
+
         ea_yes = blockdev.ExtraArg.new("-y", "")
         blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
 
