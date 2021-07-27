@@ -1,8 +1,10 @@
 # pylint: skip-file
-import test_compat
+try:
+    from unittest.mock import Mock, patch, sentinel
+except ImportError:
+    from mock import Mock, patch, sentinel
 
 import six
-from six.moves.mock import Mock, patch, sentinel
 import unittest
 
 from blivet.devicelibs import disk as disklib

@@ -1,9 +1,8 @@
-from six import PY3
 import unittest
 
-if PY3:
+try:
     from unittest.mock import Mock
-else:
+except ImportError:
     from mock import Mock
 
 from tests.storagetestcase import StorageTestCase
