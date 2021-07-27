@@ -1,7 +1,9 @@
 # pylint: skip-file
-import test_compat
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
-from six.moves import mock
 import os
 import six
 import tempfile

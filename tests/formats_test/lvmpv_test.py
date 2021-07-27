@@ -1,5 +1,3 @@
-import test_compat  # pylint: disable=unused-import
-
 from blivet.formats.lvmpv import LVMPhysicalVolume
 
 from blivet.size import Size

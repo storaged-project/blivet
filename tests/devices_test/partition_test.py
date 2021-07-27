@@ -1,5 +1,4 @@
 # vim:set fileencoding=utf-8
-import test_compat  # pylint: disable=unused-import
 
 from collections import namedtuple
 import os
@@ -7,7 +6,10 @@ import six
 import unittest
 import parted
 
-from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,import-error
+try:
+    from unittest.mock import patch, Mock
+except ImportError:
+    from mock import patch, Mock
 
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice

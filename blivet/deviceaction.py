@@ -1147,7 +1147,10 @@ class ActionConfigureDevice(DeviceAction):
         self.old_value = getattr(self.device, self.attr)
 
         if self._execute:
-            self._execute(dry_run=True)
+            kwargs = {"old_%s" % self.attr: self.old_value,
+                      "new_%s" % self.attr: self.new_value,
+                      "dry_run": True}
+            self._execute(**kwargs)
 
     def apply(self):
         if self._applied:
@@ -1166,4 +1169,7 @@ class ActionConfigureDevice(DeviceAction):
         super(ActionConfigureDevice, self).execute(callbacks=callbacks)
 
         if self._execute is not None:
-            self._execute(dry_run=False)
+            kwargs = {"old_%s" % self.attr: self.old_value,
+                      "new_%s" % self.attr: self.new_value,
+                      "dry_run": False}
+            self._execute(**kwargs)

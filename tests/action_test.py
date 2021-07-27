@@ -1,9 +1,8 @@
-from six import PY3
 import unittest
 
-if PY3:
+try:
     from unittest.mock import Mock
-else:
+except ImportError:
     from mock import Mock
 
 from tests.storagetestcase import StorageTestCase
@@ -1320,7 +1319,8 @@ class ConfigurationActionsTest(unittest.TestCase):
         # set 'conf1' attribute to 'new_value'
         # action is created and right configuration function was called with 'dry_run=True'
         ac = ActionConfigureDevice(mock_device, "conf1", "new_value")
-        mock_device.do_conf1.assert_called_once_with(dry_run=True)
+        mock_device.do_conf1.assert_called_once_with(old_conf1="old_value", new_conf1="new_value",
+                                                     dry_run=True)
         mock_device.reset_mock()
 
         # try to apply, cancel and execute the action
@@ -1331,7 +1331,8 @@ class ConfigurationActionsTest(unittest.TestCase):
         self.assertEqual(mock_device.conf1, "old_value")
 
         ac.execute()
-        mock_device.do_conf1.assert_called_once_with(dry_run=False)
+        mock_device.do_conf1.assert_called_once_with(old_conf1="old_value", new_conf1="new_value",
+                                                     dry_run=False)
 
     def test_format_configuration(self):
 
