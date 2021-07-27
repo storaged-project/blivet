@@ -1,7 +1,9 @@
 import unittest
 
-import test_compat  # pylint: disable=unused-import
-from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 import blivet
 

@@ -1,5 +1,3 @@
-import test_compat  # pylint: disable=unused-import
-
 import six
 import unittest
 

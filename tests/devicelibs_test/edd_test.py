@@ -1,5 +1,9 @@
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
 import unittest
-import mock
 import os
 import inspect
 import logging

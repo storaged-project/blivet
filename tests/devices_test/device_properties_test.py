@@ -1,6 +1,3 @@
-# vim:set fileencoding=utf-8
-import test_compat  # pylint: disable=unused-import
-
 import six
 import unittest
 
@@ -9,7 +6,10 @@ gi.require_version("BlockDev", "2.0")
 
 from gi.repository import BlockDev as blockdev
 
-from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,import-error
+try:
+    from unittest.mock import patch, Mock
+except ImportError:
+    from mock import patch, Mock
 
 import blivet
 
