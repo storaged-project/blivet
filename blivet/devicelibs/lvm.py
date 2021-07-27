@@ -67,40 +67,29 @@ LVMETAD_SOCKET_PATH = "/run/lvm/lvmetad.socket"
 
 safe_name_characters = "0-9a-zA-Z._-"
 
-# Start config_args handling code
-#
-# Theoretically we can handle all that can be handled with the LVM --config
-# argument.  For every time we call an lvm_cc (lvm compose config) funciton
-# we regenerate the config_args with all global info.
-config_args_data = {"filterRejects": set(),    # regular expressions to reject.
-                    "filterAccepts": set()}    # regexp to accept
+# list of devices that LVM is allowed to use
+# with LVM >= 2.0.13 we'll use this for the --devices option and when creating
+# the /etc/lvm/devices/system.devices file
+# with older versions of LVM we will use this for the --config based filtering
+_lvm_devices = set()
 
 
 def _set_global_config():
     """lvm command accepts lvm.conf type arguments preceded by --config. """
 
-    filter_string = ""
-    rejects = config_args_data["filterRejects"]
-    for reject in rejects:
-        filter_string += ("\"r|/%s$|\"," % reject)
+    device_string = ""
 
-    if filter_string:
-        filter_string = "filter=[%s]" % filter_string.strip(",")
+    # now explicitly "accept" all LVM devices
+    for device in _lvm_devices:
+        device_string += "\"a|%s$|\"," % device
 
-    # XXX consider making /tmp/blivet.lvm.XXXXX, writing an lvm.conf there, and
-    #     setting LVM_SYSTEM_DIR
-    devices_string = 'preferred_names=["^/dev/mapper/", "^/dev/md/", "^/dev/sd"]'
-    if filter_string:
-        devices_string += " %s" % filter_string
+    # now add all devices to the "reject" filter
+    device_string += "\"r|.*|\""
 
-    # for now ignore the LVM devices file and rely on our filters
-    if availability.LVMDEVICES.available:
-        devices_string += " use_devicesfile=0"
+    filter_string = "filter=[%s]" % device_string
 
-    # devices_string can have (inside the brackets) "dir", "scan",
-    # "preferred_names", "filter", "cache_dir", "write_cache_state",
-    # "types", "sysfs_scan", "md_component_detection".  see man lvm.conf.
-    config_string = " devices { %s } " % (devices_string)  # strings can be added
+    config_string = " devices { %s } " % filter_string
+
     if not flags.lvm_metadata_backup:
         config_string += "backup {backup=0 archive=0} "
     if flags.debug:
@@ -122,27 +111,26 @@ def needs_config_refresh(fn):
 
 
 @needs_config_refresh
-def lvm_cc_addFilterRejectRegexp(regexp):
-    """ Add a regular expression to the --config string."""
-    log.debug("lvm filter: adding %s to the reject list", regexp)
-    config_args_data["filterRejects"].add(regexp)
+def lvm_devices_add(path):
+    """ Add a device (PV) to the list of devices LVM is allowed to use """
+    log.debug("lvm filter: device %s added to the list of allowed devices")
+    _lvm_devices.add(path)
 
 
 @needs_config_refresh
-def lvm_cc_removeFilterRejectRegexp(regexp):
-    """ Remove a regular expression from the --config string."""
-    log.debug("lvm filter: removing %s from the reject list", regexp)
+def lvm_devices_remove(path):
+    """ Remove a device (PV) to the list of devices LVM is allowed to use """
+    log.debug("lvm filter: device %s removed from the list of allowed devices")
     try:
-        config_args_data["filterRejects"].remove(regexp)
+        _lvm_devices.remove(path)
     except KeyError:
-        log.debug("%s wasn't in the reject list", regexp)
+        log.debug("%s wasn't in the devices list", path)
         return
 
 
 @needs_config_refresh
-def lvm_cc_resetFilter():
-    config_args_data["filterRejects"] = set()
-    config_args_data["filterAccepts"] = set()
+def lvm_devices_reset():
+    _lvm_devices.clear()
 
 
 def determine_parent_lv(internal_lv, lvs, lv_info):

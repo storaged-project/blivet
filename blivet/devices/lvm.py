@@ -273,8 +273,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
         log_method_call(self, self.name, status=self.status)
         if not self.complete:
             for pv in self.pvs:
-                # Remove the PVs from the ignore filter so we can wipe them.
-                lvm.lvm_cc_removeFilterRejectRegexp(pv.name)
+                # add PVS to the list of LVM devices so we can wipe them.
+                lvm.lvm_devices_add(pv.path)
 
             # Don't run vgremove or vgreduce since there may be another VG with
             # the same name that we want to keep/use.
