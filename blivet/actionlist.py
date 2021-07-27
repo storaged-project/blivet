@@ -259,10 +259,9 @@ class ActionList(object):
         for action in self._actions:
             log.debug("action: %s", action)
 
-            # Remove lvm filters for devices we are operating on
-            lvm.lvm_cc_removeFilterRejectRegexp(action.device.name)
             for device in (d for d in devices if d.depends_on(action.device)):
-                lvm.lvm_cc_removeFilterRejectRegexp(device.name)
+                if device.format.type == "lvmpv":
+                    lvm.lvm_devices_add(device.path)
 
     def _post_process(self, devices=None):
         """ Clean up relics from action queue execution. """

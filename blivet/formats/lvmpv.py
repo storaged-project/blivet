@@ -124,6 +124,7 @@ class LVMPhysicalVolume(DeviceFormat):
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
+        lvm.lvm_devices_add(self.device)
 
         lvm._set_global_config()
 
@@ -138,6 +139,7 @@ class LVMPhysicalVolume(DeviceFormat):
         except blockdev.LVMError:
             DeviceFormat._destroy(self, **kwargs)
         finally:
+            lvm.lvm_devices_remove(self.device)
             udev.settle()
 
     @property

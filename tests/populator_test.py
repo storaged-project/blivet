@@ -13,6 +13,7 @@ from gi.repository import BlockDev as blockdev
 from blivet.devices import DiskDevice, DMDevice, FileDevice, LoopDevice
 from blivet.devices import MDRaidArrayDevice, MultipathDevice, OpticalDevice
 from blivet.devices import PartitionDevice, StorageDevice, NVDIMMNamespaceDevice
+from blivet.devicelibs import lvm
 from blivet.devicetree import DeviceTree
 from blivet.formats import get_device_format_class, get_format, DeviceFormat
 from blivet.formats.disklabel import DiskLabel
@@ -393,8 +394,7 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch.object(DiskLabel, "parted_disk")
     @patch.object(DiskLabel, "parted_device")
     @patch.object(PartitionDevice, "probe")
-    # TODO: fix the naming of the lvm filter functions
-    @patch("blivet.devicelibs.lvm.lvm_cc_addFilterRejectRegexp")
+    @patch("blivet.devicelibs.lvm.lvm_devices_add")
     @patch("blivet.udev.device_get_major", return_value=88)
     @patch("blivet.udev.device_get_minor", return_value=19)
     @patch.object(DeviceTree, "get_device_by_name")
@@ -972,6 +972,8 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
                     vg_device = devicetree.get_device_by_name(pv_info.vg_name)
                     self.assertTrue(vg_device is not None)
                     devicetree._remove_device(vg_device)
+
+                    self.assertIn(device.path, lvm._lvm_devices)
 
         get_device_by_uuid.reset_mock()
 
