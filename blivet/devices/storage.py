@@ -53,6 +53,7 @@ class StorageDevice(Device):
     """
     _resizable = False
     """Whether this type of device is inherently resizable."""
+    _renamable = False
 
     _type = "blivet"
     _dev_dir = "/dev"
@@ -60,6 +61,8 @@ class StorageDevice(Device):
     _partitionable = False
     _is_disk = False
     _encrypted = False
+
+    config_actions_map = {"name": "_rename"}
 
     def __init__(self, name, fmt=None, uuid=None,
                  size=None, major=None, minor=None,
@@ -351,6 +354,29 @@ class StorageDevice(Device):
             raise NotImplementedError("method not implemented for device type %s" % self.type)
         else:
             raise errors.DeviceError("device type %s is not resizable" % self.type)
+
+    def _rename(self, old_name, new_name, dry_run=False):  # pylint: disable=unused-argument
+        """ Rename this device.
+
+            :param old_name: current name of this device
+            :type old_name: str
+            :param new_name: new name for this device
+            :type new_name: str
+            :param dry_run: whether to only run checks and not perform the rename
+            :type dry_run: bool
+
+            Note: This method should only be invoked via the
+                  ActionConfigureDevice.execute method. All the pre-conditions
+                  enforced by ActionConfigureDevice.__init__ are assumed to hold.
+                  self.name value is chaged by the ActionConfigureDevice.apply method.
+
+                  Caller must make sure the name is unique, this method cannot check
+                  the name uniqueness.
+        """
+        if not self._renamable:
+            raise errors.DeviceError("device type %s is not renamable" % self.type)
+        else:
+            raise NotImplementedError("method not implemented for device type %s" % self.type)
 
     @property
     def readonly(self):
