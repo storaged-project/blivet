@@ -138,7 +138,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         if self.exists:
             self._chunk_size = self.read_chunk_size()
         else:
-            self._chunk_size = chunk_size or mdraid.MD_CHUNK_SIZE
+            self.chunk_size = chunk_size or Size(0)
 
         if not self.exists and not isinstance(metadata_version, str):
             self.metadata_version = "default"
@@ -208,8 +208,14 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
     @property
     def chunk_size(self):
-        if self.exists and self._chunk_size == Size(0):
-            self._chunk_size = self.read_chunk_size()
+        if self._chunk_size == Size(0):
+            if self.exists:
+                return self.read_chunk_size()
+            else:
+                if self.level == raid.RAID1:
+                    return self._chunk_size
+                else:
+                    return mdraid.MD_CHUNK_SIZE
         return self._chunk_size
 
     @chunk_size.setter
@@ -222,6 +228,9 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         if self.exists:
             raise ValueError("cannot set chunk size for an existing device")
+
+        if self.level == raid.RAID1 and newsize != Size(0):
+            raise ValueError("specifying chunk size is not allowed for raid1")
 
         self._chunk_size = newsize
 
