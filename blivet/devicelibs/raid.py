@@ -462,6 +462,18 @@ class RAID1(RAIDn):
     def _get_recommended_stride(self, member_count):
         return None
 
+    def get_size(self, member_sizes, num_members=None, chunk_size=None, superblock_size_func=None):
+        if not member_sizes:
+            return Size(0)
+
+        if num_members is None:
+            num_members = len(member_sizes)
+
+        min_size = min(member_sizes)
+        superblock_size = superblock_size_func(min_size)
+        min_data_size = self._trim(min_size - superblock_size, chunk_size)
+        return self.get_net_array_size(num_members, min_data_size)
+
 
 RAID1 = RAID1()
 ALL_LEVELS.add_raid_level(RAID1)
