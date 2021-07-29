@@ -1131,3 +1131,14 @@ def detect_virt():
         return False
     else:
         return vm[0] in ('qemu', 'kvm', 'xen')
+
+
+def natural_sort_key(device):
+    """ Sorting key for devices which makes sure partitions are sorted in natural
+        way, e.g. 'sda1, sda2, ..., sda10' and not like 'sda1, sda10, sda2, ...'
+    """
+    if device.type == "partition" and device.parted_partition and device.disk:
+        part_num = getattr(device.parted_partition, "number", -1)
+        return [device.disk.name, part_num]
+    else:
+        return [device.name, 0]
