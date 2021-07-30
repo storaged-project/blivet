@@ -65,6 +65,16 @@ LVMETAD_SOCKET_PATH = "/run/lvm/lvmetad.socket"
 
 safe_name_characters = "0-9a-zA-Z._-"
 
+if hasattr(blockdev.LVMTech, "DEVICES"):
+    try:
+        blockdev.lvm.is_tech_avail(blockdev.LVMTech.DEVICES, 0)  # pylint: disable=no-member
+    except blockdev.LVMError:
+        HAVE_LVMDEVICES = False
+    else:
+        HAVE_LVMDEVICES = True
+else:
+    HAVE_LVMDEVICES = False
+
 # list of devices that LVM is allowed to use
 # with LVM >= 2.0.13 we'll use this for the --devices option and when creating
 # the /etc/lvm/devices/system.devices file
@@ -77,23 +87,32 @@ def _set_global_config():
 
     device_string = ""
 
-    # now explicitly "accept" all LVM devices
-    for device in _lvm_devices:
-        device_string += "\"a|%s$|\"," % device
+    if not HAVE_LVMDEVICES:
+        # now explicitly "accept" all LVM devices
+        for device in _lvm_devices:
+            device_string += "\"a|%s$|\"," % device
 
-    # now add all devices to the "reject" filter
-    device_string += "\"r|.*|\""
+        # now add all devices to the "reject" filter
+        device_string += "\"r|.*|\""
 
-    filter_string = "filter=[%s]" % device_string
+        filter_string = "filter=[%s]" % device_string
 
-    config_string = " devices { %s } " % filter_string
+        config_string = " devices { %s } " % filter_string
+    else:
+        config_string = " "
 
     if not flags.lvm_metadata_backup:
         config_string += "backup {backup=0 archive=0} "
-    if flags.debug:
-        config_string += "log {level=7 file=/tmp/lvm.log syslog=0}"
+    config_string += "log {level=7 file=/tmp/lvm.log syslog=0}"
 
     blockdev.lvm.set_global_config(config_string)
+
+
+def _set_lvm_devices():
+    if not HAVE_LVMDEVICES:
+        return
+
+    blockdev.lvm.set_devices_filter(list(_lvm_devices))
 
 
 def needs_config_refresh(fn):
@@ -103,6 +122,7 @@ def needs_config_refresh(fn):
     def fn_with_refresh(*args, **kwargs):
         ret = fn(*args, **kwargs)
         _set_global_config()
+        _set_lvm_devices()
         return ret
 
     return fn_with_refresh
