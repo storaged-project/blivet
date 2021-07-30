@@ -131,6 +131,9 @@ class LVMPhysicalVolume(DeviceFormat):
         ea_yes = blockdev.ExtraArg.new("-y", "")
         blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
 
+        if lvm.HAVE_LVMDEVICES:
+            blockdev.lvm.devices_add(self.device)
+
     def _destroy(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
@@ -141,6 +144,8 @@ class LVMPhysicalVolume(DeviceFormat):
         finally:
             lvm.lvm_devices_remove(self.device)
             udev.settle()
+            if lvm.HAVE_LVMDEVICES:
+                blockdev.lvm.devices_delete(self.device)
 
     @property
     def destroyable(self):
