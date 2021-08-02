@@ -1512,9 +1512,13 @@ class LVMSnapshotMixin(object):
             self._update_format_from_origin()
 
     @old_snapshot_specific
-    def setup(self, orig=False):
-        # the old snapshot cannot be setup and torn down
-        pass
+    def setup(self, orig=False):  # pylint: disable=unused-argument
+        # the old snapshot is activated together with the origin
+        if self.origin and not self.origin.status:
+            try:
+                self.origin.setup()
+            except blockdev.LVMError as lvmerr:
+                log.error("failed to activate origin LV: %s", lvmerr)
 
     @old_snapshot_specific
     def teardown(self, recursive=False):

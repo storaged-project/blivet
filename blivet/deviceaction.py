@@ -1115,6 +1115,7 @@ class ActionConfigureFormat(DeviceAction):
         super(ActionConfigureFormat, self).execute(callbacks=callbacks)
 
         if self._execute is not None:
+            self.device.setup()
             self._execute(dry_run=False)
 
 

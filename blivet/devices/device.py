@@ -164,7 +164,7 @@ class Device(util.ObjectID):
     @property
     def children(self):
         """List of this device's immediate descendants."""
-        return self._children[:]
+        return sorted(self._children[:], key=util.natural_sort_key)
 
     @property
     def dict(self):
