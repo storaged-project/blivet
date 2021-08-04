@@ -4,7 +4,7 @@ from blivet.formats.lvmpv import LVMPhysicalVolume
 
 from blivet.size import Size
 
-from tests import loopbackedtestcase
+from . import loopbackedtestcase
 
 
 class LVMPVTestCase(loopbackedtestcase.LoopBackedTestCase):

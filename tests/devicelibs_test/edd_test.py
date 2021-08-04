@@ -6,7 +6,7 @@ import copy
 
 from blivet import arch
 from blivet.devicelibs import edd
-from tests import lib
+from . import lib
 
 
 class FakeDevice(object):

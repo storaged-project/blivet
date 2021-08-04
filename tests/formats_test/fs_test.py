@@ -10,7 +10,7 @@ from blivet.errors import DeviceFormatError
 from blivet.formats import get_format
 from blivet.devices import PartitionDevice, DiskDevice
 
-from tests import loopbackedtestcase
+from . import loopbackedtestcase
 
 from . import fstesting
 

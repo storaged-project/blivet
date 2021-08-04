@@ -29,7 +29,7 @@ from blivet.devices.lvm import LVMCacheRequest
 
 from blivet.errors import PartitioningError
 
-from tests.imagebackedtestcase import ImageBackedTestCase
+from imagebackedtestcase import ImageBackedTestCase
 from blivet.blivet import Blivet
 from blivet.util import sparsetmpfile
 from blivet.formats import get_format

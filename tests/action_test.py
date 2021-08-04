@@ -6,7 +6,7 @@ if PY3:
 else:
     from mock import Mock
 
-from tests.storagetestcase import StorageTestCase
+from storagetestcase import StorageTestCase
 import blivet
 from blivet.formats import get_format
 from blivet.size import Size
