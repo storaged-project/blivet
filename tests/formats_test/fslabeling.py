@@ -2,7 +2,7 @@
 import abc
 import six
 
-from tests import loopbackedtestcase
+from . import loopbackedtestcase
 from blivet.errors import FSError, FSReadLabelError
 from blivet.size import Size
 
