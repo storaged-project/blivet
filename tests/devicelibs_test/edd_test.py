@@ -1,7 +1,6 @@
 import unittest
 import mock
 import os
-import inspect
 import logging
 import copy
 
@@ -110,9 +109,9 @@ class EddTestCase(unittest.TestCase):
                 name = name[:-1]
             if name.startswith("/"):
                 name = name[1:]
-            dirname = os.path.dirname(inspect.getfile(edd))
+            dirname = os.path.abspath(os.path.dirname(__file__))
             return os.path.join(dirname,
-                                "../../tests/devicelibs_test/edd_data/",
+                                "edd_data/",
                                 name)
 
     def edd_debug(self, *args):
