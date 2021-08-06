@@ -32,6 +32,11 @@ if __name__ == '__main__':
 
     testdir = os.path.abspath(os.path.dirname(__file__))
 
+    import blivet
+    print("Running tests with Blivet %s from %s" % (blivet.__version__,
+                                                    os.path.abspath(os.path.dirname(blivet.__file__))),
+          file=sys.stderr)
+
     if args.testname:
         for n in args.testname:
             suite.addTests(unittest.TestLoader().loadTestsFromName(n))
