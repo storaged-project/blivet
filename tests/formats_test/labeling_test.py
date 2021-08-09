@@ -1,10 +1,10 @@
 import unittest
 
-from tests import loopbackedtestcase
 from blivet.formats import device_formats
 import blivet.formats.fs as fs
 import blivet.formats.swap as swap
 
+from . import loopbackedtestcase
 from . import fslabeling
 
 

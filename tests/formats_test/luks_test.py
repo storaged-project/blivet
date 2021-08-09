@@ -9,7 +9,7 @@ from blivet.formats.luks import LUKS
 
 from blivet.size import Size
 
-from tests import loopbackedtestcase
+from . import loopbackedtestcase
 
 
 class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
