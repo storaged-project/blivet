@@ -67,7 +67,7 @@ class FSCK(task.BasicApplication, fstask.FSTask):
         """
         return [str(self.ext)] + self.options + [self.fs.device]
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         """ Check the filesystem.
 
            :raises FSError: on failure
