@@ -3,7 +3,7 @@ import abc
 import six
 from unittest import skipIf
 
-from tests import loopbackedtestcase
+from . import loopbackedtestcase
 from blivet.errors import FSError, FSWriteUUIDError
 from blivet.size import Size
 from blivet.util import capture_output

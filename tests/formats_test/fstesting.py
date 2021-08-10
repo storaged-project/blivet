@@ -5,7 +5,7 @@ from six import add_metaclass
 import os
 import tempfile
 
-from tests import loopbackedtestcase
+from . import loopbackedtestcase
 from blivet.errors import FSError, FSResizeError, DeviceFormatError
 from blivet.size import Size, ROUND_DOWN
 from blivet.formats import fs
