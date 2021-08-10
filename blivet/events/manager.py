@@ -189,7 +189,8 @@ class EventManager(object):
 
         self._error_cb = cb
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def enabled(self):
         return False
 
