@@ -29,13 +29,7 @@ import uuid as uuid_mod
 import random
 import stat
 
-from parted import fileSystemType
-
-try:
-    from parted import PARTITION_ESP
-except ImportError:
-    # this flag is sometimes not available in pyparted, see https://github.com/dcantrell/pyparted/issues/80
-    PARTITION_ESP = 18
+from parted import fileSystemType, PARTITION_BOOT
 
 from ..tasks import fsck
 from ..tasks import fsinfo
@@ -948,7 +942,7 @@ class EFIFS(FATFS):
     _min_size = Size("50 MiB")
     _check = True
     _mount_class = fsmount.EFIFSMount
-    parted_flag = PARTITION_ESP
+    parted_flag = PARTITION_BOOT
 
     @property
     def supported(self):
