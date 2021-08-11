@@ -63,7 +63,7 @@ class FSMinSize(task.BasicApplication, fstask.FSTask):
         return out
 
     @abc.abstractmethod
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         """ Returns the minimum size for this filesystem object.
 
             :rtype: :class:`~.size.Size`
@@ -121,7 +121,7 @@ class Ext2FSMinSize(FSMinSize):
 
         return num_blocks
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
@@ -163,7 +163,7 @@ class NTFSMinSize(FSMinSize):
 
         return min_size
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))

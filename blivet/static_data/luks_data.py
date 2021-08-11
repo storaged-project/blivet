@@ -29,7 +29,6 @@ class LUKS_Data(object):
     def __init__(self):
         # new passphrase; used while working with new device
         self.__encryption_passphrase = None
-        self.__save_passphrase = None
         # minimum entropy in bits required for LUKS format creation
         self.__min_entropy = 0
         # list of known passphrases

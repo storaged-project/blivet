@@ -614,7 +614,7 @@ class ObjectID(object):
     def __new__(cls, *args, **kwargs):
         # pylint: disable=unused-argument
         self = super(ObjectID, cls).__new__(cls)
-        self.id = self._newid_gen()  # pylint: disable=attribute-defined-outside-init
+        self.id = self._newid_gen()  # pylint: disable=attribute-defined-outside-init,assignment-from-no-return
         return self
 
 

@@ -49,7 +49,7 @@ class LUKSSize(task.BasicApplication):
         """
         self.luks = a_luks
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         """ Returns the size of the luks format.
 
             :returns: the size of the luks format
@@ -83,7 +83,7 @@ class LUKSResize(task.BasicApplication, dfresize.DFResizeTask):
         """
         self.luks = a_luks
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         """ Resizes the LUKS format. """
         try:
             if self.luks.luks_version == "luks2":

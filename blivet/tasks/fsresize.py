@@ -68,7 +68,7 @@ class FSResize(task.BasicApplication, FSResizeTask):
     def _resize_command(self):
         return [str(self.ext)] + self.args
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         """ Resize the device.
 
             :raises FSError: on failure
@@ -162,7 +162,7 @@ class XFSResize(FSResize):
     def args(self):
         return [self.fs.system_mountpoint, "-D", self.size_spec()]
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         """ Resizes the XFS format. """
 
         with self._do_temp_mount():
