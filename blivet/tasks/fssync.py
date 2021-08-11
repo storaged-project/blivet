@@ -39,7 +39,7 @@ class FSSync(task.BasicApplication, fstask.FSTask):
     description = "filesystem syncing"
 
     @abc.abstractmethod
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         raise NotImplementedError()
 
 

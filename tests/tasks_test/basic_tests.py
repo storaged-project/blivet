@@ -8,7 +8,7 @@ class BasicUnavailableApplication(task.BasicApplication):
     ext = availability.unavailable_resource("unavailable")
     description = "unavailable application"
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         pass
 
 
@@ -16,7 +16,7 @@ class BasicAvailableApplication(task.BasicApplication):
     ext = availability.available_resource("available")
     description = "available application"
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         pass
 
 
