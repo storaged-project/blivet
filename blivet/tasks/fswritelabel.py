@@ -51,7 +51,7 @@ class FSWriteLabel(task.BasicApplication, fstask.FSTask):
         """
         return [str(self.ext)] + self.args
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         error_msgs = self.availability_errors
         if error_msgs:
             raise FSWriteLabelError("\n".join(error_msgs))

@@ -69,7 +69,7 @@ class FSReadLabel(task.BasicApplication, fstask.FSTask):
             raise FSReadLabelError("Unknown format for application %s" % self.ext)
         return match.group('label')
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         """ Get the label.
 
             :returns: the filesystem label

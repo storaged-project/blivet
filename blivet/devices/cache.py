@@ -39,25 +39,30 @@ class Cache(object):
 
     """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def size(self):
         """Size of the cache"""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def exists(self):
         """Whether the cache (device) exists or not"""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def stats(self):
         """Statistics for the cache
         :rtype: :class:`CacheStats`
         """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def backing_device_name(self):
         """Name of the backing (big/slow) device of the cache (if any)"""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def cache_device_name(self):
         """Name of the cache (small/fast) device of the cache (if any)"""
 
@@ -78,23 +83,28 @@ class CacheStats(object):
 
     """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def block_size(self):
         """block size of the cache"""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def size(self):
         """size of the cache"""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def used(self):
         """how much of the cache is used"""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def hits(self):
         """number of hits"""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def misses(self):
         """number of misses"""
 
@@ -106,14 +116,17 @@ class CacheRequest(object):
     cached device
 
     """
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def size(self):
         """Requested size"""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def fast_devs(self):
         """Devices (type-specific) to allocate/create the cache on"""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def mode(self):
         """Mode the cache should use"""
