@@ -170,7 +170,7 @@ class LVMPhysicalVolume(DeviceFormat):
             if self.exists:
                 # we don't have any actual value, but the PV exists and is
                 # active, we should try to determine it
-                pv_info = pvs_info.cache.get(self.device.path)
+                pv_info = pvs_info.cache.get(self.device)
                 if pv_info is None:
                     log.error("Failed to get free space information for the PV '%s'", self.device)
                     self._free = Size(0)
