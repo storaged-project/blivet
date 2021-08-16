@@ -36,7 +36,7 @@ def _is_main_thread():
     if PY3:
         return threading.current_thread() == threading.main_thread()
     else:
-        return threading.currentThread().name == "MainThread"
+        return threading.currentThread().name == "MainThread"  # pylint: disable=deprecated-method
 
 
 def exclusive(m):
