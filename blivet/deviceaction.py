@@ -173,7 +173,7 @@ class DeviceAction(util.ObjectID):
     def _check_device_dependencies(self):
         unavailable_dependencies = self.device.unavailable_dependencies
         if unavailable_dependencies:
-            dependencies_str = ", ".join(str(d) for d in unavailable_dependencies)
+            dependencies_str = ", ".join("%s:\n%s" % (str(d), ", ".join(d.availability_errors)) for d in unavailable_dependencies)
             raise DependencyError("device type %s requires unavailable_dependencies: %s" % (self.device.type, dependencies_str))
 
     def apply(self):
