@@ -1031,7 +1031,7 @@ class ActionRemoveMember(DeviceAction):
                 - any destroy/resize action on the device
         """
         retval = False
-        if ((action.is_shrink or action.is_destroy) and
+        if ((action.is_shrink or action.is_destroy) and hasattr(action.device, "container") and
                 action.device.container == self.container):
             retval = True
         elif action.is_add and action.container == self.container:
