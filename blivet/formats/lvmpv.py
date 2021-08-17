@@ -125,6 +125,8 @@ class LVMPhysicalVolume(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
 
+        lvm._set_global_config()
+
         ea_yes = blockdev.ExtraArg.new("-y", "")
         blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
 
@@ -170,7 +172,7 @@ class LVMPhysicalVolume(DeviceFormat):
             if self.exists:
                 # we don't have any actual value, but the PV exists and is
                 # active, we should try to determine it
-                pv_info = pvs_info.cache.get(self.device.path)
+                pv_info = pvs_info.cache.get(self.device)
                 if pv_info is None:
                     log.error("Failed to get free space information for the PV '%s'", self.device)
                     self._free = Size(0)
