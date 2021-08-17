@@ -224,7 +224,7 @@ class BlockDevMethod(Method):
             try:
                 self._tech_info.check_fn(tech, mode)
             except GLib.GError as e:
-                errors.append(str(e))
+                errors.append("%s: %s" % (tech.value_name, e.message))
         return errors
 
     def availability_errors(self, resource):
@@ -242,7 +242,7 @@ class BlockDevMethod(Method):
             tech_missing = self._check_technologies()
             if tech_missing:
                 return ["libblockdev plugin %s is loaded but some required "
-                        "technologies are not available:\n%s" % (self._tech_info.plugin_name, tech_missing)]
+                        "technologies are not available (%s)" % (self._tech_info.plugin_name, "; ".join(tech_missing))]
             else:
                 return []
 
@@ -451,6 +451,7 @@ FSCK_HFSPLUS_APP = application("fsck.hfsplus")
 HFORMAT_APP = application("hformat")
 JFSTUNE_APP = application("jfs_tune")
 KPARTX_APP = application("kpartx")
+LVMDEVICES = application("lvmdevices")
 MKDOSFS_APP = application("mkdosfs")
 MKDOSFS_NEW_APP = application_by_version("mkdosfs", DOSFSTOOLS_VERSION)
 MKE2FS_APP = application_by_version("mke2fs", E2FSPROGS_VERSION)
