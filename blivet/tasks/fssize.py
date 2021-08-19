@@ -57,7 +57,7 @@ class FSSize(fstask.FSTask):
 
     # IMPLEMENTATION methods
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         """ Returns the size of the filesystem.
 
             :returns: the size of the filesystem
@@ -132,7 +132,7 @@ class TmpFSSize(task.BasicApplication, fstask.FSTask):
     def _size_command(self):
         return [str(self.ext), self.fs.system_mountpoint, "--output=size"]
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))

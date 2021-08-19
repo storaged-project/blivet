@@ -614,7 +614,7 @@ class ObjectID(object):
     def __new__(cls, *args, **kwargs):
         # pylint: disable=unused-argument
         self = super(ObjectID, cls).__new__(cls)
-        self.id = self._newid_gen()  # pylint: disable=attribute-defined-outside-init
+        self.id = self._newid_gen()  # pylint: disable=attribute-defined-outside-init,assignment-from-no-return
         return self
 
 
@@ -1130,4 +1130,15 @@ def detect_virt():
     except (safe_dbus.DBusCallError, safe_dbus.DBusPropertyError):
         return False
     else:
-        return vm[0] in ('qemu', 'kvm')
+        return vm[0] in ('qemu', 'kvm', 'xen')
+
+
+def natural_sort_key(device):
+    """ Sorting key for devices which makes sure partitions are sorted in natural
+        way, e.g. 'sda1, sda2, ..., sda10' and not like 'sda1, sda10, sda2, ...'
+    """
+    if device.type == "partition" and device.parted_partition and device.disk:
+        part_num = getattr(device.parted_partition, "number", -1)
+        return [device.disk.name, part_num]
+    else:
+        return [device.name, 0]

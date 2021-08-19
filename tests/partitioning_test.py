@@ -1,6 +1,8 @@
-import test_compat  # pylint: disable=unused-import
+try:
+    from unittest.mock import patch, Mock
+except ImportError:
+    from mock import patch, Mock
 
-from six.moves.mock import Mock, patch  # pylint: disable=no-name-in-module,import-error
 import six
 import unittest
 
@@ -29,7 +31,7 @@ from blivet.devices.lvm import LVMCacheRequest
 
 from blivet.errors import PartitioningError
 
-from tests.imagebackedtestcase import ImageBackedTestCase
+from imagebackedtestcase import ImageBackedTestCase
 from blivet.blivet import Blivet
 from blivet.util import sparsetmpfile
 from blivet.formats import get_format

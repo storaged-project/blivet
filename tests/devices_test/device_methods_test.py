@@ -1,8 +1,10 @@
-import test_compat  # pylint: disable=unused-import
-
 import six
-from six.moves.mock import patch, Mock, PropertyMock  # pylint: disable=no-name-in-module,import-error
 import unittest
+
+try:
+    from unittest.mock import patch, Mock, PropertyMock
+except ImportError:
+    from mock import patch, PropertyMock
 
 from blivet.devices import StorageDevice
 from blivet.devices import DiskDevice, PartitionDevice

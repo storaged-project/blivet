@@ -376,7 +376,6 @@ class DeviceFactory(object):
         # used for error recovery
         self.__devices = []
         self.__actions = []
-        self.__names = []
         self.__roots = []
 
     def _update_defaults_from_device(self):

@@ -363,7 +363,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # we are creating new VG or adding a new PV to an existing (complete) one
         if not self.exists or (self.exists and self._complete):
             sector_sizes = defaultdict(list)
-            for ss, name in [(p.sector_size, p.name) for p in self.pvs + [parent]]:
+            for ss, name in [(p.sector_size, p.name) for p in self.pvs + [parent]]:  # pylint: disable=no-member
                 sector_sizes[ss].append(name)
             if len(sector_sizes.keys()) != 1:
                 if not self.exists:
@@ -1461,9 +1461,13 @@ class LVMSnapshotMixin(object):
             self._update_format_from_origin()
 
     @old_snapshot_specific
-    def setup(self, orig=False):
-        # the old snapshot cannot be setup and torn down
-        pass
+    def setup(self, orig=False):  # pylint: disable=unused-argument
+        # the old snapshot is activated together with the origin
+        if self.origin and not self.origin.status:
+            try:
+                self.origin.setup()
+            except blockdev.LVMError as lvmerr:
+                log.error("failed to activate origin LV: %s", lvmerr)
 
     @old_snapshot_specific
     def teardown(self, recursive=False):

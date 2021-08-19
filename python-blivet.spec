@@ -33,7 +33,7 @@ Source1: http://github.com/storaged-project/blivet/archive/%{realname}-%{realver
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
-%global partedver 3.2
+%global partedver 1.8.1
 %global pypartedver 3.10.4
 %global utillinuxver 2.15.1
 %global libblockdevver 2.24

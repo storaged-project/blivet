@@ -47,7 +47,7 @@ class PVSize(task.BasicApplication):
         """
         self.pv = a_pv
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         """ Returns the size of the LVMPV format.
 
             :returns: the size of the LVMPV format
@@ -79,7 +79,7 @@ class PVResize(task.BasicApplication, dfresize.DFResizeTask):
         """
         self.pv = a_pv
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         """ Resizes the LVMPV format. """
         try:
             blockdev.lvm.pvresize(self.pv.device, self.pv.target_size.convert_to(self.unit))

@@ -42,7 +42,7 @@ from .devicetree import DeviceTree
 from .formats import get_default_filesystem_type
 from .flags import flags
 from .formats import get_format
-from .util import capture_output
+from .util import capture_output, natural_sort_key
 from . import arch
 from . import devicefactory
 from . import __version__
@@ -148,7 +148,7 @@ class Blivet(object):
     def devices(self):
         """ A list of all the devices in the device tree. """
         devices = self.devicetree.devices
-        devices.sort(key=lambda d: d.name)
+        devices.sort(key=natural_sort_key)
         return devices
 
     @property

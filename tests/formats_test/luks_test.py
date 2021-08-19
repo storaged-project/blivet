@@ -1,13 +1,15 @@
-import test_compat  # pylint: disable=unused-import
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
-from six.moves.mock import patch  # pylint: disable=no-name-in-module,import-error
 import unittest
 
 from blivet.formats.luks import LUKS
 
 from blivet.size import Size
 
-from tests import loopbackedtestcase
+from . import loopbackedtestcase
 
 
 class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):

@@ -1,6 +1,10 @@
 
 import unittest
-import mock
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from udev_data import raid_data
 

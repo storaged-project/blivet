@@ -50,7 +50,7 @@ class FSInfo(task.BasicApplication, fstask.FSTask):
         """
         return [str(self.ext)] + self.options + [self.fs.device]
 
-    def do_task(self):
+    def do_task(self):  # pylint: disable=arguments-differ
         """ Returns information from the command.
 
             :returns: a string representing the output of the command

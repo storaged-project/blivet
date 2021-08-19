@@ -1,6 +1,8 @@
-import test_compat  # pylint: disable=unused-import
+try:
+    from unittest.mock import patch, Mock, PropertyMock, sentinel
+except ImportError:
+    from mock import patch, Mock, PropertyMock, sentinel
 
-from six.moves.mock import Mock, patch, PropertyMock, sentinel  # pylint: disable=no-name-in-module,import-error
 import os
 import six
 import unittest
@@ -49,6 +51,9 @@ class DeviceTreeTestCase(unittest.TestCase):
         dev3 = StorageDevice("sdp2", exists=True)
         dt._add_device(dev3)
 
+        dev4 = StorageDevice("10", exists=True)
+        dt._add_device(dev4)
+
         dt.edd_dict.update({"dev1": 0x81,
                             "dev2": 0x82})
 
@@ -62,6 +67,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertEqual(dt.resolve_device("0x82"), dev2)
 
         self.assertEqual(dt.resolve_device(dev3.name), dev3)
+        self.assertEqual(dt.resolve_device(dev4.name), dev4)
 
     def test_device_name(self):
         # check that devicetree.names property contains all device's names
@@ -119,7 +125,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         dt.actions._actions.append(Mock(name="fake action"))
 
         lvm.lvm_cc_addFilterRejectRegexp("xxx")
-        lvm.config_args_data["filterAccepts"].append("yyy")
+        lvm.config_args_data["filterAccepts"].add("yyy")
 
         dt.ignored_disks.append(names[0])
         dt.exclusive_disks.append(names[1])
@@ -138,8 +144,8 @@ class DeviceTreeTestCase(unittest.TestCase):
 
         self.assertEqual(dt._hidden, empty_list)
 
-        self.assertEqual(lvm.config_args_data["filterAccepts"], empty_list)
-        self.assertEqual(lvm.config_args_data["filterRejects"], empty_list)
+        self.assertEqual(lvm.config_args_data["filterAccepts"], set())
+        self.assertEqual(lvm.config_args_data["filterRejects"], set())
 
         self.assertEqual(dt.exclusive_disks, empty_list)
         self.assertEqual(dt.ignored_disks, empty_list)
