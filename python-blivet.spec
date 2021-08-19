@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.4.0
+Version: 3.4.1
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -192,6 +192,46 @@ configuration.
 %endif
 
 %changelog
+* Thu Aug 19 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.4.1-1
+- pylint: Ignore deprecation warning about threading.currentThread (vtrefny)
+- Fix getting PV info in LVMPhysicalVolume from the cache (vtrefny)
+- Fix ActionRemoveMember requires check (#1993655) (vtrefny)
+- util: Ignore false positive assignment-from-no-return warning in ObjectID
+  (vtrefny)
+- tasks: Ignore pylint arguments-differ warning for do_tasks (vtrefny)
+- Remove unused __save_passphrase member from LUKS_Data (vtrefny)
+- size: Ignore new pylint warning "arguments-renamed" (vtrefny)
+- Do not use deprecated (vtrefny)
+- Remove unused member __names from DeviceFactory (vtrefny)
+- Improve error message printed for missing dependecies (vtrefny)
+- tests: Print version and blivet location when running tests (vtrefny)
+- tests: Allow running tests without the tests directory in PYTHONPATH
+  (vtrefny)
+- edd_test: Locate the edd_data based on the test file location (vtrefny)
+- Run Anaconda tests on blivet pull requests (jkonecny)
+- Do not set chunk size for RAID 1 (vtrefny)
+- When sorting devices make sure partitions are sorted correctly (vtrefny)
+- Make sure LVM config is updated before running pvcreate (vtrefny)
+- Tell LVM to ignore the new devices file for now (vtrefny)
+- Revert "Use PARTITION_ESP flag for EFIFS partitions (#1930486)" (vtrefny)
+- Fix resolving devices with names that look like BIOS drive number (vtrefny)
+- Ignore pylint false positive no-member warning (vtrefny)
+- Fix util.virt_detect on Xen (vtrefny)
+- Fix/unify importing mock module in tests (vtrefny)
+- Convert LVM filter lists to sets (vtrefny)
+- Remove action device from LVM reject list (vtrefny)
+- Fix activating old style LVM snapshots (vtrefny)
+- Make sure the device is setup before configuring its format (vtrefny)
+- Remove RHEL 9 specific patch from SPEC (vtrefny)
+- Use package list instead of cycle in our dependencies Ansible playbook
+  (vtrefny)
+- Add vagrant file for running tests and development in a VM (vtrefny)
+- Update our playbook for installing test dependencies (vtrefny)
+- Add example for working with actions (vtrefny)
+- Add LUKS encrypted LV to LVM example (vtrefny)
+- Add example for LVM thin provisioning (vtrefny)
+- Squashed 'translation-canary/' changes from 3bc2ad68..4d4e65b8 (vtrefny)
+
 * Fri May 07 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.4.0-1
 - Fix setting SELinux flag in SELinuxContextTestCase (vtrefny)
 - Allow running blivet without Python SELinux module (vtrefny)
