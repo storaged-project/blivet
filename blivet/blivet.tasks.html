@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>blivet.tasks package &#8212; Blivet 3.4.0 documentation</title>
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <title>blivet.tasks package &#8212; Blivet 3.4.1 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -35,7 +34,7 @@
         <li class="right" >
           <a href="blivet.static_data.html" title="blivet.static_data package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.tasks package</a></li> 
       </ul>
@@ -253,7 +252,18 @@ AND its version is at least the required version.</p>
 <dt id="blivet.tasks.dfresize.DFResizeTask.unit">
 <em class="property">abstract property </em><code class="sig-name descname">unit</code><a class="headerlink" href="#blivet.tasks.dfresize.DFResizeTask.unit" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -272,7 +282,18 @@ AND its version is at least the required version.</p>
 <dt id="blivet.tasks.dfresize.UnimplementedDFResize.unit">
 <em class="property">property </em><code class="sig-name descname">unit</code><a class="headerlink" href="#blivet.tasks.dfresize.UnimplementedDFResize.unit" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -378,7 +399,18 @@ checking consistency of a filesystem.</p>
 <dt id="blivet.tasks.fsck.FSCK.options">
 <em class="property">abstract property </em><code class="sig-name descname">options</code><a class="headerlink" href="#blivet.tasks.fsck.FSCK.options" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -523,7 +555,18 @@ checking consistency of a filesystem.</p>
 <dt id="blivet.tasks.fsinfo.FSInfo.options">
 <em class="property">abstract property </em><code class="sig-name descname">options</code><a class="headerlink" href="#blivet.tasks.fsinfo.FSInfo.options" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -689,7 +732,7 @@ filesystem, otherwise False.</p>
 <dd><p>Bases: <a class="reference internal" href="#blivet.tasks.fslabeling.FSLabeling" title="blivet.tasks.fslabeling.FSLabeling"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.tasks.fslabeling.FSLabeling</span></code></a></p>
 <dl class="py attribute">
 <dt id="blivet.tasks.fslabeling.FATFSLabeling.default_label">
-<code class="sig-name descname">default_label</code><em class="property"> = 'NO NAME'</em><a class="headerlink" href="#blivet.tasks.fslabeling.FATFSLabeling.default_label" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">default_label</code><em class="property"> = ''</em><a class="headerlink" href="#blivet.tasks.fslabeling.FATFSLabeling.default_label" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -718,7 +761,18 @@ filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fslabeling.FSLabeling.default_label">
 <em class="property">abstract property </em><code class="sig-name descname">default_label</code><a class="headerlink" href="#blivet.tasks.fslabeling.FSLabeling.default_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
@@ -911,7 +965,18 @@ filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fsminsize.Ext2FSMinSize.depends_on">
 <em class="property">property </em><code class="sig-name descname">depends_on</code><a class="headerlink" href="#blivet.tasks.fsminsize.Ext2FSMinSize.depends_on" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
@@ -980,7 +1045,18 @@ filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fsminsize.FSMinSize.options">
 <em class="property">abstract property </em><code class="sig-name descname">options</code><a class="headerlink" href="#blivet.tasks.fsminsize.FSMinSize.options" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -1053,7 +1129,18 @@ filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fsmkfs.BTRFSMkfs.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsmkfs.BTRFSMkfs.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1101,7 +1188,18 @@ filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fsmkfs.Ext2FSMkfs.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsmkfs.Ext2FSMkfs.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1173,7 +1271,18 @@ filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fsmkfs.F2FSMkfs.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsmkfs.F2FSMkfs.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1212,7 +1321,18 @@ filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fsmkfs.FATFSMkfs.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsmkfs.FATFSMkfs.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1261,7 +1381,18 @@ filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fsmkfs.FSMkfs.args">
 <em class="property">abstract property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsmkfs.FSMkfs.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
@@ -1345,14 +1476,36 @@ is False</p></li>
 <dt id="blivet.tasks.fsmkfs.FSMkfs.label_option">
 <em class="property">abstract property </em><code class="sig-name descname">label_option</code><a class="headerlink" href="#blivet.tasks.fsmkfs.FSMkfs.label_option" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
 <dt id="blivet.tasks.fsmkfs.FSMkfs.nodiscard_option">
 <em class="property">abstract property </em><code class="sig-name descname">nodiscard_option</code><a class="headerlink" href="#blivet.tasks.fsmkfs.FSMkfs.nodiscard_option" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -1371,21 +1524,54 @@ is False</p></li>
 <dt id="blivet.tasks.fsmkfs.FSMkfsTask.can_label">
 <em class="property">abstract property </em><code class="sig-name descname">can_label</code><a class="headerlink" href="#blivet.tasks.fsmkfs.FSMkfsTask.can_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
 <dt id="blivet.tasks.fsmkfs.FSMkfsTask.can_nodiscard">
 <em class="property">abstract property </em><code class="sig-name descname">can_nodiscard</code><a class="headerlink" href="#blivet.tasks.fsmkfs.FSMkfsTask.can_nodiscard" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
 <dt id="blivet.tasks.fsmkfs.FSMkfsTask.can_set_uuid">
 <em class="property">abstract property </em><code class="sig-name descname">can_set_uuid</code><a class="headerlink" href="#blivet.tasks.fsmkfs.FSMkfsTask.can_set_uuid" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -1404,7 +1590,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsmkfs.GFS2Mkfs.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsmkfs.GFS2Mkfs.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1443,7 +1640,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsmkfs.HFSMkfs.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsmkfs.HFSMkfs.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1482,7 +1690,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsmkfs.HFSPlusMkfs.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsmkfs.HFSPlusMkfs.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1521,7 +1740,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsmkfs.JFSMkfs.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsmkfs.JFSMkfs.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1560,7 +1790,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsmkfs.NTFSMkfs.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsmkfs.NTFSMkfs.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1599,7 +1840,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsmkfs.ReiserFSMkfs.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsmkfs.ReiserFSMkfs.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1647,21 +1899,54 @@ is False</p></li>
 <dt id="blivet.tasks.fsmkfs.UnimplementedFSMkfs.can_label">
 <em class="property">property </em><code class="sig-name descname">can_label</code><a class="headerlink" href="#blivet.tasks.fsmkfs.UnimplementedFSMkfs.can_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
 <dt id="blivet.tasks.fsmkfs.UnimplementedFSMkfs.can_nodiscard">
 <em class="property">property </em><code class="sig-name descname">can_nodiscard</code><a class="headerlink" href="#blivet.tasks.fsmkfs.UnimplementedFSMkfs.can_nodiscard" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
 <dt id="blivet.tasks.fsmkfs.UnimplementedFSMkfs.can_set_uuid">
 <em class="property">property </em><code class="sig-name descname">can_set_uuid</code><a class="headerlink" href="#blivet.tasks.fsmkfs.UnimplementedFSMkfs.can_set_uuid" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -1680,7 +1965,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsmkfs.XFSMkfs.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsmkfs.XFSMkfs.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2005,7 +2301,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsreadlabel.DosFSReadLabel.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsreadlabel.DosFSReadLabel.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2034,7 +2341,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsreadlabel.Ext2FSReadLabel.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsreadlabel.Ext2FSReadLabel.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2064,7 +2382,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsreadlabel.FSReadLabel.args">
 <em class="property">abstract property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsreadlabel.FSReadLabel.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2090,7 +2419,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsreadlabel.FSReadLabel.label_regex">
 <em class="property">abstract property </em><code class="sig-name descname">label_regex</code><a class="headerlink" href="#blivet.tasks.fsreadlabel.FSReadLabel.label_regex" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -2109,7 +2449,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsreadlabel.NTFSReadLabel.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsreadlabel.NTFSReadLabel.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2150,7 +2501,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsreadlabel.XFSReadLabel.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsreadlabel.XFSReadLabel.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2182,7 +2544,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsresize.Ext2FSResize.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsresize.Ext2FSResize.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2225,7 +2598,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsresize.FSResize.args">
 <em class="property">abstract property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsresize.FSResize.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2269,7 +2653,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsresize.FSResizeTask.size_fmt">
 <em class="property">abstract property </em><code class="sig-name descname">size_fmt</code><a class="headerlink" href="#blivet.tasks.fsresize.FSResizeTask.size_fmt" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -2288,7 +2683,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsresize.NTFSResize.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsresize.NTFSResize.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2330,7 +2736,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsresize.TmpFSResize.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsresize.TmpFSResize.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2372,7 +2789,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsresize.UnimplementedFSResize.size_fmt">
 <em class="property">property </em><code class="sig-name descname">size_fmt</code><a class="headerlink" href="#blivet.tasks.fsresize.UnimplementedFSResize.size_fmt" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -2391,7 +2819,18 @@ is False</p></li>
 <dt id="blivet.tasks.fsresize.XFSResize.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fsresize.XFSResize.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
@@ -2460,7 +2899,18 @@ is False</p></li>
 <dt id="blivet.tasks.fssize.FSSize.depends_on">
 <em class="property">property </em><code class="sig-name descname">depends_on</code><a class="headerlink" href="#blivet.tasks.fssize.FSSize.depends_on" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2489,7 +2939,18 @@ is False</p></li>
 <dt id="blivet.tasks.fssize.FSSize.tags">
 <em class="property">abstract property </em><code class="sig-name descname">tags</code><a class="headerlink" href="#blivet.tasks.fssize.FSSize.tags" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -2892,7 +3353,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswritelabel.DosFSWriteLabel.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswritelabel.DosFSWriteLabel.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2916,7 +3388,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswritelabel.Ext2FSWriteLabel.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswritelabel.Ext2FSWriteLabel.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2941,7 +3424,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswritelabel.FSWriteLabel.args">
 <em class="property">abstract property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswritelabel.FSWriteLabel.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2971,7 +3465,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswritelabel.JFSWriteLabel.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswritelabel.JFSWriteLabel.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2995,7 +3500,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswritelabel.NTFSWriteLabel.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswritelabel.NTFSWriteLabel.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3019,7 +3535,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswritelabel.ReiserFSWriteLabel.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswritelabel.ReiserFSWriteLabel.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3055,7 +3582,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswritelabel.XFSWriteLabel.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswritelabel.XFSWriteLabel.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3082,7 +3620,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswriteuuid.Ext2FSWriteUUID.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswriteuuid.Ext2FSWriteUUID.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3107,7 +3656,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswriteuuid.FSWriteUUID.args">
 <em class="property">abstract property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswriteuuid.FSWriteUUID.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3137,7 +3697,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswriteuuid.JFSWriteUUID.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswriteuuid.JFSWriteUUID.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3161,7 +3732,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswriteuuid.NTFSWriteUUID.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswriteuuid.NTFSWriteUUID.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3185,7 +3767,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswriteuuid.ReiserFSWriteUUID.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswriteuuid.ReiserFSWriteUUID.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3221,7 +3814,18 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.fswriteuuid.XFSWriteUUID.args">
 <em class="property">property </em><code class="sig-name descname">args</code><a class="headerlink" href="#blivet.tasks.fswriteuuid.XFSWriteUUID.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3377,14 +3981,36 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.task.BasicApplication.depends_on">
 <em class="property">property </em><code class="sig-name descname">depends_on</code><a class="headerlink" href="#blivet.tasks.task.BasicApplication.depends_on" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
 <dt id="blivet.tasks.task.BasicApplication.ext">
 <em class="property">abstract property </em><code class="sig-name descname">ext</code><a class="headerlink" href="#blivet.tasks.task.BasicApplication.ext" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -3418,14 +4044,36 @@ this filesystem, otherwise False.</p>
 <dt id="blivet.tasks.task.Task.depends_on">
 <em class="property">abstract property </em><code class="sig-name descname">depends_on</code><a class="headerlink" href="#blivet.tasks.task.Task.depends_on" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
 <dt id="blivet.tasks.task.Task.description">
 <em class="property">abstract property </em><code class="sig-name descname">description</code><a class="headerlink" href="#blivet.tasks.task.Task.description" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
@@ -3552,14 +4200,14 @@ this filesystem, otherwise False.</p>
         <li class="right" >
           <a href="blivet.static_data.html" title="blivet.static_data package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.tasks package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2021, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>

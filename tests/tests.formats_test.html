@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tests.formats_test package &#8212; Blivet 3.4.0 documentation</title>
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <title>tests.formats_test package &#8212; Blivet 3.4.1 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -35,7 +34,7 @@
         <li class="right" >
           <a href="tests.devices_test.html" title="tests.devices_test package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="tests.html" accesskey="U">tests package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">tests.formats_test package</a></li> 
       </ul>
@@ -82,8 +81,43 @@ not have a method with the specified name.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="tests-formats-test-disklabel-test-module">
-<h2>tests.formats_test.disklabel_test module<a class="headerlink" href="#tests-formats-test-disklabel-test-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tests.formats_test.disklabel_test">
+<span id="tests-formats-test-disklabel-test-module"></span><h2>tests.formats_test.disklabel_test module<a class="headerlink" href="#module-tests.formats_test.disklabel_test" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="tests.formats_test.disklabel_test.DiskLabelTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.disklabel_test.</code><code class="sig-name descname">DiskLabelTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.disklabel_test.DiskLabelTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="py method">
+<dt id="tests.formats_test.disklabel_test.DiskLabelTestCase.test_best_label_type">
+<code class="sig-name descname">test_best_label_type</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arch</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.disklabel_test.DiskLabelTestCase.test_best_label_type" title="Permalink to this definition">¶</a></dt>
+<dd><ol class="arabic simple">
+<li><p>is always in _disklabel_types</p></li>
+<li><p>is the default unless the device is too long for the default</p></li>
+<li><p>is msdos for fba dasd on S390</p></li>
+<li><p>is dasd for non-fba dasd on S390</p></li>
+</ol>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.disklabel_test.DiskLabelTestCase.test_get_alignment">
+<code class="sig-name descname">test_get_alignment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.disklabel_test.DiskLabelTestCase.test_get_alignment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.disklabel_test.DiskLabelTestCase.test_label_type_size_check">
+<code class="sig-name descname">test_label_type_size_check</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.disklabel_test.DiskLabelTestCase.test_label_type_size_check" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.disklabel_test.DiskLabelTestCase.test_platform_label_types">
+<code class="sig-name descname">test_platform_label_types</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arch</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.disklabel_test.DiskLabelTestCase.test_platform_label_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-tests.formats_test.fs_test">
 <span id="tests-formats-test-fs-test-module"></span><h2>tests.formats_test.fs_test module<a class="headerlink" href="#module-tests.formats_test.fs_test" title="Permalink to this headline">¶</a></h2>
@@ -464,7 +498,7 @@ sets them up, and tears them down again.</p>
 <dl class="py class">
 <dt id="tests.formats_test.fs_test.ResizeTmpFSTestCase">
 <em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.fs_test.</code><code class="sig-name descname">ResizeTmpFSTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'run_test'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.fs_test.ResizeTmpFSTestCase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="tests.html#tests.loopbackedtestcase.LoopBackedTestCase" title="tests.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.loopbackedtestcase.LoopBackedTestCase" title="tests.formats_test.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
 <p>LoopBackedTestCase manages loop devices.</p>
 <p>It constructs loop devices according to loop_device_spec,
 sets them up, and tears them down again.</p>
@@ -514,7 +548,7 @@ sets them up, and tears them down again.</p>
 <dl class="py class">
 <dt id="tests.formats_test.fs_test.SimpleTmpFSTestCase">
 <em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.fs_test.</code><code class="sig-name descname">SimpleTmpFSTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'run_test'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.fs_test.SimpleTmpFSTestCase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="tests.html#tests.loopbackedtestcase.LoopBackedTestCase" title="tests.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.loopbackedtestcase.LoopBackedTestCase" title="tests.formats_test.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
 <p>LoopBackedTestCase manages loop devices.</p>
 <p>It constructs loop devices according to loop_device_spec,
 sets them up, and tears them down again.</p>
@@ -702,7 +736,7 @@ and verify that the filesystem has that label</p></li>
 <dl class="py class">
 <dt id="tests.formats_test.fslabeling.LabelingAsRoot">
 <em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.fslabeling.</code><code class="sig-name descname">LabelingAsRoot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'run_test'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.fslabeling.LabelingAsRoot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="tests.html#tests.loopbackedtestcase.LoopBackedTestCase" title="tests.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.loopbackedtestcase.LoopBackedTestCase" title="tests.formats_test.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
 <p>Tests various aspects of labeling a filesystem where there
 is no easy way to read the filesystem’s label once it has been
 set and where the filesystem can not be relabeled.</p>
@@ -793,7 +827,7 @@ sets them up, and tears them down again.</p>
 <dl class="py class">
 <dt id="tests.formats_test.fstesting.FSAsRoot">
 <em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.fstesting.</code><code class="sig-name descname">FSAsRoot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'run_test'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.fstesting.FSAsRoot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="tests.html#tests.loopbackedtestcase.LoopBackedTestCase" title="tests.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.loopbackedtestcase.LoopBackedTestCase" title="tests.formats_test.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
 <p>LoopBackedTestCase manages loop devices.</p>
 <p>It constructs loop devices according to loop_device_spec,
 sets them up, and tears them down again.</p>
@@ -893,7 +927,7 @@ resize action resizes filesystem to that size.</p>
 <dl class="py class">
 <dt id="tests.formats_test.fsuuid.SetUUID">
 <em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.fsuuid.</code><code class="sig-name descname">SetUUID</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'run_test'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.fsuuid.SetUUID" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="tests.html#tests.loopbackedtestcase.LoopBackedTestCase" title="tests.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.loopbackedtestcase.LoopBackedTestCase" title="tests.formats_test.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
 <p>Base class for UUID tests without any test methods.</p>
 <p>LoopBackedTestCase manages loop devices.</p>
 <p>It constructs loop devices according to loop_device_spec,
@@ -1112,7 +1146,7 @@ sets them up, and tears them down again.</p>
 <dl class="py class">
 <dt id="tests.formats_test.labeling_test.LabelingSwapSpaceTestCase">
 <em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.labeling_test.</code><code class="sig-name descname">LabelingSwapSpaceTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'run_test'</span></em>, <em class="sig-param"><span class="n">device_spec</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">block_size</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.labeling_test.LabelingSwapSpaceTestCase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="tests.html#tests.loopbackedtestcase.LoopBackedTestCase" title="tests.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.loopbackedtestcase.LoopBackedTestCase" title="tests.formats_test.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
 <p>LoopBackedTestCase manages loop devices.</p>
 <p>It constructs loop devices according to loop_device_spec,
 sets them up, and tears them down again.</p>
@@ -1198,14 +1232,415 @@ sets them up, and tears them down again.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="tests-formats-test-luks-test-module">
-<h2>tests.formats_test.luks_test module<a class="headerlink" href="#tests-formats-test-luks-test-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tests.formats_test.loopbackedtestcase">
+<span id="tests-formats-test-loopbackedtestcase-module"></span><h2>tests.formats_test.loopbackedtestcase module<a class="headerlink" href="#module-tests.formats_test.loopbackedtestcase" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="tests.formats_test.loopbackedtestcase.LoopBackedTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.loopbackedtestcase.</code><code class="sig-name descname">LoopBackedTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'run_test'</span></em>, <em class="sig-param"><span class="n">device_spec</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">block_size</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.loopbackedtestcase.LoopBackedTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>LoopBackedTestCase manages loop devices.</p>
+<p>It constructs loop devices according to loop_device_spec,
+sets them up, and tears them down again.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device_spec</strong> (<em>list of Size</em><em> or </em><em>NoneType</em>) – list containing the size of each loop device</p></li>
+<li><p><strong>block_size</strong> (<a class="reference internal" href="../blivet/blivet.html#blivet.size.Size" title="blivet.size.Size"><em>Size</em></a><em> or </em><em>NoneType</em>) – block size for dd command when making devices</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="tests.formats_test.loopbackedtestcase.LoopBackedTestCase.DEFAULT_BLOCK_SIZE">
+<code class="sig-name descname">DEFAULT_BLOCK_SIZE</code><em class="property"> = Size (1024 B)</em><a class="headerlink" href="#tests.formats_test.loopbackedtestcase.LoopBackedTestCase.DEFAULT_BLOCK_SIZE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="tests.formats_test.loopbackedtestcase.LoopBackedTestCase.DEFAULT_STORE_SIZE">
+<code class="sig-name descname">DEFAULT_STORE_SIZE</code><em class="property"> = Size (100 MiB)</em><a class="headerlink" href="#tests.formats_test.loopbackedtestcase.LoopBackedTestCase.DEFAULT_STORE_SIZE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.loopbackedtestcase.LoopBackedTestCase.setUp">
+<code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.loopbackedtestcase.LoopBackedTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="tests.formats_test.loopbackedtestcase.get_free_loop_dev">
+<code class="sig-prename descclassname">tests.formats_test.loopbackedtestcase.</code><code class="sig-name descname">get_free_loop_dev</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.loopbackedtestcase.get_free_loop_dev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the name of the free loop device that losetup reports.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the name of the free loop device</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#OSError" title="(in Python v3.9)"><strong>OSError</strong></a> – on failure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="tests.formats_test.loopbackedtestcase.make_loop_dev">
+<code class="sig-prename descclassname">tests.formats_test.loopbackedtestcase.</code><code class="sig-name descname">make_loop_dev</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device_name</span></em>, <em class="sig-param"><span class="n">file_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.loopbackedtestcase.make_loop_dev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up a loop device with a backing store.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – the path of the loop device</p></li>
+<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – the path of the backing file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="tests.formats_test.loopbackedtestcase.make_store">
+<code class="sig-prename descclassname">tests.formats_test.loopbackedtestcase.</code><code class="sig-name descname">make_store</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">num_blocks</span><span class="o">=</span><span class="default_value">102400</span></em>, <em class="sig-param"><span class="n">block_size</span><span class="o">=</span><span class="default_value">1024</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.loopbackedtestcase.make_store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up the backing store for a loop device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – the path of the backing file</p></li>
+<li><p><strong>num_blocks</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – the size of file_name in number of blocks</p></li>
+<li><p><strong>block_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – the number of bytes in a block</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="tests.formats_test.loopbackedtestcase.remove_loop_dev">
+<code class="sig-prename descclassname">tests.formats_test.loopbackedtestcase.</code><code class="sig-name descname">remove_loop_dev</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.loopbackedtestcase.remove_loop_dev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
-<div class="section" id="tests-formats-test-lvmpv-test-module">
-<h2>tests.formats_test.lvmpv_test module<a class="headerlink" href="#tests-formats-test-lvmpv-test-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tests.formats_test.luks_test">
+<span id="tests-formats-test-luks-test-module"></span><h2>tests.formats_test.luks_test module<a class="headerlink" href="#module-tests.formats_test.luks_test" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="tests.formats_test.luks_test.LUKSNodevTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.luks_test.</code><code class="sig-name descname">LUKSNodevTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.luks_test.LUKSNodevTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="py method">
+<dt id="tests.formats_test.luks_test.LUKSNodevTestCase.test_create_discard_option">
+<code class="sig-name descname">test_create_discard_option</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.luks_test.LUKSNodevTestCase.test_create_discard_option" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.luks_test.LUKSNodevTestCase.test_key_size">
+<code class="sig-name descname">test_key_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.luks_test.LUKSNodevTestCase.test_key_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.luks_test.LUKSNodevTestCase.test_sector_size">
+<code class="sig-name descname">test_sector_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.luks_test.LUKSNodevTestCase.test_sector_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="tests.formats_test.luks_test.LUKSTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.luks_test.</code><code class="sig-name descname">LUKSTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'run_test'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.luks_test.LUKSTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.loopbackedtestcase.LoopBackedTestCase" title="tests.formats_test.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
+<p>LoopBackedTestCase manages loop devices.</p>
+<p>It constructs loop devices according to loop_device_spec,
+sets them up, and tears them down again.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device_spec</strong> (<em>list of Size</em><em> or </em><em>NoneType</em>) – list containing the size of each loop device</p></li>
+<li><p><strong>block_size</strong> (<a class="reference internal" href="../blivet/blivet.html#blivet.size.Size" title="blivet.size.Size"><em>Size</em></a><em> or </em><em>NoneType</em>) – block size for dd command when making devices</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="tests.formats_test.luks_test.LUKSTestCase.test_resize">
+<code class="sig-name descname">test_resize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.luks_test.LUKSTestCase.test_resize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.luks_test.LUKSTestCase.test_size">
+<code class="sig-name descname">test_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.luks_test.LUKSTestCase.test_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
-<div class="section" id="tests-formats-test-methods-test-module">
-<h2>tests.formats_test.methods_test module<a class="headerlink" href="#tests-formats-test-methods-test-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tests.formats_test.lvmpv_test">
+<span id="tests-formats-test-lvmpv-test-module"></span><h2>tests.formats_test.lvmpv_test module<a class="headerlink" href="#module-tests.formats_test.lvmpv_test" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="tests.formats_test.lvmpv_test.LVMPVTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.lvmpv_test.</code><code class="sig-name descname">LVMPVTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'run_test'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.lvmpv_test.LVMPVTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.loopbackedtestcase.LoopBackedTestCase" title="tests.formats_test.loopbackedtestcase.LoopBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.loopbackedtestcase.LoopBackedTestCase</span></code></a></p>
+<p>LoopBackedTestCase manages loop devices.</p>
+<p>It constructs loop devices according to loop_device_spec,
+sets them up, and tears them down again.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device_spec</strong> (<em>list of Size</em><em> or </em><em>NoneType</em>) – list containing the size of each loop device</p></li>
+<li><p><strong>block_size</strong> (<a class="reference internal" href="../blivet/blivet.html#blivet.size.Size" title="blivet.size.Size"><em>Size</em></a><em> or </em><em>NoneType</em>) – block size for dd command when making devices</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="tests.formats_test.lvmpv_test.LVMPVTestCase.test_resize">
+<code class="sig-name descname">test_resize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.lvmpv_test.LVMPVTestCase.test_resize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.lvmpv_test.LVMPVTestCase.test_size">
+<code class="sig-name descname">test_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.lvmpv_test.LVMPVTestCase.test_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tests.formats_test.methods_test">
+<span id="tests-formats-test-methods-test-module"></span><h2>tests.formats_test.methods_test module<a class="headerlink" href="#module-tests.formats_test.methods_test" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="tests.formats_test.methods_test.EFIFSMethodsTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.methods_test.</code><code class="sig-name descname">EFIFSMethodsTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.EFIFSMethodsTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.methods_test.FSMethodsTestCase" title="tests.formats_test.methods_test.FSMethodsTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.methods_test.FSMethodsTestCase</span></code></a></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="py attribute">
+<dt id="tests.formats_test.methods_test.EFIFSMethodsTestCase.format_class">
+<code class="sig-name descname">format_class</code><a class="headerlink" href="#tests.formats_test.methods_test.EFIFSMethodsTestCase.format_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.EFIFS" title="blivet.formats.fs.EFIFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.EFIFS</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="tests.formats_test.methods_test.Ext4FSMethodsTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.methods_test.</code><code class="sig-name descname">Ext4FSMethodsTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.Ext4FSMethodsTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.methods_test.FSMethodsTestCase" title="tests.formats_test.methods_test.FSMethodsTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.methods_test.FSMethodsTestCase</span></code></a></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="py attribute">
+<dt id="tests.formats_test.methods_test.Ext4FSMethodsTestCase.format_class">
+<code class="sig-name descname">format_class</code><a class="headerlink" href="#tests.formats_test.methods_test.Ext4FSMethodsTestCase.format_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.Ext4FS" title="blivet.formats.fs.Ext4FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.Ext4FS</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="tests.formats_test.methods_test.FSMethodsTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.methods_test.</code><code class="sig-name descname">FSMethodsTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FSMethodsTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.methods_test.FormatMethodsTestCase" title="tests.formats_test.methods_test.FormatMethodsTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.methods_test.FormatMethodsTestCase</span></code></a></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="py attribute">
+<dt id="tests.formats_test.methods_test.FSMethodsTestCase.format_class">
+<code class="sig-name descname">format_class</code><em class="property"> = None</em><a class="headerlink" href="#tests.formats_test.methods_test.FSMethodsTestCase.format_class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FSMethodsTestCase.setUp">
+<code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FSMethodsTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FSMethodsTestCase.set_os_path_exists">
+<code class="sig-name descname">set_os_path_exists</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FSMethodsTestCase.set_os_path_exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FSMethodsTestCase.set_patches">
+<code class="sig-name descname">set_patches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FSMethodsTestCase.set_patches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FSMethodsTestCase.test_create">
+<code class="sig-name descname">test_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FSMethodsTestCase.test_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FSMethodsTestCase.test_destroy">
+<code class="sig-name descname">test_destroy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FSMethodsTestCase.test_destroy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FSMethodsTestCase.test_setup">
+<code class="sig-name descname">test_setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FSMethodsTestCase.test_setup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FSMethodsTestCase.test_teardown">
+<code class="sig-name descname">test_teardown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FSMethodsTestCase.test_teardown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="tests.formats_test.methods_test.FormatMethodsTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.methods_test.</code><code class="sig-name descname">FormatMethodsTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FormatMethodsTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="py attribute">
+<dt id="tests.formats_test.methods_test.FormatMethodsTestCase.format_class">
+<code class="sig-name descname">format_class</code><a class="headerlink" href="#tests.formats_test.methods_test.FormatMethodsTestCase.format_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FormatMethodsTestCase.setUp">
+<code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FormatMethodsTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FormatMethodsTestCase.set_os_path_exists">
+<code class="sig-name descname">set_os_path_exists</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FormatMethodsTestCase.set_os_path_exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FormatMethodsTestCase.set_patches">
+<code class="sig-name descname">set_patches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FormatMethodsTestCase.set_patches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FormatMethodsTestCase.start_patches">
+<code class="sig-name descname">start_patches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FormatMethodsTestCase.start_patches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FormatMethodsTestCase.stop_patches">
+<code class="sig-name descname">stop_patches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FormatMethodsTestCase.stop_patches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FormatMethodsTestCase.test_create">
+<code class="sig-name descname">test_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FormatMethodsTestCase.test_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FormatMethodsTestCase.test_destroy">
+<code class="sig-name descname">test_destroy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FormatMethodsTestCase.test_destroy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FormatMethodsTestCase.test_setup">
+<code class="sig-name descname">test_setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FormatMethodsTestCase.test_setup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.FormatMethodsTestCase.test_teardown">
+<code class="sig-name descname">test_teardown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.FormatMethodsTestCase.test_teardown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="tests.formats_test.methods_test.LUKSMethodsTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.methods_test.</code><code class="sig-name descname">LUKSMethodsTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.LUKSMethodsTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.methods_test.FormatMethodsTestCase" title="tests.formats_test.methods_test.FormatMethodsTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.methods_test.FormatMethodsTestCase</span></code></a></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="py attribute">
+<dt id="tests.formats_test.methods_test.LUKSMethodsTestCase.format_class">
+<code class="sig-name descname">format_class</code><a class="headerlink" href="#tests.formats_test.methods_test.LUKSMethodsTestCase.format_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.luks.LUKS" title="blivet.formats.luks.LUKS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.luks.LUKS</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.LUKSMethodsTestCase.set_patches">
+<code class="sig-name descname">set_patches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.LUKSMethodsTestCase.set_patches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="tests.formats_test.methods_test.LVMPhysicalVolumeMethodsTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.methods_test.</code><code class="sig-name descname">LVMPhysicalVolumeMethodsTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.LVMPhysicalVolumeMethodsTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.methods_test.FormatMethodsTestCase" title="tests.formats_test.methods_test.FormatMethodsTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.methods_test.FormatMethodsTestCase</span></code></a></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="py attribute">
+<dt id="tests.formats_test.methods_test.LVMPhysicalVolumeMethodsTestCase.format_class">
+<code class="sig-name descname">format_class</code><a class="headerlink" href="#tests.formats_test.methods_test.LVMPhysicalVolumeMethodsTestCase.format_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.lvmpv.LVMPhysicalVolume" title="blivet.formats.lvmpv.LVMPhysicalVolume"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.lvmpv.LVMPhysicalVolume</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.LVMPhysicalVolumeMethodsTestCase.set_patches">
+<code class="sig-name descname">set_patches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.LVMPhysicalVolumeMethodsTestCase.set_patches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="tests.formats_test.methods_test.MDRaidMemberMethodsTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.methods_test.</code><code class="sig-name descname">MDRaidMemberMethodsTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.MDRaidMemberMethodsTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.methods_test.FormatMethodsTestCase" title="tests.formats_test.methods_test.FormatMethodsTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.methods_test.FormatMethodsTestCase</span></code></a></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="py attribute">
+<dt id="tests.formats_test.methods_test.MDRaidMemberMethodsTestCase.format_class">
+<code class="sig-name descname">format_class</code><a class="headerlink" href="#tests.formats_test.methods_test.MDRaidMemberMethodsTestCase.format_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.mdraid.MDRaidMember" title="blivet.formats.mdraid.MDRaidMember"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.mdraid.MDRaidMember</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.MDRaidMemberMethodsTestCase.set_patches">
+<code class="sig-name descname">set_patches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.MDRaidMemberMethodsTestCase.set_patches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="tests.formats_test.methods_test.SwapMethodsTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.methods_test.</code><code class="sig-name descname">SwapMethodsTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.SwapMethodsTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.methods_test.FormatMethodsTestCase" title="tests.formats_test.methods_test.FormatMethodsTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.methods_test.FormatMethodsTestCase</span></code></a></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="py attribute">
+<dt id="tests.formats_test.methods_test.SwapMethodsTestCase.format_class">
+<code class="sig-name descname">format_class</code><a class="headerlink" href="#tests.formats_test.methods_test.SwapMethodsTestCase.format_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.swap.SwapSpace" title="blivet.formats.swap.SwapSpace"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.swap.SwapSpace</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tests.formats_test.methods_test.SwapMethodsTestCase.set_patches">
+<code class="sig-name descname">set_patches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.SwapMethodsTestCase.set_patches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="tests.formats_test.methods_test.XFSMethodsTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.methods_test.</code><code class="sig-name descname">XFSMethodsTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.methods_test.XFSMethodsTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tests.formats_test.methods_test.FSMethodsTestCase" title="tests.formats_test.methods_test.FSMethodsTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.formats_test.methods_test.FSMethodsTestCase</span></code></a></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="py attribute">
+<dt id="tests.formats_test.methods_test.XFSMethodsTestCase.format_class">
+<code class="sig-name descname">format_class</code><a class="headerlink" href="#tests.formats_test.methods_test.XFSMethodsTestCase.format_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.fs.XFS" title="blivet.formats.fs.XFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.XFS</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-tests.formats_test.misc_test">
 <span id="tests-formats-test-misc-test-module"></span><h2>tests.formats_test.misc_test module<a class="headerlink" href="#module-tests.formats_test.misc_test" title="Permalink to this headline">¶</a></h2>
@@ -1266,8 +1701,22 @@ not have a method with the specified name.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="tests-formats-test-swap-test-module">
-<h2>tests.formats_test.swap_test module<a class="headerlink" href="#tests-formats-test-swap-test-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tests.formats_test.swap_test">
+<span id="tests-formats-test-swap-test-module"></span><h2>tests.formats_test.swap_test module<a class="headerlink" href="#module-tests.formats_test.swap_test" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="tests.formats_test.swap_test.SwapNodevTestCase">
+<em class="property">class </em><code class="sig-prename descclassname">tests.formats_test.swap_test.</code><code class="sig-name descname">SwapNodevTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.swap_test.SwapNodevTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="py method">
+<dt id="tests.formats_test.swap_test.SwapNodevTestCase.test_swap_max_size">
+<code class="sig-name descname">test_swap_max_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.formats_test.swap_test.SwapNodevTestCase.test_swap_max_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-tests.formats_test.uuid_test">
 <span id="tests-formats-test-uuid-test-module"></span><h2>tests.formats_test.uuid_test module<a class="headerlink" href="#module-tests.formats_test.uuid_test" title="Permalink to this headline">¶</a></h2>
@@ -1498,19 +1947,20 @@ sets them up, and tears them down again.</p>
 <li><a class="reference internal" href="#">tests.formats_test package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-tests.formats_test.device_test">tests.formats_test.device_test module</a></li>
-<li><a class="reference internal" href="#tests-formats-test-disklabel-test-module">tests.formats_test.disklabel_test module</a></li>
+<li><a class="reference internal" href="#module-tests.formats_test.disklabel_test">tests.formats_test.disklabel_test module</a></li>
 <li><a class="reference internal" href="#module-tests.formats_test.fs_test">tests.formats_test.fs_test module</a></li>
 <li><a class="reference internal" href="#module-tests.formats_test.fslabeling">tests.formats_test.fslabeling module</a></li>
 <li><a class="reference internal" href="#module-tests.formats_test.fstesting">tests.formats_test.fstesting module</a></li>
 <li><a class="reference internal" href="#module-tests.formats_test.fsuuid">tests.formats_test.fsuuid module</a></li>
 <li><a class="reference internal" href="#module-tests.formats_test.init_test">tests.formats_test.init_test module</a></li>
 <li><a class="reference internal" href="#module-tests.formats_test.labeling_test">tests.formats_test.labeling_test module</a></li>
-<li><a class="reference internal" href="#tests-formats-test-luks-test-module">tests.formats_test.luks_test module</a></li>
-<li><a class="reference internal" href="#tests-formats-test-lvmpv-test-module">tests.formats_test.lvmpv_test module</a></li>
-<li><a class="reference internal" href="#tests-formats-test-methods-test-module">tests.formats_test.methods_test module</a></li>
+<li><a class="reference internal" href="#module-tests.formats_test.loopbackedtestcase">tests.formats_test.loopbackedtestcase module</a></li>
+<li><a class="reference internal" href="#module-tests.formats_test.luks_test">tests.formats_test.luks_test module</a></li>
+<li><a class="reference internal" href="#module-tests.formats_test.lvmpv_test">tests.formats_test.lvmpv_test module</a></li>
+<li><a class="reference internal" href="#module-tests.formats_test.methods_test">tests.formats_test.methods_test module</a></li>
 <li><a class="reference internal" href="#module-tests.formats_test.misc_test">tests.formats_test.misc_test module</a></li>
 <li><a class="reference internal" href="#module-tests.formats_test.selinux_test">tests.formats_test.selinux_test module</a></li>
-<li><a class="reference internal" href="#tests-formats-test-swap-test-module">tests.formats_test.swap_test module</a></li>
+<li><a class="reference internal" href="#module-tests.formats_test.swap_test">tests.formats_test.swap_test module</a></li>
 <li><a class="reference internal" href="#module-tests.formats_test.uuid_test">tests.formats_test.uuid_test module</a></li>
 <li><a class="reference internal" href="#module-tests.formats_test">Module contents</a></li>
 </ul>
@@ -1559,14 +2009,14 @@ sets them up, and tears them down again.</p>
         <li class="right" >
           <a href="tests.devices_test.html" title="tests.devices_test package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="tests.html" >tests package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">tests.formats_test package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2021, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>

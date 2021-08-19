@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LVM VDO support &#8212; Blivet 3.4.1 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.4.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">LVM VDO support</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="lvm-vdo-support">
+<h1>LVM VDO support<a class="headerlink" href="#lvm-vdo-support" title="Permalink to this headline">¶</a></h1>
+<p>Support for creating LVM VDO devices has been added in Blivet 3.4.</p>
+<p>These devices are similar to LVM thinly provisioned volumes, but there are some special steps
+and limitations when creating these devices which this document describes.</p>
+<div class="section" id="lvm-vdo-in-blivet">
+<h2>LVM VDO in Blivet<a class="headerlink" href="#lvm-vdo-in-blivet" title="Permalink to this headline">¶</a></h2>
+<p>LVM VDO devices are represented by two <code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice</span></code> devices:</p>
+<ul class="simple">
+<li><p>VDO Pool logical volume with type ‘lvmvdopool’</p></li>
+<li><p>VDO logical volume with type ‘lvmvdolv’ which is the child of the VDO Pool device</p></li>
+</ul>
+<p>Existing LVM VDO setup in Blivet:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>existing 20 GiB disk vdb (265) with existing msdos disklabel</dt><dd><dl class="simple">
+<dt>existing 20 GiB partition vdb1 (275) with existing lvmpv</dt><dd><dl class="simple">
+<dt>existing 20 GiB lvmvg data (284)</dt><dd><dl class="simple">
+<dt>existing 10 GiB lvmvdopool data-vdopool (288)</dt><dd><p>existing 50 GiB lvmvdolv data-vdolv (295)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p>When creating LVM VDO setup using Blivet these two devices must be created together as these
+are created by a single LVM command.</p>
+<p>It currently isn’t possible to create additional VDO logical volumes in the pool. It is however
+possible to create multiple VDO pools in a single volume group.</p>
+<p>Deduplication and compression are properties of the VDO pool. Size specified for the VDO pool
+volume will be used as the “physical” size for the pool and size specified for the VDO logical volume
+will be used as the “virtual” size for the VDO volume.</p>
+<p>When creating format, it must be created on the VDO logical volume. For filesystems with discard
+support, no discard option will be automatically added when calling the <code class="docutils literal notranslate"><span class="pre">mkfs</span></code> command
+(e.g. <code class="docutils literal notranslate"><span class="pre">-K</span></code> for <code class="docutils literal notranslate"><span class="pre">mkfs.xfs</span></code>).</p>
+<p>Example for creating a <em>80 GiB</em> VDO pool with <em>400 GiB</em> VDO logical volume with an <em>ext4</em> format with
+both deduplication and compression enabled:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>pool = b.new_lv(size=Size(“80GiB”), parents=[vg], name=”vdopool”, vdo_pool=True,</dt><dd><p>deduplication=True, compression=True)</p>
+</dd>
+</dl>
+<p>b.create_device(pool)</p>
+<dl class="simple">
+<dt>lv = b.new_lv(size=Size(“400GiB”), parents=[pool], name=”vdolv”, vdo_lv=True,</dt><dd><p>fmt_type=”ext4”)</p>
+</dd>
+</dl>
+<p>b.create_device(lv)</p>
+</div></blockquote>
+<p>When removing existing LVM VDO devices, both devices must be removed from the devicetree and the VDO
+logical volume must be removed first (<code class="docutils literal notranslate"><span class="pre">recursive_remove</span></code> can be used to automate these two steps).</p>
+<p>Managing of existing LVM VDO devices is currently not supported.</p>
+</div>
+<div class="section" id="lvm-vdo-in-devicefactory">
+<h2>LVM VDO in Devicefactory<a class="headerlink" href="#lvm-vdo-in-devicefactory" title="Permalink to this headline">¶</a></h2>
+<p>For the top-down specified creation using device factories a new <code class="docutils literal notranslate"><span class="pre">LVMVDOFactory</span></code> factory has been
+added. Factory device in this case is the VDO logical volume and is again automatically created
+together with the VDO pool.</p>
+<p>Example of creating a new LVM VDO setup using the <code class="docutils literal notranslate"><span class="pre">devicefactory</span></code> module:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>factory = blivet.devicefactory.LVMVDOFactory(b, size=Size(“5 GiB”), virtual_size=Size(“50 GiB”),</dt><dd><p>disks=disks, fstype=”xfs”,
+container_name=”data”,
+pool_name=”myvdopool”,
+compression=True, deduplication=True)</p>
+</dd>
+</dl>
+<p>factory.configure()
+factory.device</p>
+<blockquote>
+<div><dl class="simple">
+<dt>LVMLogicalVolumeDevice instance (0x7f14d17422b0) –</dt><dd><p>name = data-00  status = False  id = 528
+children = []
+parents = [‘non-existent 5 GiB lvmvdopool data-myvdopool (519)’]
+…</p>
+</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">size</span></code> in this case sets the pool (physical) size, the VDO logical volume size can be specified
+with <code class="docutils literal notranslate"><span class="pre">virtual_size</span></code> (if not specified it will be same as the pool size). Name for the VDO volume
+can be specified using the <code class="docutils literal notranslate"><span class="pre">name</span></code> keyword argument. <code class="docutils literal notranslate"><span class="pre">pool_name</span></code> argument is optional and
+a unique name will be generated if omitted. Both <code class="docutils literal notranslate"><span class="pre">compression</span></code> and <code class="docutils literal notranslate"><span class="pre">deduplication</span></code> default to
+<code class="docutils literal notranslate"><span class="pre">True</span></code> (enabled) if not specified.</p>
+<p>This factory can create only a single VDO logical volume in a single VDO pool but additional VDO pools
+can be added by repeating the steps to create the first one.</p>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">LVM VDO support</a><ul>
+<li><a class="reference internal" href="#lvm-vdo-in-blivet">LVM VDO in Blivet</a></li>
+<li><a class="reference internal" href="#lvm-vdo-in-devicefactory">LVM VDO in Devicefactory</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lvmvdo.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.4.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">LVM VDO support</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2013-2021, Red Hat, Inc..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+    </div>
+  </body>
+</html>

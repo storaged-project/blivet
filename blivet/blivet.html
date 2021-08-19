@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>blivet package &#8212; Blivet 3.4.0 documentation</title>
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <title>blivet package &#8212; Blivet 3.4.1 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -35,7 +34,7 @@
         <li class="right" >
           <a href="../testing.html" title="Testing Blivet"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet package</a></li> 
       </ul>
     </div>  
@@ -196,7 +195,7 @@
 <span id="blivet-actionlist-module"></span><h2>blivet.actionlist module<a class="headerlink" href="#module-blivet.actionlist" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="blivet.actionlist.ActionList">
-<em class="property">class </em><code class="sig-prename descclassname">blivet.actionlist.</code><code class="sig-name descname">ActionList</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.actionlist.ActionList" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">blivet.actionlist.</code><code class="sig-name descname">ActionList</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">addfunc</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">removefunc</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.actionlist.ActionList" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt id="blivet.actionlist.ActionList.add">
@@ -506,7 +505,7 @@ of the “word” used by the current architecture
 <span id="blivet-blivet-module"></span><h2>blivet.blivet module<a class="headerlink" href="#module-blivet.blivet" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="blivet.blivet.Blivet">
-<em class="property">class </em><code class="sig-prename descclassname">blivet.blivet.</code><code class="sig-name descname">Blivet</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.blivet.Blivet" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">blivet.blivet.</code><code class="sig-name descname">Blivet</code><a class="headerlink" href="#blivet.blivet.Blivet" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Top-level class for managing storage configuration.</p>
 <dl class="py method">
@@ -2311,7 +2310,7 @@ LUKS format creation</p></li>
 <dl class="py attribute">
 <dt id="blivet.devicefactory.BTRFSFactory.child_factory_class">
 <code class="sig-name descname">child_factory_class</code><a class="headerlink" href="#blivet.devicefactory.BTRFSFactory.child_factory_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#blivet.devicefactory.PartitionSetFactory" title="blivet.devicefactory.PartitionSetFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">PartitionSetFactory</span></code></a></p>
+<dd><p>alias of <a class="reference internal" href="#blivet.devicefactory.PartitionSetFactory" title="blivet.devicefactory.PartitionSetFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devicefactory.PartitionSetFactory</span></code></a></p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2593,7 +2592,7 @@ LUKS format creation</p></li>
 <dl class="py attribute">
 <dt id="blivet.devicefactory.LVMFactory.child_factory_class">
 <code class="sig-name descname">child_factory_class</code><a class="headerlink" href="#blivet.devicefactory.LVMFactory.child_factory_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#blivet.devicefactory.PartitionSetFactory" title="blivet.devicefactory.PartitionSetFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">PartitionSetFactory</span></code></a></p>
+<dd><p>alias of <a class="reference internal" href="#blivet.devicefactory.PartitionSetFactory" title="blivet.devicefactory.PartitionSetFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devicefactory.PartitionSetFactory</span></code></a></p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2818,7 +2817,7 @@ LUKS format creation</p></li>
 <dl class="py attribute">
 <dt id="blivet.devicefactory.MDFactory.child_factory_class">
 <code class="sig-name descname">child_factory_class</code><a class="headerlink" href="#blivet.devicefactory.MDFactory.child_factory_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#blivet.devicefactory.PartitionSetFactory" title="blivet.devicefactory.PartitionSetFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">PartitionSetFactory</span></code></a></p>
+<dd><p>alias of <a class="reference internal" href="#blivet.devicefactory.PartitionSetFactory" title="blivet.devicefactory.PartitionSetFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devicefactory.PartitionSetFactory</span></code></a></p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2998,7 +2997,7 @@ encrypted           whether to encrypt (boolean)</p>
 <span id="blivet-devicetree-module"></span><h2>blivet.devicetree module<a class="headerlink" href="#module-blivet.devicetree" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="blivet.devicetree.DeviceTree">
-<em class="property">class </em><code class="sig-prename descclassname">blivet.devicetree.</code><code class="sig-name descname">DeviceTree</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicetree.DeviceTree" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">blivet.devicetree.</code><code class="sig-name descname">DeviceTree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ignored_disks</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">exclusive_disks</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">disk_images</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicetree.DeviceTree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#blivet.devicetree.DeviceTreeBase" title="blivet.devicetree.DeviceTreeBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devicetree.DeviceTreeBase</span></code></a>, <a class="reference internal" href="blivet.populator.html#blivet.populator.populator.PopulatorMixin" title="blivet.populator.populator.PopulatorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.populator.populator.PopulatorMixin</span></code></a>, <a class="reference internal" href="blivet.events.html#blivet.events.handler.EventHandlerMixin" title="blivet.events.handler.EventHandlerMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.events.handler.EventHandlerMixin</span></code></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -3026,7 +3025,7 @@ encrypted           whether to encrypt (boolean)</p>
 
 <dl class="py class">
 <dt id="blivet.devicetree.DeviceTreeBase">
-<em class="property">class </em><code class="sig-prename descclassname">blivet.devicetree.</code><code class="sig-name descname">DeviceTreeBase</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicetree.DeviceTreeBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">blivet.devicetree.</code><code class="sig-name descname">DeviceTreeBase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ignored_disks</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">exclusive_disks</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicetree.DeviceTreeBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A quasi-tree that represents the devices in the system.</p>
 <p>The tree contains a list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code> instances,
@@ -5910,7 +5909,18 @@ not a disk.</p>
 <dt id="blivet.util.DependencyGuard.error_msg">
 <em class="property">abstract property </em><code class="sig-name descname">error_msg</code><a class="headerlink" href="#blivet.util.DependencyGuard.error_msg" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead.</p>
+<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
+<blockquote>
+<div><dl>
+<dt>class C(ABC):</dt><dd><p>&#64;property
+&#64;abstractmethod
+def my_abstract_property(self):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -6267,6 +6277,13 @@ whatnot and then normalizes repeated slashes.</p>
 <dt id="blivet.util.mount">
 <code class="sig-prename descclassname">blivet.util.</code><code class="sig-name descname">mount</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device</span></em>, <em class="sig-param"><span class="n">mountpoint</span></em>, <em class="sig-param"><span class="n">fstype</span></em>, <em class="sig-param"><span class="n">options</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.util.mount" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py function">
+<dt id="blivet.util.natural_sort_key">
+<code class="sig-prename descclassname">blivet.util.</code><code class="sig-name descname">natural_sort_key</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.util.natural_sort_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sorting key for devices which makes sure partitions are sorted in natural
+way, e.g. ‘sda1, sda2, …, sda10’ and not like ‘sda1, sda10, sda2, …’</p>
+</dd></dl>
 
 <dl class="py function">
 <dt id="blivet.util.normalize_path_slashes">
@@ -6655,13 +6672,13 @@ devices it is implemented as a Singleton.</p>
         <li class="right" >
           <a href="../testing.html" title="Testing Blivet"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2021, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>
