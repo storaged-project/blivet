@@ -20,7 +20,7 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
-from distutils.spawn import find_executable
+import shutil
 
 from six import add_metaclass
 
@@ -121,7 +121,7 @@ class Path(Method):
             :returns: [] if the name of the application is in the path
             :rtype: list of str
         """
-        if not find_executable(resource.name):
+        if not shutil.which(resource.name):
             return ["application %s is not in $PATH" % resource.name]
         else:
             return []
