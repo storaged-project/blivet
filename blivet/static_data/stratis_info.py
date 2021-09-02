@@ -46,8 +46,9 @@ STRATIS_PROPS_INTF = STRATIS_SERVICE + ".FetchProperties.r4"
 STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r2"
 
 
-StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "object_path", "encrypted"])
-StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "pool_name", "pool_uuid", "object_path"])
+StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "physical_used", "object_path", "encrypted"])
+StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "used_size", "pool_name",
+                                                             "pool_uuid", "object_path"])
 StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_name", "pool_uuid", "object_path"])
 StratisLockedPoolInfo = namedtuple("StratisLockedPoolInfo", ["uuid", "key_desc", "devices"])
 
@@ -85,13 +86,21 @@ class StratisInfo(object):
                 log.warning("Failed to get Stratis pool physical size for %s: %s",
                             properties["Name"], pool_size)
                 pool_size = 0
+
+            valid, pool_used = all_props.get("TotalPhysicalUsed",
+                                             (False, "TotalPhysicalUsed not available"))
+            if not valid:
+                log.warning("Failed to get Stratis pool physical used for %s: %s",
+                            properties["Name"], pool_used)
+                pool_used = 0
         else:
             log.error("Failed to get Stratis pool properties for %s.", properties["Name"])
             pool_size = 0
+            pool_used = 0
 
         return StratisPoolInfo(name=properties["Name"], uuid=properties["Uuid"],
-                               physical_size=Size(pool_size), object_path=pool_path,
-                               encrypted=properties["Encrypted"])
+                               physical_size=Size(pool_size), physical_used=Size(pool_used),
+                               object_path=pool_path, encrypted=properties["Encrypted"])
 
     def _get_filesystem_info(self, filesystem_path):
         try:
@@ -110,7 +119,24 @@ class StratisInfo(object):
         if not pool_info:
             return None
 
+        all_props = safe_dbus.call_sync(STRATIS_SERVICE,
+                                        filesystem_path,
+                                        STRATIS_PROPS_INTF,
+                                        "GetAllProperties",
+                                        None)[0]
+        if all_props:
+            valid, used_size = all_props.get("Used",
+                                             (False, "Used not available"))
+            if not valid:
+                log.warning("Failed to get Stratis filesystem used size for %s: %s",
+                            properties["Name"], used_size)
+                used_size = 0
+        else:
+            log.error("Failed to get Stratis filesystem properties for %s.", properties["Name"])
+            used_size = 0
+
         return StratisFilesystemInfo(name=properties["Name"], uuid=properties["Uuid"],
+                                     used_size=Size(used_size),
                                      pool_name=pool_info.name, pool_uuid=pool_info.uuid,
                                      object_path=filesystem_path)
 

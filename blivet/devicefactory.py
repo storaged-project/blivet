@@ -2079,10 +2079,6 @@ class StratisFactory(DeviceFactory):
         else:
             return self.container_size
 
-    def _get_device_space(self):
-        """ The total disk space required for the factory device. """
-        return Size(0)  # FIXME
-
     def _normalize_size(self):
         pass
 

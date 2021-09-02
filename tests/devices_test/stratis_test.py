@@ -1,3 +1,4 @@
+import six
 import unittest
 
 try:
@@ -10,6 +11,7 @@ import blivet
 from blivet.devices import StorageDevice
 from blivet.devices import StratisPoolDevice
 from blivet.devices import StratisFilesystemDevice
+from blivet.errors import StratisError
 from blivet.size import Size
 
 
@@ -25,7 +27,7 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
     def test_new_stratis(self):
         b = blivet.Blivet()
         bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
-                           size=Size("1 GiB"), exists=True)
+                           size=Size("1 GiB"), exists=False)
 
         b.devicetree._add_device(bd)
 
@@ -40,6 +42,10 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
         self.assertEqual(fs.size, Size("1 TiB"))
         self.assertEqual(fs.pool, pool)
         self.assertEqual(fs.format.type, "stratis xfs")
+
+        with six.assertRaisesRegex(self, StratisError, "not enough free space in the pool"):
+            # only 1 GiB pool, not enough space for second fs
+            b.new_stratis_filesystem(name="testfs2", parents=[pool])
 
         b.create_device(pool)
         b.create_device(fs)

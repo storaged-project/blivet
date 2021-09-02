@@ -26,12 +26,15 @@ gi.require_version("Gio", "2.0")
 
 from gi.repository import GLib, Gio
 
+import json
 import os
+import shutil
 
 from ..errors import StratisError
 from ..size import Size
 from ..static_data import stratis_info
 from .. import safe_dbus
+from .. import util
 
 
 STRATIS_SERVICE = "org.storage.stratis2"
@@ -44,9 +47,37 @@ STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r2"
 
 
 STRATIS_FS_SIZE = Size("1 TiB")
+STRATIS_FS_MD_SIZE = Size("600 MiB")
+
+STRATIS_BD_MD_SIZE = Size("4 MiB")
+STRATIS_BD_ENC_MD_SIZE = Size("16 MiB")
+
+
+STRATIS_PREDICT_USAGE = "stratis-predict-usage"
 
 
 safe_name_characters = "0-9a-zA-Z._-"
+
+
+def pool_used(pool_name, blockdevs, encrypted=False):
+    if not shutil.which(STRATIS_PREDICT_USAGE):
+        raise StratisError("Utility for predicting stratis pool usage '%s' not available" % STRATIS_PREDICT_USAGE)
+
+    cmd = [STRATIS_PREDICT_USAGE]
+    cmd.extend(blockdevs)
+    if encrypted:
+        cmd.append("--encrypted")
+
+    rc, out = util.run_program_and_capture_output(cmd)
+    if rc:
+        raise StratisError("Failed to predict usage for stratis pool %s" % pool_name)
+
+    try:
+        pred = json.loads(out)
+    except json.JSONDecodeError as e:
+        raise StratisError("Failed to get stratis pool usage") from e
+
+    return Size(pred["used"])
 
 
 def remove_pool(pool_uuid):
