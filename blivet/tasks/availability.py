@@ -247,18 +247,21 @@ class BlockDevMethod(Method):
                 return []
 
 
-class UnavailableMethod(Method):
+class _UnavailableMethod(Method):
 
     """ Method that indicates a resource is unavailable. """
 
+    def __init__(self, error_msg=None):
+        self.error_msg = error_msg or "always unavailable"
+
     def availability_errors(self, resource):
-        return ["always unavailable"]
+        return [self.error_msg]
 
 
-UnavailableMethod = UnavailableMethod()
+UnavailableMethod = _UnavailableMethod()
 
 
-class AvailableMethod(Method):
+class _AvailableMethod(Method):
 
     """ Method that indicates a resource is available. """
 
@@ -266,7 +269,7 @@ class AvailableMethod(Method):
         return []
 
 
-AvailableMethod = AvailableMethod()
+AvailableMethod = _AvailableMethod()
 
 
 def application(name):
