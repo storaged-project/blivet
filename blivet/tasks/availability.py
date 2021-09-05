@@ -375,12 +375,15 @@ BLOCKDEV_LVM = BlockDevTechInfo(plugin_name="lvm",
                                                                            blockdev.LVMTechMode.MODIFY)})
 BLOCKDEV_LVM_TECH = BlockDevMethod(BLOCKDEV_LVM)
 
-BLOCKDEV_LVM_VDO = BlockDevTechInfo(plugin_name="lvm",
-                                    check_fn=blockdev.lvm_is_tech_avail,
-                                    technologies={blockdev.LVMTech.VDO: (blockdev.LVMTechMode.CREATE |
-                                                                         blockdev.LVMTechMode.REMOVE |
-                                                                         blockdev.LVMTechMode.QUERY)})
-BLOCKDEV_LVM_TECH_VDO = BlockDevMethod(BLOCKDEV_LVM_VDO)
+if hasattr(blockdev.LVMTech, "VDO"):
+    BLOCKDEV_LVM_VDO = BlockDevTechInfo(plugin_name="lvm",
+                                        check_fn=blockdev.lvm_is_tech_avail,
+                                        technologies={blockdev.LVMTech.VDO: (blockdev.LVMTechMode.CREATE |
+                                                                             blockdev.LVMTechMode.REMOVE |
+                                                                             blockdev.LVMTechMode.QUERY)})
+    BLOCKDEV_LVM_TECH_VDO = BlockDevMethod(BLOCKDEV_LVM_VDO)
+else:
+    BLOCKDEV_LVM_TECH_VDO = _UnavailableMethod(error_msg="Installed version of libblockdev doesn't support LVM VDO technology")
 
 # libblockdev mdraid plugin required technologies and modes
 BLOCKDEV_MD_ALL_MODES = (blockdev.MDTechMode.CREATE |
