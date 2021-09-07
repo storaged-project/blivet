@@ -54,7 +54,7 @@ class OpticalDevice(StorageDevice):
         """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         try:
             fd = os.open(self.path, os.O_RDONLY)
@@ -72,7 +72,7 @@ class OpticalDevice(StorageDevice):
         """ Eject the drawer. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         # try to umount and close device before ejecting
         self.teardown()

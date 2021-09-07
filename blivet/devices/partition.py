@@ -185,7 +185,7 @@ class PartitionDevice(StorageDevice):
             self._parted_partition = self.disk.format.parted_disk.getPartitionByPath(self.path)
             if not self._parted_partition:
                 self.parents = []
-                raise errors.DeviceError("cannot find parted partition instance", self.name)
+                raise errors.DeviceError("cannot find parted partition instance for %s" % self.name)
 
             self._orig_path = self.path
             # collect information about the partition from parted
@@ -493,7 +493,7 @@ class PartitionDevice(StorageDevice):
                 else:
                     self.unset_flag(parted.PARTITION_BOOT)
             else:
-                raise errors.DeviceError("boot flag not available for this partition", self.name)
+                raise errors.DeviceError("boot flag not available for this partition")
 
             self._bootable = bootable
         else:
@@ -743,7 +743,7 @@ class PartitionDevice(StorageDevice):
 
     def _pre_resize(self):
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         # don't teardown when resizing luks
         if self.format.type == "luks" and self.children:

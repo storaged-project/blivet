@@ -308,7 +308,7 @@ class StorageDevice(Device):
         # this method.
         log_method_call(self, self.name, status=os.path.exists(self.path))
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         try:
             udev_device = pyudev.Devices.from_device_file(udev.global_udev,
@@ -404,7 +404,7 @@ class StorageDevice(Device):
             Return True if setup should proceed or False if not.
         """
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         if self.status or not self.controllable:
             return False
@@ -442,7 +442,7 @@ class StorageDevice(Device):
             Return True if teardown should proceed or False if not.
         """
         if not self.exists and not recursive:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         if not self.status or not self.controllable or self.protected:
             return False
@@ -479,7 +479,7 @@ class StorageDevice(Device):
     def _pre_create(self):
         """ Preparation and pre-condition checking for device creation. """
         if self.exists:
-            raise errors.DeviceError("device has already been created", self.name)
+            raise errors.DeviceError("device has already been created")
 
         self.setup_parents()
 
@@ -511,10 +511,10 @@ class StorageDevice(Device):
     def _pre_destroy(self):
         """ Preparation and precondition checking for device destruction. """
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         if not self.isleaf:
-            raise errors.DeviceError("Cannot destroy non-leaf device", self.name)
+            raise errors.DeviceError("Cannot destroy non-leaf device %s" % self.name)
 
         self.teardown()
 
