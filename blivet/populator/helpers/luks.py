@@ -73,7 +73,13 @@ class LUKSFormatPopulator(FormatPopulator):
 
     def _get_kwargs(self):
         kwargs = super(LUKSFormatPopulator, self)._get_kwargs()
-        kwargs["name"] = "luks-%s" % udev.device_get_uuid(self.data)
+
+        holders = udev.device_get_holders(self.data)
+        if holders:
+            kwargs["name"] = udev.device_get_name(holders[0])
+        else:
+            kwargs["name"] = "luks-%s" % udev.device_get_uuid(self.data)
+
         kwargs["luks_version"] = "luks%s" % udev.device_get_format_version(self.data)
         return kwargs
 
