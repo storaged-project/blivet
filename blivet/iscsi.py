@@ -30,7 +30,6 @@ import shutil
 import time
 import itertools
 from collections import namedtuple
-from distutils.spawn import find_executable
 
 import gi
 gi.require_version("GLib", "2.0")
@@ -61,7 +60,7 @@ def has_iscsi():
         return False
 
     if not ISCSID:
-        location = find_executable("iscsid")
+        location = shutil.which("iscsid")
         if not location:
             return False
         ISCSID = location
@@ -380,7 +379,7 @@ class iSCSI(object):
         util.run_program(['modprobe', '-a'] + ISCSI_MODULES)
         # iscsiuio is needed by Broadcom offload cards (bnx2i). Currently
         # not present in iscsi-initiator-utils for Fedora.
-        iscsiuio = find_executable('iscsiuio')
+        iscsiuio = shutil.which('iscsiuio')
         if iscsiuio:
             log.debug("iscsi: iscsiuio is at %s", iscsiuio)
             util.run_program([iscsiuio])

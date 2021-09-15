@@ -92,12 +92,13 @@ class Flags(object):
         self.debug_threads = False
 
     def get_boot_cmdline(self):
-        buf = open("/proc/cmdline").read().strip()
-        args = shlex.split(buf)
-        for arg in args:
-            (opt, _equals, val) = arg.partition("=")
-            if val:
-                self.boot_cmdline[opt] = val
+        with open("/proc/cmdline") as f:
+            buf = f.read().strip()
+            args = shlex.split(buf)
+            for arg in args:
+                (opt, _equals, val) = arg.partition("=")
+                if val:
+                    self.boot_cmdline[opt] = val
 
     def update_from_boot_cmdline(self):
         self.get_boot_cmdline()
