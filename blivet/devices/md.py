@@ -331,7 +331,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """ This array's mdadm.conf entry. """
         uuid = self.mdadm_format_uuid
         if self.member_devices is None or not uuid:
-            raise errors.DeviceError("array is not fully defined", self.name)
+            raise errors.DeviceError("array %s is not fully defined" % self.name)
 
         fmt = "ARRAY %s level=%s num-devices=%d UUID=%s\n"
         return fmt % (self.path, self.level, self.member_devices, uuid)
@@ -694,7 +694,7 @@ class MDContainerDevice(MDRaidArrayDevice):
     def mdadm_conf_entry(self):
         uuid = self.mdadm_format_uuid
         if not uuid:
-            raise errors.DeviceError("array is not fully defined", self.name)
+            raise errors.DeviceError("array %s is not fully defined" % self.name)
 
         return "ARRAY %s UUID=%s\n" % (self.path, uuid)
 
@@ -770,7 +770,7 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
     def mdadm_conf_entry(self):
         uuid = self.mdadm_format_uuid
         if not uuid:
-            raise errors.DeviceError("array is not fully defined", self.name)
+            raise errors.DeviceError("array %s is not fully defined" % self.name)
 
         return "ARRAY %s UUID=%s\n" % (self.path, uuid)
 

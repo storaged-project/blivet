@@ -141,7 +141,7 @@ class DiskDevice(StorageDevice):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
         if not self.media_present:
-            raise errors.DeviceError("cannot destroy disk with no media", self.name)
+            raise errors.DeviceError("cannot destroy disk with no media")
 
         StorageDevice._pre_destroy(self)
 

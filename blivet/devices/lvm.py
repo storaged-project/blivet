@@ -203,7 +203,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ Update this device's sysfs path. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         self.sysfs_path = ''
 
@@ -244,7 +244,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
     def _pre_setup(self, orig=False):
         if self.exists and not self.complete:
-            raise errors.DeviceError("cannot activate VG with missing PV(s)", self.name)
+            raise errors.DeviceError("cannot activate VG %s -- some of its PVs are missing" % self.name)
         return StorageDevice._pre_setup(self, orig=orig)
 
     def _teardown(self, recursive=None):
@@ -313,7 +313,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # verify we have the space, then add it
         # do not verify for growing vg (because of ks)
         if not lv.exists and not self.growable and not (lv.is_thin_lv or lv.is_vdo_lv) and lv.size > self.free_space:
-            raise errors.DeviceError("new lv is too large to fit in free space", self.name)
+            raise errors.DeviceError("new lv is too large to fit in free space")
 
         log.debug("Adding %s/%s to %s", lv.name, lv.size, self.name)
         self._lvs.append(lv)
@@ -971,7 +971,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         """ Return the dm-X (eg: dm-0) device node for this device. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         return blockdev.dm.node_from_name(self.map_name)
 
