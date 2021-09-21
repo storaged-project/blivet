@@ -27,7 +27,7 @@ class BlivetLintConfig(CensorshipConfig):
             FalsePositive(r"No value for argument 'member_count' in unbound method call$"),
             FalsePositive(r"No value for argument 'smallest_member_size' in unbound method call$"),
             FalsePositive(r"Parameters differ from overridden 'do_task' method$"),
-            FalsePositive(r"Bad option value '(subprocess-popen-preexec-fn|try-except-raise|environment-modify|arguments-renamed)'"),
+            FalsePositive(r"Bad option value '(subprocess-popen-preexec-fn|try-except-raise|environment-modify|arguments-renamed|redundant-u-string-prefix)'"),
             FalsePositive(r"Instance of '(Action.*Device|Action.*Format|Action.*Member|Device|DeviceAction|DeviceFormat|Event|ObjectID|PartitionDevice|StorageDevice|BTRFS.*Device|LoopDevice)' has no 'id' member$"),
             FalsePositive(r"Instance of 'GError' has no 'message' member")  # overriding currently broken local pylint disable
         ]
