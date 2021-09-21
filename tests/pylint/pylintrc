@@ -74,6 +74,7 @@ disable=W0105,           # String statement has no effect
         W0614,           # Unused import %s from wildcard import
         I0011,           # Locally disabling %s
         W0707,           # Consider explicitly re-raising using the 'from' keyword
+        W1514,           # Using open without explicitly specifying an encoding
         C,
         R
 
