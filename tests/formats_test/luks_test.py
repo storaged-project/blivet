@@ -55,6 +55,20 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.fmt.update_size_info()
         self.assertEqual(self.fmt.current_size, new_size)
 
+    def test_map_name(self):
+        self.fmt.device = self.loop_devices[0]
+
+        # create and open the luks format
+        self.fmt.create()
+        self.fmt.setup()
+        self.addCleanup(self._luks_close)
+
+        self.assertEqual(self.fmt.map_name, "luks-%s" % self.fmt.uuid)
+        self.assertTrue(self.fmt.status)
+
+        self.fmt.teardown()
+        self.assertFalse(self.fmt.status)
+
     def _luks_close(self):
         self.fmt.teardown()
 
