@@ -736,7 +736,7 @@ class DeviceFactory(object):
         except (StorageError, blockdev.BlockDevError) as e:
             log.error("device post-create method failed: %s", e)
             self.storage.destroy_device(device)
-            raise_from(StorageError(e), e)
+            raise
         else:
             if not device.size:
                 self.storage.destroy_device(device)
