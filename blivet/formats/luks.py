@@ -28,7 +28,7 @@ from gi.repository import BlockDev as blockdev
 import os
 
 from ..storage_log import log_method_call
-from ..errors import LUKSError
+from ..errors import LUKSError, IntegrityError
 from ..devicelibs import crypto
 from . import DeviceFormat, register_device_format
 from ..flags import flags
@@ -402,19 +402,21 @@ class Integrity(DeviceFormat):
     _name = N_("DM Integrity")
     _udev_types = ["DM_integrity"]
     _supported = False                 # is supported
-    _formattable = False               # can be formatted
+    _formattable = True                # can be formatted
     _linux_native = True               # for clearpart
     _resizable = False                 # can be resized
     _packages = ["cryptsetup"]         # required packages
-    _plugin = availability.BLOCKDEV_CRYPTO_PLUGIN
+    _plugin = availability.BLOCKDEV_CRYPTO_PLUGIN_INTEGRITY
 
     def __init__(self, **kwargs):
         """
             :keyword device: the path to the underlying device
-            :keyword uuid: the LUKS UUID
             :keyword exists: indicates whether this is an existing format
             :type exists: bool
             :keyword name: the name of the mapped device
+            :keyword algorithm: integrity algorithm (HMAC is not supported)
+            :keyword sector_size: integrity sector size
+            :type sector_size: int
 
             .. note::
 
@@ -428,12 +430,55 @@ class Integrity(DeviceFormat):
         DeviceFormat.__init__(self, **kwargs)
 
         self.map_name = kwargs.get("name")
+        self.algorithm = kwargs.get("algorithm", crypto.DEFAULT_INTEGRITY_ALGORITHM)
+        self.sector_size = kwargs.get("sector_size", 0)
+
+        if not self.map_name and self.device:
+            self.map_name = "integrity-%s" % os.path.basename(self.device)
+
+    @property
+    def formattable(self):
+        return super(Integrity, self).formattable and self._plugin.available
 
     @property
     def status(self):
         if not self.exists or not self.map_name:
             return False
         return os.path.exists("/dev/mapper/%s" % self.map_name)
+
+    def _pre_setup(self, **kwargs):
+        if not self._plugin.available:
+            raise IntegrityError("Integrity devices not fully supported: %s" % ",".join(self._plugin.availability_errors))
+
+        return super(Integrity, self)._pre_setup(**kwargs)
+
+    def _setup(self, **kwargs):
+        log_method_call(self, device=self.device, map_name=self.map_name,
+                        type=self.type, status=self.status)
+        try:
+            blockdev.crypto.integrity_open(self.device, self.map_name, self.algorithm)
+        except blockdev.CryptoError as e:
+            raise IntegrityError(e)
+
+    def _pre_create(self, **kwargs):
+        if not self.formattable:
+            raise IntegrityError("Integrity devices not fully supported: %s" % ",".join(self._plugin.availability_errors))
+
+        return super(Integrity, self)._pre_create(**kwargs)
+
+    def _create(self, **kwargs):
+        log_method_call(self, device=self.device,
+                        type=self.type, status=self.status)
+        super(Integrity, self)._create(**kwargs)  # set up the event sync
+
+        if self.sector_size:
+            extra = blockdev.CryptoIntegrityExtra(sector_size=self.sector_size)
+        else:
+            extra = None
+
+        blockdev.crypto.integrity_format(self.device,
+                                         self.algorithm,
+                                         extra=extra)
 
     def _teardown(self, **kwargs):
         """ Close, or tear down, the format. """
