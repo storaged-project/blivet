@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.4.1
+Version: 3.4.2
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -192,6 +192,22 @@ configuration.
 %endif
 
 %changelog
+* Thu Sep 30 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.4.2-1
+- pylint: Remove pdb breakpoint in device_properties_test (vtrefny)
+- pylint: Fix exception string in get_cow_sysfs_path (vtrefny)
+- pylint: Remove redundant 'u' prefixes for strings in doc/conf.py (vtrefny)
+- pylint: Ignore the "redundant-u-string-prefix" warning in i18n.py (vtrefny)
+- pylint: Ignore the new warning W1514 "unspecified-encoding" (vtrefny)
+- pylint: Fix multuple unused variables 'e' in exceptions (vtrefny)
+- Makefile: Specify weblate repository branch for the potfile target (vtrefny)
+- flags: Fix leaking file descriptor (vtrefny)
+- README: Add info about our openSUSE/Mageia/OpenMandriva Copr repo (vtrefny)
+- Fix checking for LVM VDO support with libblockdev 2.23 and older (vtrefny)
+- tasks: Allow specifying custom error message for UnavailableMethod (vtrefny)
+- Use setuptools instead of distutils in setup.py (vtrefny)
+- Use shutil.which instead of distutils.spawn.find_executable (vtrefny)
+- Do not use FS.mount for btrfs temporary mounts (vtrefny)
+
 * Thu Aug 19 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.4.1-1
 - pylint: Ignore deprecation warning about threading.currentThread (vtrefny)
 - Fix getting PV info in LVMPhysicalVolume from the cache (vtrefny)
