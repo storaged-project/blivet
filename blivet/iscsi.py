@@ -18,6 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from . import errors
 from . import udev
 from . import util
 from .flags import flags
@@ -409,7 +410,7 @@ class iSCSI(object):
         """
 
         if not has_iscsi():
-            raise IOError(_("iSCSI not available"))
+            raise errors.ISCSIError(_("iSCSI not available"))
         if self._initiator == "":
             raise ValueError(_("No initiator name set"))
 
@@ -529,7 +530,7 @@ class iSCSI(object):
         found_nodes = self.discover(ipaddr, port, discover_user, discover_pw,
                                     discover_user_in, discover_pw_in)
         if found_nodes is None:
-            raise IOError(_("No iSCSI nodes discovered"))
+            raise errors.ISCSIError(_("No iSCSI nodes discovered"))
 
         for node in found_nodes:
             if target and target != node.name:
@@ -549,10 +550,10 @@ class iSCSI(object):
                 logged_in = logged_in + 1
 
         if found == 0:
-            raise IOError(_("No new iSCSI nodes discovered"))
+            raise errors.ISCSIError(_("No new iSCSI nodes discovered"))
 
         if logged_in == 0:
-            raise IOError(_("Could not log in to any of the discovered nodes"))
+            raise errors.ISCSIError(_("Could not log in to any of the discovered nodes"))
 
         self.stabilize()
 

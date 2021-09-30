@@ -16,7 +16,7 @@ Blivet is available in Fedora repositories. You can install it using
 
     # dnf install python3-blivet
 
-#### Daily builds (for Fedora)
+#### Daily builds for Fedora
 
 Daily builds of Blivet are available in `@storage/blivet-daily` Copr repository.
 You can enable it using
@@ -25,10 +25,14 @@ You can enable it using
 
 Daily builds of _libblockdev_ and _libbytesize_ are also in this repo.
 
-#### OBS repository (for Ubuntu and Debian)
+#### OBS repository for Ubuntu and Debian
 
 Packages for Debian (testing and unstable) and Ubuntu (19.04 and newer) are available through the Open Build Service.
 Instructions for adding the repository are available [here](https://software.opensuse.org/download.html?project=home:vtrefny&package=python3-blivet).
+
+#### Copr repository for openSUSE, Mageia and OpenMandriva
+
+Packages for openSUSE Tumbleweed, Mageia (8 and newer) and OpenMandriva (Cooker and Rolling) are available in our [blivet-stable Copr repository](https://copr.fedorainfracloud.org/coprs/g/storage/blivet-stable/).
 
 #### PyPI
 

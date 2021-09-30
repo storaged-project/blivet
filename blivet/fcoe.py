@@ -18,6 +18,7 @@
 #
 
 import os
+from . import errors
 from . import udev
 from . import util
 import logging
@@ -118,7 +119,7 @@ class FCoE(object):
            Returns error message, or empty string if succeeded.
         """
         if not has_fcoe():
-            raise IOError(_("FCoE not available"))
+            raise errors.FCoEError(_("FCoE not available"))
 
         log.info("Activating FCoE SAN attached to %s, dcb: %s autovlan: %s",
                  nic, dcb, auto_vlan)

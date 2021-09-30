@@ -247,18 +247,21 @@ class BlockDevMethod(Method):
                 return []
 
 
-class UnavailableMethod(Method):
+class _UnavailableMethod(Method):
 
     """ Method that indicates a resource is unavailable. """
 
+    def __init__(self, error_msg=None):
+        self.error_msg = error_msg or "always unavailable"
+
     def availability_errors(self, resource):
-        return ["always unavailable"]
+        return [self.error_msg]
 
 
-UnavailableMethod = UnavailableMethod()
+UnavailableMethod = _UnavailableMethod()
 
 
-class AvailableMethod(Method):
+class _AvailableMethod(Method):
 
     """ Method that indicates a resource is available. """
 
@@ -266,7 +269,7 @@ class AvailableMethod(Method):
         return []
 
 
-AvailableMethod = AvailableMethod()
+AvailableMethod = _AvailableMethod()
 
 
 def application(name):
@@ -372,12 +375,15 @@ BLOCKDEV_LVM = BlockDevTechInfo(plugin_name="lvm",
                                                                            blockdev.LVMTechMode.MODIFY)})
 BLOCKDEV_LVM_TECH = BlockDevMethod(BLOCKDEV_LVM)
 
-BLOCKDEV_LVM_VDO = BlockDevTechInfo(plugin_name="lvm",
-                                    check_fn=blockdev.lvm_is_tech_avail,
-                                    technologies={blockdev.LVMTech.VDO: (blockdev.LVMTechMode.CREATE |
-                                                                         blockdev.LVMTechMode.REMOVE |
-                                                                         blockdev.LVMTechMode.QUERY)})
-BLOCKDEV_LVM_TECH_VDO = BlockDevMethod(BLOCKDEV_LVM_VDO)
+if hasattr(blockdev.LVMTech, "VDO"):
+    BLOCKDEV_LVM_VDO = BlockDevTechInfo(plugin_name="lvm",
+                                        check_fn=blockdev.lvm_is_tech_avail,
+                                        technologies={blockdev.LVMTech.VDO: (blockdev.LVMTechMode.CREATE |
+                                                                             blockdev.LVMTechMode.REMOVE |
+                                                                             blockdev.LVMTechMode.QUERY)})
+    BLOCKDEV_LVM_TECH_VDO = BlockDevMethod(BLOCKDEV_LVM_VDO)
+else:
+    BLOCKDEV_LVM_TECH_VDO = _UnavailableMethod(error_msg="Installed version of libblockdev doesn't support LVM VDO technology")
 
 # libblockdev mdraid plugin required technologies and modes
 BLOCKDEV_MD_ALL_MODES = (blockdev.MDTechMode.CREATE |

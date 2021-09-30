@@ -349,7 +349,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
                 else:
                     self._get_default_subvolume_id()
 
-        except errors.FSError as e:
+        except errors.FSError:
             pass
 
         return subvols

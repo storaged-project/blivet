@@ -438,8 +438,7 @@ def get_cow_sysfs_path(dev_path, dev_sysfsPath):
 
     cow_path = dev_path + "-cow"
     if not os.path.islink(cow_path):
-        raise RuntimeError("get_cow_sysfs_path: Could not find cow device for" %
-                           (dev_path))
+        raise RuntimeError("get_cow_sysfs_path: Could not find cow device for %s" % dev_path)
 
     # dev path for cow devices is actually a link to a dm device (e.g. /dev/dm-X)
     # we need the 'dm-X' name for sysfs_path (e.g. /sys/devices/virtual/block/dm-X)
