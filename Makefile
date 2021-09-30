@@ -2,6 +2,7 @@ PYTHON?=python3
 PKG_INSTALL?=dnf
 
 L10N_REPOSITORY=git@github.com:storaged-project/blivet-weblate.git
+L10N_BRANCH=master
 
 PKGNAME=blivet
 SPECFILE=python-blivet.spec
@@ -36,7 +37,7 @@ potfile:
 	#   - commit pot file
 	#   - tell user to verify this file and push to the remote from the temp dir
 	TEMP_DIR=$$(mktemp --tmpdir -d $(PKGNAME)-localization-XXXXXXXXXX) || exit 1 ; \
-	git clone --depth 1 -b master -- $(L10N_REPOSITORY) $$TEMP_DIR || exit 2 ; \
+	git clone --depth 1 -b $(L10N_BRANCH) -- $(L10N_REPOSITORY) $$TEMP_DIR || exit 2 ; \
 	cp po/$(PKGNAME).pot $$TEMP_DIR/ || exit 3 ; \
 	pushd $$TEMP_DIR ; \
 	git difftool --trust-exit-code -y -x "diff -u -I '^\"POT-Creation-Date: .*$$'" HEAD ./$(PKGNAME).pot &>/dev/null ; \
@@ -50,7 +51,7 @@ potfile:
 		git commit -m "Update $(PKGNAME).pot" && \
 		popd && \
 		git submodule foreach git checkout -- blivet.pot ; \
-		echo "Pot file updated for the localization repository $(L10N_REPOSITORY)" && \
+		echo "Pot file updated for the localization repository $(L10N_REPOSITORY) branch $(L10N_BRANCH)" && \
 		echo "Please confirm and push:" && \
 		echo "$$TEMP_DIR" ; \
 	fi ;

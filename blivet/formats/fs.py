@@ -414,9 +414,9 @@ class FS(DeviceFormat):
                                label=not self.relabels(),
                                set_uuid=self.can_set_uuid(),
                                nodiscard=self.can_nodiscard())
-        except FSWriteLabelError as e:
+        except FSWriteLabelError:
             log.warning("Choosing not to apply label (%s) during creation of filesystem %s. Label format is unacceptable for this filesystem.", self.label, self.type)
-        except FSWriteUUIDError as e:
+        except FSWriteUUIDError:
             log.warning("Choosing not to apply UUID (%s) during"
                         " creation of filesystem %s. UUID format"
                         " is unacceptable for this filesystem.",

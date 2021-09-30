@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 
-import setuptools  # pylint: disable=unused-import
-from distutils.core import setup
-from distutils import filelist
-from distutils.command.sdist import sdist
+import setuptools
+from setuptools import setup
+from setuptools.command.sdist import sdist
 import subprocess
 import sys
 import os
@@ -40,7 +39,7 @@ def findall(dirname=os.curdir):
 
     return file_list
 
-filelist.findall = findall
+setuptools.findall = findall
 
 # Extend the sdist command
 class blivet_sdist(sdist):
