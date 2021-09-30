@@ -46,7 +46,7 @@ N_ = lambda x: x
 # In Python 2, return the translated strings as unicode objects.
 # yes, pylint, the lambdas are necessary, because I want _get_translations()
 # evaluated on every call.
-# pylint: disable=unnecessary-lambda
+# pylint: disable=unnecessary-lambda,redundant-u-string-prefix
 if six.PY2:
     _ = lambda x: _get_translations().ugettext(x) if x != "" else u""
     P_ = lambda x, y, z: _get_translations().ungettext(x, y, z)

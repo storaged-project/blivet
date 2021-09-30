@@ -104,8 +104,6 @@ class DeviceStateTestCase(unittest.TestCase):
             if k in kwargs:
                 test_func = kwargs[k]
                 if test_func is None:
-                    import pdb
-                    pdb.set_trace()
                     getattr(device, k)
                 else:
                     test_func(device, k)

@@ -889,7 +889,7 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
                                                           req_size,
                                                           _part.req_start_sector,
                                                           _part.req_end_sector)
-                            except ArithmeticError as e:
+                            except ArithmeticError:
                                 log.debug("failed to allocate aligned partition "
                                           "for growth test")
                                 continue
