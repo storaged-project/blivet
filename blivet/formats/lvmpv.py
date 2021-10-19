@@ -121,6 +121,24 @@ class LVMPhysicalVolume(DeviceFormat):
     def supported(self):
         return super(LVMPhysicalVolume, self).supported and self._plugin.available
 
+    def lvmdevices_add(self):
+        if not lvm.HAVE_LVMDEVICES:
+            raise PhysicalVolumeError("LVM devices file feature is not supported")
+
+        try:
+            blockdev.lvm.devices_add(self.device)
+        except blockdev.LVMError as e:
+            log.debug("Failed to add PV %s to the LVM devices file: %s", self.device, str(e))
+
+    def lvmdevices_remove(self):
+        if not lvm.HAVE_LVMDEVICES:
+            raise PhysicalVolumeError("LVM devices file feature is not supported")
+
+        try:
+            blockdev.lvm.devices_delete(self.device)
+        except blockdev.LVMError as e:
+            log.debug("Failed to remove PV %s from the LVM devices file: %s", self.device, str(e))
+
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
@@ -132,10 +150,7 @@ class LVMPhysicalVolume(DeviceFormat):
         blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
 
         if lvm.HAVE_LVMDEVICES:
-            try:
-                blockdev.lvm.devices_add(self.device)
-            except blockdev.LVMError as e:
-                log.debug("Failed to add newly created PV %s to the LVM devices file: %s", self.device, str(e))
+            self.lvmdevices_add()
 
     def _destroy(self, **kwargs):
         log_method_call(self, device=self.device,
@@ -148,10 +163,7 @@ class LVMPhysicalVolume(DeviceFormat):
             lvm.lvm_devices_remove(self.device)
             udev.settle()
             if lvm.HAVE_LVMDEVICES:
-                try:
-                    blockdev.lvm.devices_delete(self.device)
-                except blockdev.LVMError as e:
-                    log.debug("Failed to remove PV %s from the LVM devices file: %s", self.device, str(e))
+                self.lvmdevices_remove()
 
     @property
     def destroyable(self):
