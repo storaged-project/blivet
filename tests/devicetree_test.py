@@ -408,9 +408,9 @@ class DeviceTreeTestCase(unittest.TestCase):
     def test_get_related_disks(self):
         tree = DeviceTree()
 
-        sda = DiskDevice("sda", size=Size('300g'))
-        sdb = DiskDevice("sdb", size=Size('300g'))
-        sdc = DiskDevice("sdc", size=Size('300G'))
+        sda = DiskDevice("sda", size=Size('300g'), exists=False)
+        sdb = DiskDevice("sdb", size=Size('300g'), exists=False)
+        sdc = DiskDevice("sdc", size=Size('300G'), exists=False)
 
         tree._add_device(sda)
         tree._add_device(sdb)
