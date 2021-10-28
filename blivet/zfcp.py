@@ -20,6 +20,7 @@
 #
 
 import os
+import re
 from . import udev
 from . import util
 from .i18n import _
@@ -167,20 +168,10 @@ class ZFCPDevice:
         return True
 
     def offline_scsi_device(self):
-        f = open("/proc/scsi/scsi", "r")
-        lines = f.readlines()
-        f.close()
-        # alternatively iterate over /sys/bus/scsi/devices/*:0:*:*/
+        # A list of existing SCSI devices in format Host:Bus:Target:Lun
+        scsi_devices = [f for f in os.listdir(scsidevsysfs) if re.search(r'^[0-9]+:[0-9]+:[0-9]+:[0-9]+$', f)]
 
-        for line in lines:
-            if not line.startswith("Host"):
-                continue
-            scsihost = line.split()
-            host = scsihost[1]
-            channel = "0"
-            devid = scsihost[5]
-            lun = scsihost[7]
-            scsidev = "%s:%s:%s:%s" % (host[4:], channel, devid, lun)
+        for scsidev in scsi_devices:
             fcpsysfs = "%s/%s" % (scsidevsysfs, scsidev)
             scsidel = "%s/%s/delete" % (scsidevsysfs, scsidev)
 
