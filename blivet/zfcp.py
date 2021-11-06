@@ -397,6 +397,44 @@ class ZFCPDevice(ZFCPDeviceBase):
         return True
 
 
+class ZFCPNPIVDevice(ZFCPDeviceBase):
+    """Class for zFCP devices configured in NPIV mode. Only a zFCP device number is
+    needed for such devices.
+    """
+
+    def online_device(self):
+        """Initialize the device and make its storage block device(s) ready to use.
+
+        :returns: True if success
+        :raises: ValueError if the device cannot be initialized
+        """
+
+        super().online_device()
+
+        if not is_npiv_enabled(self.devnum):
+            raise ValueError(_("zFCP device %s cannot be used in NPIV mode.") % self)
+
+        return True
+
+    def offline_device(self):
+        """Remove the zFCP device from the system.
+
+        :returns: True if success
+        :raises: ValueError if the device cannot be brought offline
+         """
+
+        try:
+            self.offline_scsi_device()
+        except OSError as e:
+            raise ValueError(_("Could not correctly delete SCSI device of "
+                               "zFCP %(zfcpdev)s (%(e)s).")
+                             % {'zfcpdev': self, 'e': e})
+
+        self._set_zfcp_device_offline()
+
+        return True
+
+
 class zFCP:
 
     """ ZFCP utility class.
@@ -439,7 +477,12 @@ class zFCP:
 
             fields = line.split()
 
-            if len(fields) == 3:
+            # NPIV enabled device
+            if len(fields) == 1:
+                devnum = fields[0]
+                wwpn = None
+                fcplun = None
+            elif len(fields) == 3:
                 devnum = fields[0]
                 wwpn = fields[1]
                 fcplun = fields[2]
@@ -458,8 +501,12 @@ class zFCP:
             except ValueError as e:
                 log.warning("%s", str(e))
 
-    def add_fcp(self, devnum, wwpn, fcplun):
-        d = ZFCPDevice(devnum, wwpn, fcplun)
+    def add_fcp(self, devnum, wwpn=None, fcplun=None):
+        if wwpn and fcplun:
+            d = ZFCPDevice(devnum, wwpn, fcplun)
+        else:
+            d = ZFCPNPIVDevice(devnum)
+
         if d.online_device():
             self.fcpdevs.add(d)
 
