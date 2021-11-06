@@ -136,6 +136,7 @@ class ZFCPDeviceBase(ABC):
         # A list of existing SCSI devices in format Host:Bus:Target:Lun
         scsi_devices = [f for f in os.listdir(scsidevsysfs) if re.search(r'^[0-9]+:[0-9]+:[0-9]+:[0-9]+$', f)]
 
+        scsi_device_found = False
         for scsidev in scsi_devices:
             fcpsysfs = os.path.join(scsidevsysfs, scsidev)
 
@@ -147,12 +148,13 @@ class ZFCPDeviceBase(ABC):
                 fcplunsysfs = f.readline().strip()
 
             if self._is_scsi_associated_with_fcp(fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
+                scsi_device_found = True
                 scsidel = os.path.join(scsidevsysfs, scsidev, "delete")
                 logged_write_line_to_file(scsidel, "1")
                 udev.settle()
-                return
 
-        log.warning("No scsi device found to delete for zfcp %s", self)
+        if not scsi_device_found:
+            log.warning("No scsi device found to delete for zfcp %s", self)
 
 
 class ZFCPDevice(ZFCPDeviceBase):
