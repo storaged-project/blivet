@@ -24,7 +24,6 @@ import copy
 import six
 
 from ... import udev
-from ...devicelibs import lvm
 from ...devices import PartitionDevice
 from ...errors import DeviceError
 from ...formats import get_format
@@ -66,7 +65,6 @@ class PartitionDevicePopulator(DevicePopulator):
         if disk is None:
             # if the disk is still not in the tree something has gone wrong
             log.error("failure finding disk for %s", name)
-            lvm.lvm_cc_addFilterRejectRegexp(name)
             return
 
         if not disk.partitioned or not disk.format.supported:
@@ -78,12 +76,6 @@ class PartitionDevicePopulator(DevicePopulator):
             # and instantiate a PartitionDevice so our view of the layout is
             # complete.
             if not disk.partitionable or disk.format.type == "iso9660" or disk.format.hidden:
-                # there's no need to filter partitions on members of multipaths or
-                # fwraid members from lvm since multipath and dmraid are already
-                # active and lvm should therefore know to ignore them
-                if not disk.format.hidden:
-                    lvm.lvm_cc_addFilterRejectRegexp(name)
-
                 log.debug("ignoring partition %s on %s", name, disk.format.type)
                 return
 
