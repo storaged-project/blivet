@@ -31,7 +31,7 @@ from ...errors import DeviceError, LUKSError
 from ...flags import flags
 from .devicepopulator import DevicePopulator
 from .formatpopulator import FormatPopulator
-from ...static_data import luks_data
+from ...static_data import luks_data, stratis_info
 
 import logging
 log = logging.getLogger("blivet")
@@ -70,6 +70,27 @@ class IntegrityDevicePopulator(DevicePopulator):
 class LUKSFormatPopulator(FormatPopulator):
     priority = 100
     _type_specifier = "luks"
+
+    @classmethod
+    def match(cls, data, device):  # pylint: disable=arguments-differ,unused-argument
+        if not super(LUKSFormatPopulator, cls).match(data, device):
+            return False
+
+        # locked stratis pools are managed in the StratisFormatPopulator
+        for pool in stratis_info.locked_pools:
+            if device.path in pool.devices:
+                return False
+
+        # unlocked stratis pools are also managed in the StratisFormatPopulator
+        holders = udev.device_get_holders(data)
+        if holders:
+            fs = udev.device_get_format(holders[0])
+            if fs == "stratis":
+                log.debug("ignoring LUKS format on %s, it appears to be an encrypted Stratis pool",
+                          device.name)
+                return False
+
+        return True
 
     def _get_kwargs(self):
         kwargs = super(LUKSFormatPopulator, self)._get_kwargs()

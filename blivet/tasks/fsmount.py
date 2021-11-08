@@ -191,6 +191,10 @@ class SELinuxFSMount(NoDevFSMount):
         return errors
 
 
+class StratisXFSMount(FSMount):
+    fstype = "xfs"
+
+
 class TmpFSMount(NoDevFSMount):
 
     def _modify_options(self, options):

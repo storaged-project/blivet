@@ -137,3 +137,8 @@ devices
         * :attr:`~blivet.devices.storage.StorageDevice.target_size`
         * :meth:`~blivet.devices.storage.StorageDevice.teardown`
         * :attr:`~blivet.devices.storage.StorageDevice.uuid`
+
+* :mod:`~blivet.devices.stratis`
+    * :class:`~blivet.devices.stratis.StratisPoolDevice` (see :ref:`inherited public API <StorageDeviceAPI>`)
+        * :attr:`~blivet.devices.stratis.StratisPoolDevice.encrypted`
+    * :class:`~blivet.devices.stratis.StratisFilesystemDevice` (see :ref:`inherited public API <StorageDeviceAPI>`)

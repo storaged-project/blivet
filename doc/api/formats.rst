@@ -110,5 +110,10 @@ formats
 * :mod:`~blivet.formats.prepboot`
     * :class:`~blivet.formats.prepboot.PPCPRePBoot` (see :ref:`inherited public API <DeviceFormatAPI>`)
 
+* :mod:`~blivet.formats.stratis`
+    * :class:`~blivet.formats.stratis.StratisBlockdev` (see :ref:`inherited public API <DeviceFormatAPI>`)
+        * :attr:`~blivet.formats.stratis.StratisBlockdev.has_key`
+        * :meth:`~blivet.formats.stratis.StratisBlockdev.unlock_pool`
+
 * :mod:`~blivet.formats.swap`
     * :class:`~blivet.formats.swap.SwapSpace` (see :ref:`inherited public API <DeviceFormatAPI>`)
