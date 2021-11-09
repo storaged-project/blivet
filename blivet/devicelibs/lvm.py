@@ -20,6 +20,7 @@
 # Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+import math
 import os
 import re
 
@@ -51,6 +52,7 @@ LVM_THINP_MIN_METADATA_SIZE = Size("2 MiB")
 LVM_THINP_MAX_METADATA_SIZE = Size("16 GiB")
 LVM_THINP_MIN_CHUNK_SIZE = Size("64 KiB")
 LVM_THINP_MAX_CHUNK_SIZE = Size("1 GiB")
+LVM_THINP_ADDRESSABLE_CHUNK_SIZE = Size("17455015526400 B")  # 15.88 TiB
 
 raid_levels = raid.RAIDLevels(["linear", "striped", "raid1", "raid4", "raid5", "raid6", "raid10"])
 raid_seg_types = list(itertools.chain.from_iterable([level.names for level in raid_levels if level.name != "linear"]))
@@ -229,3 +231,12 @@ def is_lvm_name_valid(name):
         return False
 
     return True
+
+
+def recommend_thpool_chunk_size(thpool_size):
+    # calculation of the recommended chunk size by LVM is so complicated that we
+    # can't really replicate it, but we know that 64 KiB chunk size gives us
+    # upper limit of ~15.88 TiB so we will just add 64 KiB to the chunk size
+    # for every ~15.88 TiB of thinpool data size
+    return min(math.ceil(thpool_size / LVM_THINP_ADDRESSABLE_CHUNK_SIZE) * LVM_THINP_MIN_CHUNK_SIZE,
+               LVM_THINP_MAX_CHUNK_SIZE)
