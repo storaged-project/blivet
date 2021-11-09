@@ -1685,9 +1685,9 @@ class LVMThinPoolMixin(object):
             return
 
         # we need to know chunk size to calculate recommended metadata size
-        if self._chunk_size == 0:
-            self._chunk_size = Size(blockdev.LVM_DEFAULT_CHUNK_SIZE)
-            log.debug("Using default chunk size: %s", self._chunk_size)
+        if self._chunk_size == 0 or enforced:
+            self._chunk_size = lvm.recommend_thpool_chunk_size(self._size)
+            log.debug("Using recommended chunk size: %s", self._chunk_size)
 
         old_md_size = self._metadata_size
         old_pmspare_size = self.vg.pmspare_size
