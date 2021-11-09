@@ -442,6 +442,17 @@ class LVMDeviceTest(unittest.TestCase):
             self.assertFalse(pool.exists)
             self.assertTrue(lvm.lvremove.called)
 
+    def test_lvmthinpool_chunk_size(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("100 TiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv])
+        pool = LVMLogicalVolumeDevice("pool1", parents=[vg], size=Size("500 MiB"), seg_type="thin-pool")
+        self.assertEqual(pool.chunk_size, Size("64 KiB"))
+
+        pool.size = Size("16 TiB")
+        pool.autoset_md_size(enforced=True)
+        self.assertEqual(pool.chunk_size, Size("128 KiB"))
+
 
 class TypeSpecificCallsTest(unittest.TestCase):
     def test_type_specific_calls(self):
