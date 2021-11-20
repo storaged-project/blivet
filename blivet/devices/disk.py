@@ -577,7 +577,15 @@ class ZFCPDiskDevice(DiskDevice):
                   'lun': self.fcp_lun}
 
     def dracut_setup_args(self):
-        return set(["rd.zfcp=%s,%s,%s" % (self.hba_id, self.wwpn, self.fcp_lun,)])
+        from ..zfcp import is_npiv_enabled
+
+        # zFCP devices in NPIV mode need only the device ID
+        if is_npiv_enabled(self.hba_id):
+            dracut_args = set(["rd.zfcp=%s" % self.hba_id])
+        else:
+            dracut_args = set(["rd.zfcp=%s,%s,%s" % (self.hba_id, self.wwpn, self.fcp_lun,)])
+
+        return dracut_args
 
 
 class DASDDevice(DiskDevice):
