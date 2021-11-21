@@ -22,6 +22,7 @@
 import os
 import re
 from abc import ABC
+import glob
 from . import udev
 from . import util
 from .i18n import _
@@ -46,6 +47,55 @@ def logged_write_line_to_file(fn, value):
 zfcpsysfs = "/sys/bus/ccw/drivers/zfcp"
 scsidevsysfs = "/sys/bus/scsi/devices"
 zfcpconf = "/etc/zfcp.conf"
+
+
+def _is_lun_scan_allowed():
+    """Return True if automatic LUN scanning is enabled by the kernel."""
+
+    allow_lun_scan = util.get_kernel_module_parameter("zfcp", "allow_lun_scan")
+    return allow_lun_scan == "Y"
+
+
+def _is_port_in_npiv_mode(device_id):
+    """Return True if the device ID is configured in NPIV mode. See
+    https://www.ibm.com/docs/en/linux-on-systems?topic=devices-use-npiv
+    """
+
+    port_in_npiv_mode = False
+    port_type_path = "/sys/bus/ccw/devices/{}/host*/fc_host/host*/port_type".format(device_id)
+    port_type_paths = glob.glob(port_type_path)
+    try:
+        for filename in port_type_paths:
+            with open(filename) as f:
+                port_type = f.read()
+            if re.search(r"(^|\s)NPIV(\s|$)", port_type):
+                port_in_npiv_mode = True
+    except OSError as e:
+        log.warning("Couldn't read the port_type attribute of the %s device: %s", device_id, str(e))
+        port_in_npiv_mode = False
+
+    return port_in_npiv_mode
+
+
+def is_npiv_enabled(device_id):
+    """Return True if the given zFCP device ID is configured and usable in
+    NPIV (N_Port ID Virtualization) mode.
+
+    :returns: True or False
+    """
+
+    # LUN scanning disabled by the kernel module prevents using the device in NPIV mode
+    if not _is_lun_scan_allowed():
+        log.warning("Automatic LUN scanning is disabled by the zfcp kernel module.")
+        return False
+
+    # The port itself has to be configured in NPIV mode
+    if not _is_port_in_npiv_mode(device_id):
+        log.warning("The zFCP device %s is not configured in NPIV mode.", device_id)
+        return False
+
+    return True
+
 
 class ZFCPDeviceBase(ABC):
     """An abstract base class for zFCP storage devices."""
@@ -203,6 +253,13 @@ class ZFCPDevice(ZFCPDeviceBase):
         unitdir = "%s/%s" % (portdir, self.fcplun)
         failed = "%s/failed" % (unitdir)
 
+        # Activating an NPIV enabled device using devnum, WWPN and LUN should still be possible
+        # as this method was used as a workaround until the support for NPIV enabled devices has
+        # been implemented. Just log a warning message and continue.
+        if is_npiv_enabled(self.devnum):
+            log.warning("zFCP device %s in NPIV mode brought online. All LUNs will be activated "
+                        "automatically although WWPN and LUN have been provided.", self.devnum)
+
         # create the sysfs directory for the WWPN/port
         if not os.path.exists(portdir):
             if os.path.exists(portadd):
@@ -327,7 +384,6 @@ class ZFCPDevice(ZFCPDeviceBase):
                     return True
         else:
             # newer zfcp sysfs interface with auto port scan
-            import glob
             luns = glob.glob("%s/0x????????????????/0x????????????????"
                              % (devdir,))
             if len(luns) != 0:
