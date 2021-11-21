@@ -1131,3 +1131,36 @@ def detect_virt():
         return False
     else:
         return vm[0] in ('qemu', 'kvm', 'xen')
+
+
+def natural_sort_key(device):
+    """ Sorting key for devices which makes sure partitions are sorted in natural
+        way, e.g. 'sda1, sda2, ..., sda10' and not like 'sda1, sda10, sda2, ...'
+    """
+    if device.type == "partition" and device.parted_partition and device.disk:
+        part_num = getattr(device.parted_partition, "number", -1)
+        return [device.disk.name, part_num]
+    else:
+        return [device.name, 0]
+
+
+def get_kernel_module_parameter(module, parameter):
+    """ Return the value of a given kernel module parameter
+
+    :param str module: a kernel module
+    :param str parameter: a module parameter
+    :returns: the value of the given kernel module parameter or None
+    :rtype: str
+    """
+
+    value = None
+
+    parameter_path = os.path.join("/sys/module", module, "parameters", parameter)
+    try:
+        with open(parameter_path) as f:
+            value = f.read().strip()
+    except IOError as e:
+        log.warning("Couldn't get the value of the parameter '%s' from the kernel module '%s': %s",
+                    parameter, module, str(e))
+
+    return value
