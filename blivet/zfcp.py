@@ -110,6 +110,15 @@ class ZFCPDeviceBase(ABC):
                                "offline (%(e)s).")
                              % {'devnum': self.devnum, 'e': e})
 
+    def _is_scsi_associated_with_fcp(self, fcphbasysfs, _fcpwwpnsysfs, _fcplunsysfs):
+        """Decide if the SCSI device with the provided SCSI attributes
+        corresponds to the zFCP device.
+
+        :returns: True or False
+        """
+
+        return fcphbasysfs == self.devnum
+
     def online_device(self):
         """Initialize the device and make its storage block device(s) ready to use.
 
@@ -120,6 +129,30 @@ class ZFCPDeviceBase(ABC):
         self._free_device()
         self._set_zfcp_device_online()
         return True
+
+    def offline_scsi_device(self):
+        """Find SCSI devices associated to the zFCP device and remove them from the system."""
+
+        # A list of existing SCSI devices in format Host:Bus:Target:Lun
+        scsi_devices = [f for f in os.listdir(scsidevsysfs) if re.search(r'^[0-9]+:[0-9]+:[0-9]+:[0-9]+$', f)]
+
+        for scsidev in scsi_devices:
+            fcpsysfs = os.path.join(scsidevsysfs, scsidev)
+
+            with open(os.path.join(fcpsysfs, "hba_id")) as f:
+                fcphbasysfs = f.readline().strip()
+            with open(os.path.join(fcpsysfs, "wwpn")) as f:
+                fcpwwpnsysfs = f.readline().strip()
+            with open(os.path.join(fcpsysfs, "fcp_lun")) as f:
+                fcplunsysfs = f.readline().strip()
+
+            if self._is_scsi_associated_with_fcp(fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
+                scsidel = os.path.join(scsidevsysfs, scsidev, "delete")
+                logged_write_line_to_file(scsidel, "1")
+                udev.settle()
+                return
+
+        log.warning("No scsi device found to delete for zfcp %s", self)
 
 
 class ZFCPDevice(ZFCPDeviceBase):
@@ -141,6 +174,17 @@ class ZFCPDevice(ZFCPDeviceBase):
     # Force str and unicode types in case any of the properties are unicode
     def _to_string(self):
         return "{} {} {}".format(self.devnum, self.wwpn, self.fcplun)
+
+    def _is_scsi_associated_with_fcp(self, fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
+        """Decide if the SCSI device with the provided SCSI attributes
+        corresponds to the zFCP device.
+
+        :returns: True or False
+        """
+
+        return (fcphbasysfs == self.devnum and
+                fcpwwpnsysfs == self.wwpn and
+                fcplunsysfs == self.fcplun)
 
     def online_device(self):
         """Initialize the device and make its storage block device(s) ready to use.
@@ -223,36 +267,6 @@ class ZFCPDevice(ZFCPDeviceBase):
                                  'devnum': self.devnum})
 
         return True
-
-    def offline_scsi_device(self):
-        """Find SCSI devices associated to the zFCP device and remove them from the system."""
-
-        # A list of existing SCSI devices in format Host:Bus:Target:Lun
-        scsi_devices = [f for f in os.listdir(scsidevsysfs) if re.search(r'^[0-9]+:[0-9]+:[0-9]+:[0-9]+$', f)]
-
-        for scsidev in scsi_devices:
-            fcpsysfs = "%s/%s" % (scsidevsysfs, scsidev)
-            scsidel = "%s/%s/delete" % (scsidevsysfs, scsidev)
-
-            f = open("%s/hba_id" % (fcpsysfs), "r")
-            fcphbasysfs = f.readline().strip()
-            f.close()
-            f = open("%s/wwpn" % (fcpsysfs), "r")
-            fcpwwpnsysfs = f.readline().strip()
-            f.close()
-            f = open("%s/fcp_lun" % (fcpsysfs), "r")
-            fcplunsysfs = f.readline().strip()
-            f.close()
-
-            if fcphbasysfs == self.devnum \
-                    and fcpwwpnsysfs == self.wwpn \
-                    and fcplunsysfs == self.fcplun:
-                logged_write_line_to_file(scsidel, "1")
-                udev.settle()
-                return
-
-        log.warning("no scsi device found to delete for zfcp %s %s %s",
-                    self.devnum, self.wwpn, self.fcplun)
 
     def offline_device(self):
         """Remove the zFCP device from the system."""
