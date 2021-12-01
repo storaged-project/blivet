@@ -22,7 +22,6 @@ from . import udev
 from . import util
 from .flags import flags
 from .i18n import _
-from .storage_log import log_exception_info
 from . import safe_dbus
 import os
 import re
@@ -277,8 +276,8 @@ class iSCSI(object):
                                           'org.freedesktop.DBus.ObjectManager',
                                           'GetManagedObjects',
                                           None)[0]
-        except safe_dbus.DBusCallError:
-            log_exception_info(log.info, "iscsi: Failed to get active sessions.")
+        except safe_dbus.DBusCallError as e:
+            log.info("iscsi: Failed to get active sessions: %s", str(e))
             return []
 
         sessions = (obj for obj in objects.keys() if re.match(r'.*/iscsi/session[0-9]+$', obj))
@@ -302,8 +301,8 @@ class iSCSI(object):
         args = GLib.Variant("(a{sv})", ([], ))
         try:
             found_nodes, _n_nodes = self._call_initiator_method("DiscoverFirmware", args)
-        except safe_dbus.DBusCallError:
-            log_exception_info(log.info, "iscsi: No IBFT info found.")
+        except safe_dbus.DBusCallError as e:
+            log.info("iscsi: No IBFT info found: %s", str(e))
             # an exception here means there is no ibft firmware, just return
             return
 
