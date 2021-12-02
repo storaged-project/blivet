@@ -175,8 +175,8 @@ class IntegrityDevice(DMIntegrityDevice):
     """ A mapped integrity device. """
     _type = "integrity/dm-crypt"
     _resizable = False
-    _packages = ["cryptsetup"]
-    _external_dependencies = [availability.BLOCKDEV_CRYPTO_PLUGIN]
+    _packages = ["integritysetup"]
+    _external_dependencies = [availability.BLOCKDEV_CRYPTO_PLUGIN_INTEGRITY]
 
     def __init__(self, name, fmt=None, size=None, uuid=None,
                  exists=False, sysfs_path='', parents=None):
@@ -200,6 +200,33 @@ class IntegrityDevice(DMIntegrityDevice):
                                    parents=parents, sysfs_path=sysfs_path,
                                    uuid=None, exists=exists)
 
+    @property
+    def raw_device(self):
+        return self.parents[0]
+
+    @property
+    def metadata_size(self):
+        return crypto.calculate_integrity_metadata_size(self.raw_device.size,
+                                                        self.raw_device.format.algorithm)
+
+    def _get_size(self):
+        if not self.exists:
+            size = self.raw_device.size - self.metadata_size
+        else:
+            size = self._size
+        return size
+
+    def _set_size(self, newsize):
+        if not self.exists and not self.raw_device.exists:
+            self.raw_device.size = newsize + self.metadata_size
+
+            # just run the StorageDevice._set_size to make sure we are in the format limits
+            super(IntegrityDevice, self)._set_size(newsize - self.metadata_size)
+        else:
+            raise DeviceError("Cannot set size for an existing integrity device")
+
+    size = property(_get_size, _set_size)
+
     def _post_teardown(self, recursive=False):
         if not recursive:
             # we need to propagate the teardown "down" to the parent that
@@ -207,3 +234,7 @@ class IntegrityDevice(DMIntegrityDevice):
             self.teardown_parents(recursive=recursive)
 
         StorageDevice._post_teardown(self, recursive=recursive)
+
+    def _post_create(self):
+        self.name = self.raw_device.format.map_name
+        StorageDevice._post_create(self)

@@ -332,6 +332,13 @@ BLOCKDEV_CRYPTO = BlockDevTechInfo(plugin_name="crypto",
                                                  blockdev.CryptoTech.ESCROW: blockdev.CryptoTechMode.CREATE})
 BLOCKDEV_CRYPTO_TECH = BlockDevMethod(BLOCKDEV_CRYPTO)
 
+BLOCKDEV_CRYPTO_INTEGRITY = BlockDevTechInfo(plugin_name="crypto",
+                                             check_fn=blockdev.crypto_is_tech_avail,
+                                             technologies={blockdev.CryptoTech.INTEGRITY: (blockdev.CryptoTechMode.CREATE |
+                                                                                           blockdev.CryptoTechMode.OPEN_CLOSE |
+                                                                                           blockdev.CryptoTechMode.QUERY)})
+BLOCKDEV_CRYPTO_TECH_INTEGRITY = BlockDevMethod(BLOCKDEV_CRYPTO_INTEGRITY)
+
 # libblockdev dm plugin required technologies and modes
 BLOCKDEV_DM_ALL_MODES = (blockdev.DMTechMode.CREATE_ACTIVATE |
                          blockdev.DMTechMode.REMOVE_DEACTIVATE |
@@ -419,6 +426,8 @@ BLOCKDEV_SWAP_TECH = BlockDevMethod(BLOCKDEV_SWAP)
 # due to missing dependencies)
 BLOCKDEV_BTRFS_PLUGIN = blockdev_plugin("libblockdev btrfs plugin", BLOCKDEV_BTRFS_TECH)
 BLOCKDEV_CRYPTO_PLUGIN = blockdev_plugin("libblockdev crypto plugin", BLOCKDEV_CRYPTO_TECH)
+BLOCKDEV_CRYPTO_PLUGIN_INTEGRITY = blockdev_plugin("libblockdev crypto plugin (integrity technology)",
+                                                   BLOCKDEV_CRYPTO_TECH_INTEGRITY)
 BLOCKDEV_DM_PLUGIN = blockdev_plugin("libblockdev dm plugin", BLOCKDEV_DM_TECH)
 BLOCKDEV_DM_PLUGIN_RAID = blockdev_plugin("libblockdev dm plugin (raid technology)", BLOCKDEV_DM_TECH_RAID)
 BLOCKDEV_LOOP_PLUGIN = blockdev_plugin("libblockdev loop plugin", BLOCKDEV_LOOP_TECH)

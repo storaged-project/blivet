@@ -59,7 +59,17 @@ class IntegrityDevicePopulator(DevicePopulator):
 
     def run(self):
         parents = self._devicetree._add_parent_devices(self.data)
-        device = IntegrityDevice(udev.device_get_name(self.data),
+        name = udev.device_get_name(self.data)
+
+        try:
+            info = blockdev.crypto.integrity_info(name)
+            # integrity algorithm is not part of the on-disk metadata but for active
+            # device we can get it from device mapper so let's set it here
+            parents[0].format.algorithm = info.algorithm
+        except blockdev.BlockDevError:
+            log.info("failed to get information about integrity device %s", name)
+
+        device = IntegrityDevice(name,
                                  sysfs_path=udev.device_get_sysfs_path(self.data),
                                  parents=parents,
                                  exists=True)
