@@ -3,10 +3,11 @@ try:
 except ImportError:
     from mock import patch
 
+import os
 import unittest
 
-from blivet.formats.luks import LUKS
-
+from blivet.formats.luks import LUKS, Integrity
+from blivet.devicelibs import crypto
 from blivet.size import Size
 
 from . import loopbackedtestcase
@@ -125,3 +126,24 @@ class LUKSNodevTestCase(unittest.TestCase):
 
         fmt = LUKS(luks_version="luks2", luks_sector_size=4096)
         self.assertEqual(fmt.luks_sector_size, 4096)
+
+
+@unittest.skipUnless(Integrity._plugin.available, "Integrity support not available")
+class IntegrityTestCase(loopbackedtestcase.LoopBackedTestCase):
+
+    def __init__(self, methodName='run_test'):
+        super(IntegrityTestCase, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
+
+    def test_integrity(self):
+        fmt = Integrity(device=self.loop_devices[0])
+        self.assertEqual(fmt.algorithm, crypto.DEFAULT_INTEGRITY_ALGORITHM)
+
+        # create and open the integrity format
+        fmt.create()
+        fmt.setup()
+        self.assertTrue(fmt.status)
+        self.assertTrue(os.path.exists("/dev/mapper/%s" % fmt.map_name))
+
+        fmt.teardown()
+        self.assertFalse(fmt.status)
+        self.assertFalse(os.path.exists("/dev/mapper/%s" % fmt.map_name))

@@ -132,6 +132,10 @@ class LUKSError(DeviceFormatError):
     pass
 
 
+class IntegrityError(LUKSError):
+    pass
+
+
 class MDMemberError(DeviceFormatError):
     pass
 
@@ -184,6 +188,11 @@ class BTRFSError(StorageError):
 
 class BTRFSValueError(BTRFSError, ValueError):
     pass
+
+
+class StratisError(StorageError):
+    pass
+
 
 # DeviceTree
 

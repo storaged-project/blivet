@@ -1132,6 +1132,45 @@ class XFS(FS):
 register_device_format(XFS)
 
 
+class StratisXFS(XFS):
+    """ XFS on top of Stratis filesystem device """
+
+    _type = "stratis xfs"
+
+    _mount_class = fsmount.StratisXFSMount
+    _resize_class = fsresize.UnimplementedFSResize
+    _size_info_class = fssize.UnimplementedFSSize
+    _info_class = fsinfo.UnimplementedFSInfo
+    _minsize_class = fsminsize.UnimplementedFSMinSize
+    _writelabel_class = fswritelabel.UnimplementedFSWriteLabel
+    _writeuuid_class = fswriteuuid.UnimplementedFSWriteUUID
+
+    def __init__(self, **kwargs):
+        super(StratisXFS, self).__init__(**kwargs)
+        self.pool_uuid = kwargs.pop("pool_uuid", None)
+
+    def _get_options(self):
+        opts = super(StratisXFS, self)._get_options()
+        if self.mountpoint != "/":
+            stratis_opts = "x-systemd.requires=stratis-fstab-setup@%s," \
+                           "x-systemd.after=stratis-fstab-setup@%s" % (self.pool_uuid,
+                                                                       self.pool_uuid)
+        else:
+            stratis_opts = None
+        return ",".join(o for o in (opts, stratis_opts) if o)
+
+    def _create(self, **kwargs):   # pylint: disable=unused-argument
+        # format is created together with the stratis filesystem device
+        pass
+
+    def _destroy(self, **kwargs):   # pylint: disable=unused-argument
+        # format is destroyed together with the stratis filesystem device
+        pass
+
+
+register_device_format(StratisXFS)
+
+
 class HFS(FS):
     _type = "hfs"
     _modules = ["hfs"]

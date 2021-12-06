@@ -373,6 +373,7 @@ def device_is_disk(info):
                  device_is_dm_partition(info) or
                  device_is_dm_lvm(info) or
                  device_is_dm_crypt(info) or
+                 device_is_dm_stratis(info) or
                  (device_is_md(info) and
                   (not device_get_md_container(info) and not all(device_is_disk(d) for d in device_get_parents(info))))))
 
@@ -710,6 +711,11 @@ def device_is_dm_livecd(info):
             device_get_name(info).startswith("live"))
 
 
+def device_is_dm_stratis(info):
+    """ Return True if the device is a Stratis pool or filesystem. """
+    return device_dm_subsystem_match(info, "stratis")
+
+
 def device_is_biosraid_member(info):
     # Note that this function does *not* identify raid sets.
     # Tests to see if device is part of a dmraid set.
@@ -1024,3 +1030,27 @@ def device_is_hidden(info):
         return False
 
     return bool(int(hidden))
+
+
+def device_is_stratis_filesystem(info):
+    if not device_is_dm_stratis(info):
+        return False
+    try:
+        return info.get("DM_UUID", "").split("-")[4] == "fs"
+    except IndexError:
+        return False
+
+
+def device_is_stratis_private(info):
+    if not (device_is_dm_stratis(info) or device_is_dm_luks(info)):
+        return False
+    try:
+        return info.get("DM_NAME", "").split("-")[2] == "private"
+    except IndexError:
+        return False
+
+
+def device_is_private(info):
+    if device_is_dm_stratis(info):
+        return device_is_stratis_private(info)
+    return False
