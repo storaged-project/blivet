@@ -221,13 +221,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # special handling for incomplete VGs
         if not self.complete:
-            try:
-                lvs_info = blockdev.lvm.lvs(vg_name=self.name)
-            except blockdev.LVMError:
-                lvs_info = []
-
-            for lv_info in lvs_info:
-                if lv_info.attr and lv_info.attr[4] == 'a':
+            for lv_info in lvs_info.cache.values():
+                if lv_info.vg_name == self.name and lv_info.attr and lv_info.attr[4] == 'a':
                     return True
 
             return False
