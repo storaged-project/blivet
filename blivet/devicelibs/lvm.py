@@ -54,6 +54,11 @@ LVM_THINP_MIN_CHUNK_SIZE = Size("64 KiB")
 LVM_THINP_MAX_CHUNK_SIZE = Size("1 GiB")
 LVM_THINP_ADDRESSABLE_CHUNK_SIZE = Size("17455015526400 B")  # 15.88 TiB
 
+# cache constants
+LVM_CACHE_MIN_METADATA_SIZE = Size("8 MiB")
+LVM_CACHE_MAX_METADATA_SIZE = Size("16 GiB")
+LVM_CACHE_DEFAULT_MODE = blockdev.LVMCacheMode.WRITETHROUGH
+
 raid_levels = raid.RAIDLevels(["linear", "striped", "raid1", "raid4", "raid5", "raid6", "raid10"])
 raid_seg_types = list(itertools.chain.from_iterable([level.names for level in raid_levels if level.name != "linear"]))
 
@@ -236,3 +241,7 @@ def recommend_thpool_chunk_size(thpool_size):
     # for every ~15.88 TiB of thinpool data size
     return min(math.ceil(thpool_size / LVM_THINP_ADDRESSABLE_CHUNK_SIZE) * LVM_THINP_MIN_CHUNK_SIZE,
                LVM_THINP_MAX_CHUNK_SIZE)
+
+
+def is_valid_cache_md_size(md_size):
+    return md_size >= LVM_CACHE_MIN_METADATA_SIZE and md_size <= LVM_CACHE_MAX_METADATA_SIZE

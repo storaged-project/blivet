@@ -867,3 +867,29 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
 
                 vdo_supported = devicefactory.is_supported_device_type(devicefactory.DEVICE_TYPE_LVM_VDO)
                 self.assertFalse(vdo_supported)
+
+
+@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+class BlivetNewLVMCachePoolDeviceTest(unittest.TestCase):
+
+    def test_new_cache_pool(self):
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("10 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+
+        for dev in (pv, vg):
+            b.devicetree._add_device(dev)
+
+        # check that all the above devices are in the expected places
+        self.assertEqual(set(b.devices), {pv, vg})
+        self.assertEqual(set(b.vgs), {vg})
+
+        self.assertEqual(vg.size, Size("10236 MiB"))
+
+        cachepool = b.new_lv(name="cachepool", cache_pool=True,
+                             parents=[vg], pvs=[pv])
+
+        b.create_device(cachepool)
+
+        self.assertEqual(cachepool.type, "lvmcachepool")
