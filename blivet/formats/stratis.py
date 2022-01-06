@@ -122,6 +122,9 @@ class StratisBlockdev(DeviceFormat):
         if not self.has_key:
             raise StratisError("No passphrase/key file for the locked Stratis pool")
 
+        if not self.locked_pool_key_desc:
+            raise StratisError("No key description for the locked Stratis pool")
+
         stratis.set_key(self.locked_pool_key_desc, self.__passphrase, self.key_file)
         stratis.unlock_pool(self.pool_uuid)
 
