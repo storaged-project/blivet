@@ -1136,6 +1136,7 @@ class StratisXFS(XFS):
     """ XFS on top of Stratis filesystem device """
 
     _type = "stratis xfs"
+    _supported = False
 
     _mount_class = fsmount.StratisXFSMount
     _resize_class = fsresize.UnimplementedFSResize
