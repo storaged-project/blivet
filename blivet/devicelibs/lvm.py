@@ -133,14 +133,14 @@ def needs_config_refresh(fn):
 @needs_config_refresh
 def lvm_devices_add(path):
     """ Add a device (PV) to the list of devices LVM is allowed to use """
-    log.debug("lvm filter: device %s added to the list of allowed devices")
+    log.debug("lvm filter: device %s added to the list of allowed devices", path)
     _lvm_devices.add(path)
 
 
 @needs_config_refresh
 def lvm_devices_remove(path):
     """ Remove a device (PV) to the list of devices LVM is allowed to use """
-    log.debug("lvm filter: device %s removed from the list of allowed devices")
+    log.debug("lvm filter: device %s removed from the list of allowed devices", path)
     try:
         _lvm_devices.remove(path)
     except KeyError:
