@@ -1123,7 +1123,7 @@ class ActionConfigureDevice(DeviceAction):
 
     """ An action change of an attribute of a device """
     type = ACTION_TYPE_CONFIGURE
-    obj = ACTION_OBJECT_FORMAT
+    obj = ACTION_OBJECT_DEVICE
     type_desc_str = N_("configure device")
 
     def __init__(self, device, attr, new_value):
