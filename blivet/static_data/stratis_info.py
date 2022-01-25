@@ -20,12 +20,8 @@
 # Red Hat Author(s): Vojtech Trefny <vtrefny@redhat.com>
 #
 
-import gi
-gi.require_version("GLib", "2.0")
-
-from gi.repository import GLib
-
 import os
+import uuid
 
 from collections import namedtuple
 
@@ -37,13 +33,12 @@ log = logging.getLogger("blivet")
 
 
 # XXX we can't import these from devicelibs.stratis, circular imports make python mad
-STRATIS_SERVICE = "org.storage.stratis2"
-STRATIS_PATH = "/org/storage/stratis2"
-STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool.r1"
-STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem"
-STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev"
-STRATIS_PROPS_INTF = STRATIS_SERVICE + ".FetchProperties.r4"
-STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r2"
+STRATIS_SERVICE = "org.storage.stratis3"
+STRATIS_PATH = "/org/storage/stratis3"
+STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool.r0"
+STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem.r0"
+STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev.r0"
+STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
 
 
 StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "physical_used", "object_path", "encrypted"])
@@ -74,28 +69,13 @@ class StratisInfo(object):
             log.error("Failed to get DBus properties of '%s'", pool_path)
             return None
 
-        all_props = safe_dbus.call_sync(STRATIS_SERVICE,
-                                        pool_path,
-                                        STRATIS_PROPS_INTF,
-                                        "GetAllProperties",
-                                        None)[0]
-        if all_props:
-            valid, pool_size = all_props.get("TotalPhysicalSize",
-                                             (False, "TotalPhysicalSize not available"))
-            if not valid:
-                log.warning("Failed to get Stratis pool physical size for %s: %s",
-                            properties["Name"], pool_size)
-                pool_size = 0
+        pool_size = properties.get("TotalPhysicalSize", 0)
 
-            valid, pool_used = all_props.get("TotalPhysicalUsed",
-                                             (False, "TotalPhysicalUsed not available"))
-            if not valid:
-                log.warning("Failed to get Stratis pool physical used for %s: %s",
-                            properties["Name"], pool_used)
-                pool_used = 0
-        else:
-            log.error("Failed to get Stratis pool properties for %s.", properties["Name"])
-            pool_size = 0
+        valid, pool_used = properties.get("TotalPhysicalUsed",
+                                          (False, "TotalPhysicalUsed not available"))
+        if not valid:
+            log.warning("Failed to get Stratis pool physical used for %s: %s",
+                        properties["Name"], pool_used)
             pool_used = 0
 
         return StratisPoolInfo(name=properties["Name"], uuid=properties["Uuid"],
@@ -119,20 +99,11 @@ class StratisInfo(object):
         if not pool_info:
             return None
 
-        all_props = safe_dbus.call_sync(STRATIS_SERVICE,
-                                        filesystem_path,
-                                        STRATIS_PROPS_INTF,
-                                        "GetAllProperties",
-                                        None)[0]
-        if all_props:
-            valid, used_size = all_props.get("Used",
-                                             (False, "Used not available"))
-            if not valid:
-                log.warning("Failed to get Stratis filesystem used size for %s: %s",
-                            properties["Name"], used_size)
-                used_size = 0
-        else:
-            log.error("Failed to get Stratis filesystem properties for %s.", properties["Name"])
+        valid, used_size = properties.get("Used",
+                                          (False, "Used not available"))
+        if not valid:
+            log.warning("Failed to get Stratis filesystem used size for %s: %s",
+                        properties["Name"], used_size)
             used_size = 0
 
         return StratisFilesystemInfo(name=properties["Name"], uuid=properties["Uuid"],
@@ -162,7 +133,9 @@ class StratisInfo(object):
                 return None
             pool_name = pool_info.name
 
-        return StratisBlockdevInfo(path=properties["Devnode"], uuid=properties["Uuid"],
+        blockdev_uuid = str(uuid.UUID(properties["Uuid"]))
+
+        return StratisBlockdevInfo(path=properties["Devnode"], uuid=blockdev_uuid,
                                    pool_name=pool_name, pool_uuid=pool_info.uuid,
                                    object_path=blockdev_path)
 
@@ -170,23 +143,23 @@ class StratisInfo(object):
         locked_pools = []
 
         try:
-            props = safe_dbus.call_sync(STRATIS_SERVICE,
-                                        STRATIS_PATH,
-                                        STRATIS_PROPS_INTF,
-                                        "GetProperties",
-                                        GLib.Variant("(as)", (["LockedPoolsWithDevs"],)))[0]
+            pools_info = safe_dbus.get_property_sync(STRATIS_SERVICE,
+                                                     STRATIS_PATH,
+                                                     STRATIS_MANAGER_INTF,
+                                                     "LockedPools")[0]
         except safe_dbus.DBusCallError as e:
             log.error("Failed to get list of locked Stratis pools: %s", str(e))
             return locked_pools
 
-        if props and "LockedPoolsWithDevs" in props.keys():
-            valid, pools_info = props["LockedPoolsWithDevs"]
-            if valid:
-                for pool_uuid in pools_info.keys():
-                    info = StratisLockedPoolInfo(uuid=pool_uuid,
-                                                 key_desc=pools_info[pool_uuid]["key_description"],
-                                                 devices=[d["devnode"] for d in pools_info[pool_uuid]["devs"]])
-                    locked_pools.append(info)
+        for pool_uuid in pools_info.keys():
+            valid, (_err, description) = pools_info[pool_uuid]["key_description"]
+            if not valid:
+                log.info("Locked Stratis pool %s doesn't have a valid key description: %s", pool_uuid, description)
+                description = None
+            info = StratisLockedPoolInfo(uuid=pool_uuid,
+                                         key_desc=description,
+                                         devices=[d["devnode"] for d in pools_info[pool_uuid]["devs"]])
+            locked_pools.append(info)
 
         return locked_pools
 

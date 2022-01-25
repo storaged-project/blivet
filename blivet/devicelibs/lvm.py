@@ -43,6 +43,8 @@ from ..static_data import lvs_info
 from ..tasks import availability
 from ..util import run_program
 
+from contextlib import contextmanager
+
 # some of lvm's defaults that we have no way to ask it for
 LVM_PE_START = Size("1 MiB")
 LVM_PE_SIZE = Size("4 MiB")
@@ -150,7 +152,28 @@ def lvm_devices_remove(path):
 
 @needs_config_refresh
 def lvm_devices_reset():
+    log.debug("lvm filter: clearing the lvm devices list")
     _lvm_devices.clear()
+
+
+def lvm_devices_copy():
+    return _lvm_devices.copy()
+
+
+@needs_config_refresh
+def lvm_devices_restore(devices):
+    log.debug("lvm filter: restoring the lvm devices list to %s", ", ".join(list(devices)))
+    _lvm_devices = devices
+
+
+@contextmanager
+def empty_lvm_devices():
+    devices = lvm_devices_copy()
+    lvm_devices_reset()
+
+    yield
+
+    lvm_devices_restore(devices)
 
 
 def determine_parent_lv(internal_lv, lvs, lv_info):

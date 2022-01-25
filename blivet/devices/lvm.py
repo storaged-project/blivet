@@ -1159,7 +1159,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             for lv in self._internal_lvs:
                 if lv.int_lv_type == LVMInternalLVtype.cache_pool:
                     if self.seg_type == "cache":
-                        self._cache = LVMCache(self, size=lv.size, exists=True)
+                        self._cache = LVMCache(self, size=lv.size, md_size=lv.metadata_size, exists=True)
                     elif self.seg_type == "writecache":
                         self._cache = LVMWriteCache(self, size=lv.size, exists=True)
 
@@ -2691,7 +2691,7 @@ class LVMCache(Cache):
 
     @property
     def md_size(self):
-        if self.exists:
+        if self.exists and self.stats:
             return self.stats.md_size
         else:
             return self._md_size

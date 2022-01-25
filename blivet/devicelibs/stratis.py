@@ -37,13 +37,12 @@ from .. import safe_dbus
 from .. import util
 
 
-STRATIS_SERVICE = "org.storage.stratis2"
-STRATIS_PATH = "/org/storage/stratis2"
-STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool"
-STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem"
-STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev"
-STRATIS_PROPS_INTF = STRATIS_SERVICE + ".FetchProperties"
-STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r2"
+STRATIS_SERVICE = "org.storage.stratis3"
+STRATIS_PATH = "/org/storage/stratis3"
+STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool.r0"
+STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem.r0"
+STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev.r0"
+STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
 
 
 STRATIS_FS_SIZE = Size("1 TiB")
@@ -149,7 +148,7 @@ def set_key(key_desc, passphrase, key_file):
                                                           STRATIS_PATH,
                                                           STRATIS_MANAGER_INTF,
                                                           "SetKey",
-                                                          GLib.Variant("(shb)", (key_desc, 0, False)), fds=fd_list)
+                                                          GLib.Variant("(sh)", (key_desc, 0)), fds=fd_list)
     except safe_dbus.DBusCallError as e:
         raise StratisError("Failed to set key for new pool: %s" % str(e))
     else:
@@ -195,13 +194,16 @@ def create_pool(name, devices, encrypted, passphrase, key_file):
     else:
         key_opt = GLib.Variant("(bs)", (False, ""))
 
+    clevis_opt = GLib.Variant("(b(ss))", (False, ("", "")))
+
     try:
         ((succ, _paths), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
                                                         STRATIS_PATH,
                                                         STRATIS_MANAGER_INTF,
                                                         "CreatePool",
-                                                        GLib.Variant("(s(bq)as(bs))", (name, raid_opt,
-                                                                                       devices, key_opt)))
+                                                        GLib.Variant("(s(bq)as(bs)(b(ss)))", (name, raid_opt,
+                                                                                              devices, key_opt,
+                                                                                              clevis_opt)))
     except safe_dbus.DBusCallError as e:
         raise StratisError("Failed to create stratis pool: %s" % str(e))
     else:
@@ -223,13 +225,14 @@ def create_filesystem(name, pool_uuid):
         raise StratisError("Stratis pool with UUID %s not found" % pool_uuid)
 
     pool_info = stratis_info.pools[pool_uuid]
+    size_opt = GLib.Variant("(bs)", (False, ""))
 
     try:
         ((succ, _paths), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
                                                         pool_info.object_path,
                                                         STRATIS_POOL_INTF,
                                                         "CreateFilesystems",
-                                                        GLib.Variant("(as)", ([name],)))
+                                                        GLib.Variant("(a(s(bs)))", ([GLib.Variant("(s(bs))", (name, size_opt))],)))
     except safe_dbus.DBusCallError as e:
         raise StratisError("Failed to create stratis filesystem on '%s': %s" % (pool_info.name, str(e)))
     else:
