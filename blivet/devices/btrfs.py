@@ -123,7 +123,8 @@ class BTRFSDevice(StorageDevice):
         else:
             tmpdir = tempfile.mkdtemp(prefix=self._temp_dir_prefix)
             try:
-                util.mount(device=fmt.device, mountpoint=tmpdir, fstype=fmt.type)
+                util.mount(device=fmt.device, mountpoint=tmpdir, fstype=fmt.type,
+                           options=fmt.mountopts)
             except errors.FSError as e:
                 log.debug("btrfs temp mount failed: %s", e)
                 raise
