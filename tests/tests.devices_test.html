@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tests.devices_test package &#8212; Blivet 3.4.2 documentation</title>
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <title>tests.devices_test package &#8212; Blivet 3.4.3 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -35,7 +34,7 @@
         <li class="right" >
           <a href="tests.devicelibs_test.html" title="tests.devicelibs_test package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.3 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="tests.html" accesskey="U">tests package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">tests.devices_test package</a></li> 
       </ul>
@@ -824,19 +823,19 @@ not have a method with the specified name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="../blivet/blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="../blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – the device major</p></li>
-<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – the device minor</p></li>
-<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – the ID_SERIAL_SHORT for this device</p></li>
-<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – the manufacturer of this Device</p></li>
-<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – manufacturer’s device model string</p></li>
-<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – the interconnect this device uses</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device major</p></li>
+<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device minor</p></li>
+<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the ID_SERIAL_SHORT for this device</p></li>
+<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the manufacturer of this Device</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – manufacturer’s device model string</p></li>
+<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the interconnect this device uses</p></li>
 </ul>
 </dd>
 </dl>
@@ -925,7 +924,7 @@ not have a method with the specified name.</p>
 <dl class="py class">
 <dt id="tests.devices_test.partition_test.Weighted">
 <em class="property">class </em><code class="sig-prename descclassname">tests.devices_test.partition_test.</code><code class="sig-name descname">Weighted</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fstype</span></em>, <em class="sig-param"><span class="n">mountpoint</span></em>, <em class="sig-param"><span class="n">true_funcs</span></em>, <em class="sig-param"><span class="n">weight</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.devices_test.partition_test.Weighted" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
 <p>Create new instance of Weighted(fstype, mountpoint, true_funcs, weight)</p>
 <dl class="py attribute">
 <dt id="tests.devices_test.partition_test.Weighted.fstype">
@@ -1087,14 +1086,14 @@ not have a method with the specified name.</p>
         <li class="right" >
           <a href="tests.devicelibs_test.html" title="tests.devicelibs_test package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.3 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="tests.html" >tests package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">tests.devices_test package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2021, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>
