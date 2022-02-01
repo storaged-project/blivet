@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.4.2
+Version: 3.4.3
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -192,6 +192,11 @@ configuration.
 %endif
 
 %changelog
+* Tue Feb 01 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.4.3-1
+- Make sure we mount the top level subvolume when mounting btrfs (vtrefny)
+- README: Fix API documentation link (vtrefny)
+- iscsi: Replace all log_exception_info calls with log.info (vtrefny)
+
 * Thu Sep 30 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.4.2-1
 - pylint: Remove pdb breakpoint in device_properties_test (vtrefny)
 - pylint: Fix exception string in get_cow_sysfs_path (vtrefny)
