@@ -764,7 +764,10 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
         growth = 0  # in sectors
         # loop through disks
         for _disk in req_disks:
-            disklabel = disklabels[_disk.path]
+            try:
+                disklabel = disklabels[_disk.path]
+            except KeyError:
+                raise PartitioningError("Requested disk %s doesn't have a usable disklabel for partitioning" % _disk.name)
             best = None
             current_free = free
             try:

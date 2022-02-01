@@ -1065,6 +1065,24 @@ class PartitionFactory(DeviceFactory):
                                             **kwargs)
         return device
 
+    def _configure(self):
+        disks = []
+        for disk in self.disks:
+            if not disk.partitioned:
+                log.debug("removing unpartitioned disk %s", disk.name)
+            elif not disk.format.supported:
+                log.debug("removing disk with unsupported format %s", disk.name)
+            else:
+                disks.append(disk)
+
+        if not disks:
+            raise DeviceFactoryError("no usable disks specified for partition")
+
+        log.debug("setting new factory disks to %s", [d.name for d in disks])
+        self.disks = disks  # pylint: disable=attribute-defined-outside-init
+
+        super(PartitionFactory, self)._configure()
+
     def _set_disks(self):
         self.raw_device.req_disks = self.disks[:]
 
