@@ -1248,6 +1248,7 @@ class NTFS(FS):
     _uuidfs = fsuuid.NTFSUUID()
     _resizable = True
     _formattable = True
+    _supported = True
     _min_size = Size("1 MiB")
     _max_size = Size("16 TiB")
     _packages = ["ntfsprogs"]
