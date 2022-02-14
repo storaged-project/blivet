@@ -525,7 +525,7 @@ class DeviceFormat(ObjectID):
             self.device = device
 
         if not os.path.exists(self.device):
-            raise FormatCreateError("invalid device specification", self.device)
+            raise FormatCreateError("invalid device specification %s" % self.device)
 
         if self.exists:
             raise DeviceFormatError("format already exists")
