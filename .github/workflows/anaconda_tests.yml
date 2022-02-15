@@ -42,6 +42,8 @@ jobs:
               dnf install -y python3-blockdev libblockdev-plugins-all python3-bytesize libbytesize python3-pyparted parted libselinux-python3; \
               cd /blivet; \
               python3 ./setup.py install; \
+              # FIXME: Install older npm version - the version from the package manager leads to timeouts
+              npm install -g npm@8.1.0; \
               cd /anaconda; \
               ./autogen.sh && ./configure; \
               make ci"
