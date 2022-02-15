@@ -588,6 +588,8 @@ class Blivet(object):
             :type vdo_pool: bool
             :keyword vdo_lv: whether to create a vdo lv
             :type vdo_lv: bool
+            :keyword cache_pool: whether to create a cache pool
+            :type cache_pool: bool
             :returns: the new device
             :rtype: :class:`~.devices.LVMLogicalVolumeDevice`
 
@@ -606,6 +608,7 @@ class Blivet(object):
         thin_pool = kwargs.pop("thin_pool", False)
         vdo_pool = kwargs.pop("vdo_pool", False)
         vdo_lv = kwargs.pop("vdo_lv", False)
+        cache_pool = kwargs.pop("cache_pool", False)
         parent = kwargs.get("parents", [None])[0]
         if (thin_volume or vdo_lv) and parent:
             # kwargs["parents"] will contain the pool device, so...
@@ -621,6 +624,8 @@ class Blivet(object):
             kwargs["seg_type"] = "vdo-pool"
         if vdo_lv:
             kwargs["seg_type"] = "vdo"
+        if cache_pool:
+            kwargs["seg_type"] = "cache-pool"
 
         mountpoint = kwargs.pop("mountpoint", None)
         if 'fmt_type' in kwargs:
@@ -652,7 +657,7 @@ class Blivet(object):
                 swap = False
 
             prefix = ""
-            if thin_pool or vdo_pool:
+            if thin_pool or vdo_pool or cache_pool:
                 prefix = "pool"
 
             name = self.suggest_device_name(parent=vg,
@@ -663,7 +668,7 @@ class Blivet(object):
         if "%s-%s" % (vg.name, name) in self.names:
             raise ValueError("name '%s' is already in use" % name)
 
-        if thin_pool or thin_volume or vdo_pool or vdo_lv:
+        if thin_pool or thin_volume or vdo_pool or vdo_lv or cache_pool:
             cache_req = kwargs.pop("cache_request", None)
             if cache_req:
                 raise ValueError("Creating cached thin and VDO volumes and pools is not supported")

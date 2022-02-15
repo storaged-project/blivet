@@ -630,11 +630,11 @@ class ActionCreateFormat(DeviceAction):
                     continue
                 self.device.unset_flag(flag)
 
-            if self.format.parted_flag is not None:
-                self.device.set_flag(self.format.parted_flag)
-
             if self.format.parted_system is not None:
                 self.device.parted_partition.system = self.format.parted_system
+
+            if self.format.parted_flag is not None:
+                self.device.set_flag(self.format.parted_flag)
 
             self.device.disk.format.commit_to_disk()
             udev.settle()
