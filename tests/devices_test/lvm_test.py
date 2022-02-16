@@ -942,3 +942,83 @@ class BlivetLVMConfigureActionsTest(unittest.TestCase):
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
             b.do_it()
             lvm.lvrename.assert_called_with(vg.name, "testlv", "newname")
+
+    def test_vdo_compression_deduplication_change(self):
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("10 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+        vdopool = LVMLogicalVolumeDevice("testvdopool", seg_type="vdo-pool", parents=[vg], exists=True,
+                                         deduplication=True, compression=True)
+        vdolv = LVMLogicalVolumeDevice("testvdolv", seg_type="vdo", parents=[vdopool], exists=True)
+
+        for dev in (pv, vg, vdopool, vdolv):
+            b.devicetree._add_device(dev)
+
+        with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies", new=[]):
+            with patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies", new=[]):
+                # compression/deduplication must be set on the pool, not the volume
+                with self.assertRaises(ValueError):
+                    ac = blivet.deviceaction.ActionConfigureDevice(device=vdolv, attr="compression", new_value=True)
+                    b.devicetree.actions.add(ac)
+                with self.assertRaises(ValueError):
+                    ac = blivet.deviceaction.ActionConfigureDevice(device=vdolv, attr="deduplication", new_value=True)
+                    b.devicetree.actions.add(ac)
+
+                # compression/deduplication already enabled
+                with self.assertRaisesRegex(ValueError, "compression is already enabled"):
+                    ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="compression", new_value=True)
+                    b.devicetree.actions.add(ac)
+                with self.assertRaisesRegex(ValueError, "deduplication is already enabled"):
+                    ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="deduplication", new_value=True)
+                    b.devicetree.actions.add(ac)
+
+                # disable compression
+                ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="compression", new_value=False)
+                b.devicetree.actions.add(ac)
+                self.assertFalse(vdopool.compression)
+
+                # cancel the action, compression should be enabled
+                b.devicetree.actions.remove(ac)
+                self.assertTrue(vdopool.compression)
+
+                # re-add the action and make the change
+                b.devicetree.actions.add(ac)
+                self.assertFalse(vdopool.compression)
+                with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+                    b.do_it()
+                    lvm.vdo_disable_compression.assert_called_with(vg.name, vdopool.lvname)
+
+                # enable compression back
+                ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="compression", new_value=True)
+                b.devicetree.actions.add(ac)
+                self.assertTrue(vdopool.compression)
+
+                with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+                    b.do_it()
+                    lvm.vdo_enable_compression.assert_called_with(vg.name, vdopool.lvname)
+
+                # disable deduplication
+                ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="deduplication", new_value=False)
+                b.devicetree.actions.add(ac)
+                self.assertFalse(vdopool.deduplication)
+
+                # cancel the action, deduplication should be enabled
+                b.devicetree.actions.remove(ac)
+                self.assertTrue(vdopool.deduplication)
+
+                # re-add the action and make the change
+                b.devicetree.actions.add(ac)
+                self.assertFalse(vdopool.deduplication)
+                with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+                    b.do_it()
+                    lvm.vdo_disable_deduplication.assert_called_with(vg.name, vdopool.lvname)
+
+                # enable deduplication back
+                ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="deduplication", new_value=True)
+                b.devicetree.actions.add(ac)
+                self.assertTrue(vdopool.deduplication)
+
+                with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+                    b.do_it()
+                    lvm.vdo_enable_deduplication.assert_called_with(vg.name, vdopool.lvname)
