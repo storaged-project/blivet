@@ -1118,6 +1118,18 @@ class ActionConfigureFormat(DeviceAction):
             self.device.setup()
             self._execute(dry_run=False)
 
+    def obsoletes(self, action):
+        """ Return True is self obsoletes action.
+
+            ActionConfigureFormat instances obsolete other ActionConfigureFormat instances with
+            lower id, same device and same attribute.
+        """
+        return (self.device.id == action.device.id and
+                self.type == action.type and
+                self.obj == action.obj and
+                self.attr == action.attr and
+                self.id > action.id)
+
 
 class ActionConfigureDevice(DeviceAction):
 
@@ -1174,3 +1186,15 @@ class ActionConfigureDevice(DeviceAction):
                       "new_%s" % self.attr: self.new_value,
                       "dry_run": False}
             self._execute(**kwargs)
+
+    def obsoletes(self, action):
+        """ Return True is self obsoletes action.
+
+            ActionConfigureDevice instances obsolete other ActionConfigureDevice instances with
+            lower id, same device and same attribute.
+        """
+        return (self.device.id == action.device.id and
+                self.type == action.type and
+                self.obj == action.obj and
+                self.attr == action.attr and
+                self.id > action.id)
