@@ -1111,6 +1111,8 @@ class ActionConfigureFormat(DeviceAction):
         if hasattr(self.device, 'ignore_skip_activation'):
             self.device.ignore_skip_activation -= 1
 
+        super(ActionConfigureFormat, self).cancel()
+
     def execute(self, callbacks=None):
         super(ActionConfigureFormat, self).execute(callbacks=callbacks)
 
@@ -1177,6 +1179,7 @@ class ActionConfigureDevice(DeviceAction):
             return
 
         setattr(self.device, self.attr, self.old_value)
+        super(ActionConfigureDevice, self).cancel()
 
     def execute(self, callbacks=None):
         super(ActionConfigureDevice, self).execute(callbacks=callbacks)
