@@ -33,6 +33,7 @@ from ...errors import DeviceTreeError, DuplicateVGError
 from ...flags import flags
 from ...size import Size
 from ...storage_log import log_method_call
+from ...tasks.availability import BLOCKDEV_LVM_PLUGIN_VDO
 from .devicepopulator import DevicePopulator
 from .formatpopulator import FormatPopulator
 
@@ -243,8 +244,13 @@ class LVMFormatPopulator(FormatPopulator):
                 lv_parents = [self._devicetree.get_device_by_name(pool_device_name)]
             elif lv_attr[0] == 'd':
                 # vdo pool
-                # nothing to do here
-                pass
+                if BLOCKDEV_LVM_PLUGIN_VDO.available:
+                    pool_info = blockdev.lvm.vdo_info(vg_name, lv_name)
+                    if pool_info:
+                        lv_kwargs["compression"] = pool_info.compression
+                        lv_kwargs["deduplication"] = pool_info.deduplication
+                    else:
+                        log.warning("failed to get information about VDO pool %s", lv_name)
             elif lv_attr[0] == 'v':
                 if lv_type != "vdo":
                     # skip vorigins
