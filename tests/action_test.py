@@ -1363,6 +1363,7 @@ class ConfigurationActionsTest(unittest.TestCase):
         ac.cancel()
         self.assertEqual(mock_device.conf1, "old_value")
 
+        ac.apply()
         ac.execute()
         mock_device.do_conf1.assert_called_once_with(old_conf1="old_value", new_conf1="new_value",
                                                      dry_run=False)
@@ -1397,5 +1398,6 @@ class ConfigurationActionsTest(unittest.TestCase):
         ac.cancel()
         self.assertEqual(mock_format.conf1, "old_value")
 
+        ac.apply()
         ac.execute()
         mock_format.do_conf1.assert_called_once_with(dry_run=False)
