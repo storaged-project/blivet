@@ -376,6 +376,17 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(create_device_2.obsoletes(create_device_1), True)
         self.assertEqual(create_device_1.obsoletes(create_device_2), False)
 
+        # ActionConfigureDevice
+        #
+        # - obsoletes all but ActionConfigureDevice actions w/ lower id on the
+        #   same existing device with the same attribute being configured
+        sdc1._rename = Mock()  # XXX partitions are actually not renamable
+        configure_device_1 = ActionConfigureDevice(sdc1, "name", "new_name")
+        configure_device_1.apply()
+        configure_device_2 = ActionConfigureDevice(sdc1, "name", "new_name2")
+        configure_device_2.apply()
+        self.assertTrue(configure_device_2.obsoletes(configure_device_1))
+
         # ActionCreateFormat
         #
         # - obsoletes other ActionCreateFormat instances w/ lower id and same
@@ -414,6 +425,22 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(create_format_3.obsoletes(resize_format_1), True)
         self.assertEqual(create_format_3.obsoletes(resize_format_2), True)
 
+        # ActionConfigureFormat
+        #
+        # - obsoletes all but ActionConfigureFormat actions w/ lower id on the
+        #   same existing device with the same attribute being configured
+        configure_format_1 = ActionConfigureFormat(sdc1, "label", "new_label")
+        configure_format_1.apply()
+        configure_format_2 = ActionConfigureFormat(sdc1, "label", "new_label2")
+        configure_format_2.apply()
+        self.assertTrue(configure_format_2.obsoletes(configure_format_1))
+        # XXX just pretend we can change uuid too
+        sdc1.format.config_actions_map["uuid"] = "write_label"
+        configure_format_3 = ActionConfigureFormat(sdc1, "uuid", "new_uuid")
+        configure_format_3.apply()
+        self.assertFalse(configure_format_3.obsoletes(configure_format_1))
+        self.assertFalse(configure_format_3.obsoletes(configure_format_2))
+
         # ActionResizeDevice
         #
         # - obsoletes other ActionResizeDevice instances w/ lower id and same
@@ -443,6 +470,8 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(destroy_format_1.obsoletes(create_format_1), True)
         self.assertEqual(destroy_format_1.obsoletes(resize_format_1), True)
         self.assertEqual(destroy_format_1.obsoletes(destroy_format_1), True)
+        self.assertEqual(destroy_format_1.obsoletes(configure_format_1), True)
+        self.assertEqual(destroy_format_1.obsoletes(configure_format_2), True)
         self.assertEqual(destroy_format_2.obsoletes(destroy_format_1), False)
         self.assertEqual(destroy_format_1.obsoletes(destroy_format_2), True)
 
@@ -457,6 +486,10 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(destroy_sdc1.obsoletes(resize_format_2), True)
         self.assertEqual(destroy_sdc1.obsoletes(create_device_1), True)
         self.assertEqual(destroy_sdc1.obsoletes(resize_device_1), True)
+        self.assertEqual(destroy_sdc1.obsoletes(configure_format_1), True)
+        self.assertEqual(destroy_sdc1.obsoletes(configure_format_2), True)
+        self.assertEqual(destroy_sdc1.obsoletes(configure_device_1), True)
+        self.assertEqual(destroy_sdc1.obsoletes(configure_device_2), True)
         self.assertEqual(destroy_sdc1.obsoletes(destroy_sdc1), True)
 
         # ActionDestroyDevice
