@@ -1250,7 +1250,7 @@ class LVMInternalLogicalVolumeMixin(object):
 
     def resize(self):
         if self._lv_type is not LVMInternalLVtype.meta:
-            errors.DeviceError("The internal LV %s cannot be resized" % self.lvname)
+            raise errors.DeviceError("The internal LV %s cannot be resized" % self.lvname)
         if ((self._parent_lv and not self._parent_lv.is_thin_pool) or
                 re.search(r'_[rc]meta', self.lvname)):
             raise errors.DeviceError("RAID and cache pool metadata LVs cannot be resized directly")
