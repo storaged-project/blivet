@@ -650,6 +650,10 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     _packages = ["lvm2"]
     _external_dependencies = [availability.BLOCKDEV_LVM_PLUGIN]
 
+    config_actions_map = {"name": "_rename",
+                          "compression": "_set_compression",
+                          "deduplication": "_set_deduplication"}
+
     def __init__(self, name, parents=None, size=None, uuid=None, seg_type=None,
                  fmt=None, exists=False, sysfs_path='', grow=None, maxsize=None,
                  percent=None, cache_request=None, pvs=None, from_lvs=None):
@@ -1297,7 +1301,7 @@ class LVMInternalLogicalVolumeMixin(object):
 
     def resize(self):
         if self._lv_type is not LVMInternalLVtype.meta:
-            errors.DeviceError("The internal LV %s cannot be resized" % self.lvname)
+            raise errors.DeviceError("The internal LV %s cannot be resized" % self.lvname)
         if ((self._parent_lv and not self._parent_lv.is_thin_pool) or
                 re.search(r'_[rc]meta', self.lvname)):
             raise errors.DeviceError("RAID and cache pool metadata LVs cannot be resized directly")
@@ -1970,6 +1974,34 @@ class LVMVDOPoolMixin(object):
                                      self.size, self.vdo_lv.size, self.index_memory,
                                      self.compression, self.deduplication,
                                      write_policy)
+
+    @util.requires_property("is_vdo_pool")
+    def _set_compression(self, new_compression, old_compression, dry_run):
+        if not self.exists:
+            raise ValueError("device has not been created")
+
+        if old_compression == new_compression:
+            raise ValueError("compression is already %s on this VDO pool" % ("enabled" if new_compression else "disabled"))
+
+        if not dry_run:
+            if new_compression:
+                blockdev.lvm.vdo_enable_compression(self.vg.name, self.lvname)
+            else:
+                blockdev.lvm.vdo_disable_compression(self.vg.name, self.lvname)
+
+    @util.requires_property("is_vdo_pool")
+    def _set_deduplication(self, new_deduplication, old_deduplication, dry_run):
+        if not self.exists:
+            raise ValueError("device has not been created")
+
+        if old_deduplication == new_deduplication:
+            raise ValueError("deduplication is already %s on this VDO pool" % ("enabled" if new_deduplication else "disabled"))
+
+        if not dry_run:
+            if new_deduplication:
+                blockdev.lvm.vdo_enable_deduplication(self.vg.name, self.lvname)
+            else:
+                blockdev.lvm.vdo_disable_deduplication(self.vg.name, self.lvname)
 
 
 class LVMVDOLogicalVolumeMixin(object):
