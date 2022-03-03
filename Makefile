@@ -36,7 +36,7 @@ potfile:
 	#   - commit pot file
 	#   - tell user to verify this file and push to the remote from the temp dir
 	TEMP_DIR=$$(mktemp --tmpdir -d $(PKGNAME)-localization-XXXXXXXXXX) || exit 1 ; \
-	git clone --depth 1 -b master -- $(L10N_REPOSITORY) $$TEMP_DIR || exit 2 ; \
+	git clone --depth 1 -b rhel9-branch -- $(L10N_REPOSITORY) $$TEMP_DIR || exit 2 ; \
 	cp po/$(PKGNAME).pot $$TEMP_DIR/ || exit 3 ; \
 	pushd $$TEMP_DIR ; \
 	git difftool --trust-exit-code -y -x "diff -u -I '^\"POT-Creation-Date: .*$$'" HEAD ./$(PKGNAME).pot &>/dev/null ; \
