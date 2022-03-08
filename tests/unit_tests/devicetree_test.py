@@ -3,7 +3,6 @@ try:
 except ImportError:
     from mock import patch, Mock, PropertyMock, sentinel
 
-import os
 import six
 import unittest
 
@@ -114,7 +113,11 @@ class DeviceTreeTestCase(unittest.TestCase):
             tree._remove_device(lv)
             self.assertFalse(lv.name in tree.names)
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+    # XXX: the lvm_devices_* functions are decorated with needs_config_refresh decorator which
+    #      at this point is already applied as a no-op because LVM libblockdev plugin is not available
+    @patch("blivet.devicelibs.lvm.lvm_devices_add", new=lvm._lvm_devices.add)
+    @patch("blivet.devicelibs.lvm.lvm_devices_remove", new=lvm._lvm_devices.remove)
+    @patch("blivet.devicelibs.lvm.lvm_devices_reset", new=lvm._lvm_devices.clear)
     def test_reset(self):
         dt = DeviceTree()
         names = ["fakedev1", "fakedev2"]
@@ -436,6 +439,10 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
         self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
 
+    # XXX: the lvm_devices_* functions are decorated with needs_config_refresh decorator which
+    #      at this point is already applied as a no-op because LVM libblockdev plugin is not available
+    @patch("blivet.devicelibs.lvm.lvm_devices_add", new=lvm._lvm_devices.add)
+    @patch("blivet.devicelibs.lvm.lvm_devices_remove", new=lvm._lvm_devices.remove)
     def test_lvm_filter_hide_unhide(self):
         tree = DeviceTree()
 
