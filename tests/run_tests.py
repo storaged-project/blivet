@@ -9,10 +9,26 @@ import argparse
 import unittest
 
 
+def _get_tests_from_suite(test_suite, extracted_tests):
+    """ Extract tests from the test suite """
+    # 'tests' we get from 'unittest.defaultTestLoader.discover' are "wrapped"
+    # in multiple 'unittest.suite.TestSuite' classes/lists so we need to "unpack"
+    # the individual test cases
+    for test_case in test_suite:
+        if isinstance(test_case, unittest.suite.TestSuite):
+            _get_tests_from_suite(test_case, extracted_tests)
+
+        if isinstance(test_case, unittest.TestCase):
+            extracted_tests.add(test_case)
+
+    return extracted_tests
+
+
 if __name__ == '__main__':
     testdir = os.path.abspath(os.path.dirname(__file__))
     projdir = os.path.abspath(os.path.normpath(os.path.join(testdir, '..')))
 
+    loader = unittest.defaultTestLoader
     suite = unittest.TestSuite()
 
     if 'PYTHONPATH' not in os.environ:
@@ -38,12 +54,16 @@ if __name__ == '__main__':
           file=sys.stderr)
 
     if args.testname:
-        for n in args.testname:
-            suite.addTests(unittest.TestLoader().loadTestsFromName(n))
+        test_cases = loader.loadTestsFromNames(args.testname)
     else:
-        # Load all files in this directory whose name ends with '_test.py'
-        for test_cases in unittest.defaultTestLoader.discover(testdir, pattern="*_test.py"):
-            suite.addTest(test_cases)
+        test_cases = loader.discover(start_dir=testdir, pattern='*_test*.py')
+
+    tests = set()
+    tests = _get_tests_from_suite(test_cases, tests)
+    tests = sorted(tests, key=lambda test: test.id())
+
+    for test in tests:
+        suite.addTest(test)
 
     result = unittest.TextTestRunner(verbosity=2).run(suite)
 
