@@ -73,7 +73,7 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                     stratis_dbus.create_filesystem.assert_called_with("testfs",
                                                                       "c4fc9ebe-e173-4cab-8d81-cc6abddbe02d")
 
-    def test_new_encryted_stratis(self):
+    def test_new_encrypted_stratis(self):
         b = blivet.Blivet()
         bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
                            size=Size("1 GiB"), exists=True)
