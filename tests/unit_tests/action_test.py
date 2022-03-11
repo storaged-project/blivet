@@ -1,9 +1,9 @@
 import unittest
 
 try:
-    from unittest.mock import Mock
+    from unittest.mock import Mock, patch
 except ImportError:
-    from mock import Mock
+    from mock import Mock, patch
 
 from .storagetestcase import StorageTestCase
 import blivet
@@ -17,7 +17,7 @@ from blivet.devices import PartitionDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
-from blivet.devices.lvm import LVMVDOPoolMixin
+from blivet.devices.lvm import LVMLogicalVolumeBase, LVMVDOPoolMixin
 from blivet.devices.lvm import LVMVDOLogicalVolumeMixin
 
 # format classes
@@ -26,6 +26,7 @@ from blivet.formats.fs import Ext3FS
 from blivet.formats.fs import Ext4FS
 from blivet.formats.fs import FATFS
 from blivet.formats.fs import XFS
+from blivet.formats.lvmpv import LVMPhysicalVolume
 
 # action classes
 from blivet.deviceaction import ActionCreateDevice
@@ -44,7 +45,10 @@ DEVICE_CLASSES = [
     PartitionDevice,
     MDRaidArrayDevice,
     LVMVolumeGroupDevice,
-    LVMLogicalVolumeDevice
+    LVMLogicalVolumeDevice,
+    LVMLogicalVolumeBase,
+    LVMVDOPoolMixin,
+    LVMVDOLogicalVolumeMixin
 ]
 
 FORMAT_CLASSES = [
@@ -52,12 +56,40 @@ FORMAT_CLASSES = [
     Ext3FS,
     Ext4FS,
     FATFS,
-    XFS
+    XFS,
+    LVMPhysicalVolume
 ]
 
 
-@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
-@unittest.skipUnless(all(x().utils_available for x in FORMAT_CLASSES), "some unsupported format classes required for this test")
+def _patch_device_dependencies(fn):
+    def fn_with_patch(*args, **kwargs):
+        for cls in DEVICE_CLASSES:
+            patcher = patch.object(cls, "_external_dependencies", new=[])
+            patcher.start()
+
+        fn(*args, **kwargs)
+
+        patch.stopall()
+
+    return fn_with_patch
+
+
+def _patch_format_dependencies(fn):
+    def fn_with_patch(*args, **kwargs):
+        for cls in FORMAT_CLASSES:
+            patcher = patch.object(cls, "destroyable", return_value=True)
+            patcher.start()
+
+            patcher = patch.object(cls, "formattable", return_value=True)
+            patcher.start()
+
+        fn(*args, **kwargs)
+
+        patch.stopall()
+
+    return fn_with_patch
+
+
 class DeviceActionTestCase(StorageTestCase):
 
     """ DeviceActionTestSuite """
@@ -121,6 +153,8 @@ class DeviceActionTestCase(StorageTestCase):
                                          exists=True)
         self.storage.devicetree._add_device(lv_swap)
 
+    @_patch_device_dependencies
+    @_patch_format_dependencies
     def test_actions(self):
         """ Verify correct management of actions.
 
@@ -219,6 +253,8 @@ class DeviceActionTestCase(StorageTestCase):
         fmt = self.new_format("ext4", mountpoint="/boot", device=sda1.path)
         self.schedule_create_format(device=sda1, fmt=fmt)
 
+    @_patch_device_dependencies
+    @_patch_format_dependencies
     def test_action_creation(self):
         """ Verify correct operation of action class constructors. """
         # instantiation of device resize action for non-existent device should
@@ -281,6 +317,8 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(lv_swap.format, new_format)
         lv_swap.format = orig_format
 
+    @_patch_device_dependencies
+    @_patch_format_dependencies
     def test_action_registration(self):
         """ Verify correct operation of action registration and cancelling. """
         # self.setUp has just been run, so we should have something like
@@ -356,6 +394,8 @@ class DeviceActionTestCase(StorageTestCase):
         sdd1 = self.storage.devicetree.get_device_by_name("sdd1")
         self.assertNotEqual(sdd1, None)
 
+    @_patch_device_dependencies
+    @_patch_format_dependencies
     def test_action_obsoletes(self):
         """ Verify correct operation of DeviceAction.obsoletes. """
         self.destroy_all_devices(disks=["sdc"])
@@ -514,6 +554,8 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(destroy_sda1.obsoletes(destroy_sda1), False)
         self.assertEqual(destroy_sda1.obsoletes(destroy_sda1_format), False)
 
+    @_patch_device_dependencies
+    @_patch_format_dependencies
     def test_action_pruning(self):
         """ Verify correct functioning of action pruning. """
         self.destroy_all_devices()
@@ -610,6 +652,8 @@ class DeviceActionTestCase(StorageTestCase):
         sda3_actions = self.storage.devicetree.actions.find(sda3.id)
         self.assertEqual(len(sda3_actions), 0)
 
+    @_patch_device_dependencies
+    @_patch_format_dependencies
     def test_action_dependencies(self):
         """ Verify correct functioning of action dependencies. """
         # ActionResizeDevice
@@ -1030,6 +1074,8 @@ class DeviceActionTestCase(StorageTestCase):
         # similarly, create actions should also require resize actions
         self.assertEqual(create_sdc2.requires(grow_lv), True)
 
+    @_patch_device_dependencies
+    @_patch_format_dependencies
     def test_action_apply_cancel(self):
         lv_root = self.storage.devicetree.get_device_by_name("VolGroup-lv_root")
 
@@ -1114,6 +1160,8 @@ class DeviceActionTestCase(StorageTestCase):
         action.cancel()
         self.assertEqual(list(vg.parents), original_pvs)
 
+    @_patch_device_dependencies
+    @_patch_format_dependencies
     def test_container_actions(self):
         self.destroy_all_devices()
         sda = self.storage.devicetree.get_device_by_name("sda")
@@ -1237,9 +1285,13 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertFalse(destroy_sdc1.obsoletes(remove_sdc1))
         self.assertTrue(destroy_sdc1.requires(remove_sdc1))
 
+    @_patch_device_dependencies
+    @_patch_format_dependencies
     def test_action_sorting(self, *args, **kwargs):
         """ Verify correct functioning of action sorting. """
 
+    @_patch_device_dependencies
+    @_patch_format_dependencies
     def test_lv_from_lvs_actions(self):
         self.destroy_all_devices()
         sdc = self.storage.devicetree.get_device_by_name("sdc")
@@ -1294,10 +1346,10 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(set(pool._internal_lvs), {lv1, lv2})
 
 
-@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES + [LVMVDOPoolMixin, LVMVDOLogicalVolumeMixin]), "some unsupported device classes required for this test")
-@unittest.skipUnless(all(x().utils_available for x in FORMAT_CLASSES), "some unsupported format classes required for this test")
 class DeviceActionLVMVDOTestCase(DeviceActionTestCase):
 
+    @_patch_device_dependencies
+    @_patch_format_dependencies
     def test_lvm_vdo_destroy(self):
         self.destroy_all_devices()
         sdc = self.storage.devicetree.get_device_by_name("sdc")
