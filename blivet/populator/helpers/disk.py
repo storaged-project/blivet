@@ -68,6 +68,8 @@ class DiskDevicePopulator(DevicePopulator):
         log_method_call(self, name=name)
 
         kwargs = self._get_kwargs()
+        if not kwargs:
+            return
         device = self._device_class(name, **kwargs)
         self._devicetree._add_device(device)
         return device
