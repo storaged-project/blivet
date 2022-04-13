@@ -1198,6 +1198,13 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(create_sdc2.requires(remove_sdc1), False)
         self.assertEqual(remove_sdc1.requires(create_sdc2), False)
 
+        # destroy sdc1, the ActionRemoveMember should not be obsoleted
+        sdc1.exists = True
+        destroy_sdc1 = ActionDestroyDevice(sdc1)
+        destroy_sdc1.apply()
+        self.assertFalse(destroy_sdc1.obsoletes(remove_sdc1))
+        self.assertTrue(destroy_sdc1.requires(remove_sdc1))
+
     def test_action_sorting(self, *args, **kwargs):
         """ Verify correct functioning of action sorting. """
 
