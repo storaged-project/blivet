@@ -211,9 +211,8 @@ class ActionList(object):
                     except StorageError as e:
                         log.info("teardown of %s failed: %s", device.name, e)
             else:
-                raise RuntimeError("partitions in use on disks with changes "
-                                   "pending: %s" %
-                                   ",".join(problematic))
+                log.debug("ignoring devices in use on disks with changes: %s",
+                          ",".join(problematic))
 
         log.info("resetting parted disks...")
         for device in devices:
