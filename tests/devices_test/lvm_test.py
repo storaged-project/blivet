@@ -453,6 +453,19 @@ class LVMDeviceTest(unittest.TestCase):
         pool.autoset_md_size(enforced=True)
         self.assertEqual(pool.chunk_size, Size("128 KiB"))
 
+    def test_add_remove_pv(self):
+        pv1 = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("1024 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("1024 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv1])
+
+        vg._add_parent(pv2)
+        self.assertEqual(pv2.format.vg_name, vg.name)
+
+        vg._remove_parent(pv2)
+        self.assertEqual(pv2.format.vg_name, None)
+
 
 class TypeSpecificCallsTest(unittest.TestCase):
     def test_type_specific_calls(self):
