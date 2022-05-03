@@ -10,8 +10,9 @@ class FSUUID(object):
        UUID.
     """
 
+    @classmethod
     @abc.abstractmethod
-    def uuid_format_ok(self, uuid):
+    def uuid_format_ok(cls, uuid):
         """Returns True if the given UUID is correctly formatted for
            this filesystem, otherwise False.
 
