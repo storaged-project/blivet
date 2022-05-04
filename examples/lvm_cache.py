@@ -3,7 +3,7 @@ import os
 import blivet
 from blivet.size import Size
 from blivet.util import set_up_logging, create_sparse_tempfile
-from blivet.devices.lvm import LVMCacheRequest
+from blivet.devices.lvm import LVMCacheRequest, LVMCacheType
 
 set_up_logging()
 b = blivet.Blivet()   # create an instance of Blivet (don't add system devices)
@@ -34,19 +34,14 @@ try:
     vg = b.new_vg(parents=[pv, pv2])
     b.create_device(vg)
 
-    # new lv with base size 5GiB and unbounded growth and an ext4 filesystem
-    dev = b.new_lv(fmt_type="ext4", size=Size("5GiB"), grow=True,
-                   parents=[vg], name="unbounded")
-    b.create_device(dev)
-
-    # new lv with base size 5GiB and growth up to 15GiB and an ext4 filesystem
-    dev = b.new_lv(fmt_type="ext4", size=Size("5GiB"), grow=True,
-                   maxsize=Size("15GiB"), parents=[vg], name="bounded")
-    b.create_device(dev)
-
-    # new lv with a fixed size of 2GiB formatted as swap space
+    # new lv cached by a standard LVM cache
     cache_spec = LVMCacheRequest(size=Size("1GiB"), pvs=[pv2])
     dev = b.new_lv(fmt_type="ext4", size=Size("2GiB"), parents=[vg], name="cached", cache_request=cache_spec)
+    b.create_device(dev)
+
+    # new lv cached by a LVM writecache
+    cache_spec = LVMCacheRequest(size=Size("1GiB"), pvs=[pv2], cache_type=LVMCacheType.lvmwritecache)
+    dev = b.new_lv(fmt_type="ext4", size=Size("2GiB"), parents=[vg], name="writecached", cache_request=cache_spec)
     b.create_device(dev)
 
     # allocate the growable lvs

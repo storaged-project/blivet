@@ -11,10 +11,10 @@ import blivet
 from blivet.devices import StorageDevice
 from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import LVMVolumeGroupDevice
-from blivet.devices.lvm import LVMVDOPoolMixin
+from blivet.devices.lvm import LVMCache, LVMWriteCache, LVMVDOPoolMixin
 from blivet.devices.lvm import LVMVDOLogicalVolumeMixin
 from blivet.devices.lvm import LVMCacheRequest
-from blivet.devices.lvm import LVPVSpec, LVMInternalLVtype
+from blivet.devices.lvm import LVPVSpec, LVMInternalLVtype, LVMCacheType
 from blivet.size import Size
 from blivet.devicelibs import raid
 from blivet import devicefactory
@@ -104,6 +104,7 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertTrue(lv.cached)
         cache = lv.cache
         self.assertIsNotNone(cache)
+        self.assertIsInstance(cache, LVMCache)
 
         # the cache reserves space for its metadata from the requested size, but
         # it may require (and does in this case) a pmspare LV to be allocated
@@ -151,6 +152,43 @@ class LVMDeviceTest(unittest.TestCase):
         # already have pmspare space reserved for lv1's cache (and shared)
         # 256 MiB - 8 MiB (metadata) [no pmspare]
         self.assertEqual(cache.size, Size("248 MiB"))
+
+    def test_lvmwritecached_logical_volume_init(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1 GiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("512 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        req_size = pv2.format.free
+        cache_req = LVMCacheRequest(req_size, [pv2], cache_type=LVMCacheType.lvmwritecache)
+        xfs_fmt = blivet.formats.get_format("xfs")
+        lv = LVMLogicalVolumeDevice("testlv",
+                                    parents=[vg],
+                                    fmt=xfs_fmt,
+                                    size=Size(xfs_fmt.min_size),
+                                    exists=False,
+                                    cache_request=cache_req)
+        self.assertEqual(lv.size, xfs_fmt.min_size)
+
+        # check that the LV behaves like a cached LV
+        self.assertTrue(lv.cached)
+        cache = lv.cache
+        self.assertIsNotNone(cache)
+        self.assertIsInstance(cache, LVMWriteCache)
+
+        # the cache reserves space for its metadata from the requested size, but
+        # it may require (and does in this case) a pmspare LV to be allocated
+        self.assertEqual(lv.vg_space_used, lv.cache.size + lv.cache.md_size + lv.size)
+
+        self.assertEqual(cache.size, req_size)
+        self.assertEqual(cache.vg_space_used, req_size)
+        self.assertIsInstance(cache.size, Size)
+        self.assertIsInstance(cache.vg_space_used, Size)
+        self.assertFalse(cache.exists)
+        self.assertIsNone(cache.backing_device_name)
+        self.assertIsNone(cache.cache_device_name)
+        self.assertEqual(set(cache.fast_pvs), set([pv2]))
 
     def test_lvm_logical_volume_with_pvs_init(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
@@ -453,6 +491,19 @@ class LVMDeviceTest(unittest.TestCase):
         pool.size = Size("16 TiB")
         pool.autoset_md_size(enforced=True)
         self.assertEqual(pool.chunk_size, Size("128 KiB"))
+
+    def test_add_remove_pv(self):
+        pv1 = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("1024 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("1024 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv1])
+
+        vg._add_parent(pv2)
+        self.assertEqual(pv2.format.vg_name, vg.name)
+
+        vg._remove_parent(pv2)
+        self.assertEqual(pv2.format.vg_name, None)
 
 
 class TypeSpecificCallsTest(unittest.TestCase):

@@ -382,6 +382,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if not parent.format.exists:
             parent.format.free = self._get_pv_usable_space(parent)
 
+        parent.format.vg_name = self.name
+
     def _remove_parent(self, parent):
         # XXX It would be nice to raise an exception if removing this member
         #     would not leave enough space, but the devicefactory relies on it
@@ -392,6 +394,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         super(LVMVolumeGroupDevice, self)._remove_parent(parent)
         parent.format.free = None
         parent.format.container_uuid = None
+        parent.format.vg_name = None
 
     def _rename(self, old_name, new_name, dry_run=False):
         """ Rename this device
@@ -728,8 +731,12 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
 
         self._cache = None
         if cache_request and not self.exists:
-            self._cache = LVMCache(self, size=cache_request.size, exists=False,
-                                   pvs=cache_request.fast_devs, mode=cache_request.mode)
+            if cache_request.cache_type == LVMCacheType.lvmcache:
+                self._cache = LVMCache(self, size=cache_request.size, exists=False,
+                                       pvs=cache_request.fast_devs, mode=cache_request.mode)
+            elif cache_request.cache_type == LVMCacheType.lvmwritecache:
+                self._cache = LVMWriteCache(self, size=cache_request.size, exists=False,
+                                            pvs=cache_request.fast_devs)
 
         self._pv_specs = []
         pvs = pvs or []
@@ -2611,7 +2618,6 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             blockdev.lvm.lvcreate(self.vg.name, self._name, self.size,
                                   type=self.seg_type, pv_list=pvs)
         else:
-            mode = blockdev.lvm.cache_get_mode_from_str(self.cache.mode)
             fast_pvs = [pv.path for pv in self.cache.fast_pvs]
 
             if self._pv_specs:
@@ -2632,8 +2638,13 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             # XXX: we need to pass slow_pvs+fast_pvs (without duplicates) as slow PVs because parts of the
             # fast PVs may be required for allocation of the LV (it may span over the slow PVs and parts of
             # fast PVs)
-            blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size, self.cache.md_size,
-                                                mode, 0, util.dedup_list(slow_pvs + fast_pvs), fast_pvs)
+            if self.cache.type == "cache":
+                mode = blockdev.lvm.cache_get_mode_from_str(self.cache.mode)
+                blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size, self.cache.md_size,
+                                                    mode, 0, util.dedup_list(slow_pvs + fast_pvs), fast_pvs)
+            else:
+                blockdev.lvm.writecache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size,
+                                                         util.dedup_list(slow_pvs + fast_pvs), fast_pvs)
 
     @type_specific
     def _post_create(self):
@@ -2781,6 +2792,16 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             raise errors.DeviceError("Cannot attach a cache pool to the '%s' LV" % self.name)
         blockdev.lvm.cache_attach(self.vg.name, self.lvname, cache_pool_lv.lvname)
         self._cache = LVMCache(self, size=cache_pool_lv.size, exists=True)
+
+    def attach_writecache(self, writecache_lv):
+        if self.is_thin_lv or self.is_snapshot_lv or self.is_internal_lv:
+            raise errors.DeviceError("Cannot attach writecache to the '%s' LV" % self.name)
+        try:
+            blockdev.lvm.writecache_attach(self.vg.name, self.lvname, writecache_lv.lvname)
+        except blockdev.LVMError as err:
+            raise errors.DeviceError("Failed to attach writecache to %s" % self.name) from err
+
+        self._cache = LVMWriteCache(self, size=writecache_lv.size, exists=True)
 
 
 class LVMCache(Cache):
@@ -2934,13 +2955,38 @@ class LVMWriteCache(Cache):
 
     type = "writecache"
 
-    def __init__(self, cached_lv, size, exists):
+    def __init__(self, cached_lv, size, exists=False, pvs=None):
         self._cached_lv = cached_lv
         self._exists = exists
         self._size = size
 
-        if not self._exists:
-            raise ValueError("Only preexisting LVM writecache devices are currently supported.")
+        self._pv_specs = []
+        if not exists:
+            self._size = cached_lv.vg.align(self._size)
+            for pv_spec in pvs:
+                if isinstance(pv_spec, LVPVSpec):
+                    self._pv_specs.append(pv_spec)
+                elif isinstance(pv_spec, StorageDevice):
+                    self._pv_specs.append(LVPVSpec(pv_spec, Size(0)))
+            self._assign_pv_space()
+
+    def _assign_pv_space(self):
+        # calculate the size of space that we need to place somewhere
+        space_to_assign = self.size - sum(spec.size for spec in self._pv_specs)
+
+        # skip the PVs that already have some chunk of the space assigned
+        for spec in (spec for spec in self._pv_specs if not spec.size):
+            if spec.pv.format.free >= space_to_assign:
+                # enough space in this PV, put everything in there and quit
+                spec.size = space_to_assign
+                space_to_assign = Size(0)
+                break
+            elif spec.pv.format.free > 0:
+                # some space, let's use it and move on to another PV (if any)
+                spec.size = spec.pv.format.free
+                space_to_assign -= spec.pv.format.free
+        if space_to_assign > 0:
+            raise errors.DeviceError("Not enough free space in the PVs for this cache: %s short" % space_to_assign)
 
     @property
     def size(self):
@@ -2965,15 +3011,37 @@ class LVMWriteCache(Cache):
 
     @property
     def backing_device_name(self):
-        return self._cached_lv.name
+        if self._exists:
+            return self._cached_lv.name
+        else:
+            return None
 
     @property
     def cache_device_name(self):
-        vg_name = self._cached_lv.vg.name
-        return "%s-%s" % (vg_name, blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname))
+        if self.exists:
+            vg_name = self._cached_lv.vg.name
+            return "%s-%s" % (vg_name, blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname))
+        else:
+            return None
+
+    @property
+    def fast_pvs(self):
+        return [spec.pv for spec in self._pv_specs]
+
+    @property
+    def pv_space_used(self):
+        """
+        :returns: space to be occupied by the cache on its LV's VG's PVs (one has to love LVM)
+        :rtype: list of LVPVSpec
+
+        """
+        return self._pv_specs
 
     def detach(self):
-        raise NotImplementedError
+        try:
+            blockdev.lvm.writecache_detach(self._cached_lv.vg.name, self._cached_lv.lvname, False)
+        except blockdev.LVMError as err:
+            raise errors.DeviceError("Failed to detach writecache from %s" % self._cached_lv.lvname) from err
 
 
 class LVMCacheStats(CacheStats):
@@ -3046,21 +3114,28 @@ class LVMCacheStats(CacheStats):
         return self._write_misses
 
 
+class LVMCacheType(Enum):
+    lvmcache = 1
+    lvmwritecache = 2
+
+
 class LVMCacheRequest(CacheRequest):
 
     """Class representing the LVM cache creation request"""
 
-    def __init__(self, size, pvs, mode=None):
+    def __init__(self, size, pvs, mode=None, cache_type=LVMCacheType.lvmcache):
         """
         :param size: requested size of the cache
         :type size: :class:`~.size.Size`
         :param pvs: PVs to allocate the cache on/from
         :type pvs: list of (:class:`~.devices.storage.StorageDevice` or :class:`LVPVSpec`)
         :param str mode: requested mode for the cache (``None`` means the default is used)
-
+        :param cache_type: type of the cache to use (writecache or "normal" cache)
+        :type cache_type: enum :class:`LVMCacheType`
         """
         self._size = size
         self._mode = mode or "writethrough"
+        self._cache_type = cache_type
         self._pv_specs = []
         for pv_spec in pvs:
             if isinstance(pv_spec, LVPVSpec):
@@ -3088,3 +3163,7 @@ class LVMCacheRequest(CacheRequest):
     @property
     def mode(self):
         return self._mode
+
+    @property
+    def cache_type(self):
+        return self._cache_type
