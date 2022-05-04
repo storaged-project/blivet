@@ -23,3 +23,9 @@
 # - all "skips" can specified as a list, for example 'version: [10, 11]'
 
 ---
+
+- test: storage_tests.devices_test.lvm_test.LVMTestCase.test_lvm_raid
+  skip_on:
+    - distro: "centos"
+      version: "9"
+      reason: "Creating RAID 1 LV on CentOS/RHEL 9 causes a system deadlock"
