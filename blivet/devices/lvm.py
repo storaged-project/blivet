@@ -382,6 +382,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if not parent.format.exists:
             parent.format.free = self._get_pv_usable_space(parent)
 
+        parent.format.vg_name = self.name
+
     def _remove_parent(self, parent):
         # XXX It would be nice to raise an exception if removing this member
         #     would not leave enough space, but the devicefactory relies on it
@@ -392,6 +394,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         super(LVMVolumeGroupDevice, self)._remove_parent(parent)
         parent.format.free = None
         parent.format.container_uuid = None
+        parent.format.vg_name = None
 
     def _rename(self, old_name, new_name, dry_run=False):
         """ Rename this device

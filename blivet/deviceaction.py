@@ -463,8 +463,8 @@ class ActionDestroyDevice(DeviceAction):
             - obsoletes all actions w/ lower id that act on the same device,
               including self, if device does not exist
 
-            - obsoletes all but ActionDestroyFormat actions w/ lower id on the
-              same device if device exists
+            - obsoletes all but ActionDestroyFormat and ActionRemoveMember actions
+              w/ lower id on the same device if device exists
 
             - obsoletes all actions that add a member to this action's
               (container) device
@@ -474,9 +474,9 @@ class ActionDestroyDevice(DeviceAction):
         if action.device.id == self.device.id:
             if self.id >= action.id and not self.device.exists:
                 rc = True
-            elif self.id > action.id and \
-                    self.device.exists and \
-                    not (action.is_destroy and action.is_format):
+            elif self.id > action.id and self.device.exists and \
+                    not ((action.is_destroy and action.is_format) or
+                         action.is_remove):
                 rc = True
             elif action.is_add and (action.device == self.device):
                 rc = True
