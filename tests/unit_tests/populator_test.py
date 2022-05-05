@@ -890,6 +890,9 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
     @patch("blivet.udev.device_get_name")
     @patch.object(DeviceFormat, "_device_check", return_value=None)
     @patch.object(DeviceTree, "get_device_by_uuid")
+    # XXX: the lvm_devices_* functions are decorated with needs_config_refresh decorator which
+    #      at this point is already applied as a no-op because LVM libblockdev plugin is not available
+    @patch("blivet.devicelibs.lvm.lvm_devices_add", new=lvm._lvm_devices.add)
     def test_run(self, *args):
         """Test lvm format populator."""
         get_device_by_uuid = args[0]

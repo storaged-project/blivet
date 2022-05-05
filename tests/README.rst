@@ -9,6 +9,17 @@ the command::
 
     make test
 
+There are three separate test suites available:
+
+- *Unit tests* located in the `unit_tests` folder. These tests don't require
+  root privileges to run and don't use any existing block devices.
+  These tests can be run separately using `make unit-test`.
+- *Storage tests* located in the `storage_tests` folder. These tests require
+  root privileges and create block devices to run tests on. These tests can
+  be run separately using `make storage-test`.
+- *VM tests* located in the `vmtests` folder. These test are not run by
+  default and require a special virtual machine to run in.
+
 Tests descending from :class:`~.imagebackedtestcase.ImageBackedTestCase` or
 :class:`~.loopbackedtestcase.LoopBackedTestCase` require root access on the
 system and will be skipped if you're running as non-root user.

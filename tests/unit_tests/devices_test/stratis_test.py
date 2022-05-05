@@ -31,11 +31,13 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
 
         b.devicetree._add_device(bd)
 
-        pool = b.new_stratis_pool(name="testpool", parents=[bd])
+        with patch("blivet.devicetree.DeviceTree.names", []):
+            pool = b.new_stratis_pool(name="testpool", parents=[bd])
         self.assertEqual(pool.name, "testpool")
         self.assertEqual(pool.size, bd.size)
 
-        fs = b.new_stratis_filesystem(name="testfs", parents=[pool])
+        with patch("blivet.devicetree.DeviceTree.names", []):
+            fs = b.new_stratis_filesystem(name="testfs", parents=[pool])
 
         self.assertEqual(fs.name, "testpool/testfs")
         self.assertEqual(fs.path, "/dev/stratis/%s" % fs.name)
@@ -43,9 +45,10 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
         self.assertEqual(fs.pool, pool)
         self.assertEqual(fs.format.type, "stratis xfs")
 
-        with six.assertRaisesRegex(self, StratisError, "not enough free space in the pool"):
-            # only 1 GiB pool, not enough space for second fs
-            b.new_stratis_filesystem(name="testfs2", parents=[pool])
+        with patch("blivet.devicetree.DeviceTree.names", []):
+            with six.assertRaisesRegex(self, StratisError, "not enough free space in the pool"):
+                # only 1 GiB pool, not enough space for second fs
+                b.new_stratis_filesystem(name="testfs2", parents=[pool])
 
         b.create_device(pool)
         b.create_device(fs)
@@ -70,14 +73,15 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                     stratis_dbus.create_filesystem.assert_called_with("testfs",
                                                                       "c4fc9ebe-e173-4cab-8d81-cc6abddbe02d")
 
-    def test_new_encryted_stratis(self):
+    def test_new_encrypted_stratis(self):
         b = blivet.Blivet()
         bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
                            size=Size("1 GiB"), exists=True)
 
         b.devicetree._add_device(bd)
 
-        pool = b.new_stratis_pool(name="testpool", parents=[bd], encrypted=True, passphrase="secret")
+        with patch("blivet.devicetree.DeviceTree.names", []):
+            pool = b.new_stratis_pool(name="testpool", parents=[bd], encrypted=True, passphrase="secret")
         self.assertEqual(pool.name, "testpool")
         self.assertEqual(pool.size, bd.size)
         self.assertTrue(pool.encrypted)

@@ -61,13 +61,21 @@ install-requires:
 	@which ansible-playbook &>/dev/null || ( echo "Please install Ansible to install testing dependencies"; exit 1 )
 	@ansible-playbook -K -i "localhost," -c local misc/install-test-dependencies.yml --extra-vars "python=$(PYTHON)"
 
+unit-test:
+	@echo "*** Running unit tests with $(PYTHON) ***"
+	PYTHONPATH=.:$(PYTHONPATH) $(PYTHON) tests/run_tests.py unit_tests
+
+storage-test:
+	@echo "*** Running storage tests with $(PYTHON) ***"
+	PYTHONPATH=.:$(PYTHONPATH) $(PYTHON) tests/run_tests.py storage_tests
+
 test:
-	@echo "*** Running unittests with $(PYTHON) ***"
-	PYTHONPATH=.:$(PYTHONPATH) $(PYTHON) -m unittest discover -v -s tests/ -p '*_test.py'
+	@echo "*** Running tests with $(PYTHON) ***"
+	PYTHONPATH=.:$(PYTHONPATH) $(PYTHON) tests/run_tests.py
 
 coverage:
 	@echo "*** Running unittests with $(COVERAGE) for $(PYTHON) ***"
-	PYTHONPATH=.:tests/ $(COVERAGE) run --branch -m unittest discover -v -s tests/ -p '*_test.py'
+	PYTHONPATH=.:tests/ $(COVERAGE) run --branch tests/run_tests.py
 	$(COVERAGE) report --include="blivet/*" --show-missing
 	$(COVERAGE) report --include="blivet/*" > coverage-report.log
 

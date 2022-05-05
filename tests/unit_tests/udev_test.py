@@ -6,7 +6,7 @@ try:
 except ImportError:
     import mock
 
-from udev_data import raid_data
+from .udev_data import raid_data
 
 
 class UdevTest(unittest.TestCase):

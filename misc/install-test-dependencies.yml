@@ -54,6 +54,7 @@
         - python3-bytesize
         - python3-libvirt
         - python3-paramiko
+        - targetcli
     when: ansible_distribution == 'Fedora'
 
 ####### CentOS 8
@@ -104,6 +105,7 @@
         - python3-libvirt
         - python3-paramiko
         - python3-pip
+        - targetcli
     when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
 
   - name: Install pocketlint using pip (CentOS 8)
@@ -153,6 +155,7 @@
         - python3-bugzilla
         - python3-libvirt
         - python3-pip
+        - targetcli
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
   - name: Install pocketlint using pip (Debian/Ubuntu)
