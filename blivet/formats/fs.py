@@ -364,6 +364,8 @@ class FS(DeviceFormat):
         except (FSError, NotImplementedError) as e:
             log.warning("Failed to obtain minimum size for device %s: %s", self.device, e)
 
+        super(FS, self).update_size_info()
+
     def _pad_size(self, size):
         """ Return a size padded according to some inflating rules.
 

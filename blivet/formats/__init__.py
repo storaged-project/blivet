@@ -412,6 +412,9 @@ class DeviceFormat(ObjectID):
 
     def update_size_info(self):
         """ Update this format's current and minimum size (for resize). """
+        # make sure the target size which is initialy set to self._size is also updated
+        if self.exists and self.target_size == Size(0):
+            self._target_size = self._size
 
     def do_resize(self):
         """ Resize this filesystem based on this instance's target_size attr.

@@ -165,6 +165,8 @@ class LVMPhysicalVolume(DeviceFormat):
         else:
             self._resizable = True
 
+        super(LVMPhysicalVolume, self).update_size_info()
+
     @property
     def free(self):
         """ Information about the free space in this PV """

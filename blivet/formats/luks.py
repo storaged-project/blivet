@@ -253,6 +253,8 @@ class LUKS(DeviceFormat):
         else:
             self._resizable = True
 
+        super(LUKS, self).update_size_info()
+
     def _pre_setup(self, **kwargs):
         if not self.configured:
             raise LUKSError("luks device not configured")
