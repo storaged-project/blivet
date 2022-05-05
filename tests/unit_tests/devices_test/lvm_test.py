@@ -20,14 +20,9 @@ from blivet.devicelibs import raid
 from blivet import devicefactory
 from blivet import errors
 
-DEVICE_CLASSES = [
-    LVMLogicalVolumeDevice,
-    LVMVolumeGroupDevice,
-    StorageDevice
-]
 
-
-@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+@patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
+@patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
 class LVMDeviceTest(unittest.TestCase):
 
     def test_lvmsnap_shot_device_init(self):
@@ -638,7 +633,8 @@ class TypeSpecificCallsTest(unittest.TestCase):
         self.assertEqual(c.greeting, "Set by A: Welcome")
 
 
-@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+@patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
+@patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
 class BlivetNewLVMDeviceTest(unittest.TestCase):
     def test_new_lv_from_lvs(self):
         b = blivet.Blivet()
@@ -757,7 +753,10 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
                 self.assertTrue(lvm.thpool_convert.called)
 
 
-@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES + [LVMVDOPoolMixin, LVMVDOLogicalVolumeMixin]), "some unsupported device classes required for this test")
+@patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies", new=[])
+@patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies", new=[])
+@patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
+@patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
 class BlivetNewLVMVDODeviceTest(unittest.TestCase):
 
     def test_new_vdo_pool(self):
@@ -775,20 +774,21 @@ class BlivetNewLVMVDODeviceTest(unittest.TestCase):
 
         self.assertEqual(vg.size, Size("10236 MiB"))
 
-        with self.assertRaises(ValueError):
+        with patch("blivet.devices.lvm.blockdev.lvm"):
+            with self.assertRaises(ValueError):
+                vdopool = b.new_lv(name="vdopool", vdo_pool=True,
+                                   parents=[vg], compression=True,
+                                   deduplication=True,
+                                   size=blivet.size.Size("1 GiB"))
+
             vdopool = b.new_lv(name="vdopool", vdo_pool=True,
                                parents=[vg], compression=True,
                                deduplication=True,
-                               size=blivet.size.Size("1 GiB"))
+                               size=blivet.size.Size("8 GiB"))
 
-        vdopool = b.new_lv(name="vdopool", vdo_pool=True,
-                           parents=[vg], compression=True,
-                           deduplication=True,
-                           size=blivet.size.Size("8 GiB"))
-
-        vdolv = b.new_lv(name="vdolv", vdo_lv=True,
-                         parents=[vdopool],
-                         size=blivet.size.Size("40 GiB"))
+            vdolv = b.new_lv(name="vdolv", vdo_lv=True,
+                             parents=[vdopool],
+                             size=blivet.size.Size("40 GiB"))
 
         b.create_device(vdopool)
         b.create_device(vdolv)
@@ -798,7 +798,6 @@ class BlivetNewLVMVDODeviceTest(unittest.TestCase):
         self.assertListEqual(vg.lvs, [vdopool, vdolv])
 
 
-@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
 class BlivetLVMVDODependenciesTest(unittest.TestCase):
     def test_vdo_dependencies(self):
         blivet.tasks.availability.CACHE_AVAILABILITY = False
@@ -863,37 +862,50 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
             with patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies",
                        new=[blivet.tasks.availability.unavailable_resource("VDO unavailability test")]):
 
+                # if LVM plugin is not available it will show in the LVM VDO deps too
+                lvm_type_deps = [d.name for d in LVMLogicalVolumeDevice.unavailable_type_dependencies()]
+
                 pool_deps = [d.name for d in vdopool.unavailable_dependencies]
-                self.assertEqual(pool_deps, ["VDO unavailability test"])
+                six.assertCountEqual(self, pool_deps, ["VDO unavailability test"] + lvm_type_deps)
 
                 vdolv_deps = [d.name for d in vdolv.unavailable_dependencies]
-                self.assertEqual(vdolv_deps, ["VDO unavailability test"])
+                six.assertCountEqual(self, vdolv_deps, ["VDO unavailability test"] + lvm_type_deps)
 
                 # same dependencies should be returned when checking with class not instance
                 pool_type_deps = [d.name for d in LVMVDOPoolMixin.unavailable_type_dependencies()]
-                six.assertCountEqual(self, pool_type_deps, ["VDO unavailability test"])
+                six.assertCountEqual(self, pool_type_deps,
+                                     ["VDO unavailability test"] + lvm_type_deps)
 
                 vdolv_type_deps = [d.name for d in LVMVDOLogicalVolumeMixin.unavailable_type_dependencies()]
-                six.assertCountEqual(self, vdolv_type_deps, ["VDO unavailability test"])
+                six.assertCountEqual(self, vdolv_type_deps,
+                                     ["VDO unavailability test"] + lvm_type_deps)
 
                 normallv_deps = [d.name for d in normallv.unavailable_dependencies]
-                self.assertEqual(normallv_deps, [])
+                self.assertEqual(normallv_deps, lvm_type_deps)
 
                 with self.assertRaises(errors.DependencyError):
                     b.create_device(vdopool)
                     b.create_device(vdolv)
 
-                b.create_device(normallv)
+                with patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[]):
+                    with patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[]):
+                        b.create_device(normallv)
 
         with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies", new=[]):
             with patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies", new=[]):
-                b.create_device(vdopool)
-                b.create_device(vdolv)
+                with patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[]):
+                    with patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[]):
+                        b.create_device(vdopool)
+                        b.create_device(vdolv)
 
-        # LVM VDO specific dependencies shouldn't be needed for removing, "normal" LVM is enough
-        b.destroy_device(vdolv)
-        b.destroy_device(vdopool)
+        with patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[]):
+            with patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[]):
+                # LVM VDO specific dependencies shouldn't be needed for removing, "normal" LVM is enough
+                b.destroy_device(vdolv)
+                b.destroy_device(vdopool)
 
+    @patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
     def test_vdo_dependencies_devicefactory(self):
         with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies",
                    new=[blivet.tasks.availability.unavailable_resource("VDO unavailability test")]):
@@ -908,7 +920,8 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
                 self.assertFalse(vdo_supported)
 
 
-@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+@patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
+@patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
 class BlivetNewLVMCachePoolDeviceTest(unittest.TestCase):
 
     def test_new_cache_pool(self):
@@ -926,15 +939,19 @@ class BlivetNewLVMCachePoolDeviceTest(unittest.TestCase):
 
         self.assertEqual(vg.size, Size("10236 MiB"))
 
-        cachepool = b.new_lv(name="cachepool", cache_pool=True,
-                             parents=[vg], pvs=[pv])
+        with patch("blivet.devices.lvm.blockdev.lvm"):
+            cachepool = b.new_lv(name="cachepool", cache_pool=True,
+                                 parents=[vg], pvs=[pv])
 
         b.create_device(cachepool)
 
         self.assertEqual(cachepool.type, "lvmcachepool")
 
 
-@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+@patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies", new=[])
+@patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies", new=[])
+@patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
+@patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
 class BlivetLVMConfigureActionsTest(unittest.TestCase):
 
     def test_vg_rename(self):
@@ -951,8 +968,9 @@ class BlivetLVMConfigureActionsTest(unittest.TestCase):
         b.devicetree.actions.add(ac)
         self.assertEqual(vg.name, "newname")
         self.assertEqual(lv.name, "newname-%s" % lv.lvname)
-        self.assertIn(vg.name, b.devicetree.names)
-        self.assertIn(lv.name, b.devicetree.names)
+        with patch("blivet.devices.lvm.blockdev.lvm"):
+            self.assertIn(vg.name, b.devicetree.names)
+            self.assertIn(lv.name, b.devicetree.names)
 
         # try to remove the action and make sure the name is changed back
         b.devicetree.actions.remove(ac)
@@ -981,7 +999,8 @@ class BlivetLVMConfigureActionsTest(unittest.TestCase):
         b.devicetree.actions.add(ac)
         self.assertEqual(lv.name, "%s-newname" % vg.name)
         self.assertEqual(lv.lvname, "newname")
-        self.assertIn(lv.name, b.devicetree.names)
+        with patch("blivet.devices.lvm.blockdev.lvm"):
+            self.assertIn(lv.name, b.devicetree.names)
 
         # try to remove the action and make sure the name is changed back
         b.devicetree.actions.remove(ac)
@@ -1006,70 +1025,68 @@ class BlivetLVMConfigureActionsTest(unittest.TestCase):
         for dev in (pv, vg, vdopool, vdolv):
             b.devicetree._add_device(dev)
 
-        with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies", new=[]):
-            with patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies", new=[]):
-                # compression/deduplication must be set on the pool, not the volume
-                with self.assertRaises(ValueError):
-                    ac = blivet.deviceaction.ActionConfigureDevice(device=vdolv, attr="compression", new_value=True)
-                    b.devicetree.actions.add(ac)
-                with self.assertRaises(ValueError):
-                    ac = blivet.deviceaction.ActionConfigureDevice(device=vdolv, attr="deduplication", new_value=True)
-                    b.devicetree.actions.add(ac)
+        # compression/deduplication must be set on the pool, not the volume
+        with self.assertRaises(ValueError):
+            ac = blivet.deviceaction.ActionConfigureDevice(device=vdolv, attr="compression", new_value=True)
+            b.devicetree.actions.add(ac)
+        with self.assertRaises(ValueError):
+            ac = blivet.deviceaction.ActionConfigureDevice(device=vdolv, attr="deduplication", new_value=True)
+            b.devicetree.actions.add(ac)
 
-                # compression/deduplication already enabled
-                with self.assertRaisesRegex(ValueError, "compression is already enabled"):
-                    ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="compression", new_value=True)
-                    b.devicetree.actions.add(ac)
-                with self.assertRaisesRegex(ValueError, "deduplication is already enabled"):
-                    ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="deduplication", new_value=True)
-                    b.devicetree.actions.add(ac)
+        # compression/deduplication already enabled
+        with self.assertRaisesRegex(ValueError, "compression is already enabled"):
+            ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="compression", new_value=True)
+            b.devicetree.actions.add(ac)
+        with self.assertRaisesRegex(ValueError, "deduplication is already enabled"):
+            ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="deduplication", new_value=True)
+            b.devicetree.actions.add(ac)
 
-                # disable compression
-                ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="compression", new_value=False)
-                b.devicetree.actions.add(ac)
-                self.assertFalse(vdopool.compression)
+        # disable compression
+        ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="compression", new_value=False)
+        b.devicetree.actions.add(ac)
+        self.assertFalse(vdopool.compression)
 
-                # cancel the action, compression should be enabled
-                b.devicetree.actions.remove(ac)
-                self.assertTrue(vdopool.compression)
+        # cancel the action, compression should be enabled
+        b.devicetree.actions.remove(ac)
+        self.assertTrue(vdopool.compression)
 
-                # re-add the action and make the change
-                b.devicetree.actions.add(ac)
-                self.assertFalse(vdopool.compression)
-                with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
-                    b.do_it()
-                    lvm.vdo_disable_compression.assert_called_with(vg.name, vdopool.lvname)
+        # re-add the action and make the change
+        b.devicetree.actions.add(ac)
+        self.assertFalse(vdopool.compression)
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            b.do_it()
+            lvm.vdo_disable_compression.assert_called_with(vg.name, vdopool.lvname)
 
-                # enable compression back
-                ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="compression", new_value=True)
-                b.devicetree.actions.add(ac)
-                self.assertTrue(vdopool.compression)
+        # enable compression back
+        ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="compression", new_value=True)
+        b.devicetree.actions.add(ac)
+        self.assertTrue(vdopool.compression)
 
-                with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
-                    b.do_it()
-                    lvm.vdo_enable_compression.assert_called_with(vg.name, vdopool.lvname)
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            b.do_it()
+            lvm.vdo_enable_compression.assert_called_with(vg.name, vdopool.lvname)
 
-                # disable deduplication
-                ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="deduplication", new_value=False)
-                b.devicetree.actions.add(ac)
-                self.assertFalse(vdopool.deduplication)
+        # disable deduplication
+        ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="deduplication", new_value=False)
+        b.devicetree.actions.add(ac)
+        self.assertFalse(vdopool.deduplication)
 
-                # cancel the action, deduplication should be enabled
-                b.devicetree.actions.remove(ac)
-                self.assertTrue(vdopool.deduplication)
+        # cancel the action, deduplication should be enabled
+        b.devicetree.actions.remove(ac)
+        self.assertTrue(vdopool.deduplication)
 
-                # re-add the action and make the change
-                b.devicetree.actions.add(ac)
-                self.assertFalse(vdopool.deduplication)
-                with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
-                    b.do_it()
-                    lvm.vdo_disable_deduplication.assert_called_with(vg.name, vdopool.lvname)
+        # re-add the action and make the change
+        b.devicetree.actions.add(ac)
+        self.assertFalse(vdopool.deduplication)
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            b.do_it()
+            lvm.vdo_disable_deduplication.assert_called_with(vg.name, vdopool.lvname)
 
-                # enable deduplication back
-                ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="deduplication", new_value=True)
-                b.devicetree.actions.add(ac)
-                self.assertTrue(vdopool.deduplication)
+        # enable deduplication back
+        ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="deduplication", new_value=True)
+        b.devicetree.actions.add(ac)
+        self.assertTrue(vdopool.deduplication)
 
-                with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
-                    b.do_it()
-                    lvm.vdo_enable_deduplication.assert_called_with(vg.name, vdopool.lvname)
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            b.do_it()
+            lvm.vdo_enable_deduplication.assert_called_with(vg.name, vdopool.lvname)

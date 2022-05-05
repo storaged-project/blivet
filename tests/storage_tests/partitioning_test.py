@@ -31,12 +31,13 @@ from blivet.devices.lvm import LVMCacheRequest
 
 from blivet.errors import PartitioningError
 
-from imagebackedtestcase import ImageBackedTestCase
 from blivet.blivet import Blivet
 from blivet.util import sparsetmpfile
 from blivet.formats import get_format
 from blivet.size import Size
 from blivet.flags import flags
+
+from .imagebackedtestcase import ImageBackedTestCase
 
 # disklabel-type-specific constants
 # keys: disklabel type string

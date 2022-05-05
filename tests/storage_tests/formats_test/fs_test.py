@@ -10,7 +10,7 @@ from blivet.errors import DeviceFormatError
 from blivet.formats import get_format
 from blivet.devices import PartitionDevice, DiskDevice
 
-from . import loopbackedtestcase
+from .loopbackedtestcase import LoopBackedTestCase
 
 from . import fstesting
 
@@ -213,7 +213,7 @@ class BindFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.BindFS
 
 
-class SimpleTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
+class SimpleTmpFSTestCase(LoopBackedTestCase):
 
     def __init__(self, methodName='run_test'):
         super(SimpleTmpFSTestCase, self).__init__(methodName=methodName)
@@ -227,7 +227,7 @@ class SimpleTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertTrue(an_fs.test_mount())
 
 
-class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
+class ResizeTmpFSTestCase(LoopBackedTestCase):
 
     def __init__(self, methodName='run_test'):
         super(ResizeTmpFSTestCase, self).__init__(methodName=methodName)

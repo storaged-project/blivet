@@ -119,15 +119,19 @@ class StorageDeviceMethodsTestCase(unittest.TestCase):
 
         with patch.object(self.device, "_create"):
             with patch.object(self.device, "_post_create"):
-                self.device._create.side_effect = _create
-                six.assertRaisesRegex(self, RuntimeError, "problems", self.device.create)
-                self.assertTrue(self.device._create.called)
-                self.assertFalse(self.device._post_create.called)
+                with patch.object(self.device, "_pre_create"):
+                    self.device._create.side_effect = _create
+                    six.assertRaisesRegex(self, RuntimeError, "problems", self.device.create)
+                    self.assertTrue(self.device._create.called)
+                    self.assertFalse(self.device._post_create.called)
+                    self.assertTrue(self.device._pre_create.called)
 
         # successful create call
         with patch.object(self.device, "_create"):
-            self.device.create()
-            self.assertTrue(self.device._create.called)
+            with patch.object(self.device, "_pre_create"):
+                self.device.create()
+                self.assertTrue(self.device._create.called)
+                self.assertTrue(self.device._pre_create.called)
 
         self.assertTrue(self.device.exists)
         self.assertEqual(self.device.update_sysfs_path.called, self.create_updates_sysfs_path)
