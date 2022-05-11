@@ -290,7 +290,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # do not run pvmove on empty PVs
         member.format.update_size_info()
-        if member.format.free < member.format.size:
+        if member.format.free < member.format.current_size:
             blockdev.lvm.pvmove(member.path)
         blockdev.lvm.vgreduce(self.name, member.path)
 
