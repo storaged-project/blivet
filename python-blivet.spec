@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.4.3
+Version: 3.4.4
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -192,6 +192,15 @@ configuration.
 %endif
 
 %changelog
+* Mon May 16 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.4.4-1
+- Use LVM PV format current_size in LVMVolumeGroupDevice._remove (vtrefny)
+- Correctly set vg_name after adding/removing a PV from a VG (vtrefny)
+- Do not crash when changing disklabel on disks with active devices (vtrefny)
+- ActionDestroyDevice should not obsolete ActionRemoveMember (vtrefny)
+- Correctly set compression and deduplication for existing VDO pools (vtrefny)
+- Correctly cancel configure actions in cancel() (vtrefny)
+- Set partition flags after setting parted filesystem (#2033875) (vtrefny)
+
 * Tue Feb 01 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.4.3-1
 - Make sure we mount the top level subvolume when mounting btrfs (vtrefny)
 - README: Fix API documentation link (vtrefny)
