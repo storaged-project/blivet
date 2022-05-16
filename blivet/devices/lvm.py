@@ -2160,6 +2160,10 @@ class LVMCachePoolMixin(object):
     def resizable(self):
         return False
 
+    @property
+    def format_immutable(self):
+        return True
+
     def read_current_size(self):
         log_method_call(self, exists=self.exists, path=self.path,
                         sysfs_path=self.sysfs_path)
