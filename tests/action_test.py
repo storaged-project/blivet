@@ -1197,6 +1197,13 @@ class DeviceActionTestCase(StorageTestCase):
         self.assertEqual(create_sdc2.requires(remove_sdc1), False)
         self.assertEqual(remove_sdc1.requires(create_sdc2), False)
 
+        # destroy sdc1, the ActionRemoveMember should not be obsoleted
+        sdc1.exists = True
+        destroy_sdc1 = ActionDestroyDevice(sdc1)
+        destroy_sdc1.apply()
+        self.assertFalse(destroy_sdc1.obsoletes(remove_sdc1))
+        self.assertTrue(destroy_sdc1.requires(remove_sdc1))
+
     def test_action_sorting(self, *args, **kwargs):
         """ Verify correct functioning of action sorting. """
 
@@ -1329,6 +1336,7 @@ class ConfigurationActionsTest(unittest.TestCase):
         ac.cancel()
         self.assertEqual(mock_device.conf1, "old_value")
 
+        ac.apply()
         ac.execute()
         mock_device.do_conf1.assert_called_once_with(dry_run=False)
 
@@ -1362,5 +1370,6 @@ class ConfigurationActionsTest(unittest.TestCase):
         ac.cancel()
         self.assertEqual(mock_format.conf1, "old_value")
 
+        ac.apply()
         ac.execute()
         mock_format.do_conf1.assert_called_once_with(dry_run=False)

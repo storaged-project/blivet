@@ -293,7 +293,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # do not run pvmove on empty PVs
         member.format.update_size_info()
-        if member.format.free < member.format.size:
+        if member.format.free < member.format.current_size:
             blockdev.lvm.pvmove(member.path)
         blockdev.lvm.vgreduce(self.name, member.path)
 
@@ -385,6 +385,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if not parent.format.exists:
             parent.format.free = self._get_pv_usable_space(parent)
 
+        parent.format.vg_name = self.name
+
     def _remove_parent(self, parent):
         # XXX It would be nice to raise an exception if removing this member
         #     would not leave enough space, but the devicefactory relies on it
@@ -395,6 +397,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         super(LVMVolumeGroupDevice, self)._remove_parent(parent)
         parent.format.free = None
         parent.format.container_uuid = None
+        parent.format.vg_name = None
 
     # We can't rely on lvm to tell us about our size, free space, &c
     # since we could have modifications queued, unless the VG and all of

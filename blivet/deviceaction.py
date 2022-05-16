@@ -463,8 +463,8 @@ class ActionDestroyDevice(DeviceAction):
             - obsoletes all actions w/ lower id that act on the same device,
               including self, if device does not exist
 
-            - obsoletes all but ActionDestroyFormat actions w/ lower id on the
-              same device if device exists
+            - obsoletes all but ActionDestroyFormat and ActionRemoveMember actions
+              w/ lower id on the same device if device exists
 
             - obsoletes all actions that add a member to this action's
               (container) device
@@ -474,9 +474,9 @@ class ActionDestroyDevice(DeviceAction):
         if action.device.id == self.device.id:
             if self.id >= action.id and not self.device.exists:
                 rc = True
-            elif self.id > action.id and \
-                    self.device.exists and \
-                    not (action.is_destroy and action.is_format):
+            elif self.id > action.id and self.device.exists and \
+                    not ((action.is_destroy and action.is_format) or
+                         action.is_remove):
                 rc = True
             elif action.is_add and (action.device == self.device):
                 rc = True
@@ -630,11 +630,11 @@ class ActionCreateFormat(DeviceAction):
                     continue
                 self.device.unset_flag(flag)
 
-            if self.format.parted_flag is not None:
-                self.device.set_flag(self.format.parted_flag)
-
             if self.format.parted_system is not None:
                 self.device.parted_partition.system = self.format.parted_system
+
+            if self.format.parted_flag is not None:
+                self.device.set_flag(self.format.parted_flag)
 
             self.device.disk.format.commit_to_disk()
             udev.settle()
@@ -1111,6 +1111,8 @@ class ActionConfigureFormat(DeviceAction):
         if hasattr(self.device, 'ignore_skip_activation'):
             self.device.ignore_skip_activation -= 1
 
+        super(ActionConfigureFormat, self).cancel()
+
     def execute(self, callbacks=None):
         super(ActionConfigureFormat, self).execute(callbacks=callbacks)
 
@@ -1162,6 +1164,7 @@ class ActionConfigureDevice(DeviceAction):
             return
 
         setattr(self.device, self.attr, self.old_value)
+        super(ActionConfigureDevice, self).cancel()
 
     def execute(self, callbacks=None):
         super(ActionConfigureDevice, self).execute(callbacks=callbacks)
