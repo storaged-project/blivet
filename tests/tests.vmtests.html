@@ -5,11 +5,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tests.vmtests package &#8212; Blivet 3.4.3 documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <title>tests.vmtests package &#8212; Blivet 3.4.4 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
@@ -30,7 +30,7 @@
         <li class="right" >
           <a href="tests.udev_data.html" title="tests.udev_data package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="tests.html" accesskey="U">tests package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">tests.vmtests package</a></li> 
       </ul>
@@ -49,8 +49,8 @@
 <div class="section" id="module-tests.vmtests.blivet_reset_vmtest">
 <span id="tests-vmtests-blivet-reset-vmtest-module"></span><h2>tests.vmtests.blivet_reset_vmtest module<a class="headerlink" href="#module-tests.vmtests.blivet_reset_vmtest" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.vmtests.blivet_reset_vmtest.</code><code class="sig-name descname">BlivetResetTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">tests.vmtests.blivet_reset_vmtest.</span></span><span class="sig-name descname"><span class="pre">BlivetResetTestCase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tests.vmtests.vmbackedtestcase.VMBackedTestCase" title="tests.vmtests.vmbackedtestcase.VMBackedTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.vmtests.vmbackedtestcase.VMBackedTestCase</span></code></a></p>
 <p>A class to test the results of Blivet.reset (and DeviceTree.populate).</p>
 <p>Create a device stack on disk images, catalog a set of attributes of
@@ -61,39 +61,39 @@ we cataloged previously.</p>
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
 <dl class="py method">
-<dt id="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.collect_expected_data">
-<code class="sig-name descname">collect_expected_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.collect_expected_data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.collect_expected_data">
+<span class="sig-name descname"><span class="pre">collect_expected_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.collect_expected_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Collect the attribute data we plan to validate later.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.find_device">
-<code class="sig-name descname">find_device</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">attr_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.find_device" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.find_device">
+<span class="sig-name descname"><span class="pre">find_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.find_device" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.setUp">
-<code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.setUp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any setup required prior to running a test.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.skip_attr">
-<code class="sig-name descname">skip_attr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device</span></em>, <em class="sig-param"><span class="n">attr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.skip_attr" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.skip_attr">
+<span class="sig-name descname"><span class="pre">skip_attr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.skip_attr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return True if attr should not be checked for device.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.test_run">
-<code class="sig-name descname">test_run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.test_run" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.test_run">
+<span class="sig-name descname"><span class="pre">test_run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase.test_run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify that the devices and their attributes match across reset.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="tests.vmtests.blivet_reset_vmtest.LVMOnMDTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.vmtests.blivet_reset_vmtest.</code><code class="sig-name descname">LVMOnMDTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMOnMDTestCase" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.LVMOnMDTestCase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">tests.vmtests.blivet_reset_vmtest.</span></span><span class="sig-name descname"><span class="pre">LVMOnMDTestCase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMOnMDTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase" title="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase</span></code></a></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
@@ -101,38 +101,38 @@ not have a method with the specified name.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="tests.vmtests.blivet_reset_vmtest.LVMRaidTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.vmtests.blivet_reset_vmtest.</code><code class="sig-name descname">LVMRaidTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMRaidTestCase" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.LVMRaidTestCase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">tests.vmtests.blivet_reset_vmtest.</span></span><span class="sig-name descname"><span class="pre">LVMRaidTestCase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMRaidTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase" title="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase</span></code></a></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
 <dl class="py method">
-<dt id="tests.vmtests.blivet_reset_vmtest.LVMRaidTestCase.setUp">
-<code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMRaidTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.LVMRaidTestCase.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMRaidTestCase.setUp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any setup required prior to running a test.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="tests.vmtests.blivet_reset_vmtest.LVMSnapShotTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.vmtests.blivet_reset_vmtest.</code><code class="sig-name descname">LVMSnapShotTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMSnapShotTestCase" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.LVMSnapShotTestCase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">tests.vmtests.blivet_reset_vmtest.</span></span><span class="sig-name descname"><span class="pre">LVMSnapShotTestCase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMSnapShotTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase" title="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase</span></code></a></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
 <dl class="py method">
-<dt id="tests.vmtests.blivet_reset_vmtest.LVMSnapShotTestCase.setUp">
-<code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMSnapShotTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.LVMSnapShotTestCase.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMSnapShotTestCase.setUp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any setup required prior to running a test.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="tests.vmtests.blivet_reset_vmtest.LVMTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.vmtests.blivet_reset_vmtest.</code><code class="sig-name descname">LVMTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMTestCase" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.LVMTestCase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">tests.vmtests.blivet_reset_vmtest.</span></span><span class="sig-name descname"><span class="pre">LVMTestCase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase" title="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase</span></code></a></p>
 <p>Test that the devicetree can populate with the product of autopart.</p>
 <p>Create an instance of the class that will use the named test
@@ -141,23 +141,23 @@ not have a method with the specified name.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="tests.vmtests.blivet_reset_vmtest.LVMThinSnapShotTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.vmtests.blivet_reset_vmtest.</code><code class="sig-name descname">LVMThinSnapShotTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMThinSnapShotTestCase" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.LVMThinSnapShotTestCase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">tests.vmtests.blivet_reset_vmtest.</span></span><span class="sig-name descname"><span class="pre">LVMThinSnapShotTestCase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMThinSnapShotTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tests.vmtests.blivet_reset_vmtest.LVMThinpTestCase" title="tests.vmtests.blivet_reset_vmtest.LVMThinpTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.vmtests.blivet_reset_vmtest.LVMThinpTestCase</span></code></a></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
 <dl class="py method">
-<dt id="tests.vmtests.blivet_reset_vmtest.LVMThinSnapShotTestCase.setUp">
-<code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMThinSnapShotTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.LVMThinSnapShotTestCase.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMThinSnapShotTestCase.setUp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any setup required prior to running a test.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="tests.vmtests.blivet_reset_vmtest.LVMThinpTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.vmtests.blivet_reset_vmtest.</code><code class="sig-name descname">LVMThinpTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMThinpTestCase" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.LVMThinpTestCase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">tests.vmtests.blivet_reset_vmtest.</span></span><span class="sig-name descname"><span class="pre">LVMThinpTestCase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMThinpTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase" title="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase</span></code></a></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
@@ -165,8 +165,8 @@ not have a method with the specified name.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="tests.vmtests.blivet_reset_vmtest.LVMVDOTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.vmtests.blivet_reset_vmtest.</code><code class="sig-name descname">LVMVDOTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMVDOTestCase" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.LVMVDOTestCase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">tests.vmtests.blivet_reset_vmtest.</span></span><span class="sig-name descname"><span class="pre">LVMVDOTestCase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.LVMVDOTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase" title="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase</span></code></a></p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
@@ -174,29 +174,29 @@ not have a method with the specified name.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.vmtests.blivet_reset_vmtest.</code><code class="sig-name descname">MDRaid0TestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">tests.vmtests.blivet_reset_vmtest.</span></span><span class="sig-name descname"><span class="pre">MDRaid0TestCase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase" title="tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase"><code class="xref py py-class docutils literal notranslate"><span class="pre">tests.vmtests.blivet_reset_vmtest.BlivetResetTestCase</span></code></a></p>
 <p>Verify correct detection of MD RAID0 arrays.</p>
 <p>Create an instance of the class that will use the named test
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
 <dl class="py attribute">
-<dt id="tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase.level">
-<code class="sig-name descname">level</code><em class="property"> = 'raid0'</em><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase.level" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase.level">
+<span class="sig-name descname"><span class="pre">level</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'raid0'</span></em><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase.level" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase.skip_attr">
-<code class="sig-name descname">skip_attr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device</span></em>, <em class="sig-param"><span class="n">attr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase.skip_attr" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase.skip_attr">
+<span class="sig-name descname"><span class="pre">skip_attr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.MDRaid0TestCase.skip_attr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return True if attr should not be checked for device.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
-<dt id="tests.vmtests.blivet_reset_vmtest.recursive_getattr">
-<code class="sig-prename descclassname">tests.vmtests.blivet_reset_vmtest.</code><code class="sig-name descname">recursive_getattr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">attr</span></em>, <em class="sig-param"><span class="n">default</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.recursive_getattr" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.blivet_reset_vmtest.recursive_getattr">
+<span class="sig-prename descclassname"><span class="pre">tests.vmtests.blivet_reset_vmtest.</span></span><span class="sig-name descname"><span class="pre">recursive_getattr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.blivet_reset_vmtest.recursive_getattr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resolve a possibly-dot-containing attribute name.</p>
 </dd></dl>
 
@@ -204,23 +204,23 @@ not have a method with the specified name.</p>
 <div class="section" id="module-tests.vmtests.runvmtests">
 <span id="tests-vmtests-runvmtests-module"></span><h2>tests.vmtests.runvmtests module<a class="headerlink" href="#module-tests.vmtests.runvmtests" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt id="tests.vmtests.runvmtests.main">
-<code class="sig-prename descclassname">tests.vmtests.runvmtests.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.runvmtests.main" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.runvmtests.main">
+<span class="sig-prename descclassname"><span class="pre">tests.vmtests.runvmtests.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.runvmtests.main" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt id="tests.vmtests.runvmtests.parse_args">
-<code class="sig-prename descclassname">tests.vmtests.runvmtests.</code><code class="sig-name descname">parse_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.runvmtests.parse_args" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.runvmtests.parse_args">
+<span class="sig-prename descclassname"><span class="pre">tests.vmtests.runvmtests.</span></span><span class="sig-name descname"><span class="pre">parse_args</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.runvmtests.parse_args" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt id="tests.vmtests.runvmtests.request_cred">
-<code class="sig-prename descclassname">tests.vmtests.runvmtests.</code><code class="sig-name descname">request_cred</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">credentials</span></em>, <em class="sig-param"><span class="n">cmd_args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.runvmtests.request_cred" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.runvmtests.request_cred">
+<span class="sig-prename descclassname"><span class="pre">tests.vmtests.runvmtests.</span></span><span class="sig-name descname"><span class="pre">request_cred</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">credentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmd_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.runvmtests.request_cred" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt id="tests.vmtests.runvmtests.run_tests">
-<code class="sig-prename descclassname">tests.vmtests.runvmtests.</code><code class="sig-name descname">run_tests</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cmd_args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.runvmtests.run_tests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.runvmtests.run_tests">
+<span class="sig-prename descclassname"><span class="pre">tests.vmtests.runvmtests.</span></span><span class="sig-name descname"><span class="pre">run_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.runvmtests.run_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run tests in the VM</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -230,21 +230,21 @@ not have a method with the specified name.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="tests.vmtests.runvmtests.ssh_connection">
-<code class="sig-prename descclassname">tests.vmtests.runvmtests.</code><code class="sig-name descname">ssh_connection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cmd_args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.runvmtests.ssh_connection" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.runvmtests.ssh_connection">
+<span class="sig-prename descclassname"><span class="pre">tests.vmtests.runvmtests.</span></span><span class="sig-name descname"><span class="pre">ssh_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.runvmtests.ssh_connection" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt id="tests.vmtests.runvmtests.virtual_machine">
-<code class="sig-prename descclassname">tests.vmtests.runvmtests.</code><code class="sig-name descname">virtual_machine</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cmd_args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.runvmtests.virtual_machine" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.runvmtests.virtual_machine">
+<span class="sig-prename descclassname"><span class="pre">tests.vmtests.runvmtests.</span></span><span class="sig-name descname"><span class="pre">virtual_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.runvmtests.virtual_machine" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
 <div class="section" id="module-tests.vmtests.vmbackedtestcase">
 <span id="tests-vmtests-vmbackedtestcase-module"></span><h2>tests.vmtests.vmbackedtestcase module<a class="headerlink" href="#module-tests.vmtests.vmbackedtestcase" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="tests.vmtests.vmbackedtestcase.VMBackedTestCase">
-<em class="property">class </em><code class="sig-prename descclassname">tests.vmtests.vmbackedtestcase.</code><code class="sig-name descname">VMBackedTestCase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">methodName</span><span class="o">=</span><span class="default_value">'runTest'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.vmbackedtestcase.VMBackedTestCase" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.vmbackedtestcase.VMBackedTestCase">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">tests.vmtests.vmbackedtestcase.</span></span><span class="sig-name descname"><span class="pre">VMBackedTestCase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.vmbackedtestcase.VMBackedTestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>A class to encapsulate testing of blivet using block devices.</p>
 <p>The basic idea is you create some scratch block devices and then run
@@ -259,19 +259,19 @@ will be cleaned up and removed when each test method finishes.</p>
 method when executed. Raises a ValueError if the instance does
 not have a method with the specified name.</p>
 <dl class="py attribute">
-<dt id="tests.vmtests.vmbackedtestcase.VMBackedTestCase.initialize_disks">
-<code class="sig-name descname">initialize_disks</code><em class="property"> = True</em><a class="headerlink" href="#tests.vmtests.vmbackedtestcase.VMBackedTestCase.initialize_disks" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.vmbackedtestcase.VMBackedTestCase.initialize_disks">
+<span class="sig-name descname"><span class="pre">initialize_disks</span></span><em class="property"> <span class="pre">=</span> <span class="pre">True</span></em><a class="headerlink" href="#tests.vmtests.vmbackedtestcase.VMBackedTestCase.initialize_disks" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="tests.vmtests.vmbackedtestcase.VMBackedTestCase.setUp">
-<code class="sig-name descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.vmbackedtestcase.VMBackedTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.vmbackedtestcase.VMBackedTestCase.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.vmbackedtestcase.VMBackedTestCase.setUp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do any setup required prior to running a test.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="tests.vmtests.vmbackedtestcase.VMBackedTestCase.set_up_disks">
-<code class="sig-name descname">set_up_disks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.vmbackedtestcase.VMBackedTestCase.set_up_disks" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.vmbackedtestcase.VMBackedTestCase.set_up_disks">
+<span class="sig-name descname"><span class="pre">set_up_disks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.vmbackedtestcase.VMBackedTestCase.set_up_disks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create disk image files to build the test’s storage on.</p>
 <p>If you are actually creating the disk image files here don’t forget
 to set the initialize_disks flag so they get a fresh disklabel when
@@ -279,8 +279,8 @@ clear_partitions gets called from create_storage later.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="tests.vmtests.vmbackedtestcase.VMBackedTestCase.set_up_storage">
-<code class="sig-name descname">set_up_storage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.vmbackedtestcase.VMBackedTestCase.set_up_storage" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tests.vmtests.vmbackedtestcase.VMBackedTestCase.set_up_storage">
+<span class="sig-name descname"><span class="pre">set_up_storage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tests.vmtests.vmbackedtestcase.VMBackedTestCase.set_up_storage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a device stack on top of disk images for this test to run on.</p>
 <p>This will write the configuration to whatever disk images are
 defined in set_up_disks.</p>
@@ -327,7 +327,7 @@ defined in set_up_disks.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -349,14 +349,14 @@ defined in set_up_disks.</p>
         <li class="right" >
           <a href="tests.udev_data.html" title="tests.udev_data package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="tests.html" >tests package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">tests.vmtests package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2021, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>

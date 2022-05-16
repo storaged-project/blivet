@@ -5,11 +5,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>blivet.dbus package &#8212; Blivet 3.4.3 documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <title>blivet.dbus package &#8212; Blivet 3.4.4 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
@@ -34,7 +34,7 @@
         <li class="right" >
           <a href="blivet.html" title="blivet package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.dbus package</a></li> 
       </ul>
@@ -53,8 +53,8 @@
 <div class="section" id="module-blivet.dbus.action">
 <span id="blivet-dbus-action-module"></span><h2>blivet.dbus.action module<a class="headerlink" href="#module-blivet.dbus.action" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="blivet.dbus.action.DBusAction">
-<em class="property">class </em><code class="sig-prename descclassname">blivet.dbus.action.</code><code class="sig-name descname">DBusAction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">action</span></em>, <em class="sig-param"><span class="n">manager</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.action.DBusAction" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.action.DBusAction">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.dbus.action.</span></span><span class="sig-name descname"><span class="pre">DBusAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.action.DBusAction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#blivet.dbus.object.DBusObject" title="blivet.dbus.object.DBusObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.dbus.object.DBusObject</span></code></a></p>
 <p>Constructor. Either conn or bus_name is required; object_path
 is also required.</p>
@@ -82,27 +82,27 @@ Object’s lifetime (unless it’s released manually).</p>
 </dl>
 </dd>
 </dl>
-<dl class="py method">
-<dt id="blivet.dbus.action.DBusAction.id">
-<em class="property">property </em><code class="sig-name descname">id</code><a class="headerlink" href="#blivet.dbus.action.DBusAction.id" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.action.DBusAction.id">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#blivet.dbus.action.DBusAction.id" title="Permalink to this definition">¶</a></dt>
 <dd><p>The unique id of this instance.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.action.DBusAction.interface">
-<em class="property">property </em><code class="sig-name descname">interface</code><a class="headerlink" href="#blivet.dbus.action.DBusAction.interface" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.action.DBusAction.interface">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">interface</span></span><a class="headerlink" href="#blivet.dbus.action.DBusAction.interface" title="Permalink to this definition">¶</a></dt>
 <dd><p>The interface implemented by this class.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.action.DBusAction.object_path">
-<em class="property">property </em><code class="sig-name descname">object_path</code><a class="headerlink" href="#blivet.dbus.action.DBusAction.object_path" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.action.DBusAction.object_path">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">object_path</span></span><a class="headerlink" href="#blivet.dbus.action.DBusAction.object_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>The dbus object path for this instance.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.action.DBusAction.properties">
-<em class="property">property </em><code class="sig-name descname">properties</code><a class="headerlink" href="#blivet.dbus.action.DBusAction.properties" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.action.DBusAction.properties">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">properties</span></span><a class="headerlink" href="#blivet.dbus.action.DBusAction.properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict of property key/value pairs to export via dbus.</p>
 </dd></dl>
 
@@ -112,8 +112,8 @@ Object’s lifetime (unless it’s released manually).</p>
 <div class="section" id="module-blivet.dbus.blivet">
 <span id="blivet-dbus-blivet-module"></span><h2>blivet.dbus.blivet module<a class="headerlink" href="#module-blivet.dbus.blivet" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="blivet.dbus.blivet.DBusBlivet">
-<em class="property">class </em><code class="sig-prename descclassname">blivet.dbus.blivet.</code><code class="sig-name descname">DBusBlivet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">manager</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.dbus.blivet.</span></span><span class="sig-name descname"><span class="pre">DBusBlivet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#blivet.dbus.object.DBusObject" title="blivet.dbus.object.DBusObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.dbus.object.DBusObject</span></code></a></p>
 <p>This class provides the main entry point to the Blivet1 service.</p>
 <p>It provides methods for controlling the blivet service and querying its
@@ -145,81 +145,81 @@ Object’s lifetime (unless it’s released manually).</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="blivet.dbus.blivet.DBusBlivet.Commit">
-<code class="sig-name descname">Commit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.Commit" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet.Commit">
+<span class="sig-name descname"><span class="pre">Commit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.Commit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Commit pending changes to disk.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.blivet.DBusBlivet.Exit">
-<code class="sig-name descname">Exit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.Exit" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet.Exit">
+<span class="sig-name descname"><span class="pre">Exit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.Exit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stop the blivet service.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.blivet.DBusBlivet.Factory">
-<code class="sig-name descname">Factory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.Factory" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet.Factory">
+<span class="sig-name descname"><span class="pre">Factory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.Factory" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.blivet.DBusBlivet.InitializeDisk">
-<code class="sig-name descname">InitializeDisk</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">object_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.InitializeDisk" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet.InitializeDisk">
+<span class="sig-name descname"><span class="pre">InitializeDisk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.InitializeDisk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clear a disk and create a disklabel on it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.blivet.DBusBlivet.ListDevices">
-<code class="sig-name descname">ListDevices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.ListDevices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet.ListDevices">
+<span class="sig-name descname"><span class="pre">ListDevices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.ListDevices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of strings describing the devices in this system.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.blivet.DBusBlivet.RemoveDevice">
-<code class="sig-name descname">RemoveDevice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">object_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.RemoveDevice" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet.RemoveDevice">
+<span class="sig-name descname"><span class="pre">RemoveDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.RemoveDevice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove a device and all devices built on it.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.blivet.DBusBlivet.Reset">
-<code class="sig-name descname">Reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.Reset" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet.Reset">
+<span class="sig-name descname"><span class="pre">Reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.Reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the Blivet instance and populate the device tree.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.blivet.DBusBlivet.ResolveDevice">
-<code class="sig-name descname">ResolveDevice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spec</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.ResolveDevice" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet.ResolveDevice">
+<span class="sig-name descname"><span class="pre">ResolveDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.ResolveDevice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string describing the device the given specifier resolves to.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.blivet.DBusBlivet.id">
-<em class="property">property </em><code class="sig-name descname">id</code><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.id" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet.id">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.id" title="Permalink to this definition">¶</a></dt>
 <dd><p>The unique id of this instance.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.blivet.DBusBlivet.interface">
-<em class="property">property </em><code class="sig-name descname">interface</code><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.interface" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet.interface">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">interface</span></span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.interface" title="Permalink to this definition">¶</a></dt>
 <dd><p>The interface implemented by this class.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.blivet.DBusBlivet.object_path">
-<em class="property">property </em><code class="sig-name descname">object_path</code><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.object_path" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet.object_path">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">object_path</span></span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.object_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>The dbus object path for this instance.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.blivet.DBusBlivet.properties">
-<em class="property">property </em><code class="sig-name descname">properties</code><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.properties" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet.properties">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">properties</span></span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet.properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict of property key/value pairs to export via dbus.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
-<dt id="blivet.dbus.blivet.sorted_object_paths_from_list">
-<code class="sig-prename descclassname">blivet.dbus.blivet.</code><code class="sig-name descname">sorted_object_paths_from_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj_list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.sorted_object_paths_from_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.blivet.sorted_object_paths_from_list">
+<span class="sig-prename descclassname"><span class="pre">blivet.dbus.blivet.</span></span><span class="sig-name descname"><span class="pre">sorted_object_paths_from_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.sorted_object_paths_from_list" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -229,8 +229,8 @@ Object’s lifetime (unless it’s released manually).</p>
 <div class="section" id="module-blivet.dbus.device">
 <span id="blivet-dbus-device-module"></span><h2>blivet.dbus.device module<a class="headerlink" href="#module-blivet.dbus.device" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="blivet.dbus.device.DBusDevice">
-<em class="property">class </em><code class="sig-prename descclassname">blivet.dbus.device.</code><code class="sig-name descname">DBusDevice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device</span></em>, <em class="sig-param"><span class="n">manager</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.device.DBusDevice" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.device.DBusDevice">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.dbus.device.</span></span><span class="sig-name descname"><span class="pre">DBusDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.device.DBusDevice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#blivet.dbus.object.DBusObject" title="blivet.dbus.object.DBusObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.dbus.object.DBusObject</span></code></a></p>
 <p>Constructor. Either conn or bus_name is required; object_path
 is also required.</p>
@@ -259,38 +259,38 @@ Object’s lifetime (unless it’s released manually).</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="blivet.dbus.device.DBusDevice.Setup">
-<code class="sig-name descname">Setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.device.DBusDevice.Setup" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.device.DBusDevice.Setup">
+<span class="sig-name descname"><span class="pre">Setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.device.DBusDevice.Setup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Activate this device.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.device.DBusDevice.Teardown">
-<code class="sig-name descname">Teardown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.device.DBusDevice.Teardown" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.device.DBusDevice.Teardown">
+<span class="sig-name descname"><span class="pre">Teardown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.device.DBusDevice.Teardown" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deactivate this device.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.device.DBusDevice.id">
-<em class="property">property </em><code class="sig-name descname">id</code><a class="headerlink" href="#blivet.dbus.device.DBusDevice.id" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.device.DBusDevice.id">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#blivet.dbus.device.DBusDevice.id" title="Permalink to this definition">¶</a></dt>
 <dd><p>The unique id of this instance.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.device.DBusDevice.interface">
-<em class="property">property </em><code class="sig-name descname">interface</code><a class="headerlink" href="#blivet.dbus.device.DBusDevice.interface" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.device.DBusDevice.interface">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">interface</span></span><a class="headerlink" href="#blivet.dbus.device.DBusDevice.interface" title="Permalink to this definition">¶</a></dt>
 <dd><p>The interface implemented by this class.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.device.DBusDevice.object_path">
-<em class="property">property </em><code class="sig-name descname">object_path</code><a class="headerlink" href="#blivet.dbus.device.DBusDevice.object_path" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.device.DBusDevice.object_path">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">object_path</span></span><a class="headerlink" href="#blivet.dbus.device.DBusDevice.object_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>The dbus object path for this instance.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.device.DBusDevice.properties">
-<em class="property">property </em><code class="sig-name descname">properties</code><a class="headerlink" href="#blivet.dbus.device.DBusDevice.properties" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.device.DBusDevice.properties">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">properties</span></span><a class="headerlink" href="#blivet.dbus.device.DBusDevice.properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict of property key/value pairs to export via dbus.</p>
 </dd></dl>
 
@@ -300,8 +300,8 @@ Object’s lifetime (unless it’s released manually).</p>
 <div class="section" id="module-blivet.dbus.format">
 <span id="blivet-dbus-format-module"></span><h2>blivet.dbus.format module<a class="headerlink" href="#module-blivet.dbus.format" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="blivet.dbus.format.DBusFormat">
-<em class="property">class </em><code class="sig-prename descclassname">blivet.dbus.format.</code><code class="sig-name descname">DBusFormat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fmt</span></em>, <em class="sig-param"><span class="n">manager</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.format.DBusFormat" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.format.DBusFormat">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.dbus.format.</span></span><span class="sig-name descname"><span class="pre">DBusFormat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.format.DBusFormat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#blivet.dbus.object.DBusObject" title="blivet.dbus.object.DBusObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.dbus.object.DBusObject</span></code></a></p>
 <p>Constructor. Either conn or bus_name is required; object_path
 is also required.</p>
@@ -330,36 +330,36 @@ Object’s lifetime (unless it’s released manually).</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="blivet.dbus.format.DBusFormat.Setup">
-<code class="sig-name descname">Setup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.format.DBusFormat.Setup" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.format.DBusFormat.Setup">
+<span class="sig-name descname"><span class="pre">Setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.format.DBusFormat.Setup" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.format.DBusFormat.Teardown">
-<code class="sig-name descname">Teardown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.format.DBusFormat.Teardown" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.format.DBusFormat.Teardown">
+<span class="sig-name descname"><span class="pre">Teardown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.format.DBusFormat.Teardown" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.format.DBusFormat.id">
-<em class="property">property </em><code class="sig-name descname">id</code><a class="headerlink" href="#blivet.dbus.format.DBusFormat.id" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.format.DBusFormat.id">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#blivet.dbus.format.DBusFormat.id" title="Permalink to this definition">¶</a></dt>
 <dd><p>The unique id of this instance.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.format.DBusFormat.interface">
-<em class="property">property </em><code class="sig-name descname">interface</code><a class="headerlink" href="#blivet.dbus.format.DBusFormat.interface" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.format.DBusFormat.interface">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">interface</span></span><a class="headerlink" href="#blivet.dbus.format.DBusFormat.interface" title="Permalink to this definition">¶</a></dt>
 <dd><p>The interface implemented by this class.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.format.DBusFormat.object_path">
-<em class="property">property </em><code class="sig-name descname">object_path</code><a class="headerlink" href="#blivet.dbus.format.DBusFormat.object_path" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.format.DBusFormat.object_path">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">object_path</span></span><a class="headerlink" href="#blivet.dbus.format.DBusFormat.object_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>The dbus object path for this instance.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.format.DBusFormat.properties">
-<em class="property">property </em><code class="sig-name descname">properties</code><a class="headerlink" href="#blivet.dbus.format.DBusFormat.properties" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.format.DBusFormat.properties">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">properties</span></span><a class="headerlink" href="#blivet.dbus.format.DBusFormat.properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict of property key/value pairs to export via dbus.</p>
 </dd></dl>
 
@@ -369,8 +369,8 @@ Object’s lifetime (unless it’s released manually).</p>
 <div class="section" id="module-blivet.dbus.manager">
 <span id="blivet-dbus-manager-module"></span><h2>blivet.dbus.manager module<a class="headerlink" href="#module-blivet.dbus.manager" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="blivet.dbus.manager.ObjectManager">
-<em class="property">class </em><code class="sig-prename descclassname">blivet.dbus.manager.</code><code class="sig-name descname">ObjectManager</code><a class="headerlink" href="#blivet.dbus.manager.ObjectManager" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.manager.ObjectManager">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.dbus.manager.</span></span><span class="sig-name descname"><span class="pre">ObjectManager</span></span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dbus.service.Object</span></code></p>
 <p>Class to implement org.freedesktop.DBus.ObjectManager interface.</p>
 <p>Blivet’s ObjectManager interface will manage subtrees for objects that
@@ -403,43 +403,43 @@ Object’s lifetime (unless it’s released manually).</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="blivet.dbus.manager.ObjectManager.GetManagedObjects">
-<code class="sig-name descname">GetManagedObjects</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.GetManagedObjects" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.manager.ObjectManager.GetManagedObjects">
+<span class="sig-name descname"><span class="pre">GetManagedObjects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.GetManagedObjects" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.manager.ObjectManager.InterfacesAdded">
-<code class="sig-name descname">InterfacesAdded</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">keywords</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.InterfacesAdded" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.manager.ObjectManager.InterfacesAdded">
+<span class="sig-name descname"><span class="pre">InterfacesAdded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.InterfacesAdded" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.manager.ObjectManager.InterfacesRemoved">
-<code class="sig-name descname">InterfacesRemoved</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">keywords</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.InterfacesRemoved" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.manager.ObjectManager.InterfacesRemoved">
+<span class="sig-name descname"><span class="pre">InterfacesRemoved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.InterfacesRemoved" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.manager.ObjectManager.add_object">
-<code class="sig-name descname">add_object</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.add_object" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.manager.ObjectManager.add_object">
+<span class="sig-name descname"><span class="pre">add_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.add_object" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.manager.ObjectManager.get_object_by_id">
-<code class="sig-name descname">get_object_by_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.get_object_by_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.manager.ObjectManager.get_object_by_id">
+<span class="sig-name descname"><span class="pre">get_object_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.get_object_by_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.manager.ObjectManager.get_object_by_path">
-<code class="sig-name descname">get_object_by_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.get_object_by_path" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.manager.ObjectManager.get_object_by_path">
+<span class="sig-name descname"><span class="pre">get_object_by_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.get_object_by_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.manager.ObjectManager.objects">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">objects</span></span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.objects" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.manager.ObjectManager.objects">
-<em class="property">property </em><code class="sig-name descname">objects</code><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.objects" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="blivet.dbus.manager.ObjectManager.remove_object">
-<code class="sig-name descname">remove_object</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.remove_object" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.manager.ObjectManager.remove_object">
+<span class="sig-name descname"><span class="pre">remove_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager.remove_object" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -448,8 +448,8 @@ Object’s lifetime (unless it’s released manually).</p>
 <div class="section" id="module-blivet.dbus.object">
 <span id="blivet-dbus-object-module"></span><h2>blivet.dbus.object module<a class="headerlink" href="#module-blivet.dbus.object" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="blivet.dbus.object.DBusObject">
-<em class="property">class </em><code class="sig-prename descclassname">blivet.dbus.object.</code><code class="sig-name descname">DBusObject</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">manager</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.object.DBusObject">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.dbus.object.</span></span><span class="sig-name descname"><span class="pre">DBusObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dbus.service.Object</span></code></p>
 <p>Base class for dbus objects.</p>
 <p>Constructor. Either conn or bus_name is required; object_path
@@ -479,58 +479,58 @@ Object’s lifetime (unless it’s released manually).</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="blivet.dbus.object.DBusObject.Get">
-<code class="sig-name descname">Get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">interface_name</span></em>, <em class="sig-param"><span class="n">property_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject.Get" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.object.DBusObject.Get">
+<span class="sig-name descname"><span class="pre">Get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interface_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject.Get" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.object.DBusObject.GetAll">
-<code class="sig-name descname">GetAll</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">interface_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject.GetAll" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.object.DBusObject.GetAll">
+<span class="sig-name descname"><span class="pre">GetAll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interface_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject.GetAll" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.object.DBusObject.PropertiesChanged">
-<code class="sig-name descname">PropertiesChanged</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">keywords</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject.PropertiesChanged" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.object.DBusObject.PropertiesChanged">
+<span class="sig-name descname"><span class="pre">PropertiesChanged</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject.PropertiesChanged" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.object.DBusObject.Set">
-<code class="sig-name descname">Set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">interface_name</span></em>, <em class="sig-param"><span class="n">property_name</span></em>, <em class="sig-param"><span class="n">new_value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject.Set" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.object.DBusObject.Set">
+<span class="sig-name descname"><span class="pre">Set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interface_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject.Set" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.object.DBusObject.id">
-<em class="property">property </em><code class="sig-name descname">id</code><a class="headerlink" href="#blivet.dbus.object.DBusObject.id" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.object.DBusObject.id">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#blivet.dbus.object.DBusObject.id" title="Permalink to this definition">¶</a></dt>
 <dd><p>The unique id of this instance.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.object.DBusObject.interface">
-<em class="property">property </em><code class="sig-name descname">interface</code><a class="headerlink" href="#blivet.dbus.object.DBusObject.interface" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.object.DBusObject.interface">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">interface</span></span><a class="headerlink" href="#blivet.dbus.object.DBusObject.interface" title="Permalink to this definition">¶</a></dt>
 <dd><p>The interface implemented by this class.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.object.DBusObject.object_path">
-<em class="property">property </em><code class="sig-name descname">object_path</code><a class="headerlink" href="#blivet.dbus.object.DBusObject.object_path" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.object.DBusObject.object_path">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">object_path</span></span><a class="headerlink" href="#blivet.dbus.object.DBusObject.object_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>The dbus object path for this instance.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.object.DBusObject.present">
-<em class="property">property </em><code class="sig-name descname">present</code><a class="headerlink" href="#blivet.dbus.object.DBusObject.present" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.object.DBusObject.present">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">present</span></span><a class="headerlink" href="#blivet.dbus.object.DBusObject.present" title="Permalink to this definition">¶</a></dt>
 <dd><p>Is this object present in blivet’s current view?</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="blivet.dbus.object.DBusObject.properties">
-<em class="property">property </em><code class="sig-name descname">properties</code><a class="headerlink" href="#blivet.dbus.object.DBusObject.properties" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.dbus.object.DBusObject.properties">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">properties</span></span><a class="headerlink" href="#blivet.dbus.object.DBusObject.properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict of property key/value pairs to export via dbus.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="blivet.dbus.object.DBusObject.remove_from_connection">
-<code class="sig-name descname">remove_from_connection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">connection</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject.remove_from_connection" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="blivet.dbus.object.DBusObject.remove_from_connection">
+<span class="sig-name descname"><span class="pre">remove_from_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject.remove_from_connection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make this object inaccessible via the given D-Bus connection
 and object path. If no connection or path is specified,
 the object ceases to be accessible via any connection or path.</p>
@@ -603,7 +603,7 @@ or path, or (if both are None) was not exported at all.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -628,14 +628,14 @@ or path, or (if both are None) was not exported at all.</p>
         <li class="right" >
           <a href="blivet.html" title="blivet package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.4 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.dbus package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2021, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
     </div>
   </body>
 </html>
