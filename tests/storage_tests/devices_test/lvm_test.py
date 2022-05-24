@@ -127,7 +127,7 @@ class LVMTestCase(StorageTestCase):
         self.assertTrue(snap.is_snapshot_lv)
         self.assertEqual(snap.origin, thinlv)
 
-    def test_lvm_raid(self):
+    def _test_lvm_raid(self, seg_type, raid_level):
         disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
         self.assertIsNotNone(disk1)
         self.storage.initialize_disk(disk1)
@@ -151,7 +151,7 @@ class LVMTestCase(StorageTestCase):
 
         raidlv = self.storage.new_lv(fmt_type="ext4", size=blivet.size.Size("50 MiB"),
                                      parents=[vg], name="blivetTestRAIDLV",
-                                     seg_type="raid1", pvs=[pv1, pv2])
+                                     seg_type=seg_type, pvs=[pv1, pv2])
         self.storage.create_device(raidlv)
 
         self.storage.do_it()
@@ -160,7 +160,20 @@ class LVMTestCase(StorageTestCase):
         raidlv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestRAIDLV")
         self.assertIsNotNone(raidlv)
         self.assertTrue(raidlv.is_raid_lv)
-        self.assertEqual(raidlv.raid_level, blivet.devicelibs.raid.RAID1)
+        self.assertEqual(raidlv.raid_level, raid_level)
+        self.assertEqual(raidlv.seg_type, seg_type)
+
+    def test_lvm_raid_raid0(self):
+        self._test_lvm_raid("raid0", blivet.devicelibs.raid.RAID0)
+
+    def test_lvm_raid_striped(self):
+        self._test_lvm_raid("striped", blivet.devicelibs.raid.Striped)
+
+    def test_lvm_raid_raid1(self):
+        self._test_lvm_raid("raid1", blivet.devicelibs.raid.RAID1)
+
+    def test_lvm_raid_mirror(self):
+        self._test_lvm_raid("mirror", blivet.devicelibs.raid.RAID1)
 
     def test_lvm_cache(self):
         disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
