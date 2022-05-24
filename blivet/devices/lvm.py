@@ -2160,6 +2160,10 @@ class LVMCachePoolMixin(object):
     def resizable(self):
         return False
 
+    @property
+    def format_immutable(self):
+        return True
+
     def read_current_size(self):
         log_method_call(self, exists=self.exists, path=self.path,
                         sysfs_path=self.sysfs_path)
@@ -2904,7 +2908,13 @@ class LVMCache(Cache):
     def stats(self):
         # to get the stats we need the cached LV to exist and be activated
         if self._exists and self._cached_lv.status:
-            return LVMCacheStats(blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname))
+            try:
+                stats = blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname)
+            except blockdev.LVMError as lvmerr:
+                log.error("Failed to get cache stats for '%s': %s", self._cached_lv.name, lvmerr)
+                return None
+            else:
+                return LVMCacheStats(stats)
         else:
             return None
 
@@ -2913,8 +2923,13 @@ class LVMCache(Cache):
         if not self._exists:
             return self._mode
         else:
-            stats = blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname)
-            return blockdev.lvm.cache_get_mode_str(stats.mode)
+            try:
+                stats = blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname)
+            except blockdev.LVMError as lvmerr:
+                log.error("Failed to get cache stats for '%s': %s", self._cached_lv.name, lvmerr)
+                return blockdev.lvm.cache_get_mode_str(blockdev.LVMCacheMode.UNKNOWN)
+            else:
+                return blockdev.lvm.cache_get_mode_str(stats.mode)
 
     @property
     def backing_device_name(self):
