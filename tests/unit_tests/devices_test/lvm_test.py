@@ -283,6 +283,24 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertTrue(lv.is_raid_lv)
         self.assertEqual(lv.num_raid_pvs, 2)
 
+    def test_lvm_logical_volume_raid0(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1025 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("513 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, seg_type="raid0", pvs=[pv, pv2])
+
+        self.assertEqual(lv.seg_type, "raid0")
+        # 512 MiB - 4 MiB (metadata)
+        self.assertEqual(lv.size, Size("508 MiB"))
+        self.assertEqual(lv._raid_level, raid.RAID0)
+        self.assertTrue(lv.is_raid_lv)
+        self.assertEqual(lv.num_raid_pvs, 2)
+
     def test_lvm_logical_volume_insuf_seg_type(self):
         # pylint: disable=unused-variable
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
