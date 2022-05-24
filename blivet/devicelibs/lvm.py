@@ -61,7 +61,7 @@ LVM_CACHE_MIN_METADATA_SIZE = Size("8 MiB")
 LVM_CACHE_MAX_METADATA_SIZE = Size("16 GiB")
 LVM_CACHE_DEFAULT_MODE = blockdev.LVMCacheMode.WRITETHROUGH
 
-raid_levels = raid.RAIDLevels(["linear", "striped", "raid1", "raid4", "raid5", "raid6", "raid10"])
+raid_levels = raid.RAIDLevels(["linear", "striped", "raid0", "raid1", "raid4", "raid5", "raid6", "raid10"])
 raid_seg_types = list(itertools.chain.from_iterable([level.names for level in raid_levels if level.name != "linear"]))
 
 ThPoolProfile = namedtuple("ThPoolProfile", ["name", "desc"])
