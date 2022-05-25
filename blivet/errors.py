@@ -326,3 +326,7 @@ class FCoEError(StorageError, OSError):
 
 class ISCSIError(StorageError, OSError):
     pass
+
+
+class NVMeError(StorageError, OSError):
+    pass
