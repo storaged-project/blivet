@@ -2115,9 +2115,10 @@ class LVMVDOLogicalVolumeMixin(object):
 
 
 class LVMCachePoolMixin(object):
-    def __init__(self, metadata_size, cache_mode=None):
+    def __init__(self, metadata_size, cache_mode=None, attach_to=None):
         self._metadata_size = metadata_size or Size(0)
         self._cache_mode = cache_mode
+        self._attach_to = attach_to
 
     def _init_check(self):
         if not self.is_cache_pool:
@@ -2128,6 +2129,9 @@ class LVMCachePoolMixin(object):
 
         if not self.exists and not self._pv_specs:
             raise ValueError("at least one fast PV must be specified to create a cache pool")
+
+        if self._attach_to and not self._attach_to.exists:
+            raise ValueError("cache pool can be attached only to an existing LV")
 
     def _check_from_lvs(self):
         if self._from_lvs:
@@ -2241,6 +2245,31 @@ class LVMCachePoolMixin(object):
                                            cache_mode,
                                            0,
                                            [spec.pv.path for spec in self._pv_specs])
+        if self._attach_to:
+            self._attach_to.attach_cache(self)
+
+    def _post_create(self):
+        if self._attach_to:
+            # post_create tries to activate the LV and after attaching it no longer exists
+            return
+
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeBase, self)._post_create()
+
+    def add_hook(self, new=True):
+        if self._attach_to:
+            self._attach_to._cache = LVMCache(self._attach_to, size=self.size, exists=False,
+                                              pvs=self._pv_specs, mode=self._cache_mode)
+
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeBase, self).add_hook(new=new)
+
+    def remove_hook(self, modparent=True):
+        if self._attach_to:
+            self._attach_to._cache = None
+
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeBase, self).remove_hook(modparent=modparent)
 
     def dracut_setup_args(self):
         return set()
@@ -2266,7 +2295,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
                  parent_lv=None, int_type=None, origin=None, vorigin=False,
                  metadata_size=None, chunk_size=None, profile=None, from_lvs=None,
                  compression=False, deduplication=False, index_memory=0,
-                 write_policy=None, cache_mode=None):
+                 write_policy=None, cache_mode=None, attach_to=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -2342,6 +2371,9 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             :type metadata_size: :class:`~.size.Size`
             :keyword cache_mode: mode for the cache or None for default (writethrough)
             :type cache_mode: str
+            :keyword attach_to: for non-existing cache pools a logical volume the pool should
+                                be attached to when created
+            :type attach_to: :class:`LVMLogicalVolumeDevice`
 
         """
 
@@ -2360,7 +2392,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         LVMSnapshotMixin.__init__(self, origin, vorigin)
         LVMThinPoolMixin.__init__(self, metadata_size, chunk_size, profile)
         LVMThinLogicalVolumeMixin.__init__(self)
-        LVMCachePoolMixin.__init__(self, metadata_size, cache_mode)
+        LVMCachePoolMixin.__init__(self, metadata_size, cache_mode, attach_to)
         LVMLogicalVolumeBase.__init__(self, name, parents, size, uuid, seg_type,
                                       fmt, exists, sysfs_path, grow, maxsize,
                                       percent, cache_request, pvs, from_lvs)
