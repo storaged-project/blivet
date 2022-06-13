@@ -90,23 +90,9 @@ class StratisPoolDevice(StorageDevice):
         for filesystem in self.filesystems:
             physical_used += filesystem.used_size
 
-        if self.exists:
-            # pool metadata using stratis-predict-usage which will give us used size
-            # for an empty pool with blockdevs we are using, i.e. metadata size for this pool
-            physical_used += devicelibs.stratis.pool_used(self.name,
-                                                          [bd.path for bd in self.blockdevs],
-                                                          self.encrypted)
-        else:
-            for bd in self.blockdevs:
-                if bd.exists:
-                    # for existing blockdevs we can also use the stratis-predict-usage tool
-                    physical_used += devicelibs.stratis.pool_used(self.name,
-                                                                  [bd.path],
-                                                                  self.encrypted)
-                else:
-                    physical_used += devicelibs.stratis.STRATIS_BD_MD_SIZE
-                    if self.encrypted:
-                        physical_used += devicelibs.stratis.STRATIS_BD_ENC_MD_SIZE
+        physical_used += devicelibs.stratis.pool_used(self.name,
+                                                      [bd.size for bd in self.blockdevs],
+                                                      self.encrypted)
 
         return physical_used
 
@@ -236,7 +222,7 @@ class StratisFilesystemDevice(StorageDevice):
     def used_size(self):
         """ Size used by this filesystem in the pool """
         if not self.exists:
-            return devicelibs.stratis.STRATIS_FS_MD_SIZE
+            return devicelibs.stratis.filesystem_md_size(self.size)
         else:
             fs_info = stratis_info.get_filesystem_info(self.pool.name, self.fsname)
             if not fs_info:

@@ -27,13 +27,15 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
     def test_new_stratis(self):
         b = blivet.Blivet()
         bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
-                           size=Size("1 GiB"), exists=False)
+                           size=Size("2 GiB"), exists=False)
 
         b.devicetree._add_device(bd)
 
         pool = b.new_stratis_pool(name="testpool", parents=[bd])
         self.assertEqual(pool.name, "testpool")
         self.assertEqual(pool.size, bd.size)
+        # for 2 GiB pool, metadata should take around 0.5 GiB
+        self.assertAlmostEqual(pool.free_space, Size("1.5 GiB"), delta=Size("10 MiB"))
 
         fs = b.new_stratis_filesystem(name="testfs", parents=[pool])
 
@@ -42,6 +44,8 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
         self.assertEqual(fs.size, Size("1 TiB"))
         self.assertEqual(fs.pool, pool)
         self.assertEqual(fs.format.type, "stratis xfs")
+        # for 1 TiB filesystem, metadata should take around 1 GiB
+        self.assertAlmostEqual(fs.used_size, Size("1 GiB"), delta=Size("100 MiB"))
 
         with six.assertRaisesRegex(self, StratisError, "not enough free space in the pool"):
             # only 1 GiB pool, not enough space for second fs

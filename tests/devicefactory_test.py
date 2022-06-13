@@ -902,6 +902,8 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
     encryption_supported = False
     factory_class = devicefactory.StratisFactory
 
+    _disk_size = Size("3 GiB")
+
     # pylint: disable=unused-argument
     def _get_size_delta(self, devices=None):
         """ Return size delta for a specific factory type.
@@ -965,7 +967,7 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
         # change container size
         kwargs = {"disks": self.b.disks,
                   "mountpoint": "/factorytest",
-                  "container_size": Size("2.5 GiB")}
+                  "container_size": Size("5 GiB")}
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
