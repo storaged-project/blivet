@@ -44,13 +44,7 @@ STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem.r0"
 STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev.r0"
 STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
 
-
 STRATIS_FS_SIZE = Size("1 TiB")
-STRATIS_FS_MD_SIZE = Size("600 MiB")
-
-STRATIS_BD_MD_SIZE = Size("4 MiB")
-STRATIS_BD_ENC_MD_SIZE = Size("16 MiB")
-
 
 STRATIS_PREDICT_USAGE = "stratis-predict-usage"
 
@@ -58,23 +52,42 @@ STRATIS_PREDICT_USAGE = "stratis-predict-usage"
 safe_name_characters = "0-9a-zA-Z._-"
 
 
-def pool_used(pool_name, blockdevs, encrypted=False):
+def pool_used(pool_name, dev_sizes, encrypted=False):
     if not shutil.which(STRATIS_PREDICT_USAGE):
         raise StratisError("Utility for predicting stratis pool usage '%s' not available" % STRATIS_PREDICT_USAGE)
 
-    cmd = [STRATIS_PREDICT_USAGE]
-    cmd.extend(blockdevs)
+    cmd = [STRATIS_PREDICT_USAGE, "pool"]
+    for size in dev_sizes:
+        cmd.extend(["--device-size", str(size.get_bytes())])
     if encrypted:
         cmd.append("--encrypted")
 
     rc, out = util.run_program_and_capture_output(cmd)
     if rc:
-        raise StratisError("Failed to predict usage for stratis pool %s" % pool_name)
+        raise StratisError("Failed to predict usage for stratis pool %s: %s" % (pool_name, out))
 
     try:
         pred = json.loads(out)
     except json.JSONDecodeError as e:
         raise StratisError("Failed to get stratis pool usage") from e
+
+    return Size(pred["used"])
+
+
+def filesystem_md_size(fs_size):
+    if not shutil.which(STRATIS_PREDICT_USAGE):
+        raise StratisError("Utility for predicting stratis pool usage '%s' not available" % STRATIS_PREDICT_USAGE)
+
+    rc, out = util.run_program_and_capture_output([STRATIS_PREDICT_USAGE, "filesystem",
+                                                   "--filesystem-size",
+                                                   str(fs_size.get_bytes())])
+    if rc:
+        raise StratisError("Failed to predict usage for stratis filesystem: %s" % out)
+
+    try:
+        pred = json.loads(out)
+    except json.JSONDecodeError as e:
+        raise StratisError("Failed to get stratis filesystem usage") from e
 
     return Size(pred["used"])
 
