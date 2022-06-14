@@ -29,6 +29,7 @@ from ..static_data import stratis_info
 from ..storage_log import log_method_call
 from ..errors import DeviceError, StratisError
 from ..size import Size
+from ..tasks import availability
 from .. import devicelibs
 
 
@@ -40,6 +41,7 @@ class StratisPoolDevice(StorageDevice):
     _packages = ["stratisd", "stratis-cli"]
     _dev_dir = "/dev/stratis"
     _format_immutable = True
+    _external_dependencies = [availability.STRATISPREDICTUSAGE_APP, availability.STRATIS_DBUS]
 
     def __init__(self, *args, **kwargs):
         """
@@ -188,6 +190,7 @@ class StratisFilesystemDevice(StorageDevice):
     _resizable = False
     _packages = ["stratisd", "stratis-cli"]
     _dev_dir = "/dev/stratis"
+    _external_dependencies = [availability.STRATISPREDICTUSAGE_APP, availability.STRATIS_DBUS]
 
     def __init__(self, *args, **kwargs):
         if kwargs.get("size") is None and not kwargs.get("exists"):
