@@ -25,6 +25,7 @@ import shutil
 from six import add_metaclass
 
 from .. import safe_dbus
+from ..devicelibs.stratis import STRATIS_SERVICE, STRATIS_PATH
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -535,3 +536,8 @@ FSCK_F2FS_APP = application("fsck.f2fs")
 MKFS_F2FS_APP = application("mkfs.f2fs")
 
 MOUNT_APP = application("mount")
+
+STRATISPREDICTUSAGE_APP = application("stratis-predict-usage")
+
+STRATIS_SERVICE_METHOD = DBusMethod(STRATIS_SERVICE, STRATIS_PATH)
+STRATIS_DBUS = dbus_service("stratis", STRATIS_SERVICE_METHOD)
