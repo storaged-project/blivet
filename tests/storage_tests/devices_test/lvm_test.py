@@ -270,6 +270,60 @@ class LVMTestCase(StorageTestCase):
         cachepool = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestFastLV")
         self.assertIsNotNone(cachepool)
 
+    def test_lvm_cache_create_and_attach(self):
+        blivet.util.set_up_logging()
+        disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk1)
+        self.storage.initialize_disk(disk1)
+
+        disk2 = self.storage.devicetree.get_device_by_path(self.vdevs[1])
+        self.assertIsNotNone(disk2)
+        self.storage.initialize_disk(disk2)
+
+        pv1 = self.storage.new_partition(size=blivet.size.Size("100 MiB"), fmt_type="lvmpv",
+                                         parents=[disk1])
+        self.storage.create_device(pv1)
+
+        pv2 = self.storage.new_partition(size=blivet.size.Size("100 MiB"), fmt_type="lvmpv",
+                                         parents=[disk2])
+        self.storage.create_device(pv2)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        vg = self.storage.new_vg(name="blivetTestVG", parents=[pv1, pv2])
+        self.storage.create_device(vg)
+
+        cachedlv = self.storage.new_lv(fmt_type="ext4", size=blivet.size.Size("50 MiB"),
+                                       parents=[vg], name="blivetTestCachedLV")
+        self.storage.create_device(cachedlv)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        cachedlv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestCachedLV")
+        self.assertIsNotNone(cachedlv)
+
+        vg = self.storage.devicetree.get_device_by_name("blivetTestVG")
+        pv2 = self.storage.devicetree.get_device_by_name(pv2.name)
+
+        # create the cache pool and attach it to the LV
+        cachepool = self.storage.new_lv(size=blivet.size.Size("50 MiB"), parents=[vg],
+                                        pvs=[pv2], cache_pool=True, name="blivetTestFastLV",
+                                        attach_to=cachedlv)
+        self.storage.create_device(cachepool)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        cachedlv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestCachedLV")
+        self.assertIsNotNone(cachedlv)
+        self.assertTrue(cachedlv.cached)
+        self.assertIsNotNone(cachedlv.cache)
+
+        # the cachepool shouldn't be in the devicetree now
+        cachepool = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestFastLV")
+        self.assertIsNone(cachepool)
+
     def test_lvm_pvs_add_remove(self):
         disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
         self.assertIsNotNone(disk1)

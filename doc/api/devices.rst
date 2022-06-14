@@ -41,6 +41,12 @@ devices
         * :attr:`~blivet.devices.lvm.LVMCache.size`
         * :attr:`~blivet.devices.lvm.LVMCache.stats`
 
+    * :class:`~blivet.devices.lvm.LVMWriteCache`
+        * :attr:`~blivet.devices.lvm.LVMWriteCache.backing_device_name`
+        * :attr:`~blivet.devices.lvm.LVMWriteCache.cache_device_name`
+        * :attr:`~blivet.devices.lvm.LVMWriteCache.exists`
+        * :attr:`~blivet.devices.lvm.LVMWriteCache.size`
+
     * :class:`~blivet.devices.lvm.LVMCacheRequest`
         * :attr:`~blivet.devices.lvm.LVMCacheRequest.fast_devs`
         * :attr:`~blivet.devices.lvm.LVMCacheRequest.pv_space_requests`
@@ -56,6 +62,7 @@ devices
         * :attr:`~blivet.devices.lvm.LVMThinPoolMixin.is_thin_pool`
         * :attr:`~blivet.devices.lvm.LVMVDOLogicalVolumeMixin.is_vdo_lv`
         * :attr:`~blivet.devices.lvm.LVMVDOPoolMixin.is_vdo_pool`
+        * :attr:`~blivet.devices.lvm.LVMCachePoolMixin.is_cache_pool`
         * :attr:`~blivet.devices.dm.DMDevice.map_name`
         * :attr:`~blivet.devices.lvm.LVMLogicalVolumeBase.metadata_size`
         * :attr:`~blivet.devices.lvm.LVMLogicalVolumeDevice.vg`

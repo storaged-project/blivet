@@ -182,3 +182,14 @@ class GetSysfsAttrTestCase(unittest.TestCase):
             # the unicode replacement character (U+FFFD) should be used instead
             model = util.get_sysfs_attr(sysfs, "model")
             self.assertEqual(model, "test model\ufffd")
+
+
+class GetKernelModuleParameterTestCase(unittest.TestCase):
+
+    def test_nonexisting_kernel_module(self):
+        self.assertIsNone(util.get_kernel_module_parameter("unknown_module", "unknown_parameter"))
+
+    def test_get_kernel_module_parameter_value(self):
+        with mock.patch('blivet.util.open', mock.mock_open(read_data='value\n')):
+            value = util.get_kernel_module_parameter("module", "parameter")
+        self.assertEqual(value, "value")
