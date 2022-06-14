@@ -155,7 +155,7 @@
         - python3-bugzilla
         - python3-libvirt
         - python3-pip
-        - targetcli
+        - targetcli-fb
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
   - name: Install pocketlint using pip (Debian/Ubuntu)
