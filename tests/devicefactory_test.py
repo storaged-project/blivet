@@ -896,6 +896,8 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
         self.assertIsNone(factory2.get_container())
 
 
+# we use stratis tools to predict metadata use so we can't simply "mask" the dependencies here
+@unittest.skipUnless(not StratisFilesystemDevice.unavailable_type_dependencies(), "some unsupported device classes required for this test")
 class StratisFactoryTestCase(DeviceFactoryTestCase):
     device_class = StratisFilesystemDevice
     device_type = devicefactory.DEVICE_TYPE_STRATIS
