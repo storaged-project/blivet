@@ -1040,7 +1040,6 @@ def default_namedtuple(name, fields, doc=""):
             field_names.append(field)
     nt = namedtuple(name, field_names)
 
-    # pylint: disable=no-init
     class TheDefaultNamedTuple(nt):
         if doc:
             __doc__ = doc
