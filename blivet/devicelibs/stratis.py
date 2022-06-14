@@ -28,11 +28,11 @@ from gi.repository import GLib, Gio
 
 import json
 import os
-import shutil
 
 from ..errors import StratisError
 from ..size import Size
 from ..static_data import stratis_info
+from ..tasks import availability
 from .. import safe_dbus
 from .. import util
 
@@ -46,17 +46,15 @@ STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
 
 STRATIS_FS_SIZE = Size("1 TiB")
 
-STRATIS_PREDICT_USAGE = "stratis-predict-usage"
-
 
 safe_name_characters = "0-9a-zA-Z._-"
 
 
 def pool_used(pool_name, dev_sizes, encrypted=False):
-    if not shutil.which(STRATIS_PREDICT_USAGE):
-        raise StratisError("Utility for predicting stratis pool usage '%s' not available" % STRATIS_PREDICT_USAGE)
+    if not availability.STRATISPREDICTUSAGE_APP.available:
+        raise StratisError("Utility for predicting stratis pool usage '%s' not available" % availability.STRATISPREDICTUSAGE_APP.name)
 
-    cmd = [STRATIS_PREDICT_USAGE, "pool"]
+    cmd = [availability.STRATISPREDICTUSAGE_APP.name, "pool"]
     for size in dev_sizes:
         cmd.extend(["--device-size", str(size.get_bytes())])
     if encrypted:
@@ -75,10 +73,10 @@ def pool_used(pool_name, dev_sizes, encrypted=False):
 
 
 def filesystem_md_size(fs_size):
-    if not shutil.which(STRATIS_PREDICT_USAGE):
-        raise StratisError("Utility for predicting stratis pool usage '%s' not available" % STRATIS_PREDICT_USAGE)
+    if not availability.STRATISPREDICTUSAGE_APP.available:
+        raise StratisError("Utility for predicting stratis pool usage '%s' not available" % availability.STRATISPREDICTUSAGE_APP.name)
 
-    rc, out = util.run_program_and_capture_output([STRATIS_PREDICT_USAGE, "filesystem",
+    rc, out = util.run_program_and_capture_output([availability.STRATISPREDICTUSAGE_APP.name, "filesystem",
                                                    "--filesystem-size",
                                                    str(fs_size.get_bytes())])
     if rc:
@@ -93,7 +91,7 @@ def filesystem_md_size(fs_size):
 
 
 def remove_pool(pool_uuid):
-    if not safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH):
+    if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
     # repopulate the stratis info cache just to be sure all values are still valid
@@ -118,7 +116,7 @@ def remove_pool(pool_uuid):
 
 
 def remove_filesystem(pool_uuid, fs_uuid):
-    if not safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH):
+    if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
     # repopulate the stratis info cache just to be sure all values are still valid
@@ -175,7 +173,7 @@ def set_key(key_desc, passphrase, key_file):
 
 
 def unlock_pool(pool_uuid):
-    if not safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH):
+    if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
     try:
@@ -192,7 +190,7 @@ def unlock_pool(pool_uuid):
 
 
 def create_pool(name, devices, encrypted, passphrase, key_file):
-    if not safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH):
+    if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
     if encrypted and not (passphrase or key_file):
@@ -228,7 +226,7 @@ def create_pool(name, devices, encrypted, passphrase, key_file):
 
 
 def create_filesystem(name, pool_uuid):
-    if not safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH):
+    if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
     # repopulate the stratis info cache just to be sure all values are still valid
