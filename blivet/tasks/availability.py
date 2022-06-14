@@ -24,6 +24,8 @@ import shutil
 
 from six import add_metaclass
 
+from .. import safe_dbus
+
 import gi
 gi.require_version("BlockDev", "2.0")
 gi.require_version("GLib", "2.0")
@@ -247,6 +249,39 @@ class BlockDevMethod(Method):
                 return []
 
 
+class DBusMethod(Method):
+
+    """ Methods for when application is actually a DBus service. """
+
+    def __init__(self, dbus_name, dbus_path):
+        """ Initializer.
+
+            :param :class:`AppVersionInfo` version_info:
+        """
+        self.dbus_name = dbus_name
+        self.dbus_path = dbus_path
+        self._availability_errors = None
+
+    def availability_errors(self, resource):
+        """ Returns [] if the service is available.
+
+            :param resource: a DBus service
+            :type resource: :class:`ExternalResource`
+
+            :returns: [] if the name of the plugin is loaded
+            :rtype: list of str
+        """
+        try:
+            avail = safe_dbus.check_object_available(self.dbus_name, self.dbus_path)
+        except safe_dbus.DBusCallError:
+            return ["DBus service %s not available" % resource.name]
+        else:
+            if avail:
+                return []
+            else:
+                return ["DBus service %s not available" % resource.name]
+
+
 class _UnavailableMethod(Method):
 
     """ Method that indicates a resource is unavailable. """
@@ -294,6 +329,11 @@ def application_by_version(name, version_method):
 def blockdev_plugin(name, blockdev_method):
     """ Construct an external resource that is a libblockdev plugin. """
     return ExternalResource(blockdev_method, name)
+
+
+def dbus_service(name, dbus_method):
+    """ Construct an external resource that is a DBus service. """
+    return ExternalResource(dbus_method, name)
 
 
 def unavailable_resource(name):
