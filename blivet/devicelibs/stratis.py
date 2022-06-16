@@ -50,7 +50,7 @@ STRATIS_FS_SIZE = Size("1 TiB")
 safe_name_characters = "0-9a-zA-Z._-"
 
 
-def pool_used(pool_name, dev_sizes, encrypted=False):
+def pool_used(dev_sizes, encrypted=False):
     if not availability.STRATISPREDICTUSAGE_APP.available:
         raise StratisError("Utility for predicting stratis pool usage '%s' not available" % availability.STRATISPREDICTUSAGE_APP.name)
 
@@ -62,7 +62,7 @@ def pool_used(pool_name, dev_sizes, encrypted=False):
 
     rc, out = util.run_program_and_capture_output(cmd)
     if rc:
-        raise StratisError("Failed to predict usage for stratis pool %s: %s" % (pool_name, out))
+        raise StratisError("Failed to predict usage for stratis pool")
 
     try:
         pred = json.loads(out)
@@ -225,7 +225,7 @@ def create_pool(name, devices, encrypted, passphrase, key_file):
     stratis_info.drop_cache()
 
 
-def create_filesystem(name, pool_uuid):
+def create_filesystem(name, pool_uuid, fs_size=None):
     if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
@@ -236,7 +236,10 @@ def create_filesystem(name, pool_uuid):
         raise StratisError("Stratis pool with UUID %s not found" % pool_uuid)
 
     pool_info = stratis_info.pools[pool_uuid]
-    size_opt = GLib.Variant("(bs)", (False, ""))
+    if fs_size:
+        size_opt = GLib.Variant("(bs)", (True, str(fs_size.get_bytes())))
+    else:
+        size_opt = GLib.Variant("(bs)", (False, ""))
 
     try:
         ((succ, _paths), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,

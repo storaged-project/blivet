@@ -12,7 +12,7 @@ except ImportError:
 import blivet
 
 from blivet import devicefactory
-from blivet.devicelibs import raid, crypto, stratis
+from blivet.devicelibs import raid, crypto
 from blivet.devices import DiskDevice
 from blivet.devices import DiskFile
 from blivet.devices import LUKSDevice
@@ -913,13 +913,13 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
             :keyword devices: list of factory-managed devices or None
             :type devices: list(:class:`blivet.devices.StorageDevice`) or NoneType
         """
-        return Size("2 MiB")
+        return Size("550 MiB")  # huge stratis pool metadata
 
     def _validate_factory_device(self, *args, **kwargs):
         device = args[0]
 
         self.assertEqual(device.type, "stratis filesystem")
-        self.assertEqual(device.size, stratis.STRATIS_FS_SIZE)
+        self.assertLessEqual(device.size, kwargs.get("size"))
         self.assertTrue(hasattr(device, "pool"))
         self.assertIsNotNone(device.pool)
         self.assertEqual(device.pool.type, "stratis pool")
@@ -937,10 +937,9 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
                                    kwargs.get("container_size"),
                                    delta=self._get_size_delta())
         else:
-            # if container size is not specified, we'll use all available space (not counting size taken by partitions)
             self.assertAlmostEqual(device.pool.size,
-                                   sum(d.size - Size("2 MiB") for d in self.b.disks),
-                                   delta=self._get_size_delta())
+                                   device.size,
+                                   delta=Size("600 MiB"))
 
         self.assertEqual(device.pool.encrypted, kwargs.get("container_encrypted", False))
 
@@ -951,7 +950,8 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
     def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         device_type = self.device_type
         kwargs = {"disks": self.b.disks,
-                  "mountpoint": "/factorytest"}
+                  "mountpoint": "/factorytest",
+                  "size": Size("2.5 GiB")}
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
@@ -966,10 +966,21 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
+        # resize the device
+        kwargs["size"] = Size("4 GiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # resize the device down
+        kwargs["size"] = Size("3 GiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
         # change container size
         kwargs = {"disks": self.b.disks,
                   "mountpoint": "/factorytest",
-                  "container_size": Size("5 GiB")}
+                  "container_size": Size("5 GiB"),
+                  "size": Size("2.5 GiB")}
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 
@@ -986,8 +997,7 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
     @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.stratis.StratisPoolDevice.type_external_dependencies", return_value=set())
     def test_normalize_size(self, *args):  # pylint: disable=unused-argument
-        # size normalization doesn't make sense for stratis -- filesystems are always 1 TiB
-        pass
+        super(StratisFactoryTestCase, self).test_normalize_size()
 
     @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.stratis.StratisPoolDevice.type_external_dependencies", return_value=set())

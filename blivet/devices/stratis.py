@@ -85,6 +85,11 @@ class StratisPoolDevice(StorageDevice):
             return self.size
 
     @property
+    def _pool_metadata_size(self):
+        return devicelibs.stratis.pool_used([bd.size for bd in self.blockdevs],
+                                            self.encrypted)
+
+    @property
     def _physical_used(self):
         physical_used = Size(0)
 
@@ -92,9 +97,8 @@ class StratisPoolDevice(StorageDevice):
         for filesystem in self.filesystems:
             physical_used += filesystem.used_size
 
-        physical_used += devicelibs.stratis.pool_used(self.name,
-                                                      [bd.size for bd in self.blockdevs],
-                                                      self.encrypted)
+        # pool metadata
+        physical_used += self._pool_metadata_size
 
         return physical_used
 
@@ -191,11 +195,9 @@ class StratisFilesystemDevice(StorageDevice):
     _packages = ["stratisd", "stratis-cli"]
     _dev_dir = "/dev/stratis"
     _external_dependencies = [availability.STRATISPREDICTUSAGE_APP, availability.STRATIS_DBUS]
+    _min_size = Size("512 MiB")
 
     def __init__(self, *args, **kwargs):
-        if kwargs.get("size") is None and not kwargs.get("exists"):
-            kwargs["size"] = devicelibs.stratis.STRATIS_FS_SIZE
-
         super(StratisFilesystemDevice, self).__init__(*args, **kwargs)
 
         if not self.exists and self.pool.free_space <= Size(0):
@@ -232,10 +234,24 @@ class StratisFilesystemDevice(StorageDevice):
                 raise DeviceError("Failed to get information about filesystem %s" % self.name)
             return fs_info.used_size
 
+    def _set_size(self, newsize):
+        log_method_call(self, self.name,
+                        status=self.status, size=self._size, newsize=newsize)
+        if not isinstance(newsize, Size):
+            raise ValueError("new size must of type Size")
+
+        if not self.exists:
+            md_size = devicelibs.stratis.filesystem_md_size(newsize)
+            if md_size > self.pool.free_space:
+                raise DeviceError("not enough free space in pool")
+
+        super(StratisFilesystemDevice, self)._set_size(newsize)
+
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        devicelibs.stratis.create_filesystem(self.fsname, self.pool.uuid)
+        devicelibs.stratis.create_filesystem(name=self.fsname, pool_uuid=self.pool.uuid,
+                                             fs_size=self.size)
 
     def _post_create(self):
         super(StratisFilesystemDevice, self)._post_create()
