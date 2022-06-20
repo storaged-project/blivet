@@ -30,9 +30,10 @@ from ..devicelibs.stratis import STRATIS_SERVICE, STRATIS_PATH
 import gi
 gi.require_version("BlockDev", "2.0")
 gi.require_version("GLib", "2.0")
+gi.require_version("Gio", "2.0")
 
 from gi.repository import BlockDev as blockdev
-from gi.repository import GLib
+from gi.repository import GLib, Gio
 
 import logging
 log = logging.getLogger("blivet")
@@ -273,6 +274,7 @@ class DBusMethod(Method):
             :rtype: list of str
         """
         try:
+            avail = blockdev.utils.dbus_service_available(None, Gio.BusType.SYSTEM, self.dbus_name, self.dbus_path)
             avail = safe_dbus.check_object_available(self.dbus_name, self.dbus_path)
         except safe_dbus.DBusCallError:
             return ["DBus service %s not available" % resource.name]
