@@ -26,6 +26,7 @@ import re
 import subprocess
 import logging
 import pyudev
+import time
 
 from . import util
 from .size import Size
@@ -41,6 +42,29 @@ log = logging.getLogger("blivet")
 
 ignored_device_names = []
 """ device name regexes to ignore; this should be empty by default """
+
+
+def running_in_chroot():
+    """ Mimic running_in_chroot() logic from systemd.
+        Simplifications:
+            - can't be running as PID 1, so skip the checks
+            - don't have statfs() call, so can't check for fake /proc
+
+        :returns: True if we detect a chroot environment, False otherwise
+        :rtype: bool
+    """
+    try:
+        # compare inode # for "/" in init with inode # for "/" here
+        # if inode numbers are different - we're in chroot
+        pid1_root_stat = os.stat("/proc/1/root", follow_symlinks=True)
+        my_root_stat = os.stat("/")
+        return pid1_root_stat.st_ino != my_root_stat.st_ino
+    except FileNotFoundError:
+        # "/proc/1/root" does not exist; default to not chroot
+        return False
+    except PermissionError:
+        # not superuser enough; default to not chroot
+        return False
 
 
 def device_to_dict(device):
@@ -93,7 +117,12 @@ def settle(quiet=False):
     # mdadm etc. This large timeout is needed when running on machines with
     # lots of disks, or with slow disks
     argv = ["udevadm", "settle", "--timeout=300"]
-    if quiet:
+    if running_in_chroot():
+        # Force delay if running in chroot (e.g. mock).
+        # 1s should be enough for chroot to settle.
+        # The delay must not be big, as settle() is called from many places.
+        time.sleep(1)
+    elif quiet:
         subprocess.call(argv, close_fds=True)
     else:
         util.run_program(argv)
