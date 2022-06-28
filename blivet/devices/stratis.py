@@ -197,11 +197,12 @@ class StratisFilesystemDevice(StorageDevice):
     _external_dependencies = [availability.STRATISPREDICTUSAGE_APP, availability.STRATIS_DBUS]
     _min_size = Size("512 MiB")
 
-    def __init__(self, *args, **kwargs):
-        super(StratisFilesystemDevice, self).__init__(*args, **kwargs)
-
-        if not self.exists and self.pool.free_space <= Size(0):
+    def __init__(self, name, parents=None, size=None, uuid=None, exists=False):
+        if not exists and parents[0].free_space <= devicelibs.stratis.filesystem_md_size(size):
             raise StratisError("cannot create new stratis filesystem, not enough free space in the pool")
+
+        super(StratisFilesystemDevice, self).__init__(name=name, size=size, uuid=uuid,
+                                                      parents=parents, exists=exists)
 
     def _get_name(self):
         """ This device's name. """
