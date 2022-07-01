@@ -29,6 +29,7 @@ from ..static_data import stratis_info
 from ..storage_log import log_method_call
 from ..errors import DeviceError, StratisError
 from ..size import Size
+from ..tasks import availability
 from .. import devicelibs
 
 
@@ -40,6 +41,7 @@ class StratisPoolDevice(StorageDevice):
     _packages = ["stratisd", "stratis-cli"]
     _dev_dir = "/dev/stratis"
     _format_immutable = True
+    _external_dependencies = [availability.STRATISPREDICTUSAGE_APP, availability.STRATIS_DBUS]
 
     def __init__(self, *args, **kwargs):
         """
@@ -83,6 +85,11 @@ class StratisPoolDevice(StorageDevice):
             return self.size
 
     @property
+    def _pool_metadata_size(self):
+        return devicelibs.stratis.pool_used([bd.size for bd in self.blockdevs],
+                                            self.encrypted)
+
+    @property
     def _physical_used(self):
         physical_used = Size(0)
 
@@ -90,23 +97,8 @@ class StratisPoolDevice(StorageDevice):
         for filesystem in self.filesystems:
             physical_used += filesystem.used_size
 
-        if self.exists:
-            # pool metadata using stratis-predict-usage which will give us used size
-            # for an empty pool with blockdevs we are using, i.e. metadata size for this pool
-            physical_used += devicelibs.stratis.pool_used(self.name,
-                                                          [bd.path for bd in self.blockdevs],
-                                                          self.encrypted)
-        else:
-            for bd in self.blockdevs:
-                if bd.exists:
-                    # for existing blockdevs we can also use the stratis-predict-usage tool
-                    physical_used += devicelibs.stratis.pool_used(self.name,
-                                                                  [bd.path],
-                                                                  self.encrypted)
-                else:
-                    physical_used += devicelibs.stratis.STRATIS_BD_MD_SIZE
-                    if self.encrypted:
-                        physical_used += devicelibs.stratis.STRATIS_BD_ENC_MD_SIZE
+        # pool metadata
+        physical_used += self._pool_metadata_size
 
         return physical_used
 
@@ -202,15 +194,15 @@ class StratisFilesystemDevice(StorageDevice):
     _resizable = False
     _packages = ["stratisd", "stratis-cli"]
     _dev_dir = "/dev/stratis"
+    _external_dependencies = [availability.STRATISPREDICTUSAGE_APP, availability.STRATIS_DBUS]
+    _min_size = Size("512 MiB")
 
-    def __init__(self, *args, **kwargs):
-        if kwargs.get("size") is None and not kwargs.get("exists"):
-            kwargs["size"] = devicelibs.stratis.STRATIS_FS_SIZE
-
-        super(StratisFilesystemDevice, self).__init__(*args, **kwargs)
-
-        if not self.exists and self.pool.free_space <= Size(0):
+    def __init__(self, name, parents=None, size=None, uuid=None, exists=False):
+        if not exists and parents[0].free_space <= devicelibs.stratis.filesystem_md_size(size):
             raise StratisError("cannot create new stratis filesystem, not enough free space in the pool")
+
+        super(StratisFilesystemDevice, self).__init__(name=name, size=size, uuid=uuid,
+                                                      parents=parents, exists=exists)
 
     def _get_name(self):
         """ This device's name. """
@@ -236,17 +228,31 @@ class StratisFilesystemDevice(StorageDevice):
     def used_size(self):
         """ Size used by this filesystem in the pool """
         if not self.exists:
-            return devicelibs.stratis.STRATIS_FS_MD_SIZE
+            return devicelibs.stratis.filesystem_md_size(self.size)
         else:
             fs_info = stratis_info.get_filesystem_info(self.pool.name, self.fsname)
             if not fs_info:
                 raise DeviceError("Failed to get information about filesystem %s" % self.name)
             return fs_info.used_size
 
+    def _set_size(self, newsize):
+        log_method_call(self, self.name,
+                        status=self.status, size=self._size, newsize=newsize)
+        if not isinstance(newsize, Size):
+            raise ValueError("new size must of type Size")
+
+        if not self.exists:
+            md_size = devicelibs.stratis.filesystem_md_size(newsize)
+            if md_size > self.pool.free_space:
+                raise DeviceError("not enough free space in pool")
+
+        super(StratisFilesystemDevice, self)._set_size(newsize)
+
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        devicelibs.stratis.create_filesystem(self.fsname, self.pool.uuid)
+        devicelibs.stratis.create_filesystem(name=self.fsname, pool_uuid=self.pool.uuid,
+                                             fs_size=self.size)
 
     def _post_create(self):
         super(StratisFilesystemDevice, self)._post_create()

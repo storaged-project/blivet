@@ -31,7 +31,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |v|
     v.memory = "2048"
     v.cpus = os_cpu_cores
-    v.volume_cache = :unsafe
+    v.disk_driver :cache => "unsafe"
   end
 
   config.vm.define "bl-f36", primary: true, autostart: true do |f36|
@@ -52,21 +52,31 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  config.vm.define "bl-c8", primary: false, autostart: false do |c8|
-    c8.vm.box = "centos/8"
+  config.vm.define "bl-c8s", primary: false, autostart: false do |c8s|
+    c8s.vm.box = "generic/centos8s"
 
     # install all test dependencies using ansible
-    c8.vm.provision "ansible" do |ansible|
+    c8s.vm.provision "ansible" do |ansible|
       ansible.playbook = "install-test-dependencies.yml"
       ansible.extra_vars = { ansible_python_interpreter:"/usr/libexec/platform-python" }
     end
   end
 
-  config.vm.define "bl-u2004", primary: false, autostart: false do |u2004|
-    u2004.vm.box = "generic/ubuntu2004"
+  config.vm.define "bl-c9s", primary: false, autostart: false do |c9s|
+    c9s.vm.box = "generic/centos9s"
 
     # install all test dependencies using ansible
-    u2004.vm.provision "ansible" do |ansible|
+    c9s.vm.provision "ansible" do |ansible|
+      ansible.playbook = "install-test-dependencies.yml"
+      ansible.extra_vars = { ansible_python_interpreter:"/usr/libexec/platform-python" }
+    end
+  end
+
+  config.vm.define "bl-u2204", primary: false, autostart: false do |u2204|
+    u2204.vm.box = "generic/ubuntu2204"
+
+    # install all test dependencies using ansible
+    u2204.vm.provision "ansible" do |ansible|
       ansible.playbook = "install-test-dependencies.yml"
       ansible.extra_vars = { ansible_python_interpreter:"/usr/bin/python3" }
     end

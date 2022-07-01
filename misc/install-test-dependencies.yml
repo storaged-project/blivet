@@ -57,41 +57,44 @@
         - targetcli
     when: ansible_distribution == 'Fedora'
 
-####### CentOS 8
-  - name: Install basic build tools (CentOS 8)
+####### CentOS 8/9
+  - name: Install basic build tools (CentOS)
     package: name=make state=present
-    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+    when: ansible_distribution == 'CentOS'
 
-  - name: Enable EPEL repository (CentOS 8)
+  - name: Enable EPEL repository (CentOS)
     package: name=epel-release state=present
-    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+    when: ansible_distribution == 'CentOS'
 
   - name: Enable powertools repository (CentOS 8)
     command: yum config-manager --set-enabled powertools
     when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
 
-  - name: Install dnf-plugins-core for dnf builddep (CentOS 8)
-    package: name=dnf-plugins-core state=present
-    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+  - name: Enable CRB repository (CentOS 9)
+    command: yum config-manager --set-enabled crb
+    when: ansible_distribution == 'CentOS'  and ansible_distribution_major_version == '9'
 
-  - name: Install build dependencies (CentOS 8)
+  - name: Install dnf-plugins-core for dnf builddep (CentOS)
+    package: name=dnf-plugins-core state=present
+    when: ansible_distribution == 'CentOS'
+
+  - name: Install build dependencies (CentOS)
     command: "dnf -y builddep python3-blivet --nogpgcheck"
     args:
       warn: false
-    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+    when: ansible_distribution == 'CentOS'
 
-  - name: Install blivet to get all dependencies (CentOS 8)
+  - name: Install blivet to get all dependencies (CentOS)
     package: name=python3-blivet state=present
-    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+    when: ansible_distribution == 'CentOS'
 
-  - name: Install test dependencies (CentOS 8)
+  - name: Install test dependencies (CentOS)
     package:
       state: present
       name:
         - dosfstools
         - e2fsprogs
         - xfsprogs
-        - python3-mock
         - python3-coverage
         - python3-bugzilla
         - python3-pycodestyle
@@ -103,14 +106,17 @@
         - python3-blockdev
         - python3-bytesize
         - python3-libvirt
-        - python3-paramiko
         - python3-pip
         - targetcli
     when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
 
-  - name: Install pocketlint using pip (CentOS 8)
+  - name: Install paramiko using pip (not available in EPEL yet) (CentOS 9)
+    pip: name=paramiko executable=pip3
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '9'
+
+  - name: Install pocketlint using pip (CentOS)
     pip: name=pocketlint executable=pip3
-    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+    when: ansible_distribution == 'CentOS'
 
 ####### Debian/Ubuntu
   - name: Update apt cache (Debian/Ubuntu)

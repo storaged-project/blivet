@@ -35,6 +35,7 @@ from .devicelibs import mdraid
 from .devicelibs import lvm
 from .devicelibs import raid
 from .devicelibs import crypto
+from .devicelibs import stratis
 from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import do_partitioning
@@ -2050,11 +2051,6 @@ class StratisFactory(DeviceFactory):
     child_factory_fstype = "stratis"
     size_set_class = TotalSizeSet
 
-    def __init__(self, storage, **kwargs):
-        # override default size policy, AUTO doesn't make sense for Stratis
-        self._default_settings["container_size"] = SIZE_POLICY_MAX
-        super(StratisFactory, self).__init__(storage, **kwargs)
-
     @property
     def pool(self):
         return self.container
@@ -2080,11 +2076,23 @@ class StratisFactory(DeviceFactory):
             This is used for the size argument to the child factory constructor
             and also to construct the size set in PartitionSetFactory.configure.
         """
+        space = Size(0)
 
         if self.container_size == SIZE_POLICY_AUTO:
-            raise DeviceFactoryError("Automatic size is not support for Stratis pools")
+            # automatic container size management
+            if self.pool:
+                space += sum(p.size for p in self.pool.parents)
+                space -= (self.pool.size - sum(fs.size for fs in self.pool.children))
+            else:
+                # we need to account for the stratis metadata
+                space += stratis.pool_used([d.size for d in self.disks], self.encrypted)
+
+            space += self._get_device_space()
+            log.debug("size bumped to %s to include new device space", space)
+            if self.device:
+                space -= self.device.size
+                log.debug("size cut to %s to omit old device space", space)
         elif self.container_size == SIZE_POLICY_MAX:
-            space = Size(0)
             # grow the container as large as possible
             if self.pool:
                 space += sum(p.size for p in self.pool.parents)
@@ -2092,16 +2100,57 @@ class StratisFactory(DeviceFactory):
 
             space += self._get_free_disk_space()
             log.debug("size bumped to %s to include free disk space", space)
-
-            return space
         else:
-            return self.container_size
+            # fixed container size
+            space += self.container_size
 
-    def _normalize_size(self):
-        pass
+        return space
 
     def _handle_no_size(self):
         """ Set device size so that it grows to the largest size possible. """
+        if self.size is not None:
+            return
+
+        if self.container and (self.container.exists or
+                               self.container_size != SIZE_POLICY_AUTO):
+            self.size = self.container.free_space  # pylint: disable=attribute-defined-outside-init
+
+            if self.container_size == SIZE_POLICY_MAX:
+                self.size += self._get_free_disk_space()
+
+            if self.device:
+                self.size += self.device.size
+
+            if self.size == Size(0):
+                raise DeviceFactoryError("not enough free space for new device")
+        else:
+            super(StratisFactory, self)._handle_no_size()
+
+    def _get_device_size(self):
+        """ Return the factory device size including container limitations. """
+        size = self.size
+        free = self.pool.free_space
+        if self.device:
+            free += self.device.size
+
+        if free < size:
+            log.info("adjusting size from %s to %s so it fits "
+                     "in container %s", size, free, self.pool.name)
+            size = free
+
+        return size
+
+    def _set_device_size(self):
+        """ Set the size of the factory device. """
+        size = self._get_device_size()
+
+        # self.raw_device == self.device.raw_device
+        # (i.e. self.device or the backing device in case self.device is encrypted)
+        if self.device and size != self.device.size:
+            log.info("adjusting device size from %s to %s",
+                     self.device.size, size)
+            self.device.size = size
+            self.device.req_grow = False
 
     def _get_new_container(self, *args, **kwargs):
         if self.container_encrypted:
@@ -2120,11 +2169,18 @@ class StratisFactory(DeviceFactory):
         else:
             kwa = {}
 
+        # this gets us a size value that takes into account the actual size of
+        # the container
+        size = self._get_device_size()
+        if size <= Size(0):
+            raise DeviceFactoryError("not enough free space for new device")
+
         parents = self._get_parent_devices()
         try:
             # pylint: disable=assignment-from-no-return
             device = self._get_new_device(parents=parents,
                                           mountpoint=self.mountpoint,
+                                          size=size,
                                           **kwa)
         except (StorageError, ValueError) as e:
             log.error("device instance creation failed: %s", e)
