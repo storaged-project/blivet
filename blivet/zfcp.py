@@ -21,7 +21,7 @@
 
 import os
 import re
-from abc import ABC
+from abc import ABC, abstractmethod
 import glob
 from . import udev
 from . import util
@@ -160,13 +160,12 @@ class ZFCPDeviceBase(ABC):
                                "offline (%(e)s).")
                              % {'devnum': self.devnum, 'e': e})
 
-    def _is_associated_with_fcp(self, fcphbasysfs, _fcpwwpnsysfs, _fcplunsysfs):
-        """Decide if the provided FCP addressing corresponds to the zFCP device.
+    @abstractmethod
+    def _is_associated_with_fcp(self, fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
+        """Decide if the provided FCP addressing corresponds to the path stored in the zFCP device.
 
         :returns: True or False
         """
-
-        return fcphbasysfs == self.devnum
 
     def online_device(self):
         """Initialize the device and make its storage block device(s) ready to use.
@@ -431,6 +430,14 @@ class ZFCPDeviceAutoLunScan(ZFCPDeviceBase):
         self._set_zfcp_device_offline()
 
         return True
+
+    def _is_associated_with_fcp(self, fcphbasysfs, _fcpwwpnsysfs, _fcplunsysfs):
+        """Decide if the provided FCP addressing corresponds to the zFCP device.
+
+        :returns: True or False
+        """
+
+        return fcphbasysfs == self.devnum
 
 
 class zFCP:
