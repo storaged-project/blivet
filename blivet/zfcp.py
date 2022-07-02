@@ -77,7 +77,7 @@ def _is_port_in_npiv_mode(device_id):
     return port_in_npiv_mode
 
 
-def is_npiv_enabled(device_id):
+def has_auto_lun_scan(device_id):
     """Return True if the given zFCP device ID is configured in NPIV (N_Port ID Virtualization)
     mode and zFCP auto LUN scan is not disabled.
 
@@ -160,7 +160,7 @@ class ZFCPDeviceBase(ABC):
                                "offline (%(e)s).")
                              % {'devnum': self.devnum, 'e': e})
 
-    def _is_scsi_associated_with_fcp(self, fcphbasysfs, _fcpwwpnsysfs, _fcplunsysfs):
+    def _is_associated_with_fcp(self, fcphbasysfs, _fcpwwpnsysfs, _fcplunsysfs):
         """Decide if the provided FCP addressing corresponds to the zFCP device.
 
         :returns: True or False
@@ -196,7 +196,7 @@ class ZFCPDeviceBase(ABC):
             with open(os.path.join(fcpsysfs, "fcp_lun")) as f:
                 fcplunsysfs = f.readline().strip()
 
-            if self._is_scsi_associated_with_fcp(fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
+            if self._is_associated_with_fcp(fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
                 scsi_device_found = True
                 scsidel = os.path.join(scsidevsysfs, scsidev, "delete")
                 logged_write_line_to_file(scsidel, "1")
@@ -226,7 +226,7 @@ class ZFCPDevice(ZFCPDeviceBase):
     def _to_string(self):
         return "{} {} {}".format(self.devnum, self.wwpn, self.fcplun)
 
-    def _is_scsi_associated_with_fcp(self, fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
+    def _is_associated_with_fcp(self, fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
         """Decide if the provided FCP addressing corresponds to the path stored in the zFCP device.
 
         :returns: True or False
@@ -254,7 +254,7 @@ class ZFCPDevice(ZFCPDeviceBase):
         # Activating using devnum, WWPN, and LUN despite available zFCP auto LUN scan should still
         # be possible as this method was used as a workaround until the support for zFCP auto LUN
         # scan devices has been implemented. Just log a warning message and continue.
-        if is_npiv_enabled(self.devnum):
+        if has_auto_lun_scan(self.devnum):
             log.warning("zFCP device %s in NPIV mode brought online. All LUNs will be activated "
                         "automatically although WWPN and LUN have been provided.", self.devnum)
 
@@ -395,7 +395,7 @@ class ZFCPDevice(ZFCPDeviceBase):
         return True
 
 
-class ZFCPNPIVDevice(ZFCPDeviceBase):
+class ZFCPDeviceAutoLunScan(ZFCPDeviceBase):
     """Class for zFCP devices configured in NPIV mode and zFCP auto LUN scan not disabled. Only
     a zFCP device number is needed for such devices.
     """
@@ -409,7 +409,7 @@ class ZFCPNPIVDevice(ZFCPDeviceBase):
 
         super().online_device()
 
-        if not is_npiv_enabled(self.devnum):
+        if not has_auto_lun_scan(self.devnum):
             raise ValueError(_("zFCP device %s cannot use auto LUN scan.") % self)
 
         return True
@@ -503,7 +503,7 @@ class zFCP:
         if wwpn and fcplun:
             d = ZFCPDevice(devnum, wwpn, fcplun)
         else:
-            d = ZFCPNPIVDevice(devnum)
+            d = ZFCPDeviceAutoLunScan(devnum)
 
         if d.online_device():
             self.fcpdevs.add(d)
