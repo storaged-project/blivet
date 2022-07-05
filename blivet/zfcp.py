@@ -205,7 +205,7 @@ class ZFCPDeviceBase(ABC):
             log.warning("No scsi device found to delete for zfcp %s", self)
 
 
-class ZFCPDevice(ZFCPDeviceBase):
+class ZFCPDeviceFullPath(ZFCPDeviceBase):
     """A class for zFCP devices where zFCP auto LUN scan is not available. Such
     devices have to be specified by a device number, WWPN and LUN.
     """
@@ -394,6 +394,12 @@ class ZFCPDevice(ZFCPDeviceBase):
         return True
 
 
+class ZFCPDevice(ZFCPDeviceFullPath):
+    """Class derived from ZFCPDeviceFullPath to reserve backward compatibility for applications
+    using the ZFCPDevice class. ZFCPDeviceFullPath should be used instead in new code.
+    """
+
+
 class ZFCPDeviceAutoLunScan(ZFCPDeviceBase):
     """Class for zFCP devices configured in NPIV mode and zFCP auto LUN scan not disabled. Only
     a zFCP device number is needed for such devices.
@@ -508,7 +514,7 @@ class zFCP:
 
     def add_fcp(self, devnum, wwpn=None, fcplun=None):
         if wwpn and fcplun:
-            d = ZFCPDevice(devnum, wwpn, fcplun)
+            d = ZFCPDeviceFullPath(devnum, wwpn, fcplun)
         else:
             d = ZFCPDeviceAutoLunScan(devnum)
 
