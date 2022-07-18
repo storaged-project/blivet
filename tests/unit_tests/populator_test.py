@@ -568,9 +568,17 @@ class NVDIMMNamespaceDevicePopulatorTestCase(PopulatorHelperTestCase):
         nvdimm_data = Mock(mode=blockdev.NVDIMMNamespaceMode.SECTOR, devname='dummy',
                            uuid='test-uuid', sector_size=512)
 
-        with patch("blivet.static_data.nvdimm.get_namespace_info", return_value=nvdimm_data):
-            with patch("blivet.populator.helpers.disk.blockdev.nvdimm_namespace_get_mode_str", return_value="sector"):
-                device = helper.run()
+        try:
+            patcher = patch("blivet.static_data.nvdimm.get_namespace_info", return_value=nvdimm_data)
+            patcher.start()
+        except AttributeError:
+            patcher = patch("blivet.static_data.nvdimm.nvdimm.get_namespace_info", return_value=nvdimm_data)
+            patcher.start()
+
+        with patch("blivet.populator.helpers.disk.blockdev.nvdimm_namespace_get_mode_str", return_value="sector"):
+            device = helper.run()
+
+        patcher.stop()
 
         self.assertIsInstance(device, NVDIMMNamespaceDevice)
         self.assertTrue(device.exists)

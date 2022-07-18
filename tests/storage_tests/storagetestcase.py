@@ -175,6 +175,8 @@ def delete_lio_device(dev_path):
 @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
 class StorageTestCase(unittest.TestCase):
 
+    _disk_size = 2 * 1024**3
+
     def setUp(self):
         self.addCleanup(self._clean_up)
 
@@ -182,7 +184,7 @@ class StorageTestCase(unittest.TestCase):
         self._dev_files = []
 
         for _ in range(2):
-            dev_file = create_sparse_tempfile("blivet_test", 500 * 1024**2)
+            dev_file = create_sparse_tempfile("blivet_test", self._disk_size)
             self._dev_files.append(dev_file)
             try:
                 dev = create_lio_device(dev_file)
