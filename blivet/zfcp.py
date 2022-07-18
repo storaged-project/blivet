@@ -21,7 +21,7 @@
 
 import os
 import re
-from abc import ABC
+from abc import ABC, abstractmethod
 import glob
 from . import udev
 from . import util
@@ -77,14 +77,14 @@ def _is_port_in_npiv_mode(device_id):
     return port_in_npiv_mode
 
 
-def is_npiv_enabled(device_id):
-    """Return True if the given zFCP device ID is configured and usable in
-    NPIV (N_Port ID Virtualization) mode.
+def has_auto_lun_scan(device_id):
+    """Return True if the given zFCP device ID is configured in NPIV (N_Port ID Virtualization)
+    mode and zFCP auto LUN scan is not disabled.
 
     :returns: True or False
     """
 
-    # LUN scanning disabled by the kernel module prevents using the device in NPIV mode
+    # LUN scanning disabled by the kernel module prevents using zFCP auto LUN scan
     if not _is_lun_scan_allowed():
         log.warning("Automatic LUN scanning is disabled by the zfcp kernel module.")
         return False
@@ -160,14 +160,12 @@ class ZFCPDeviceBase(ABC):
                                "offline (%(e)s).")
                              % {'devnum': self.devnum, 'e': e})
 
-    def _is_scsi_associated_with_fcp(self, fcphbasysfs, _fcpwwpnsysfs, _fcplunsysfs):
-        """Decide if the SCSI device with the provided SCSI attributes
-        corresponds to the zFCP device.
+    @abstractmethod
+    def _is_associated_with_fcp(self, fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
+        """Decide if the provided FCP addressing corresponds to the path stored in the zFCP device.
 
         :returns: True or False
         """
-
-        return fcphbasysfs == self.devnum
 
     def online_device(self):
         """Initialize the device and make its storage block device(s) ready to use.
@@ -197,7 +195,7 @@ class ZFCPDeviceBase(ABC):
             with open(os.path.join(fcpsysfs, "fcp_lun")) as f:
                 fcplunsysfs = f.readline().strip()
 
-            if self._is_scsi_associated_with_fcp(fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
+            if self._is_associated_with_fcp(fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
                 scsi_device_found = True
                 scsidel = os.path.join(scsidevsysfs, scsidev, "delete")
                 logged_write_line_to_file(scsidel, "1")
@@ -207,8 +205,8 @@ class ZFCPDeviceBase(ABC):
             log.warning("No scsi device found to delete for zfcp %s", self)
 
 
-class ZFCPDevice(ZFCPDeviceBase):
-    """A class for zFCP devices that are not configured in NPIV mode. Such
+class ZFCPDeviceFullPath(ZFCPDeviceBase):
+    """A class for zFCP devices where zFCP auto LUN scan is not available. Such
     devices have to be specified by a device number, WWPN and LUN.
     """
 
@@ -227,9 +225,8 @@ class ZFCPDevice(ZFCPDeviceBase):
     def _to_string(self):
         return "{} {} {}".format(self.devnum, self.wwpn, self.fcplun)
 
-    def _is_scsi_associated_with_fcp(self, fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
-        """Decide if the SCSI device with the provided SCSI attributes
-        corresponds to the zFCP device.
+    def _is_associated_with_fcp(self, fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
+        """Decide if the provided FCP addressing corresponds to the path stored in the zFCP device.
 
         :returns: True or False
         """
@@ -253,10 +250,10 @@ class ZFCPDevice(ZFCPDeviceBase):
         unitdir = "%s/%s" % (portdir, self.fcplun)
         failed = "%s/failed" % (unitdir)
 
-        # Activating an NPIV enabled device using devnum, WWPN and LUN should still be possible
-        # as this method was used as a workaround until the support for NPIV enabled devices has
-        # been implemented. Just log a warning message and continue.
-        if is_npiv_enabled(self.devnum):
+        # Activating using devnum, WWPN, and LUN despite available zFCP auto LUN scan should still
+        # be possible as this method was used as a workaround until the support for zFCP auto LUN
+        # scan devices has been implemented. Just log a warning message and continue.
+        if has_auto_lun_scan(self.devnum):
             log.warning("zFCP device %s in NPIV mode brought online. All LUNs will be activated "
                         "automatically although WWPN and LUN have been provided.", self.devnum)
 
@@ -397,9 +394,15 @@ class ZFCPDevice(ZFCPDeviceBase):
         return True
 
 
-class ZFCPNPIVDevice(ZFCPDeviceBase):
-    """Class for zFCP devices configured in NPIV mode. Only a zFCP device number is
-    needed for such devices.
+class ZFCPDevice(ZFCPDeviceFullPath):
+    """Class derived from ZFCPDeviceFullPath to reserve backward compatibility for applications
+    using the ZFCPDevice class. ZFCPDeviceFullPath should be used instead in new code.
+    """
+
+
+class ZFCPDeviceAutoLunScan(ZFCPDeviceBase):
+    """Class for zFCP devices configured in NPIV mode and zFCP auto LUN scan not disabled. Only
+    a zFCP device number is needed for such devices.
     """
 
     def online_device(self):
@@ -411,8 +414,8 @@ class ZFCPNPIVDevice(ZFCPDeviceBase):
 
         super().online_device()
 
-        if not is_npiv_enabled(self.devnum):
-            raise ValueError(_("zFCP device %s cannot be used in NPIV mode.") % self)
+        if not has_auto_lun_scan(self.devnum):
+            raise ValueError(_("zFCP device %s cannot use auto LUN scan.") % self)
 
         return True
 
@@ -433,6 +436,14 @@ class ZFCPNPIVDevice(ZFCPDeviceBase):
         self._set_zfcp_device_offline()
 
         return True
+
+    def _is_associated_with_fcp(self, fcphbasysfs, _fcpwwpnsysfs, _fcplunsysfs):
+        """Decide if the provided FCP addressing corresponds to the zFCP device.
+
+        :returns: True or False
+        """
+
+        return fcphbasysfs == self.devnum
 
 
 class zFCP:
@@ -477,7 +488,7 @@ class zFCP:
 
             fields = line.split()
 
-            # NPIV enabled device
+            # zFCP auto LUN scan available
             if len(fields) == 1:
                 devnum = fields[0]
                 wwpn = None
@@ -503,9 +514,9 @@ class zFCP:
 
     def add_fcp(self, devnum, wwpn=None, fcplun=None):
         if wwpn and fcplun:
-            d = ZFCPDevice(devnum, wwpn, fcplun)
+            d = ZFCPDeviceFullPath(devnum, wwpn, fcplun)
         else:
-            d = ZFCPNPIVDevice(devnum)
+            d = ZFCPDeviceAutoLunScan(devnum)
 
         if d.online_device():
             self.fcpdevs.add(d)

@@ -27,7 +27,8 @@ class BlivetLintConfig(CensorshipConfig):
             FalsePositive(r"Parameters differ from overridden 'do_task' method$"),
             FalsePositive(r"Bad option value '(subprocess-popen-preexec-fn|try-except-raise|environment-modify|arguments-renamed|redundant-u-string-prefix)'"),
             FalsePositive(r"Instance of '(Action.*Device|Action.*Format|Action.*Member|Device|DeviceAction|DeviceFormat|Event|ObjectID|PartitionDevice|StorageDevice|BTRFS.*Device|LoopDevice)' has no 'id' member$"),
-            FalsePositive(r"Instance of 'GError' has no 'message' member")  # overriding currently broken local pylint disable
+            FalsePositive(r"Instance of 'GError' has no 'message' member"),  # overriding currently broken local pylint disable
+            FalsePositive(r"Module '(gi.repository.Gio|gi.repository.GLib)' has no .* member")  # pylint/astroid has issues with GI modules https://github.com/PyCQA/pylint/issues/6352
         ]
 
     def _files(self):
