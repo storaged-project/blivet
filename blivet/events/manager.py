@@ -50,7 +50,7 @@ def validate_cb(cb, kwargs=None, arg_count=None):
     arg_count = arg_count or 0
 
     if six.PY2:
-        argspec = inspect.getargspec(cb)  # pylint: disable=deprecated-method
+        argspec = inspect.getargspec(cb)  # pylint: disable=deprecated-method,no-member
         if argspec.varargs or argspec.keywords:
             return True
         params = argspec.args
