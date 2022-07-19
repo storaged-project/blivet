@@ -43,6 +43,7 @@ from .. import util
 from ..storage_log import log_method_call
 from .. import udev
 from ..size import Size, KiB, MiB, ROUND_UP, ROUND_DOWN
+from ..static_data.lvm_info import lvs_info
 from ..tasks import availability
 
 import logging
@@ -87,6 +88,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
     _format_class_name = property(lambda s: "lvmpv")
     _format_uuid_attr = property(lambda s: "vg_uuid")
     _format_immutable = True
+    _renamable = True
 
     @staticmethod
     def get_supported_pe_sizes():
@@ -202,7 +204,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ Update this device's sysfs path. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         self.sysfs_path = ''
 
@@ -219,13 +221,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # special handling for incomplete VGs
         if not self.complete:
-            try:
-                lvs_info = blockdev.lvm.lvs(vg_name=self.name)
-            except blockdev.LVMError:
-                lvs_info = []
-
-            for lv_info in lvs_info:
-                if lv_info.attr and lv_info.attr[4] == 'a':
+            for lv_info in lvs_info.cache.values():
+                if lv_info.vg_name == self.name and lv_info.attr and lv_info.attr[4] == 'a':
                     return True
 
             return False
@@ -243,7 +240,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
     def _pre_setup(self, orig=False):
         if self.exists and not self.complete:
-            raise errors.DeviceError("cannot activate VG with missing PV(s)", self.name)
+            raise errors.DeviceError("cannot activate VG %s -- some of its PVs are missing" % self.name)
         return StorageDevice._pre_setup(self, orig=orig)
 
     def _teardown(self, recursive=None):
@@ -273,8 +270,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
         log_method_call(self, self.name, status=self.status)
         if not self.complete:
             for pv in self.pvs:
-                # Remove the PVs from the ignore filter so we can wipe them.
-                lvm.lvm_cc_removeFilterRejectRegexp(pv.name)
+                # add PVS to the list of LVM devices so we can wipe them.
+                lvm.lvm_devices_add(pv.path)
 
             # Don't run vgremove or vgreduce since there may be another VG with
             # the same name that we want to keep/use.
@@ -312,7 +309,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # verify we have the space, then add it
         # do not verify for growing vg (because of ks)
         if not lv.exists and not self.growable and not (lv.is_thin_lv or lv.is_vdo_lv) and lv.size > self.free_space:
-            raise errors.DeviceError("new lv is too large to fit in free space", self.name)
+            raise errors.DeviceError("new lv is too large to fit in free space")
 
         log.debug("Adding %s/%s to %s", lv.name, lv.size, self.name)
         self._lvs.append(lv)
@@ -398,6 +395,21 @@ class LVMVolumeGroupDevice(ContainerDevice):
         parent.format.free = None
         parent.format.container_uuid = None
         parent.format.vg_name = None
+
+    def _rename(self, old_name, new_name, dry_run=False):
+        """ Rename this device
+        """
+        if not self.exists:
+            raise ValueError("device has not been created")
+        if old_name == new_name:
+            raise ValueError("device is already named '%s'" % old_name)
+        if not lvm.is_lvm_name_valid(new_name):
+            raise ValueError("'%s' is not a valid name for %s" % (new_name, self.type))
+
+        if not dry_run:
+            blockdev.lvm.vgrename(old_name, new_name)
+            for pv in self.pvs:
+                pv.format.vg_name = new_name
 
     # We can't rely on lvm to tell us about our size, free space, &c
     # since we could have modifications queued, unless the VG and all of
@@ -646,7 +658,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
                  percent=None, cache_request=None, pvs=None, from_lvs=None):
 
         if not exists:
-            if seg_type not in [None, "linear", "thin", "thin-pool", "cache", "vdo-pool", "vdo"] + lvm.raid_seg_types:
+            if seg_type not in [None, "linear", "thin", "thin-pool", "cache", "vdo-pool", "vdo", "cache-pool"] + lvm.raid_seg_types:
                 raise ValueError("Invalid or unsupported segment type: %s" % seg_type)
             if seg_type and seg_type in lvm.raid_seg_types and not pvs:
                 raise errors.DeviceError("List of PVs has to be given for every non-linear LV")
@@ -690,8 +702,8 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             # we reserve space for it
             self._metadata_size = self.vg.pe_size
             self._size -= self._metadata_size
-        elif self.seg_type == "thin-pool":
-            # LVMThinPoolMixin sets self._metadata_size on its own
+        elif self.seg_type in ("thin-pool", "cache_pool"):
+            # LVMThinPoolMixin and LVMCachePoolMixin set self._metadata_size on their own
             if not self.exists and not from_lvs and not grow:
                 # a thin pool we are not going to grow -> lets calculate metadata
                 # size now if not given explicitly
@@ -958,7 +970,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         """ Return the dm-X (eg: dm-0) device node for this device. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         return blockdev.dm.node_from_name(self.map_name)
 
@@ -968,6 +980,17 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             return "%s-%s" % (self.vg.name, self._name)
         else:
             return super(LVMLogicalVolumeBase, self)._get_name()
+
+    def _set_name(self, value):
+        """Set the device's name.
+
+            :param value: the new device name
+        """
+
+        if self.vg and value.startswith("%s-" % self.vg.name):
+            value = value[len(self.vg.name) + 1:]
+
+        super(LVMLogicalVolumeBase, self)._set_name(value)
 
     def check_size(self):
         """ Check to make sure the size of the device is allowed by the
@@ -1047,6 +1070,30 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         """ Run lvchange as needed to ensure the lv is not read-only. """
         lvm.ensure_lv_is_writable(self.vg.name, self.lvname)
 
+    def _rename(self, old_name, new_name, dry_run=False):
+        """ Rename this device
+        """
+        if not self.exists:
+            raise ValueError("device has not been created")
+        if not self.vg:
+            raise ValueError("device is not in a volume group")
+
+        # XXX to make things easier we allow to change "name" which
+        # also contains the VG name, but we need only the LV name
+        # for lvrename
+        if old_name.startswith("%s-" % self.vg.name):
+            old_name = old_name[len(self.vg.name) + 1:]
+        if new_name.startswith("%s-" % self.vg.name):
+            new_name = new_name[len(self.vg.name) + 1:]
+
+        if old_name == new_name:
+            raise ValueError("device is already named '%s'" % old_name)
+        if not lvm.is_lvm_name_valid(self.name):
+            raise ValueError("'%s' is not a valid name for %s" % (new_name, self.type))
+
+        if not dry_run:
+            blockdev.lvm.lvrename(self.vg.name, old_name, new_name)
+
     @property
     def lvname(self):
         """ The LV's name (not including VG name). """
@@ -1111,7 +1158,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             for lv in self._internal_lvs:
                 if lv.int_lv_type == LVMInternalLVtype.cache_pool:
                     if self.seg_type == "cache":
-                        self._cache = LVMCache(self, size=lv.size, exists=True)
+                        self._cache = LVMCache(self, size=lv.size, md_size=lv.metadata_size, exists=True)
                     elif self.seg_type == "writecache":
                         self._cache = LVMWriteCache(self, size=lv.size, exists=True)
 
@@ -1253,7 +1300,7 @@ class LVMInternalLogicalVolumeMixin(object):
 
     def resize(self):
         if self._lv_type is not LVMInternalLVtype.meta:
-            errors.DeviceError("The internal LV %s cannot be resized" % self.lvname)
+            raise errors.DeviceError("The internal LV %s cannot be resized" % self.lvname)
         if ((self._parent_lv and not self._parent_lv.is_thin_pool) or
                 re.search(r'_[rc]meta', self.lvname)):
             raise errors.DeviceError("RAID and cache pool metadata LVs cannot be resized directly")
@@ -1619,7 +1666,6 @@ class LVMThinPoolMixin(object):
         """ A list of this pool's LVs """
         return self._lvs[:]     # we don't want folks changing our list
 
-    @util.requires_property("is_thin_pool")
     def autoset_md_size(self, enforced=False):
         """ If self._metadata_size not set already, it calculates the recommended value
         and sets it while subtracting the size from self.size.
@@ -1637,9 +1683,9 @@ class LVMThinPoolMixin(object):
             return
 
         # we need to know chunk size to calculate recommended metadata size
-        if self._chunk_size == 0:
-            self._chunk_size = Size(blockdev.LVM_DEFAULT_CHUNK_SIZE)
-            log.debug("Using default chunk size: %s", self._chunk_size)
+        if self._chunk_size == 0 or enforced:
+            self._chunk_size = lvm.recommend_thpool_chunk_size(self._size)
+            log.debug("Using recommended chunk size: %s", self._chunk_size)
 
         old_md_size = self._metadata_size
         old_pmspare_size = self.vg.pmspare_size
@@ -2032,13 +2078,176 @@ class LVMVDOLogicalVolumeMixin(object):
             self.pool._add_log_vol(self)
 
 
+class LVMCachePoolMixin(object):
+    def __init__(self, metadata_size, cache_mode=None, attach_to=None):
+        self._metadata_size = metadata_size or Size(0)
+        self._cache_mode = cache_mode
+        self._attach_to = attach_to
+
+    def _init_check(self):
+        if not self.is_cache_pool:
+            return
+
+        if self._metadata_size and not lvm.is_valid_cache_md_size(self._metadata_size):
+            raise ValueError("invalid metadatasize value")
+
+        if not self.exists and not self._pv_specs:
+            raise ValueError("at least one fast PV must be specified to create a cache pool")
+
+        if self._attach_to and not self._attach_to.exists:
+            raise ValueError("cache pool can be attached only to an existing LV")
+
+    def _check_from_lvs(self):
+        if self._from_lvs:
+            if len(self._from_lvs) != 2:
+                raise errors.DeviceError("two LVs required to create a cache pool")
+
+    def _convert_from_lvs(self):
+        data_lv, metadata_lv = self._from_lvs
+
+        data_lv.parent_lv = self  # also adds the LV to self._internal_lvs
+        data_lv.int_lv_type = LVMInternalLVtype.data
+        metadata_lv.parent_lv = self
+        metadata_lv.int_lv_type = LVMInternalLVtype.meta
+
+        self.size = data_lv.size
+
+    @property
+    def is_cache_pool(self):
+        return self.seg_type == "cache-pool"
+
+    @property
+    def profile(self):
+        return self._profile
+
+    @property
+    def type(self):
+        return "lvmcachepool"
+
+    @property
+    def resizable(self):
+        return False
+
+    def read_current_size(self):
+        log_method_call(self, exists=self.exists, path=self.path,
+                        sysfs_path=self.sysfs_path)
+        if self.size != Size(0):
+            return self.size
+
+        if self.exists:
+            # cache pools are not active and don't have th device mapper mapping
+            # so we can't get this from sysfs
+            lv_info = lvs_info.cache.get(self.name)
+            if lv_info is None:
+                log.error("Failed to get size for existing cache pool '%s'", self.name)
+                return Size(0)
+            else:
+                return Size(lv_info.size)
+
+        return Size(0)
+
+    def autoset_md_size(self, enforced=False):
+        """ If self._metadata_size not set already, it calculates the recommended value
+        and sets it while subtracting the size from self.size.
+
+        """
+
+        log.debug("Auto-setting cache pool metadata size")
+
+        if self._size <= Size(0):
+            log.debug("Cache pool size not bigger than 0, just setting metadata size to 0")
+            self._metadata_size = 0
+            return
+
+        old_md_size = self._metadata_size
+        if self._metadata_size == 0 or enforced:
+            self._metadata_size = blockdev.lvm.cache_get_default_md_size(self._size)
+            log.debug("Using recommended metadata size: %s", self._metadata_size)
+
+        self._metadata_size = self.vg.align(self._metadata_size, roundup=True)
+        log.debug("Rounded metadata size to extents: %s MiB", self._metadata_size.convert_to("MiB"))
+
+        if self._metadata_size == old_md_size:
+            log.debug("Rounded metadata size unchanged")
+        else:
+            new_size = self.size - (self._metadata_size - old_md_size)
+            log.debug("Adjusting size from %s MiB to %s MiB",
+                      self.size.convert_to("MiB"), new_size.convert_to("MiB"))
+            self.size = new_size
+
+    def _pre_create(self):
+        # make sure all the LVs this LV should be created from exist (if any)
+        if self._from_lvs and any(not lv.exists for lv in self._from_lvs):
+            raise errors.DeviceError("Component LVs need to be created first")
+
+    def _create(self):
+        """ Create the device. """
+        log_method_call(self, self.name, status=self.status)
+        if self._cache_mode:
+            try:
+                cache_mode = blockdev.lvm.cache_get_mode_from_str(self._cache_mode)
+            except blockdev.LVMError as e:
+                raise errors.DeviceError from e
+        else:
+            cache_mode = lvm.LVM_CACHE_DEFAULT_MODE
+
+        if self._from_lvs:
+            extra = dict()
+            if self.mode:
+                # we need the string here, it will be passed directly to he lvm command
+                extra["cachemode"] = self._cache_mode
+            data_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.data)
+            meta_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.meta)
+            blockdev.lvm.cache_pool_convert(self.vg.name, data_lv.lvname, meta_lv.lvname, self.lvname, **extra)
+        else:
+            blockdev.lvm.cache_create_pool(self.vg.name, self.lvname, self.size,
+                                           self.metadata_size,
+                                           cache_mode,
+                                           0,
+                                           [spec.pv.path for spec in self._pv_specs])
+        if self._attach_to:
+            self._attach_to.attach_cache(self)
+
+    def _post_create(self):
+        if self._attach_to:
+            # post_create tries to activate the LV and after attaching it no longer exists
+            return
+
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeBase, self)._post_create()
+
+    def add_hook(self, new=True):
+        if self._attach_to:
+            self._attach_to._cache = LVMCache(self._attach_to, size=self.size, exists=False,
+                                              pvs=self._pv_specs, mode=self._cache_mode)
+
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeBase, self).add_hook(new=new)
+
+    def remove_hook(self, modparent=True):
+        if self._attach_to:
+            self._attach_to._cache = None
+
+        # pylint: disable=bad-super-call
+        super(LVMLogicalVolumeBase, self).remove_hook(modparent=modparent)
+
+    def dracut_setup_args(self):
+        return set()
+
+    @property
+    def direct(self):
+        """ Is this device directly accessible? """
+        return False
+
+
 class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin, LVMSnapshotMixin,
                              LVMThinPoolMixin, LVMThinLogicalVolumeMixin, LVMVDOPoolMixin,
-                             LVMVDOLogicalVolumeMixin):
+                             LVMVDOLogicalVolumeMixin, LVMCachePoolMixin):
     """ An LVM Logical Volume """
 
     # generally resizable, see :property:`resizable` for details
     _resizable = True
+    _renamable = True
 
     def __init__(self, name, parents=None, size=None, uuid=None, seg_type=None,
                  fmt=None, exists=False, sysfs_path='', grow=None, maxsize=None,
@@ -2046,7 +2255,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
                  parent_lv=None, int_type=None, origin=None, vorigin=False,
                  metadata_size=None, chunk_size=None, profile=None, from_lvs=None,
                  compression=False, deduplication=False, index_memory=0,
-                 write_policy=None):
+                 write_policy=None, cache_mode=None, attach_to=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -2116,6 +2325,16 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             :keyword write_policy: write policy for the volume or None for default
             :type write_policy: str
 
+            For cache pools only:
+
+            :keyword metadata_size: the size of the metadata LV
+            :type metadata_size: :class:`~.size.Size`
+            :keyword cache_mode: mode for the cache or None for default (writethrough)
+            :type cache_mode: str
+            :keyword attach_to: for non-existing cache pools a logical volume the pool should
+                                be attached to when created
+            :type attach_to: :class:`LVMLogicalVolumeDevice`
+
         """
 
         if isinstance(parents, (list, ParentList)):
@@ -2133,6 +2352,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         LVMSnapshotMixin.__init__(self, origin, vorigin)
         LVMThinPoolMixin.__init__(self, metadata_size, chunk_size, profile)
         LVMThinLogicalVolumeMixin.__init__(self)
+        LVMCachePoolMixin.__init__(self, metadata_size, cache_mode, attach_to)
         LVMLogicalVolumeBase.__init__(self, name, parents, size, uuid, seg_type,
                                       fmt, exists, sysfs_path, grow, maxsize,
                                       percent, cache_request, pvs, from_lvs)
@@ -2144,6 +2364,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         LVMSnapshotMixin._init_check(self)
         LVMThinPoolMixin._init_check(self)
         LVMThinLogicalVolumeMixin._init_check(self)
+        LVMCachePoolMixin._init_check(self)
 
         if self._from_lvs:
             self._check_from_lvs()
@@ -2169,6 +2390,8 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             ret.append(LVMVDOPoolMixin)
         if self.is_vdo_lv:
             ret.append(LVMVDOLogicalVolumeMixin)
+        if self.is_cache_pool:
+            ret.append(LVMCachePoolMixin)
         return ret
 
     def _try_specific_call(self, name, *args, **kwargs):
@@ -2552,6 +2775,10 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
 
         return True
 
+    @type_specific
+    def autoset_md_size(self, enforced=False):
+        pass
+
     def attach_cache(self, cache_pool_lv):
         if self.is_thin_lv or self.is_snapshot_lv or self.is_internal_lv:
             raise errors.DeviceError("Cannot attach a cache pool to the '%s' LV" % self.name)
@@ -2642,7 +2869,7 @@ class LVMCache(Cache):
 
     @property
     def md_size(self):
-        if self.exists:
+        if self.exists and self.stats:
             return self.stats.md_size
         else:
             return self._md_size
@@ -2659,7 +2886,13 @@ class LVMCache(Cache):
     def stats(self):
         # to get the stats we need the cached LV to exist and be activated
         if self._exists and self._cached_lv.status:
-            return LVMCacheStats(blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname))
+            try:
+                stats = blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname)
+            except blockdev.LVMError as lvmerr:
+                log.error("Failed to get cache stats for '%s': %s", self._cached_lv.name, lvmerr)
+                return None
+            else:
+                return LVMCacheStats(stats)
         else:
             return None
 
@@ -2668,8 +2901,13 @@ class LVMCache(Cache):
         if not self._exists:
             return self._mode
         else:
-            stats = blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname)
-            return blockdev.lvm.cache_get_mode_str(stats.mode)
+            try:
+                stats = blockdev.lvm.cache_stats(self._cached_lv.vg.name, self._cached_lv.lvname)
+            except blockdev.LVMError as lvmerr:
+                log.error("Failed to get cache stats for '%s': %s", self._cached_lv.name, lvmerr)
+                return blockdev.lvm.cache_get_mode_str(blockdev.LVMCacheMode.UNKNOWN)
+            else:
+                return blockdev.lvm.cache_get_mode_str(stats.mode)
 
     @property
     def backing_device_name(self):

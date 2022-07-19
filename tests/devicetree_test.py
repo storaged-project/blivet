@@ -124,8 +124,7 @@ class DeviceTreeTestCase(unittest.TestCase):
 
         dt.actions._actions.append(Mock(name="fake action"))
 
-        lvm.lvm_cc_addFilterRejectRegexp("xxx")
-        lvm.config_args_data["filterAccepts"].add("yyy")
+        lvm.lvm_devices_add("xxx")
 
         dt.ignored_disks.append(names[0])
         dt.exclusive_disks.append(names[1])
@@ -144,8 +143,7 @@ class DeviceTreeTestCase(unittest.TestCase):
 
         self.assertEqual(dt._hidden, empty_list)
 
-        self.assertEqual(lvm.config_args_data["filterAccepts"], set())
-        self.assertEqual(lvm.config_args_data["filterRejects"], set())
+        self.assertEqual(lvm._lvm_devices, set())
 
         self.assertEqual(dt.exclusive_disks, empty_list)
         self.assertEqual(dt.ignored_disks, empty_list)
@@ -408,9 +406,9 @@ class DeviceTreeTestCase(unittest.TestCase):
     def test_get_related_disks(self):
         tree = DeviceTree()
 
-        sda = DiskDevice("sda", size=Size('300g'))
-        sdb = DiskDevice("sdb", size=Size('300g'))
-        sdc = DiskDevice("sdc", size=Size('300G'))
+        sda = DiskDevice("sda", size=Size('300g'), exists=False)
+        sdb = DiskDevice("sdb", size=Size('300g'), exists=False)
+        sdc = DiskDevice("sdc", size=Size('300G'), exists=False)
 
         tree._add_device(sda)
         tree._add_device(sdb)
@@ -437,6 +435,37 @@ class DeviceTreeTestCase(unittest.TestCase):
         tree.unhide(sda)
         self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
         self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
+
+    def test_lvm_filter_hide_unhide(self):
+        tree = DeviceTree()
+
+        sda = DiskDevice("sda", size=Size("30 GiB"))
+        sdb = DiskDevice("sdb", size=Size("30 GiB"))
+
+        tree._add_device(sda)
+        tree._add_device(sdb)
+
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+
+        sda.format = get_format("lvmpv", device=sda.path)
+        sdb.format = get_format("lvmpv", device=sdb.path)
+
+        # LVMPhysicalVolume._create would do this
+        lvm.lvm_devices_add(sda.path)
+        lvm.lvm_devices_add(sdb.path)
+
+        self.assertSetEqual(lvm._lvm_devices, {sda.path, sdb.path})
+
+        tree.hide(sda)
+        self.assertSetEqual(lvm._lvm_devices, {sdb.path})
+        tree.hide(sdb)
+        self.assertSetEqual(lvm._lvm_devices, set())
+
+        tree.unhide(sda)
+        self.assertSetEqual(lvm._lvm_devices, {sda.path})
+        tree.unhide(sdb)
+        self.assertSetEqual(lvm._lvm_devices, {sda.path, sdb.path})
 
 
 class DeviceTreeIgnoredExclusiveMultipathTestCase(unittest.TestCase):

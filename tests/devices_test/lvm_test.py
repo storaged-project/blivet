@@ -250,6 +250,24 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertTrue(lv.is_raid_lv)
         self.assertEqual(lv.num_raid_pvs, 2)
 
+    def test_lvm_logical_volume_raid0(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1025 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("513 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("512 MiB"),
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, seg_type="raid0", pvs=[pv, pv2])
+
+        self.assertEqual(lv.seg_type, "raid0")
+        # 512 MiB - 4 MiB (metadata)
+        self.assertEqual(lv.size, Size("508 MiB"))
+        self.assertEqual(lv._raid_level, raid.RAID0)
+        self.assertTrue(lv.is_raid_lv)
+        self.assertEqual(lv.num_raid_pvs, 2)
+
     def test_lvm_logical_volume_insuf_seg_type(self):
         # pylint: disable=unused-variable
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
@@ -442,6 +460,17 @@ class LVMDeviceTest(unittest.TestCase):
             pool.destroy()
             self.assertFalse(pool.exists)
             self.assertTrue(lvm.lvremove.called)
+
+    def test_lvmthinpool_chunk_size(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("100 TiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv])
+        pool = LVMLogicalVolumeDevice("pool1", parents=[vg], size=Size("500 MiB"), seg_type="thin-pool")
+        self.assertEqual(pool.chunk_size, Size("64 KiB"))
+
+        pool.size = Size("16 TiB")
+        pool.autoset_md_size(enforced=True)
+        self.assertEqual(pool.chunk_size, Size("128 KiB"))
 
     def test_add_remove_pv(self):
         pv1 = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
@@ -857,3 +886,90 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
 
                 vdo_supported = devicefactory.is_supported_device_type(devicefactory.DEVICE_TYPE_LVM_VDO)
                 self.assertFalse(vdo_supported)
+
+
+@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+class BlivetNewLVMCachePoolDeviceTest(unittest.TestCase):
+
+    def test_new_cache_pool(self):
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("10 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+
+        for dev in (pv, vg):
+            b.devicetree._add_device(dev)
+
+        # check that all the above devices are in the expected places
+        self.assertEqual(set(b.devices), {pv, vg})
+        self.assertEqual(set(b.vgs), {vg})
+
+        self.assertEqual(vg.size, Size("10236 MiB"))
+
+        cachepool = b.new_lv(name="cachepool", cache_pool=True,
+                             parents=[vg], pvs=[pv])
+
+        b.create_device(cachepool)
+
+        self.assertEqual(cachepool.type, "lvmcachepool")
+
+
+@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+class BlivetLVMConfigureActionsTest(unittest.TestCase):
+
+    def test_vg_rename(self):
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("10 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], exists=True)
+
+        for dev in (pv, vg, lv):
+            b.devicetree._add_device(dev)
+
+        ac = blivet.deviceaction.ActionConfigureDevice(device=vg, attr="name", new_value="newname")
+        b.devicetree.actions.add(ac)
+        self.assertEqual(vg.name, "newname")
+        self.assertEqual(lv.name, "newname-%s" % lv.lvname)
+        self.assertIn(vg.name, b.devicetree.names)
+        self.assertIn(lv.name, b.devicetree.names)
+
+        # try to remove the action and make sure the name is changed back
+        b.devicetree.actions.remove(ac)
+        self.assertEqual(vg.name, "testvg")
+        self.assertEqual(lv.name, "testvg-%s" % lv.lvname)
+
+        # re-add the action and make the change
+        b.devicetree.actions.add(ac)
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            b.do_it()
+            lvm.vgrename.assert_called_with("testvg", "newname")
+
+        self.assertEqual(pv.format.vg_name, "newname")
+
+    def test_lv_rename(self):
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("10 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], exists=True)
+
+        for dev in (pv, vg, lv):
+            b.devicetree._add_device(dev)
+
+        ac = blivet.deviceaction.ActionConfigureDevice(device=lv, attr="name", new_value="newname")
+        b.devicetree.actions.add(ac)
+        self.assertEqual(lv.name, "%s-newname" % vg.name)
+        self.assertEqual(lv.lvname, "newname")
+        self.assertIn(lv.name, b.devicetree.names)
+
+        # try to remove the action and make sure the name is changed back
+        b.devicetree.actions.remove(ac)
+        self.assertEqual(lv.name, "%s-testlv" % vg.name)
+        self.assertEqual(lv.lvname, "testlv")
+
+        # re-add the action and make the change
+        b.devicetree.actions.add(ac)
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            b.do_it()
+            lvm.lvrename.assert_called_with(vg.name, "testlv", "newname")

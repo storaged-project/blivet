@@ -146,7 +146,7 @@ class ContainerDevice(StorageDevice):
             This method writes the member addition to disk.
         """
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         error = self._verify_member_uuid(member, expect_equality=False)
         if error:
@@ -179,7 +179,7 @@ class ContainerDevice(StorageDevice):
         """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         error = self._verify_member_uuid(member, require_existence=False)
         if error:

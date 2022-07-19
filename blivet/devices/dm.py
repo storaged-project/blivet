@@ -124,7 +124,7 @@ class DMDevice(StorageDevice):
         """ Return the dm-X (eg: dm-0) device node for this device. """
         log_method_call(self, self.name, status=self.status)
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         return blockdev.dm.node_from_name(self.name)
 

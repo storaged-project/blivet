@@ -46,7 +46,6 @@ class Flags(object):
         else:
             self.selinux = selinux.is_selinux_enabled()
 
-        self.multipath = True
         self.dmraid = True
         self.ibft = True
         self.noiswmd = False

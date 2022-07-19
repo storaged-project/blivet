@@ -207,6 +207,19 @@ class LVMVDOTestCase(BlivetResetTestCase):
                                    virtual_size=Size("40 GiB"))
 
 
+class StratisTestCase(BlivetResetTestCase):
+
+    def _set_up_storage(self):
+        if not devicefactory.is_supported_device_type(devicefactory.DEVICE_TYPE_STRATIS):
+            self.skipTest("Stratis not supported, skipping")
+
+        self.blivet.factory_device(devicefactory.DEVICE_TYPE_STRATIS,
+                                   size=Size("10 GiB"),
+                                   disks=self.blivet.disks[:],
+                                   name="stratisfs",
+                                   pool_name="stratispool")
+
+
 @unittest.skip("temporarily disabled due to issues with raids with metadata version 0.90")
 class MDRaid0TestCase(BlivetResetTestCase):
 

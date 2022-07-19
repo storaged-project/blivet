@@ -141,7 +141,7 @@ class DiskDevice(StorageDevice):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
         if not self.media_present:
-            raise errors.DeviceError("cannot destroy disk with no media", self.name)
+            raise errors.DeviceError("cannot destroy disk with no media")
 
         StorageDevice._pre_destroy(self)
 
@@ -577,7 +577,15 @@ class ZFCPDiskDevice(DiskDevice):
                   'lun': self.fcp_lun}
 
     def dracut_setup_args(self):
-        return set(["rd.zfcp=%s,%s,%s" % (self.hba_id, self.wwpn, self.fcp_lun,)])
+        from ..zfcp import has_auto_lun_scan
+
+        # zFCP auto LUN scan needs only the device ID
+        if has_auto_lun_scan(self.hba_id):
+            dracut_args = set(["rd.zfcp=%s" % self.hba_id])
+        else:
+            dracut_args = set(["rd.zfcp=%s,%s,%s" % (self.hba_id, self.wwpn, self.fcp_lun,)])
+
+        return dracut_args
 
 
 class DASDDevice(DiskDevice):

@@ -53,6 +53,7 @@ class StorageDevice(Device):
     """
     _resizable = False
     """Whether this type of device is inherently resizable."""
+    _renamable = False
 
     _type = "blivet"
     _dev_dir = "/dev"
@@ -60,6 +61,8 @@ class StorageDevice(Device):
     _partitionable = False
     _is_disk = False
     _encrypted = False
+
+    config_actions_map = {"name": "_rename"}
 
     def __init__(self, name, fmt=None, uuid=None,
                  size=None, major=None, minor=None,
@@ -305,7 +308,7 @@ class StorageDevice(Device):
         # this method.
         log_method_call(self, self.name, status=os.path.exists(self.path))
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         try:
             udev_device = pyudev.Devices.from_device_file(udev.global_udev,
@@ -352,6 +355,29 @@ class StorageDevice(Device):
         else:
             raise errors.DeviceError("device type %s is not resizable" % self.type)
 
+    def _rename(self, old_name, new_name, dry_run=False):  # pylint: disable=unused-argument
+        """ Rename this device.
+
+            :param old_name: current name of this device
+            :type old_name: str
+            :param new_name: new name for this device
+            :type new_name: str
+            :param dry_run: whether to only run checks and not perform the rename
+            :type dry_run: bool
+
+            Note: This method should only be invoked via the
+                  ActionConfigureDevice.execute method. All the pre-conditions
+                  enforced by ActionConfigureDevice.__init__ are assumed to hold.
+                  self.name value is chaged by the ActionConfigureDevice.apply method.
+
+                  Caller must make sure the name is unique, this method cannot check
+                  the name uniqueness.
+        """
+        if not self._renamable:
+            raise errors.DeviceError("device type %s is not renamable" % self.type)
+        else:
+            raise NotImplementedError("method not implemented for device type %s" % self.type)
+
     @property
     def readonly(self):
         # A device is read-only if it or any parent device is read-only
@@ -378,7 +404,7 @@ class StorageDevice(Device):
             Return True if setup should proceed or False if not.
         """
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         if self.status or not self.controllable:
             return False
@@ -416,7 +442,7 @@ class StorageDevice(Device):
             Return True if teardown should proceed or False if not.
         """
         if not self.exists and not recursive:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         if not self.status or not self.controllable or self.protected:
             return False
@@ -453,7 +479,7 @@ class StorageDevice(Device):
     def _pre_create(self):
         """ Preparation and pre-condition checking for device creation. """
         if self.exists:
-            raise errors.DeviceError("device has already been created", self.name)
+            raise errors.DeviceError("device has already been created")
 
         self.setup_parents()
 
@@ -485,10 +511,10 @@ class StorageDevice(Device):
     def _pre_destroy(self):
         """ Preparation and precondition checking for device destruction. """
         if not self.exists:
-            raise errors.DeviceError("device has not been created", self.name)
+            raise errors.DeviceError("device has not been created")
 
         if not self.isleaf:
-            raise errors.DeviceError("Cannot destroy non-leaf device", self.name)
+            raise errors.DeviceError("Cannot destroy non-leaf device %s" % self.name)
 
         self.teardown()
 

@@ -20,6 +20,9 @@
 #
 
 import os
+import re
+from abc import ABC, abstractmethod
+import glob
 from . import udev
 from . import util
 from .i18n import _
@@ -46,28 +49,67 @@ scsidevsysfs = "/sys/bus/scsi/devices"
 zfcpconf = "/etc/zfcp.conf"
 
 
-class ZFCPDevice:
-    """
-        .. warning::
-            Since this is a singleton class, calling deepcopy() on the instance
-            just returns ``self`` with no copy being created.
+def _is_lun_scan_allowed():
+    """Return True if automatic LUN scanning is enabled by the kernel."""
+
+    allow_lun_scan = util.get_kernel_module_parameter("zfcp", "allow_lun_scan")
+    return allow_lun_scan == "Y"
+
+
+def _is_port_in_npiv_mode(device_id):
+    """Return True if the device ID is configured in NPIV mode. See
+    https://www.ibm.com/docs/en/linux-on-systems?topic=devices-use-npiv
     """
 
-    def __init__(self, devnum, wwpn, fcplun):
+    port_in_npiv_mode = False
+    port_type_path = "/sys/bus/ccw/devices/{}/host*/fc_host/host*/port_type".format(device_id)
+    port_type_paths = glob.glob(port_type_path)
+    try:
+        for filename in port_type_paths:
+            with open(filename) as f:
+                port_type = f.read()
+            if re.search(r"(^|\s)NPIV(\s|$)", port_type):
+                port_in_npiv_mode = True
+    except OSError as e:
+        log.warning("Couldn't read the port_type attribute of the %s device: %s", device_id, str(e))
+        port_in_npiv_mode = False
+
+    return port_in_npiv_mode
+
+
+def has_auto_lun_scan(device_id):
+    """Return True if the given zFCP device ID is configured in NPIV (N_Port ID Virtualization)
+    mode and zFCP auto LUN scan is not disabled.
+
+    :returns: True or False
+    """
+
+    # LUN scanning disabled by the kernel module prevents using zFCP auto LUN scan
+    if not _is_lun_scan_allowed():
+        log.warning("Automatic LUN scanning is disabled by the zfcp kernel module.")
+        return False
+
+    # The port itself has to be configured in NPIV mode
+    if not _is_port_in_npiv_mode(device_id):
+        log.warning("The zFCP device %s is not configured in NPIV mode.", device_id)
+        return False
+
+    return True
+
+
+class ZFCPDeviceBase(ABC):
+    """An abstract base class for zFCP storage devices."""
+
+    def __init__(self, devnum):
         self.devnum = blockdev.s390.sanitize_dev_input(devnum)
-        self.wwpn = blockdev.s390.zfcp_sanitize_wwpn_input(wwpn)
-        self.fcplun = blockdev.s390.zfcp_sanitize_lun_input(fcplun)
-
         if not self.devnum:
             raise ValueError(_("You have not specified a device number or the number is invalid"))
-        if not self.wwpn:
-            raise ValueError(_("You have not specified a worldwide port name or the name is invalid."))
-        if not self.fcplun:
-            raise ValueError(_("You have not specified a FCP LUN or the number is invalid."))
+
+        self._device_online_path = os.path.join(zfcpsysfs, self.devnum, "online")
 
     # Force str and unicode types in case any of the properties are unicode
     def _to_string(self):
-        return "%s %s %s" % (self.devnum, self.wwpn, self.fcplun)
+        return str(self.devnum)
 
     def __str__(self):
         return stringize(self._to_string())
@@ -75,33 +117,147 @@ class ZFCPDevice:
     def __unicode__(self):
         return unicodeize(self._to_string())
 
+    def _free_device(self):
+        """Remove the device from the I/O ignore list to make it visible to the system.
+
+        :raises: ValueError if the device cannot be removed from the I/O ignore list
+        """
+
+        if not os.path.exists(self._device_online_path):
+            log.info("Freeing zFCP device %s", self.devnum)
+            util.run_program(["zfcp_cio_free", "-d", self.devnum])
+
+        if not os.path.exists(self._device_online_path):
+            raise ValueError(_("zFCP device %s not found, not even in device ignore list.") %
+                             (self.devnum,))
+
+    def _set_zfcp_device_online(self):
+        """Set the zFCP device online.
+
+        :raises: ValueError if the device cannot be set online
+        """
+
+        try:
+            with open(self._device_online_path) as f:
+                devonline = f.readline().strip()
+            if devonline != "1":
+                logged_write_line_to_file(self._device_online_path, "1")
+        except OSError as e:
+            raise ValueError(_("Could not set zFCP device %(devnum)s "
+                               "online (%(e)s).")
+                             % {'devnum': self.devnum, 'e': e})
+
+    def _set_zfcp_device_offline(self):
+        """Set the zFCP device offline.
+
+        :raises: ValueError if the device cannot be set offline
+        """
+
+        try:
+            logged_write_line_to_file(self._device_online_path, "0")
+        except OSError as e:
+            raise ValueError(_("Could not set zFCP device %(devnum)s "
+                               "offline (%(e)s).")
+                             % {'devnum': self.devnum, 'e': e})
+
+    @abstractmethod
+    def _is_associated_with_fcp(self, fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
+        """Decide if the provided FCP addressing corresponds to the path stored in the zFCP device.
+
+        :returns: True or False
+        """
+
     def online_device(self):
-        online = "%s/%s/online" % (zfcpsysfs, self.devnum)
+        """Initialize the device and make its storage block device(s) ready to use.
+
+        :returns: True if success
+        :raises: ValueError if the device cannot be initialized
+        """
+
+        self._free_device()
+        self._set_zfcp_device_online()
+        return True
+
+    def offline_scsi_device(self):
+        """Find SCSI devices associated to the zFCP device and remove them from the system."""
+
+        # A list of existing SCSI devices in format Host:Bus:Target:Lun
+        scsi_devices = [f for f in os.listdir(scsidevsysfs) if re.search(r'^[0-9]+:[0-9]+:[0-9]+:[0-9]+$', f)]
+
+        scsi_device_found = False
+        for scsidev in scsi_devices:
+            fcpsysfs = os.path.join(scsidevsysfs, scsidev)
+
+            with open(os.path.join(fcpsysfs, "hba_id")) as f:
+                fcphbasysfs = f.readline().strip()
+            with open(os.path.join(fcpsysfs, "wwpn")) as f:
+                fcpwwpnsysfs = f.readline().strip()
+            with open(os.path.join(fcpsysfs, "fcp_lun")) as f:
+                fcplunsysfs = f.readline().strip()
+
+            if self._is_associated_with_fcp(fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
+                scsi_device_found = True
+                scsidel = os.path.join(scsidevsysfs, scsidev, "delete")
+                logged_write_line_to_file(scsidel, "1")
+                udev.settle()
+
+        if not scsi_device_found:
+            log.warning("No scsi device found to delete for zfcp %s", self)
+
+
+class ZFCPDeviceFullPath(ZFCPDeviceBase):
+    """A class for zFCP devices where zFCP auto LUN scan is not available. Such
+    devices have to be specified by a device number, WWPN and LUN.
+    """
+
+    def __init__(self, devnum, wwpn, fcplun):
+        super().__init__(devnum)
+
+        self.wwpn = blockdev.s390.zfcp_sanitize_wwpn_input(wwpn)
+        if not self.wwpn:
+            raise ValueError(_("You have not specified a worldwide port name or the name is invalid."))
+
+        self.fcplun = blockdev.s390.zfcp_sanitize_lun_input(fcplun)
+        if not self.fcplun:
+            raise ValueError(_("You have not specified a FCP LUN or the number is invalid."))
+
+    # Force str and unicode types in case any of the properties are unicode
+    def _to_string(self):
+        return "{} {} {}".format(self.devnum, self.wwpn, self.fcplun)
+
+    def _is_associated_with_fcp(self, fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
+        """Decide if the provided FCP addressing corresponds to the path stored in the zFCP device.
+
+        :returns: True or False
+        """
+
+        return (fcphbasysfs == self.devnum and
+                fcpwwpnsysfs == self.wwpn and
+                fcplunsysfs == self.fcplun)
+
+    def online_device(self):
+        """Initialize the device and make its storage block device(s) ready to use.
+
+        :returns: True if success
+        :raises: ValueError if the device cannot be initialized
+        """
+
+        super().online_device()
+
         portadd = "%s/%s/port_add" % (zfcpsysfs, self.devnum)
         portdir = "%s/%s/%s" % (zfcpsysfs, self.devnum, self.wwpn)
         unitadd = "%s/unit_add" % (portdir)
         unitdir = "%s/%s" % (portdir, self.fcplun)
         failed = "%s/failed" % (unitdir)
 
-        if not os.path.exists(online):
-            log.info("Freeing zFCP device %s", self.devnum)
-            util.run_program(["zfcp_cio_free", "-d", self.devnum])
+        # Activating using devnum, WWPN, and LUN despite available zFCP auto LUN scan should still
+        # be possible as this method was used as a workaround until the support for zFCP auto LUN
+        # scan devices has been implemented. Just log a warning message and continue.
+        if has_auto_lun_scan(self.devnum):
+            log.warning("zFCP device %s in NPIV mode brought online. All LUNs will be activated "
+                        "automatically although WWPN and LUN have been provided.", self.devnum)
 
-        if not os.path.exists(online):
-            raise ValueError(_("zFCP device %s not found, not even in device ignore list.") %
-                             (self.devnum,))
-
-        try:
-            f = open(online, "r")
-            devonline = f.readline().strip()
-            f.close()
-            if devonline != "1":
-                logged_write_line_to_file(online, "1")
-        except OSError as e:
-            raise ValueError(_("Could not set zFCP device %(devnum)s "
-                               "online (%(e)s).")
-                             % {'devnum': self.devnum, 'e': e})
-
+        # create the sysfs directory for the WWPN/port
         if not os.path.exists(portdir):
             if os.path.exists(portadd):
                 # older zfcp sysfs interface
@@ -126,6 +282,7 @@ class ZFCPDevice:
                          "there.", {'wwpn': self.wwpn,
                                     'devnum': self.devnum})
 
+        # create the sysfs directory for the LUN/unit
         if not os.path.exists(unitdir):
             try:
                 logged_write_line_to_file(unitadd, self.fcplun)
@@ -143,6 +300,7 @@ class ZFCPDevice:
                                  'wwpn': self.wwpn,
                                  'devnum': self.devnum})
 
+        # check the state of the LUN
         fail = "0"
         try:
             f = open(failed, "r")
@@ -166,46 +324,9 @@ class ZFCPDevice:
 
         return True
 
-    def offline_scsi_device(self):
-        f = open("/proc/scsi/scsi", "r")
-        lines = f.readlines()
-        f.close()
-        # alternatively iterate over /sys/bus/scsi/devices/*:0:*:*/
-
-        for line in lines:
-            if not line.startswith("Host"):
-                continue
-            scsihost = line.split()
-            host = scsihost[1]
-            channel = "0"
-            devid = scsihost[5]
-            lun = scsihost[7]
-            scsidev = "%s:%s:%s:%s" % (host[4:], channel, devid, lun)
-            fcpsysfs = "%s/%s" % (scsidevsysfs, scsidev)
-            scsidel = "%s/%s/delete" % (scsidevsysfs, scsidev)
-
-            f = open("%s/hba_id" % (fcpsysfs), "r")
-            fcphbasysfs = f.readline().strip()
-            f.close()
-            f = open("%s/wwpn" % (fcpsysfs), "r")
-            fcpwwpnsysfs = f.readline().strip()
-            f.close()
-            f = open("%s/fcp_lun" % (fcpsysfs), "r")
-            fcplunsysfs = f.readline().strip()
-            f.close()
-
-            if fcphbasysfs == self.devnum \
-                    and fcpwwpnsysfs == self.wwpn \
-                    and fcplunsysfs == self.fcplun:
-                logged_write_line_to_file(scsidel, "1")
-                udev.settle()
-                return
-
-        log.warning("no scsi device found to delete for zfcp %s %s %s",
-                    self.devnum, self.wwpn, self.fcplun)
-
     def offline_device(self):
-        offline = "%s/%s/online" % (zfcpsysfs, self.devnum)
+        """Remove the zFCP device from the system."""
+
         portadd = "%s/%s/port_add" % (zfcpsysfs, self.devnum)
         portremove = "%s/%s/port_remove" % (zfcpsysfs, self.devnum)
         unitremove = "%s/%s/%s/unit_remove" % (zfcpsysfs, self.devnum, self.wwpn)
@@ -221,6 +342,7 @@ class ZFCPDevice:
                              % {'devnum': self.devnum, 'wwpn': self.wwpn,
                                  'fcplun': self.fcplun, 'e': e})
 
+        # remove the LUN
         try:
             logged_write_line_to_file(unitremove, self.fcplun)
         except OSError as e:
@@ -230,6 +352,7 @@ class ZFCPDevice:
                              % {'fcplun': self.fcplun, 'wwpn': self.wwpn,
                                  'devnum': self.devnum, 'e': e})
 
+        # remove the WWPN only if there are no other LUNs attached
         if os.path.exists(portadd):
             # only try to remove ports with older zfcp sysfs interface
             for lun in os.listdir(portdir):
@@ -247,6 +370,7 @@ class ZFCPDevice:
                                  % {'wwpn': self.wwpn,
                                      'devnum': self.devnum, 'e': e})
 
+        # check if there are other WWPNs existing for the zFCP device number
         if os.path.exists(portadd):
             # older zfcp sysfs interface
             for port in os.listdir(devdir):
@@ -257,7 +381,6 @@ class ZFCPDevice:
                     return True
         else:
             # newer zfcp sysfs interface with auto port scan
-            import glob
             luns = glob.glob("%s/0x????????????????/0x????????????????"
                              % (devdir,))
             if len(luns) != 0:
@@ -265,14 +388,62 @@ class ZFCPDevice:
                          self.devnum, luns[0])
                 return True
 
-        try:
-            logged_write_line_to_file(offline, "0")
-        except OSError as e:
-            raise ValueError(_("Could not set zFCP device %(devnum)s "
-                               "offline (%(e)s).")
-                             % {'devnum': self.devnum, 'e': e})
+        # no other WWPNs/LUNs exists for this device number, it's safe to bring it offline
+        self._set_zfcp_device_offline()
 
         return True
+
+
+class ZFCPDevice(ZFCPDeviceFullPath):
+    """Class derived from ZFCPDeviceFullPath to reserve backward compatibility for applications
+    using the ZFCPDevice class. ZFCPDeviceFullPath should be used instead in new code.
+    """
+
+
+class ZFCPDeviceAutoLunScan(ZFCPDeviceBase):
+    """Class for zFCP devices configured in NPIV mode and zFCP auto LUN scan not disabled. Only
+    a zFCP device number is needed for such devices.
+    """
+
+    def online_device(self):
+        """Initialize the device and make its storage block device(s) ready to use.
+
+        :returns: True if success
+        :raises: ValueError if the device cannot be initialized
+        """
+
+        super().online_device()
+
+        if not has_auto_lun_scan(self.devnum):
+            raise ValueError(_("zFCP device %s cannot use auto LUN scan.") % self)
+
+        return True
+
+    def offline_device(self):
+        """Remove the zFCP device from the system.
+
+        :returns: True if success
+        :raises: ValueError if the device cannot be brought offline
+         """
+
+        try:
+            self.offline_scsi_device()
+        except OSError as e:
+            raise ValueError(_("Could not correctly delete SCSI device of "
+                               "zFCP %(zfcpdev)s (%(e)s).")
+                             % {'zfcpdev': self, 'e': e})
+
+        self._set_zfcp_device_offline()
+
+        return True
+
+    def _is_associated_with_fcp(self, fcphbasysfs, _fcpwwpnsysfs, _fcplunsysfs):
+        """Decide if the provided FCP addressing corresponds to the zFCP device.
+
+        :returns: True or False
+        """
+
+        return fcphbasysfs == self.devnum
 
 
 class zFCP:
@@ -317,7 +488,12 @@ class zFCP:
 
             fields = line.split()
 
-            if len(fields) == 3:
+            # zFCP auto LUN scan available
+            if len(fields) == 1:
+                devnum = fields[0]
+                wwpn = None
+                fcplun = None
+            elif len(fields) == 3:
                 devnum = fields[0]
                 wwpn = fields[1]
                 fcplun = fields[2]
@@ -336,8 +512,12 @@ class zFCP:
             except ValueError as e:
                 log.warning("%s", str(e))
 
-    def add_fcp(self, devnum, wwpn, fcplun):
-        d = ZFCPDevice(devnum, wwpn, fcplun)
+    def add_fcp(self, devnum, wwpn=None, fcplun=None):
+        if wwpn and fcplun:
+            d = ZFCPDeviceFullPath(devnum, wwpn, fcplun)
+        else:
+            d = ZFCPDeviceAutoLunScan(devnum)
+
         if d.online_device():
             self.fcpdevs.add(d)
 

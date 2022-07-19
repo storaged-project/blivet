@@ -96,7 +96,7 @@ class DeviceTreeBase(object):
 
         self._hidden = []
 
-        lvm.lvm_cc_resetFilter()
+        lvm.lvm_devices_reset()
 
         self.exclusive_disks = exclusive_disks or []
         self.ignored_disks = ignored_disks or []
@@ -879,7 +879,8 @@ class DeviceTreeBase(object):
         self._remove_device(device, force=True, modparent=False)
 
         self._hidden.append(device)
-        lvm.lvm_cc_addFilterRejectRegexp(device.name)
+        if device.format.type == "lvmpv":
+            lvm.lvm_devices_remove(device.path)
 
     def unhide(self, device):
         """ Restore a device's visibility.
@@ -905,7 +906,8 @@ class DeviceTreeBase(object):
                 self._hidden.remove(hidden)
                 self._devices.append(hidden)
                 hidden.add_hook(new=False)
-                lvm.lvm_cc_removeFilterRejectRegexp(hidden.name)
+                if hidden.format.type == "lvmpv":
+                    lvm.lvm_devices_add(hidden.path)
 
     def expand_taglist(self, taglist):
         """ Expands tags in input list into devices.

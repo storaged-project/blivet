@@ -19,6 +19,7 @@ from blivet.devices import LUKSDevice
 from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import PartitionDevice
+from blivet.devices import StratisFilesystemDevice
 from blivet.devices.lvm import DEFAULT_THPOOL_RESERVE
 from blivet.errors import RaidError
 from blivet.formats import get_format
@@ -893,3 +894,132 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
         self.assertEqual(factory2.container_list, [])
 
         self.assertIsNone(factory2.get_container())
+
+
+# we use stratis tools to predict metadata use so we can't simply "mask" the dependencies here
+@unittest.skipUnless(not StratisFilesystemDevice.unavailable_type_dependencies(), "some unsupported device classes required for this test")
+class StratisFactoryTestCase(DeviceFactoryTestCase):
+    device_class = StratisFilesystemDevice
+    device_type = devicefactory.DEVICE_TYPE_STRATIS
+    encryption_supported = False
+    factory_class = devicefactory.StratisFactory
+
+    _disk_size = Size("3 GiB")
+
+    # pylint: disable=unused-argument
+    def _get_size_delta(self, devices=None):
+        """ Return size delta for a specific factory type.
+
+            :keyword devices: list of factory-managed devices or None
+            :type devices: list(:class:`blivet.devices.StorageDevice`) or NoneType
+        """
+        return Size("550 MiB")  # huge stratis pool metadata
+
+    def _validate_factory_device(self, *args, **kwargs):
+        device = args[0]
+
+        self.assertEqual(device.type, "stratis filesystem")
+        self.assertLessEqual(device.size, kwargs.get("size"))
+        self.assertTrue(hasattr(device, "pool"))
+        self.assertIsNotNone(device.pool)
+        self.assertEqual(device.pool.type, "stratis pool")
+        self.assertIsNotNone(device.format)
+        self.assertEqual(device.format.type, "stratis xfs")
+        self.assertEqual(device.format.mountpoint, kwargs.get("mountpoint"))
+
+        if kwargs.get("name"):
+            self.assertEqual(device.fsname, kwargs.get("name"))
+
+        self.assertTrue(set(device.disks).issubset(kwargs["disks"]))
+
+        if kwargs.get("container_size"):
+            self.assertAlmostEqual(device.pool.size,
+                                   kwargs.get("container_size"),
+                                   delta=self._get_size_delta())
+        else:
+            self.assertAlmostEqual(device.pool.size,
+                                   device.size,
+                                   delta=Size("600 MiB"))
+
+        self.assertEqual(device.pool.encrypted, kwargs.get("container_encrypted", False))
+
+        return device
+
+    @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.stratis.StratisPoolDevice.type_external_dependencies", return_value=set())
+    def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
+        device_type = self.device_type
+        kwargs = {"disks": self.b.disks,
+                  "mountpoint": "/factorytest",
+                  "size": Size("2.5 GiB")}
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # rename the device
+        kwargs["name"] = "stratisfs"
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # new mountpoint
+        kwargs["mountpoint"] = "/a/different/dir"
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # resize the device
+        kwargs["size"] = Size("4 GiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # resize the device down
+        kwargs["size"] = Size("3 GiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # change container size
+        kwargs = {"disks": self.b.disks,
+                  "mountpoint": "/factorytest",
+                  "container_size": Size("5 GiB"),
+                  "size": Size("2.5 GiB")}
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # enable encryption on the container
+        kwargs["container_encrypted"] = True
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # disable encryption on the container
+        kwargs["container_encrypted"] = False
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+    @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.stratis.StratisPoolDevice.type_external_dependencies", return_value=set())
+    def test_normalize_size(self, *args):  # pylint: disable=unused-argument
+        super(StratisFactoryTestCase, self).test_normalize_size()
+
+    @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.stratis.StratisPoolDevice.type_external_dependencies", return_value=set())
+    def test_get_free_disk_space(self, *args):  # pylint: disable=unused-argument
+        # get_free_disk_space should return the total free space on disks
+        kwargs = self._get_test_factory_args()
+        factory = devicefactory.get_device_factory(self.b,
+                                                   self.device_type,
+                                                   disks=self.b.disks,
+                                                   **kwargs)
+        # disks contain empty disklabels, so free space is sum of disk sizes
+        self.assertAlmostEqual(factory._get_free_disk_space(),
+                               sum(d.size for d in self.b.disks),
+                               delta=self._get_size_delta())
+
+        factory.configure()
+        factory = devicefactory.get_device_factory(self.b,
+                                                   self.device_type,
+                                                   disks=self.b.disks,
+                                                   **kwargs)
+        # default container size policy for Stratis factory is SIZE_POLICY_MAX so there should
+        # be (almost) no free space on the disks
+        self.assertAlmostEqual(factory._get_free_disk_space(),
+                               Size("2 MiB"),
+                               delta=self._get_size_delta())

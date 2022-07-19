@@ -40,7 +40,8 @@ class DMDevicePopulator(DevicePopulator):
                 not udev.device_is_dm_integrity(data) and
                 not udev.device_is_dm_lvm(data) and
                 not udev.device_is_dm_mpath(data) and
-                not udev.device_is_dm_raid(data))
+                not udev.device_is_dm_raid(data) and
+                not udev.device_is_dm_stratis(data))
 
     def run(self):
         name = udev.device_get_name(self.data)

@@ -525,7 +525,7 @@ class DeviceFormat(ObjectID):
             self.device = device
 
         if not os.path.exists(self.device):
-            raise FormatCreateError("invalid device specification", self.device)
+            raise FormatCreateError("invalid device specification %s" % self.device)
 
         if self.exists:
             raise DeviceFormatError("format already exists")
@@ -742,4 +742,4 @@ class DeviceFormat(ObjectID):
 register_device_format(DeviceFormat)
 
 # import the format modules (which register their device formats)
-from . import biosboot, disklabel, dmraid, fslib, fs, luks, lvmpv, mdraid, multipath, prepboot, swap
+from . import biosboot, disklabel, dmraid, fslib, fs, luks, lvmpv, mdraid, multipath, prepboot, swap, stratis

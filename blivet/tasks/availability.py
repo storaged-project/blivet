@@ -24,12 +24,16 @@ import shutil
 
 from six import add_metaclass
 
+from .. import safe_dbus
+from ..devicelibs.stratis import STRATIS_SERVICE, STRATIS_PATH
+
 import gi
 gi.require_version("BlockDev", "2.0")
 gi.require_version("GLib", "2.0")
+gi.require_version("Gio", "2.0")
 
 from gi.repository import BlockDev as blockdev
-from gi.repository import GLib
+from gi.repository import GLib, Gio
 
 import logging
 log = logging.getLogger("blivet")
@@ -247,6 +251,40 @@ class BlockDevMethod(Method):
                 return []
 
 
+class DBusMethod(Method):
+
+    """ Methods for when application is actually a DBus service. """
+
+    def __init__(self, dbus_name, dbus_path):
+        """ Initializer.
+
+            :param :class:`AppVersionInfo` version_info:
+        """
+        self.dbus_name = dbus_name
+        self.dbus_path = dbus_path
+        self._availability_errors = None
+
+    def availability_errors(self, resource):
+        """ Returns [] if the service is available.
+
+            :param resource: a DBus service
+            :type resource: :class:`ExternalResource`
+
+            :returns: [] if the name of the plugin is loaded
+            :rtype: list of str
+        """
+        try:
+            avail = blockdev.utils.dbus_service_available(None, Gio.BusType.SYSTEM, self.dbus_name, self.dbus_path)
+            avail = safe_dbus.check_object_available(self.dbus_name, self.dbus_path)
+        except safe_dbus.DBusCallError:
+            return ["DBus service %s not available" % resource.name]
+        else:
+            if avail:
+                return []
+            else:
+                return ["DBus service %s not available" % resource.name]
+
+
 class _UnavailableMethod(Method):
 
     """ Method that indicates a resource is unavailable. """
@@ -296,6 +334,11 @@ def blockdev_plugin(name, blockdev_method):
     return ExternalResource(blockdev_method, name)
 
 
+def dbus_service(name, dbus_method):
+    """ Construct an external resource that is a DBus service. """
+    return ExternalResource(dbus_method, name)
+
+
 def unavailable_resource(name):
     """ Construct an external resource that is always unavailable. """
     return ExternalResource(UnavailableMethod, name)
@@ -331,6 +374,13 @@ BLOCKDEV_CRYPTO = BlockDevTechInfo(plugin_name="crypto",
                                                  blockdev.CryptoTech.LUKS2: BLOCKDEV_CRYPTO_ALL_MODES,
                                                  blockdev.CryptoTech.ESCROW: blockdev.CryptoTechMode.CREATE})
 BLOCKDEV_CRYPTO_TECH = BlockDevMethod(BLOCKDEV_CRYPTO)
+
+BLOCKDEV_CRYPTO_INTEGRITY = BlockDevTechInfo(plugin_name="crypto",
+                                             check_fn=blockdev.crypto_is_tech_avail,
+                                             technologies={blockdev.CryptoTech.INTEGRITY: (blockdev.CryptoTechMode.CREATE |
+                                                                                           blockdev.CryptoTechMode.OPEN_CLOSE |
+                                                                                           blockdev.CryptoTechMode.QUERY)})
+BLOCKDEV_CRYPTO_TECH_INTEGRITY = BlockDevMethod(BLOCKDEV_CRYPTO_INTEGRITY)
 
 # libblockdev dm plugin required technologies and modes
 BLOCKDEV_DM_ALL_MODES = (blockdev.DMTechMode.CREATE_ACTIVATE |
@@ -419,6 +469,8 @@ BLOCKDEV_SWAP_TECH = BlockDevMethod(BLOCKDEV_SWAP)
 # due to missing dependencies)
 BLOCKDEV_BTRFS_PLUGIN = blockdev_plugin("libblockdev btrfs plugin", BLOCKDEV_BTRFS_TECH)
 BLOCKDEV_CRYPTO_PLUGIN = blockdev_plugin("libblockdev crypto plugin", BLOCKDEV_CRYPTO_TECH)
+BLOCKDEV_CRYPTO_PLUGIN_INTEGRITY = blockdev_plugin("libblockdev crypto plugin (integrity technology)",
+                                                   BLOCKDEV_CRYPTO_TECH_INTEGRITY)
 BLOCKDEV_DM_PLUGIN = blockdev_plugin("libblockdev dm plugin", BLOCKDEV_DM_TECH)
 BLOCKDEV_DM_PLUGIN_RAID = blockdev_plugin("libblockdev dm plugin (raid technology)", BLOCKDEV_DM_TECH_RAID)
 BLOCKDEV_LOOP_PLUGIN = blockdev_plugin("libblockdev loop plugin", BLOCKDEV_LOOP_TECH)
@@ -486,3 +538,8 @@ FSCK_F2FS_APP = application("fsck.f2fs")
 MKFS_F2FS_APP = application("mkfs.f2fs")
 
 MOUNT_APP = application("mount")
+
+STRATISPREDICTUSAGE_APP = application("stratis-predict-usage")
+
+STRATIS_SERVICE_METHOD = DBusMethod(STRATIS_SERVICE, STRATIS_PATH)
+STRATIS_DBUS = dbus_service("stratis", STRATIS_SERVICE_METHOD)

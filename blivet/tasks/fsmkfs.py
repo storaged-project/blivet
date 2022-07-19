@@ -312,7 +312,8 @@ class NTFSMkfs(FSMkfs):
 
     @property
     def args(self):
-        return []
+        # -F (force) to allow creating the format on disks, -f (fast) to skip zeroing the device
+        return ["-F", "-f"]
 
 
 class ReiserFSMkfs(FSMkfs):

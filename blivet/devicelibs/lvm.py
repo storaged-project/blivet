@@ -20,6 +20,7 @@
 # Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
+import math
 import os
 import re
 
@@ -42,6 +43,8 @@ from ..static_data import lvs_info
 from ..tasks import availability
 from ..util import run_program
 
+from contextlib import contextmanager
+
 # some of lvm's defaults that we have no way to ask it for
 LVM_PE_START = Size("1 MiB")
 LVM_PE_SIZE = Size("4 MiB")
@@ -51,8 +54,14 @@ LVM_THINP_MIN_METADATA_SIZE = Size("2 MiB")
 LVM_THINP_MAX_METADATA_SIZE = Size("16 GiB")
 LVM_THINP_MIN_CHUNK_SIZE = Size("64 KiB")
 LVM_THINP_MAX_CHUNK_SIZE = Size("1 GiB")
+LVM_THINP_ADDRESSABLE_CHUNK_SIZE = Size("17455015526400 B")  # 15.88 TiB
 
-raid_levels = raid.RAIDLevels(["linear", "striped", "raid1", "raid4", "raid5", "raid6", "raid10"])
+# cache constants
+LVM_CACHE_MIN_METADATA_SIZE = Size("8 MiB")
+LVM_CACHE_MAX_METADATA_SIZE = Size("16 GiB")
+LVM_CACHE_DEFAULT_MODE = blockdev.LVMCacheMode.WRITETHROUGH
+
+raid_levels = raid.RAIDLevels(["linear", "striped", "raid0", "raid1", "raid4", "raid5", "raid6", "raid10"])
 raid_seg_types = list(itertools.chain.from_iterable([level.names for level in raid_levels if level.name != "linear"]))
 
 ThPoolProfile = namedtuple("ThPoolProfile", ["name", "desc"])
@@ -65,46 +74,54 @@ LVMETAD_SOCKET_PATH = "/run/lvm/lvmetad.socket"
 
 safe_name_characters = "0-9a-zA-Z._-"
 
-# Start config_args handling code
-#
-# Theoretically we can handle all that can be handled with the LVM --config
-# argument.  For every time we call an lvm_cc (lvm compose config) funciton
-# we regenerate the config_args with all global info.
-config_args_data = {"filterRejects": set(),    # regular expressions to reject.
-                    "filterAccepts": set()}    # regexp to accept
+if hasattr(blockdev.LVMTech, "DEVICES"):
+    try:
+        blockdev.lvm.is_tech_avail(blockdev.LVMTech.DEVICES, 0)  # pylint: disable=no-member
+    except blockdev.LVMError:
+        HAVE_LVMDEVICES = False
+    else:
+        HAVE_LVMDEVICES = True
+else:
+    HAVE_LVMDEVICES = False
+
+# list of devices that LVM is allowed to use
+# with LVM >= 2.0.13 we'll use this for the --devices option and when creating
+# the /etc/lvm/devices/system.devices file
+# with older versions of LVM we will use this for the --config based filtering
+_lvm_devices = set()
 
 
 def _set_global_config():
     """lvm command accepts lvm.conf type arguments preceded by --config. """
 
-    filter_string = ""
-    rejects = config_args_data["filterRejects"]
-    for reject in rejects:
-        filter_string += ("\"r|/%s$|\"," % reject)
+    device_string = ""
 
-    if filter_string:
-        filter_string = "filter=[%s]" % filter_string.strip(",")
+    if not HAVE_LVMDEVICES:
+        # now explicitly "accept" all LVM devices
+        for device in _lvm_devices:
+            device_string += "\"a|%s$|\"," % device
 
-    # XXX consider making /tmp/blivet.lvm.XXXXX, writing an lvm.conf there, and
-    #     setting LVM_SYSTEM_DIR
-    devices_string = 'preferred_names=["^/dev/mapper/", "^/dev/md/", "^/dev/sd"]'
-    if filter_string:
-        devices_string += " %s" % filter_string
+        # now add all devices to the "reject" filter
+        device_string += "\"r|.*|\""
 
-    # for now ignore the LVM devices file and rely on our filters
-    if availability.LVMDEVICES.available:
-        devices_string += " use_devicesfile=0"
+        filter_string = "filter=[%s]" % device_string
 
-    # devices_string can have (inside the brackets) "dir", "scan",
-    # "preferred_names", "filter", "cache_dir", "write_cache_state",
-    # "types", "sysfs_scan", "md_component_detection".  see man lvm.conf.
-    config_string = " devices { %s } " % (devices_string)  # strings can be added
+        config_string = " devices { %s } " % filter_string
+    else:
+        config_string = " "
+
     if not flags.lvm_metadata_backup:
         config_string += "backup {backup=0 archive=0} "
-    if flags.debug:
-        config_string += "log {level=7 file=/tmp/lvm.log syslog=0}"
+    config_string += "log {level=7 file=/tmp/lvm.log syslog=0}"
 
     blockdev.lvm.set_global_config(config_string)
+
+
+def _set_lvm_devices():
+    if not HAVE_LVMDEVICES:
+        return
+
+    blockdev.lvm.set_devices_filter(list(_lvm_devices))
 
 
 def needs_config_refresh(fn):
@@ -114,33 +131,54 @@ def needs_config_refresh(fn):
     def fn_with_refresh(*args, **kwargs):
         ret = fn(*args, **kwargs)
         _set_global_config()
+        _set_lvm_devices()
         return ret
 
     return fn_with_refresh
 
 
 @needs_config_refresh
-def lvm_cc_addFilterRejectRegexp(regexp):
-    """ Add a regular expression to the --config string."""
-    log.debug("lvm filter: adding %s to the reject list", regexp)
-    config_args_data["filterRejects"].add(regexp)
+def lvm_devices_add(path):
+    """ Add a device (PV) to the list of devices LVM is allowed to use """
+    log.debug("lvm filter: device %s added to the list of allowed devices", path)
+    _lvm_devices.add(path)
 
 
 @needs_config_refresh
-def lvm_cc_removeFilterRejectRegexp(regexp):
-    """ Remove a regular expression from the --config string."""
-    log.debug("lvm filter: removing %s from the reject list", regexp)
+def lvm_devices_remove(path):
+    """ Remove a device (PV) to the list of devices LVM is allowed to use """
+    log.debug("lvm filter: device %s removed from the list of allowed devices", path)
     try:
-        config_args_data["filterRejects"].remove(regexp)
+        _lvm_devices.remove(path)
     except KeyError:
-        log.debug("%s wasn't in the reject list", regexp)
+        log.debug("%s wasn't in the devices list", path)
         return
 
 
 @needs_config_refresh
-def lvm_cc_resetFilter():
-    config_args_data["filterRejects"] = set()
-    config_args_data["filterAccepts"] = set()
+def lvm_devices_reset():
+    log.debug("lvm filter: clearing the lvm devices list")
+    _lvm_devices.clear()
+
+
+def lvm_devices_copy():
+    return _lvm_devices.copy()
+
+
+@needs_config_refresh
+def lvm_devices_restore(devices):
+    log.debug("lvm filter: restoring the lvm devices list to %s", ", ".join(list(devices)))
+    _lvm_devices = devices
+
+
+@contextmanager
+def empty_lvm_devices():
+    devices = lvm_devices_copy()
+    lvm_devices_reset()
+
+    yield
+
+    lvm_devices_restore(devices)
 
 
 def determine_parent_lv(internal_lv, lvs, lv_info):
@@ -229,3 +267,16 @@ def is_lvm_name_valid(name):
         return False
 
     return True
+
+
+def recommend_thpool_chunk_size(thpool_size):
+    # calculation of the recommended chunk size by LVM is so complicated that we
+    # can't really replicate it, but we know that 64 KiB chunk size gives us
+    # upper limit of ~15.88 TiB so we will just add 64 KiB to the chunk size
+    # for every ~15.88 TiB of thinpool data size
+    return min(math.ceil(thpool_size / LVM_THINP_ADDRESSABLE_CHUNK_SIZE) * LVM_THINP_MIN_CHUNK_SIZE,
+               LVM_THINP_MAX_CHUNK_SIZE)
+
+
+def is_valid_cache_md_size(md_size):
+    return md_size >= LVM_CACHE_MIN_METADATA_SIZE and md_size <= LVM_CACHE_MAX_METADATA_SIZE

@@ -13,6 +13,7 @@ from gi.repository import BlockDev as blockdev
 from blivet.devices import DiskDevice, DMDevice, FileDevice, LoopDevice
 from blivet.devices import MDRaidArrayDevice, MultipathDevice, OpticalDevice
 from blivet.devices import PartitionDevice, StorageDevice, NVDIMMNamespaceDevice
+from blivet.devicelibs import lvm
 from blivet.devicetree import DeviceTree
 from blivet.formats import get_device_format_class, get_format, DeviceFormat
 from blivet.formats.disklabel import DiskLabel
@@ -40,6 +41,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
     @patch("blivet.udev.device_is_dm_raid", return_value=False)
+    @patch("blivet.udev.device_is_dm_stratis", return_value=False)
     @patch("blivet.udev.device_is_dm", return_value=True)
     def test_match(self, *args):
         """Test matching of dm device populator."""
@@ -60,6 +62,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
     @patch("blivet.udev.device_is_dm_raid", return_value=False)
+    @patch("blivet.udev.device_is_dm_stratis", return_value=False)
     @patch("blivet.udev.device_is_md", return_value=False)
     @patch("blivet.udev.device_is_loop", return_value=False)
     @patch("blivet.udev.device_is_dm", return_value=True)
@@ -393,8 +396,7 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch.object(DiskLabel, "parted_disk")
     @patch.object(DiskLabel, "parted_device")
     @patch.object(PartitionDevice, "probe")
-    # TODO: fix the naming of the lvm filter functions
-    @patch("blivet.devicelibs.lvm.lvm_cc_addFilterRejectRegexp")
+    @patch("blivet.devicelibs.lvm.lvm_devices_add")
     @patch("blivet.udev.device_get_major", return_value=88)
     @patch("blivet.udev.device_get_minor", return_value=19)
     @patch.object(DeviceTree, "get_device_by_name")
@@ -566,9 +568,17 @@ class NVDIMMNamespaceDevicePopulatorTestCase(PopulatorHelperTestCase):
         nvdimm_data = Mock(mode=blockdev.NVDIMMNamespaceMode.SECTOR, devname='dummy',
                            uuid='test-uuid', sector_size=512)
 
-        with patch("blivet.static_data.nvdimm.get_namespace_info", return_value=nvdimm_data):
-            with patch("blivet.populator.helpers.disk.blockdev.nvdimm_namespace_get_mode_str", return_value="sector"):
-                device = helper.run()
+        try:
+            patcher = patch("blivet.static_data.nvdimm.get_namespace_info", return_value=nvdimm_data)
+            patcher.start()
+        except AttributeError:
+            patcher = patch("blivet.static_data.nvdimm.nvdimm.get_namespace_info", return_value=nvdimm_data)
+            patcher.start()
+
+        with patch("blivet.populator.helpers.disk.blockdev.nvdimm_namespace_get_mode_str", return_value="sector"):
+            device = helper.run()
+
+        patcher.stop()
 
         self.assertIsInstance(device, NVDIMMNamespaceDevice)
         self.assertTrue(device.exists)
@@ -897,6 +907,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         device = Mock()
         device.parents = []
         device.size = Size("10g")
+        device.path = "/dev/sda1"
         devicetree._add_device(device)
 
         # pylint: disable=attribute-defined-outside-init
@@ -924,15 +935,13 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         pv_info.pe_start = 0
         pv_info.pv_free = 0
 
-        device.path = sentinel.pv_path
-
         vg_device = Mock()
         vg_device.parents = []
         vg_device.lvs = []
         get_device_by_uuid.return_value = vg_device
 
         with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:
-            mock_pvs_cache.return_value = {sentinel.pv_path: pv_info}
+            mock_pvs_cache.return_value = {device.path: pv_info}
             with patch("blivet.udev.device_get_format", return_value=self.udev_type):
                 helper = self.helper_class(devicetree, data, device)
                 self.assertFalse(device in vg_device.parents)
@@ -957,7 +966,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         pv_info.vg_pv_count = 1
 
         with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:
-            mock_pvs_cache.return_value = {sentinel.pv_path: pv_info}
+            mock_pvs_cache.return_value = {device.path: pv_info}
             with patch("blivet.static_data.lvm_info.VGsInfo.cache", new_callable=PropertyMock) as mock_vgs_cache:
                 mock_vgs_cache.return_value = {pv_info.vg_uuid: Mock()}
                 with patch("blivet.udev.device_get_format", return_value=self.udev_type):
@@ -972,6 +981,8 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
                     vg_device = devicetree.get_device_by_name(pv_info.vg_name)
                     self.assertTrue(vg_device is not None)
                     devicetree._remove_device(vg_device)
+
+                    self.assertIn(device.path, lvm._lvm_devices)
 
         get_device_by_uuid.reset_mock()
 
@@ -1005,7 +1016,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         get_device_by_uuid.side_effect = gdbu
 
         with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:
-            mock_pvs_cache.return_value = {sentinel.pv_path: pv_info}
+            mock_pvs_cache.return_value = {device.path: pv_info}
             with patch("blivet.static_data.lvm_info.VGsInfo.cache", new_callable=PropertyMock) as mock_vgs_cache:
                 mock_vgs_cache.return_value = {pv_info.vg_uuid: Mock()}
                 with patch("blivet.static_data.lvm_info.LVsInfo.cache", new_callable=PropertyMock) as mock_lvs_cache:

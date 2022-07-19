@@ -28,12 +28,14 @@ from .devices import BTRFSDevice, DiskDevice
 from .devices import LUKSDevice, LVMLogicalVolumeDevice
 from .devices import PartitionDevice, MDRaidArrayDevice
 from .devices.lvm import LVMVDOPoolMixin, LVMVDOLogicalVolumeMixin, DEFAULT_THPOOL_RESERVE
+from .devices import StratisFilesystemDevice, StratisPoolDevice
 from .formats import get_format
 from .devicelibs import btrfs
 from .devicelibs import mdraid
 from .devicelibs import lvm
 from .devicelibs import raid
 from .devicelibs import crypto
+from .devicelibs import stratis
 from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import do_partitioning
@@ -59,6 +61,7 @@ DEVICE_TYPE_BTRFS = 3
 DEVICE_TYPE_DISK = 4
 DEVICE_TYPE_LVM_THINP = 5
 DEVICE_TYPE_LVM_VDO = 6
+DEVICE_TYPE_STRATIS = 7
 
 
 def is_supported_device_type(device_type):
@@ -83,6 +86,8 @@ def is_supported_device_type(device_type):
         devices = [MDRaidArrayDevice]
     elif device_type == DEVICE_TYPE_LVM_VDO:
         devices = [LVMLogicalVolumeDevice, LVMVDOPoolMixin, LVMVDOLogicalVolumeMixin]
+    elif device_type == DEVICE_TYPE_STRATIS:
+        devices = [StratisFilesystemDevice, StratisPoolDevice]
 
     return not any(c.unavailable_type_dependencies() for c in devices)
 
@@ -123,7 +128,8 @@ def get_device_type(device):
                     "lvmvdopool": DEVICE_TYPE_LVM,
                     "btrfs subvolume": DEVICE_TYPE_BTRFS,
                     "btrfs volume": DEVICE_TYPE_BTRFS,
-                    "mdarray": DEVICE_TYPE_MD}
+                    "mdarray": DEVICE_TYPE_MD,
+                    "stratis filesystem": DEVICE_TYPE_STRATIS}
 
     use_dev = device.raw_device
     if use_dev.is_disk:
@@ -142,7 +148,8 @@ def get_device_factory(blivet, device_type=DEVICE_TYPE_LVM, **kwargs):
                    DEVICE_TYPE_MD: MDFactory,
                    DEVICE_TYPE_LVM_THINP: LVMThinPFactory,
                    DEVICE_TYPE_LVM_VDO: LVMVDOFactory,
-                   DEVICE_TYPE_DISK: DeviceFactory}
+                   DEVICE_TYPE_DISK: DeviceFactory,
+                   DEVICE_TYPE_STRATIS: StratisFactory}
 
     factory_class = class_table[device_type]
     log.debug("instantiating %s: %s, %s, %s", factory_class,
@@ -378,6 +385,9 @@ class DeviceFactory(object):
         self.__actions = []
         self.__roots = []
 
+    def _is_container_encrypted(self):
+        return all(isinstance(p, LUKSDevice) for p in self.device.container.parents)
+
     def _update_defaults_from_device(self):
         """ Update default settings based on passed in device, if provided. """
         if self.device is None:
@@ -408,8 +418,7 @@ class DeviceFactory(object):
                   len(self.device.container.pvs) == 1 and
                   hasattr(self.device.container.pvs[0].raw_device, "level")):
                 self.container_raid_level = self.device.container.pvs[0].raw_device.level
-            self.container_encrypted = all(isinstance(p, LUKSDevice)
-                                           for p in self.device.container.parents)
+            self.container_encrypted = self._is_container_encrypted()
 
     @property
     def encrypted(self):
@@ -597,6 +606,8 @@ class DeviceFactory(object):
                 container = device.volume
             elif hasattr(device, "subvolumes"):
                 container = device
+            elif device.type == "stratis filesystem":
+                container = device.pool
         elif name:
             for c in self.storage.devices:
                 if c.name == name and c in self.container_list:
@@ -1054,6 +1065,24 @@ class PartitionFactory(DeviceFactory):
                                             grow=True, maxsize=max_size,
                                             **kwargs)
         return device
+
+    def _configure(self):
+        disks = []
+        for disk in self.disks:
+            if not disk.partitioned:
+                log.debug("removing unpartitioned disk %s", disk.name)
+            elif not disk.format.supported:
+                log.debug("removing disk with unsupported format %s", disk.name)
+            else:
+                disks.append(disk)
+
+        if not disks:
+            raise DeviceFactoryError("no usable disks specified for partition")
+
+        log.debug("setting new factory disks to %s", [d.name for d in disks])
+        self.disks = disks  # pylint: disable=attribute-defined-outside-init
+
+        super(PartitionFactory, self)._configure()
 
     def _set_disks(self):
         self.raw_device.req_disks = self.disks[:]
@@ -2013,3 +2042,201 @@ class BTRFSFactory(DeviceFactory):
             return
 
         super(BTRFSFactory, self)._reconfigure_device()
+
+
+class StratisFactory(DeviceFactory):
+
+    """ Factory for creating Stratis filesystems with partition block devices. """
+    child_factory_class = PartitionSetFactory
+    child_factory_fstype = "stratis"
+    size_set_class = TotalSizeSet
+
+    @property
+    def pool(self):
+        return self.container
+
+    @property
+    def container_list(self):
+        return self.storage.stratis_pools[:]
+
+    def _reconfigure_container(self):
+        """ Reconfigure a defined container required by this factory device. """
+        if getattr(self.container, "exists", False):
+            return
+
+        self.container.encrypted = self.container_encrypted or False
+        self._set_container_members()
+
+    #
+    # methods related to device size and disk space requirements
+    #
+    def _get_total_space(self):
+        """ Return the total space need for this factory's device/container.
+
+            This is used for the size argument to the child factory constructor
+            and also to construct the size set in PartitionSetFactory.configure.
+        """
+        space = Size(0)
+
+        if self.container_size == SIZE_POLICY_AUTO:
+            # automatic container size management
+            if self.pool:
+                space += sum(p.size for p in self.pool.parents)
+                space -= (self.pool.size - sum(fs.size for fs in self.pool.children))
+            else:
+                # we need to account for the stratis metadata
+                space += stratis.pool_used([d.size for d in self.disks], self.encrypted)
+
+            space += self._get_device_space()
+            log.debug("size bumped to %s to include new device space", space)
+            if self.device:
+                space -= self.device.size
+                log.debug("size cut to %s to omit old device space", space)
+        elif self.container_size == SIZE_POLICY_MAX:
+            # grow the container as large as possible
+            if self.pool:
+                space += sum(p.size for p in self.pool.parents)
+                log.debug("size bumped to %s to include Stratis pool parents", space)
+
+            space += self._get_free_disk_space()
+            log.debug("size bumped to %s to include free disk space", space)
+        else:
+            # fixed container size
+            space += self.container_size
+
+        return space
+
+    def _handle_no_size(self):
+        """ Set device size so that it grows to the largest size possible. """
+        if self.size is not None:
+            return
+
+        if self.container and (self.container.exists or
+                               self.container_size != SIZE_POLICY_AUTO):
+            self.size = self.container.free_space  # pylint: disable=attribute-defined-outside-init
+
+            if self.container_size == SIZE_POLICY_MAX:
+                self.size += self._get_free_disk_space()
+
+            if self.device:
+                self.size += self.device.size
+
+            if self.size == Size(0):
+                raise DeviceFactoryError("not enough free space for new device")
+        else:
+            super(StratisFactory, self)._handle_no_size()
+
+    def _get_device_size(self):
+        """ Return the factory device size including container limitations. """
+        size = self.size
+        free = self.pool.free_space
+        if self.device:
+            free += self.device.size
+
+        if free < size:
+            log.info("adjusting size from %s to %s so it fits "
+                     "in container %s", size, free, self.pool.name)
+            size = free
+
+        return size
+
+    def _set_device_size(self):
+        """ Set the size of the factory device. """
+        size = self._get_device_size()
+
+        # self.raw_device == self.device.raw_device
+        # (i.e. self.device or the backing device in case self.device is encrypted)
+        if self.device and size != self.device.size:
+            log.info("adjusting device size from %s to %s",
+                     self.device.size, size)
+            self.device.size = size
+            self.device.req_grow = False
+
+    def _get_new_container(self, *args, **kwargs):
+        if self.container_encrypted:
+            kwargs["encrypted"] = True
+        else:
+            kwargs["encrypted"] = False
+        return self.storage.new_stratis_pool(*args, **kwargs)
+
+    #
+    # methods to configure the factory's device
+    #
+    def _create_device(self):
+        """ Create the factory device. """
+        if self.device_name:
+            kwa = {"name": self.device_name}
+        else:
+            kwa = {}
+
+        # this gets us a size value that takes into account the actual size of
+        # the container
+        size = self._get_device_size()
+        if size <= Size(0):
+            raise DeviceFactoryError("not enough free space for new device")
+
+        parents = self._get_parent_devices()
+        try:
+            # pylint: disable=assignment-from-no-return
+            device = self._get_new_device(parents=parents,
+                                          mountpoint=self.mountpoint,
+                                          size=size,
+                                          **kwa)
+        except (StorageError, ValueError) as e:
+            log.error("device instance creation failed: %s", e)
+            raise
+
+        self.storage.create_device(device)
+        try:
+            self._post_create()
+        except (StorageError, blockdev.BlockDevError) as e:
+            log.error("device post-create method failed: %s", e)
+            self.storage.destroy_device(device)
+            raise_from(StorageError(e), e)
+        else:
+            if not device.size:
+                self.storage.destroy_device(device)
+                raise StorageError("failed to create device")
+
+        self.device = device
+
+    def _get_new_device(self, *args, **kwargs):
+        """ Create and return the factory device as a StorageDevice. """
+
+        name = kwargs.pop("name", "")
+        kwargs["name"] = self.storage.unique_device_name(name, parent=self.pool, name_set=True)
+
+        return self.storage.new_stratis_filesystem(*args, **kwargs)
+
+    def _set_name(self):
+        if not self.device_name:
+            #  pylint: disable=attribute-defined-outside-init
+            self.device_name = self.storage.suggest_device_name(
+                parent=self.pool,
+                swap=False,
+                mountpoint=self.mountpoint)
+
+        fsname = "%s/%s" % (self.pool.name, self.device_name)
+        safe_new_name = self.storage.safe_device_name(fsname, DEVICE_TYPE_STRATIS)
+        if self.device.name != safe_new_name:
+            if safe_new_name in self.storage.names:
+                log.error("not renaming '%s' to in-use name '%s'",
+                          self.device.name, safe_new_name)
+                return
+
+            if not safe_new_name.startswith(self.pool.name):
+                log.error("device rename failure (%s)", safe_new_name)
+                return
+
+            # strip off the vg name before setting
+            safe_new_name = safe_new_name[len(self.pool.name) + 1:]
+            log.debug("renaming device '%s' to '%s'",
+                      self.device.name, safe_new_name)
+            self.raw_device.name = safe_new_name
+
+    def _configure(self):
+        self._set_container()  # just sets self.container based on the specs
+        super(StratisFactory, self)._configure()
+
+    def _is_container_encrypted(self):
+        return self.container.encrypted

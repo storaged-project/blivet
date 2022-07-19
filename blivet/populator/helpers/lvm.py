@@ -88,6 +88,12 @@ class LVMFormatPopulator(FormatPopulator):
     def _get_kwargs(self):
         kwargs = super(LVMFormatPopulator, self)._get_kwargs()
 
+        # new PV, add it to the LVM devices list and re-run pvs/lvs/vgs
+        lvm.lvm_devices_add(self.device.path)
+        pvs_info.drop_cache()
+        vgs_info.drop_cache()
+        lvs_info.drop_cache()
+
         pv_info = pvs_info.cache.get(self.device.path, None)
 
         name = udev.device_get_name(self.data)

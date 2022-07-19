@@ -38,6 +38,7 @@ from .. import udev
 from .. import util
 from ..formats import get_format, DeviceFormat
 from ..size import Size
+from ..mounts import mounts_cache
 
 import logging
 log = logging.getLogger("blivet")
@@ -333,25 +334,61 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         names = [v.name for v in self.subvolumes]
         self.subvolumes.pop(names.index(name))
 
+    def _get_any_btrfs_mountpoint(self):
+        """ Get any of the mountpoints for this btrfs volume.
+            This includes mountpoints of subvolumes. The idea is
+            to get a mountpoint usable for calling btrfs functions
+            like btrfs.list_subvolumes where any mountpoint works.
+        """
+        # first just check whether this volume is mounted
+        if self.format.system_mountpoint:
+            return self.format.system_mountpoint
+        if self.original_format.system_mountpoint:
+            return self.original_format.system_mountpoint
+
+        # now try every possible mountpoint with any subvolspec in our cache
+        parents = [p.name for p in self.parents]
+        mount_spec = next(((dev, subvol) for dev, subvol in mounts_cache.mountpoints if dev in parents), None)
+        if mount_spec:
+            try:
+                return mounts_cache.get_mountpoints(devspec=mount_spec[0],
+                                                    subvolspec=mount_spec[1])[-1]
+            except IndexError:
+                return None
+        return None
+
+    def _list_subvolumes(self, mountpoint, snapshots_only=False):
+        subvols = []
+        try:
+            subvols = blockdev.btrfs.list_subvolumes(mountpoint,
+                                                     snapshots_only=snapshots_only)
+        except blockdev.BtrfsError as e:
+            log.debug("failed to list subvolumes: %s", e)
+        else:
+            self._get_default_subvolume_id()
+
+        return subvols
+
     def list_subvolumes(self, snapshots_only=False):
         subvols = []
         if flags.auto_dev_updates:
             self.setup(orig=True)
-        elif not self.original_format.status:
-            return subvols
 
-        try:
-            with self._do_temp_mount(orig=True) as mountpoint:
-                try:
-                    subvols = blockdev.btrfs.list_subvolumes(mountpoint,
-                                                             snapshots_only=snapshots_only)
-                except blockdev.BtrfsError as e:
-                    log.debug("failed to list subvolumes: %s", e)
-                else:
-                    self._get_default_subvolume_id()
+        # for list_subvolumes we can use mountpoint of a subvolume too, the volume
+        # itself doesn't need to be mounted
+        mountpoint = self._get_any_btrfs_mountpoint()
+        if mountpoint:
+            return self._list_subvolumes(mountpoint=mountpoint,
+                                         snapshots_only=snapshots_only)
 
-        except errors.FSError:
-            pass
+        # flags.auto_dev_updates is set --> we'll do a temp mount to get the subvolumes
+        if flags.auto_dev_updates:
+            try:
+                with self._do_temp_mount(orig=True) as mountpoint:
+                    subvols = self._list_subvolumes(mountpoint=mountpoint,
+                                                    snapshots_only=snapshots_only)
+            except errors.FSError:
+                pass
 
         return subvols
 

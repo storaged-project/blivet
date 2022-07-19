@@ -132,6 +132,10 @@ class LUKSError(DeviceFormatError):
     pass
 
 
+class IntegrityError(LUKSError):
+    pass
+
+
 class MDMemberError(DeviceFormatError):
     pass
 
@@ -184,6 +188,11 @@ class BTRFSError(StorageError):
 
 class BTRFSValueError(BTRFSError, ValueError):
     pass
+
+
+class StratisError(StorageError):
+    pass
+
 
 # DeviceTree
 
@@ -307,3 +316,17 @@ class EventHandlingError(StorageError):
 
 class ThreadError(StorageError):
     """ An error occurred in a non-main thread. """
+
+# other
+
+
+class FCoEError(StorageError, OSError):
+    pass
+
+
+class ISCSIError(StorageError, OSError):
+    pass
+
+
+class NVMeError(StorageError, OSError):
+    pass

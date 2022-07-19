@@ -1120,12 +1120,24 @@ class ActionConfigureFormat(DeviceAction):
             self.device.setup()
             self._execute(dry_run=False)
 
+    def obsoletes(self, action):
+        """ Return True is self obsoletes action.
+
+            ActionConfigureFormat instances obsolete other ActionConfigureFormat instances with
+            lower id, same device and same attribute.
+        """
+        return (self.device.id == action.device.id and
+                self.type == action.type and
+                self.obj == action.obj and
+                self.attr == action.attr and
+                self.id > action.id)
+
 
 class ActionConfigureDevice(DeviceAction):
 
     """ An action change of an attribute of a device """
     type = ACTION_TYPE_CONFIGURE
-    obj = ACTION_OBJECT_FORMAT
+    obj = ACTION_OBJECT_DEVICE
     type_desc_str = N_("configure device")
 
     def __init__(self, device, attr, new_value):
@@ -1150,7 +1162,10 @@ class ActionConfigureDevice(DeviceAction):
         self.old_value = getattr(self.device, self.attr)
 
         if self._execute:
-            self._execute(dry_run=True)
+            kwargs = {"old_%s" % self.attr: self.old_value,
+                      "new_%s" % self.attr: self.new_value,
+                      "dry_run": True}
+            self._execute(**kwargs)
 
     def apply(self):
         if self._applied:
@@ -1170,4 +1185,19 @@ class ActionConfigureDevice(DeviceAction):
         super(ActionConfigureDevice, self).execute(callbacks=callbacks)
 
         if self._execute is not None:
-            self._execute(dry_run=False)
+            kwargs = {"old_%s" % self.attr: self.old_value,
+                      "new_%s" % self.attr: self.new_value,
+                      "dry_run": False}
+            self._execute(**kwargs)
+
+    def obsoletes(self, action):
+        """ Return True is self obsoletes action.
+
+            ActionConfigureDevice instances obsolete other ActionConfigureDevice instances with
+            lower id, same device and same attribute.
+        """
+        return (self.device.id == action.device.id and
+                self.type == action.type and
+                self.obj == action.obj and
+                self.attr == action.attr and
+                self.id > action.id)

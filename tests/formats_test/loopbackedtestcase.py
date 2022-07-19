@@ -32,7 +32,7 @@ def make_loop_dev(device_name, file_name):
         :param str file_name: the path of the backing file
     """
 
-    proc = subprocess.Popen(["losetup", device_name, file_name],
+    proc = subprocess.Popen(["losetup", device_name, file_name, "--partscan"],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     while True:
         proc.communicate()

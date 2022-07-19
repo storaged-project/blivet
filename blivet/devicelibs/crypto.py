@@ -20,6 +20,8 @@
 #            Martin Sivak <msivak@redhat.com>
 #
 
+import hashlib
+
 import gi
 gi.require_version("BlockDev", "2.0")
 
@@ -41,6 +43,11 @@ EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_CRYPTO_PLUGIN]
 LUKS_VERSIONS = {"luks1": BlockDev.CryptoLUKSVersion.LUKS1,
                  "luks2": BlockDev.CryptoLUKSVersion.LUKS2}
 DEFAULT_LUKS_VERSION = "luks2"
+
+DEFAULT_INTEGRITY_ALGORITHM = "crc32c"
+
+# from linux/drivers/md/dm-integrity.c
+MAX_JOURNAL_SIZE = 131072 * SECTOR_SIZE
 
 
 def calculate_luks2_max_memory():
@@ -64,3 +71,32 @@ def calculate_luks2_max_memory():
     # free rounded to multiple of 128 MiB
     else:
         return free_mem.round_to_nearest(Size("128 MiB"), ROUND_DOWN)
+
+
+def _integrity_tag_size(hash_alg):
+    if hash_alg.startswith("crc32"):
+        return 4
+
+    try:
+        h = hashlib.new(hash_alg)
+    except ValueError:
+        log.debug("unknown/unsupported hash '%s' for integrity", hash_alg)
+        return 4
+    else:
+        return h.digest_size
+
+
+def calculate_integrity_metadata_size(device_size, algorithm=DEFAULT_INTEGRITY_ALGORITHM):
+    tag_size = _integrity_tag_size(algorithm)
+    # metadata (checksums) size
+    msize = Size(device_size * tag_size / (SECTOR_SIZE + tag_size))
+    msize = (msize / SECTOR_SIZE + 1) * SECTOR_SIZE  # round up to sector
+
+    # superblock and journal metadata
+    msize += Size("1 MiB")
+
+    # journal size, based on linux/drivers/md/dm-integrity.c
+    jsize = min(MAX_JOURNAL_SIZE, Size(int(device_size) >> 7))
+    jsize = (jsize / SECTOR_SIZE + 1) * SECTOR_SIZE  # round up to sector
+
+    return msize + jsize

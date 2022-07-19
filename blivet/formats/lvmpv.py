@@ -121,14 +121,39 @@ class LVMPhysicalVolume(DeviceFormat):
     def supported(self):
         return super(LVMPhysicalVolume, self).supported and self._plugin.available
 
+    def lvmdevices_add(self):
+        if not lvm.HAVE_LVMDEVICES:
+            raise PhysicalVolumeError("LVM devices file feature is not supported")
+
+        try:
+            blockdev.lvm.devices_add(self.device)
+        except blockdev.LVMError as e:
+            log.debug("Failed to add PV %s to the LVM devices file: %s", self.device, str(e))
+
+    def lvmdevices_remove(self):
+        if not lvm.HAVE_LVMDEVICES:
+            raise PhysicalVolumeError("LVM devices file feature is not supported")
+
+        try:
+            blockdev.lvm.devices_delete(self.device)
+        except blockdev.LVMError as e:
+            log.debug("Failed to remove PV %s from the LVM devices file: %s", self.device, str(e))
+
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-
-        lvm._set_global_config()
+        lvm.lvm_devices_add(self.device)
 
         ea_yes = blockdev.ExtraArg.new("-y", "")
-        blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
+
+        if lvm.HAVE_LVMDEVICES:
+            with lvm.empty_lvm_devices():
+                # with lvmdbusd we need to call the pvcreate without --devices otherwise lvmdbusd
+                # wouldn't be able to find the newly created pv and the call would fail
+                blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
+                self.lvmdevices_add()
+        else:
+            blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
 
     def _destroy(self, **kwargs):
         log_method_call(self, device=self.device,
@@ -138,7 +163,10 @@ class LVMPhysicalVolume(DeviceFormat):
         except blockdev.LVMError:
             DeviceFormat._destroy(self, **kwargs)
         finally:
+            lvm.lvm_devices_remove(self.device)
             udev.settle()
+            if lvm.HAVE_LVMDEVICES:
+                self.lvmdevices_remove()
 
     @property
     def destroyable(self):

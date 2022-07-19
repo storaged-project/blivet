@@ -29,8 +29,7 @@ from .deviceaction import ActionCreateDevice
 from .deviceaction import action_type_from_string, action_object_from_string
 from .devicelibs import lvm
 from .devices import PartitionDevice
-from .errors import DiskLabelCommitError, StorageError
-from .flags import flags
+from .errors import DiskLabelCommitError
 from . import tsort
 from .threads import blivet_lock, SynchronizedMeta
 
@@ -199,21 +198,6 @@ class ActionList(object):
         log.info("pruning action queue...")
         self.prune()
 
-        problematic = self._find_active_devices_on_action_disks(devices=devices)
-        if problematic:
-            if flags.auto_dev_updates:
-                for device in devices:
-                    if device.protected:
-                        continue
-
-                    try:
-                        device.teardown(recursive=True)
-                    except StorageError as e:
-                        log.info("teardown of %s failed: %s", device.name, e)
-            else:
-                log.debug("ignoring devices in use on disks with changes: %s",
-                          ",".join(problematic))
-
         log.info("resetting parted disks...")
         for device in devices:
             if device.partitioned and device.format.supported:
@@ -258,10 +242,9 @@ class ActionList(object):
         for action in self._actions:
             log.debug("action: %s", action)
 
-            # Remove lvm filters for devices we are operating on
-            lvm.lvm_cc_removeFilterRejectRegexp(action.device.name)
             for device in (d for d in devices if d.depends_on(action.device)):
-                lvm.lvm_cc_removeFilterRejectRegexp(device.name)
+                if device.format.type == "lvmpv":
+                    lvm.lvm_devices_add(device.path)
 
     def _post_process(self, devices=None):
         """ Clean up relics from action queue execution. """
@@ -277,32 +260,6 @@ class ActionList(object):
         for partition in (d for d in devices if isinstance(d, PartitionDevice)):
             pdisk = partition.disk.format.parted_disk
             partition.parted_partition = pdisk.getPartitionByPath(partition.path)
-
-    def _find_active_devices_on_action_disks(self, devices=None):
-        """ Return a list of devices using the disks we plan to change. """
-        # Find out now if there are active devices using partitions on disks
-        # whose disklabels we are going to change. If there are, do not proceed.
-        devices = devices or []
-        disks = []
-        for action in self._actions:
-            disk = None
-            if action.is_format and action.format.type == "disklabel":
-                disk = action.device
-
-            if disk is not None and disk not in disks:
-                disks.append(disk)
-
-        active = []
-        for dev in devices:
-            if dev.status and not dev.is_disk and \
-               not isinstance(dev, PartitionDevice):
-                active.append(dev)
-
-            elif dev.format.status and not dev.is_disk:
-                active.append(dev)
-
-        devices = [a.name for a in active if any(d in disks for d in a.disks)]
-        return devices
 
     @with_flag("processing")
     def process(self, callbacks=None, devices=None, dry_run=None):
