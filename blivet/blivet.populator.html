@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>blivet.populator package &#8212; Blivet 3.4.4 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>blivet.populator package &#8212; Blivet 3.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -34,7 +35,7 @@
         <li class="right" >
           <a href="blivet.formats.html" title="blivet.formats package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.populator package</a></li> 
       </ul>
@@ -45,9 +46,9 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="blivet-populator-package">
+  <section id="blivet-populator-package">
 <h1>blivet.populator package<a class="headerlink" href="#blivet-populator-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="subpackages">
+<section id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
@@ -69,20 +70,21 @@
 <li class="toctree-l2"><a class="reference internal" href="blivet.populator.helpers.html#module-blivet.populator.helpers.optical">blivet.populator.helpers.optical module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="blivet.populator.helpers.html#module-blivet.populator.helpers.partition">blivet.populator.helpers.partition module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="blivet.populator.helpers.html#module-blivet.populator.helpers.populatorhelper">blivet.populator.helpers.populatorhelper module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.populator.helpers.html#module-blivet.populator.helpers.stratis">blivet.populator.helpers.stratis module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="blivet.populator.helpers.html#module-blivet.populator.helpers">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </div>
-</div>
-<div class="section" id="submodules">
+</section>
+<section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="module-blivet.populator.populator">
+</section>
+<section id="module-blivet.populator.populator">
 <span id="blivet-populator-populator-module"></span><h2>blivet.populator.populator module<a class="headerlink" href="#module-blivet.populator.populator" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.populator.populator.PopulatorMixin">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.populator.populator.</span></span><span class="sig-name descname"><span class="pre">PopulatorMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disk_images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.populator.PopulatorMixin" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.populator.populator.</span></span><span class="sig-name descname"><span class="pre">PopulatorMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disk_images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.populator.PopulatorMixin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -90,9 +92,9 @@
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="blivet.populator.populator.PopulatorMixin.drop_lvm_cache">
-<span class="sig-name descname"><span class="pre">drop_lvm_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.populator.PopulatorMixin.drop_lvm_cache" title="Permalink to this definition">¶</a></dt>
-<dd><p>Drop cached lvm information.</p>
+<dt class="sig sig-object py" id="blivet.populator.populator.PopulatorMixin.drop_device_info_cache">
+<span class="sig-name descname"><span class="pre">drop_device_info_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.populator.PopulatorMixin.drop_device_info_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drop cached device information.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -108,7 +110,7 @@ will not be updated unless update_orig_fmt is True.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.populator.populator.PopulatorMixin.handle_format">
-<span class="sig-name descname"><span class="pre">handle_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.populator.PopulatorMixin.handle_format" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">handle_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.populator.PopulatorMixin.handle_format" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -176,11 +178,11 @@ the disk images is ignored.</p>
 <p>This allows us to proceed with partially corrupt gpt disklabels.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="module-blivet.populator">
+</section>
+<section id="module-blivet.populator">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-blivet.populator" title="Permalink to this headline">¶</a></h2>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -189,8 +191,9 @@ the disk images is ignored.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">blivet.populator package</a><ul>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
@@ -200,12 +203,17 @@ the disk images is ignored.</p>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="blivet.formats.html"
-                        title="previous chapter">blivet.formats package</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="blivet.populator.helpers.html"
-                        title="next chapter">blivet.populator.helpers package</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="blivet.formats.html"
+                          title="previous chapter">blivet.formats package</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="blivet.populator.helpers.html"
+                          title="next chapter">blivet.populator.helpers package</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -242,14 +250,14 @@ the disk images is ignored.</p>
         <li class="right" >
           <a href="blivet.formats.html" title="blivet.formats package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.populator package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2021, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
+        &#169; Copyright 2013-2022, Red Hat, Inc..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>

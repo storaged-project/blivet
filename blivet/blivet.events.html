@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>blivet.events package &#8212; Blivet 3.4.4 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>blivet.events package &#8212; Blivet 3.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -34,7 +35,7 @@
         <li class="right" >
           <a href="blivet.devices.html" title="blivet.devices package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.events package</a></li> 
       </ul>
@@ -45,51 +46,51 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="blivet-events-package">
+  <section id="blivet-events-package">
 <h1>blivet.events package<a class="headerlink" href="#blivet-events-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="submodules">
+<section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="module-blivet.events.changes">
+</section>
+<section id="module-blivet.events.changes">
 <span id="blivet-events-changes-module"></span><h2>blivet.events.changes module<a class="headerlink" href="#module-blivet.events.changes" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.events.changes.ActionCanceled">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">ActionCanceled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.ActionCanceled" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">ActionCanceled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.ActionCanceled" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.util.default_namedtuple.&lt;locals&gt;.TheDefaultNamedTuple</span></code></p>
 <p>Create new instance of ActionCanceled(action,)</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.events.changes.AttributeChanged">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">AttributeChanged</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.AttributeChanged" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">AttributeChanged</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.AttributeChanged" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.util.default_namedtuple.&lt;locals&gt;.TheDefaultNamedTuple</span></code></p>
 <p>Create new instance of AttrChanged(device, fmt, attr, old, new)</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.events.changes.DeviceAdded">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">DeviceAdded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.DeviceAdded" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">DeviceAdded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.DeviceAdded" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.util.default_namedtuple.&lt;locals&gt;.TheDefaultNamedTuple</span></code></p>
 <p>Create new instance of DeviceAdded(device,)</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.events.changes.DeviceRemoved">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">DeviceRemoved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.DeviceRemoved" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">DeviceRemoved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.DeviceRemoved" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.util.default_namedtuple.&lt;locals&gt;.TheDefaultNamedTuple</span></code></p>
 <p>Create new instance of DeviceRemoved(device,)</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.events.changes.ParentAdded">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">ParentAdded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.ParentAdded" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">ParentAdded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.ParentAdded" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.util.default_namedtuple.&lt;locals&gt;.TheDefaultNamedTuple</span></code></p>
 <p>Create new instance of ListItemAdded(device, item)</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.events.changes.ParentRemoved">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">ParentRemoved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.ParentRemoved" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">ParentRemoved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.ParentRemoved" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.util.default_namedtuple.&lt;locals&gt;.TheDefaultNamedTuple</span></code></p>
 <p>Create new instance of ListItemRemoved(device, item)</p>
 </dd></dl>
@@ -106,7 +107,7 @@
 
 <dl class="py data">
 <dt class="sig sig-object py" id="blivet.events.changes.data">
-<span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">data</span></span><em class="property"> <span class="pre">=</span> <span class="pre">&lt;_thread._local</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#blivet.events.changes.data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_thread._local</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#blivet.events.changes.data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Thread-local data for event handler threads.</p>
 </dd></dl>
 
@@ -145,12 +146,12 @@
 <span class="sig-prename descclassname"><span class="pre">blivet.events.changes.</span></span><span class="sig-name descname"><span class="pre">record_change</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">change</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.changes.record_change" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</div>
-<div class="section" id="module-blivet.events.handler">
+</section>
+<section id="module-blivet.events.handler">
 <span id="blivet-events-handler-module"></span><h2>blivet.events.handler module<a class="headerlink" href="#module-blivet.events.handler" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.events.handler.EventHandlerMixin">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.events.handler.</span></span><span class="sig-name descname"><span class="pre">EventHandlerMixin</span></span><a class="headerlink" href="#blivet.events.handler.EventHandlerMixin" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.events.handler.</span></span><span class="sig-name descname"><span class="pre">EventHandlerMixin</span></span><a class="headerlink" href="#blivet.events.handler.EventHandlerMixin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.events.handler.EventHandlerMixin.handle_event">
@@ -163,12 +164,12 @@
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-blivet.events.manager">
+</section>
+<section id="module-blivet.events.manager">
 <span id="blivet-events-manager-module"></span><h2>blivet.events.manager module<a class="headerlink" href="#module-blivet.events.manager" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.events.manager.Event">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.events.manager.</span></span><span class="sig-name descname"><span class="pre">Event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.manager.Event" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.events.manager.</span></span><span class="sig-name descname"><span class="pre">Event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.manager.Event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="blivet.html#blivet.util.ObjectID" title="blivet.util.ObjectID"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.util.ObjectID</span></code></a></p>
 <p>An external event.</p>
 <dl class="field-list simple">
@@ -184,7 +185,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.events.manager.EventManager">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.events.manager.</span></span><span class="sig-name descname"><span class="pre">EventManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler_cb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notify_cb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_cb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.manager.EventManager" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.events.manager.</span></span><span class="sig-name descname"><span class="pre">EventManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler_cb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notify_cb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_cb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.manager.EventManager" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.events.manager.EventManager.add_mask">
@@ -205,13 +206,13 @@ action of None means mask all event types</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.events.manager.EventManager.disable">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">disable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.manager.EventManager.disable" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">disable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.manager.EventManager.disable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Disable monitoring and handling of events.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.events.manager.EventManager.enable">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">enable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.manager.EventManager.enable" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">enable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.manager.EventManager.enable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enable monitoring and handling of events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
@@ -222,12 +223,12 @@ action of None means mask all event types</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.events.manager.EventManager.enabled">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">enabled</span></span><a class="headerlink" href="#blivet.events.manager.EventManager.enabled" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">enabled</span></span><a class="headerlink" href="#blivet.events.manager.EventManager.enabled" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.events.manager.EventManager.error_cb">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">error_cb</span></span><a class="headerlink" href="#blivet.events.manager.EventManager.error_cb" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">error_cb</span></span><a class="headerlink" href="#blivet.events.manager.EventManager.error_cb" title="Permalink to this definition">¶</a></dt>
 <dd><p>callback to run when an exception occurrs in a thread.</p>
 </dd></dl>
 
@@ -253,13 +254,13 @@ raise the original exception.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.events.manager.EventManager.handler_cb">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">handler_cb</span></span><a class="headerlink" href="#blivet.events.manager.EventManager.handler_cb" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handler_cb</span></span><a class="headerlink" href="#blivet.events.manager.EventManager.handler_cb" title="Permalink to this definition">¶</a></dt>
 <dd><p>the main event handler</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.events.manager.EventManager.notify_cb">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">notify_cb</span></span><a class="headerlink" href="#blivet.events.manager.EventManager.notify_cb" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">notify_cb</span></span><a class="headerlink" href="#blivet.events.manager.EventManager.notify_cb" title="Permalink to this definition">¶</a></dt>
 <dd><p>notification handler that runs after the main event handler</p>
 </dd></dl>
 
@@ -272,7 +273,7 @@ raise the original exception.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.events.manager.EventMask">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.events.manager.</span></span><span class="sig-name descname"><span class="pre">EventMask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.manager.EventMask" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.events.manager.</span></span><span class="sig-name descname"><span class="pre">EventMask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.manager.EventMask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="blivet.html#blivet.util.ObjectID" title="blivet.util.ObjectID"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.util.ObjectID</span></code></a></p>
 <p>Specification of events to ignore.</p>
 <dl class="field-list simple">
@@ -299,7 +300,7 @@ raise the original exception.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.events.manager.UdevEventManager">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">blivet.events.manager.</span></span><span class="sig-name descname"><span class="pre">UdevEventManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler_cb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notify_cb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.manager.UdevEventManager" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.events.manager.</span></span><span class="sig-name descname"><span class="pre">UdevEventManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler_cb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notify_cb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.events.manager.UdevEventManager" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#blivet.events.manager.EventManager" title="blivet.events.manager.EventManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.events.manager.EventManager</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.events.manager.UdevEventManager.disable">
@@ -315,7 +316,7 @@ raise the original exception.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.events.manager.UdevEventManager.enabled">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">enabled</span></span><a class="headerlink" href="#blivet.events.manager.UdevEventManager.enabled" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">enabled</span></span><a class="headerlink" href="#blivet.events.manager.UdevEventManager.enabled" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -326,11 +327,11 @@ raise the original exception.</p>
 <dd><p>Validate signature of callback function, returning True on success.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="module-blivet.events">
+</section>
+<section id="module-blivet.events">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-blivet.events" title="Permalink to this headline">¶</a></h2>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -339,8 +340,9 @@ raise the original exception.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">blivet.events package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-blivet.events.changes">blivet.events.changes module</a></li>
@@ -351,12 +353,17 @@ raise the original exception.</p>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="blivet.devices.html"
-                        title="previous chapter">blivet.devices package</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="blivet.formats.html"
-                        title="next chapter">blivet.formats package</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="blivet.devices.html"
+                          title="previous chapter">blivet.devices package</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="blivet.formats.html"
+                          title="next chapter">blivet.formats package</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -393,14 +400,14 @@ raise the original exception.</p>
         <li class="right" >
           <a href="blivet.devices.html" title="blivet.devices package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.5.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.events package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2021, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
+        &#169; Copyright 2013-2022, Red Hat, Inc..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>

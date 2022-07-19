@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LVM VDO support &#8212; Blivet 3.4.4 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>LVM VDO support &#8212; Blivet 3.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -26,7 +27,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.5.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">LVM VDO support</a></li> 
       </ul>
     </div>  
@@ -36,12 +37,12 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="lvm-vdo-support">
+  <section id="lvm-vdo-support">
 <h1>LVM VDO support<a class="headerlink" href="#lvm-vdo-support" title="Permalink to this headline">¶</a></h1>
 <p>Support for creating LVM VDO devices has been added in Blivet 3.4.</p>
 <p>These devices are similar to LVM thinly provisioned volumes, but there are some special steps
 and limitations when creating these devices which this document describes.</p>
-<div class="section" id="lvm-vdo-in-blivet">
+<section id="lvm-vdo-in-blivet">
 <h2>LVM VDO in Blivet<a class="headerlink" href="#lvm-vdo-in-blivet" title="Permalink to this headline">¶</a></h2>
 <p>LVM VDO devices are represented by two <code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice</span></code> devices:</p>
 <ul class="simple">
@@ -91,8 +92,8 @@ both deduplication and compression enabled:</p>
 <p>When removing existing LVM VDO devices, both devices must be removed from the devicetree and the VDO
 logical volume must be removed first (<code class="docutils literal notranslate"><span class="pre">recursive_remove</span></code> can be used to automate these two steps).</p>
 <p>Managing of existing LVM VDO devices is currently not supported.</p>
-</div>
-<div class="section" id="lvm-vdo-in-devicefactory">
+</section>
+<section id="lvm-vdo-in-devicefactory">
 <h2>LVM VDO in Devicefactory<a class="headerlink" href="#lvm-vdo-in-devicefactory" title="Permalink to this headline">¶</a></h2>
 <p>For the top-down specified creation using device factories a new <code class="docutils literal notranslate"><span class="pre">LVMVDOFactory</span></code> factory has been
 added. Factory device in this case is the VDO logical volume and is again automatically created
@@ -125,8 +126,8 @@ a unique name will be generated if omitted. Both <code class="docutils literal n
 <code class="docutils literal notranslate"><span class="pre">True</span></code> (enabled) if not specified.</p>
 <p>This factory can create only a single VDO logical volume in a single VDO pool but additional VDO pools
 can be added by repeating the steps to create the first one.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -135,8 +136,9 @@ can be added by repeating the steps to create the first one.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">LVM VDO support</a><ul>
 <li><a class="reference internal" href="#lvm-vdo-in-blivet">LVM VDO in Blivet</a></li>
 <li><a class="reference internal" href="#lvm-vdo-in-devicefactory">LVM VDO in Devicefactory</a></li>
@@ -144,6 +146,7 @@ can be added by repeating the steps to create the first one.</p>
 </li>
 </ul>
 
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -174,13 +177,13 @@ can be added by repeating the steps to create the first one.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.4.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.5.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">LVM VDO support</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2021, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.1.2.
+        &#169; Copyright 2013-2022, Red Hat, Inc..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>
