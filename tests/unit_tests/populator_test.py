@@ -98,11 +98,13 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
         # The general case for dm devices is that adding the parent devices
         # will result in the dm device itself being in the tree.
         device = Mock()
+        device.id = 0
         devicetree.get_device_by_name.return_value = device
         data = {"DM_UUID": sentinel.dm_uuid}
         helper = self.helper_class(devicetree, data)
 
         parent = Mock()
+        parent.id = 0
         parent.parents = []
         devicetree._add_parent_devices.return_value = [parent]
         devicetree._add_device(parent)
@@ -731,9 +733,9 @@ class MultipathDevicePopulatorTestCase(PopulatorHelperTestCase):
 
         device_name = "mpathtest"
         device_get_name.return_value = device_name
-        parent_1 = Mock(tags=set(), wwn=wwn[2:])
+        parent_1 = Mock(tags=set(), wwn=wwn[2:], id=0)
         parent_1.parents = []
-        parent_2 = Mock(tags=set(), wwn=wwn[2:])
+        parent_2 = Mock(tags=set(), wwn=wwn[2:], id=0)
         parent_2.parents = []
         devicetree._add_device(parent_1)
         devicetree._add_device(parent_2)
@@ -908,6 +910,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         devicetree = DeviceTree()
         data = dict()
         device = Mock()
+        device.id = 0
         device.parents = []
         device.size = Size("10g")
         device.path = "/dev/sda1"
@@ -939,6 +942,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         pv_info.pv_free = 0
 
         vg_device = Mock()
+        vg_device.id = 0
         vg_device.parents = []
         vg_device.lvs = []
         get_device_by_uuid.return_value = vg_device
@@ -991,6 +995,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         # pv belongs to a valid vg not in the tree with two lvs
         lv1 = Mock()
+        lv1.id = 0
         lv1.vg_name = pv_info.vg_name
         lv1.lv_name = "testlv1"
         lv1.uuid = sentinel.lv1_uuid
@@ -1000,6 +1005,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         lv1_name = "%s-%s" % (pv_info.vg_name, lv1.lv_name)
 
         lv2 = Mock()
+        lv2.id = 0
         lv2.vg_name = pv_info.vg_name
         lv2.lv_name = "testlv2"
         lv2.uuid = sentinel.lv2_uuid
@@ -1070,6 +1076,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
         devicetree = DeviceTree()
         data = dict()
         device = Mock()
+        device.id = 0
         device.name = sentinel.dev1_name
         device.parents = []
         device.size = Size("10g")
@@ -1086,6 +1093,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
         blockdev.md.examine.return_value = md_info
 
         md_device = Mock()
+        md_device.id = 0
         get_device_by_uuid.return_value = md_device
 
         with patch("blivet.udev.device_get_format", return_value=self.udev_type):
@@ -1136,6 +1144,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         # second of two members belonging to a valid array
         device2 = Mock()
+        device2.id = 0
         device2.name = sentinel.dev2_name
         device2.parents = []
         device2.size = Size("10g")
