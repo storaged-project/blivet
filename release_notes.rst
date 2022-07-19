@@ -1,3 +1,39 @@
+3.5.0
+======
+* `Stratis support`_
+* `LVM cache pools support`_
+* `LVM device file support`_
+* `Device rename support`_
+* `NPIV-enabled zFCP devices support`_
+
+Stratis support
+----------------
+Blivet can now create Stratis pools and filesystems.
+This also includes devicefactory support for Stratis devices and
+support for creating and unlocking encrypted Stratis pools.
+
+LVM cache pools support
+------------------------
+Blivet can now create LVM cache pools and attach them to
+existing logical volumes.
+
+LVM device file support
+------------------------
+Blivet now supports the new LVM device file used for device
+filtering.
+
+Device rename support
+----------------------
+Blivet now can rename devices (LVM Volume Groups and Logical Volumes)
+using the ActionConfigureDevice action.
+
+NPIV-enabled zFCP devices support
+----------------------------------
+Blivet now supports zFCP NPIV (N_Port ID virtualization) devices.
+The kernel module will detect the WWPNs and LUNs and bring all the devices
+up automatically. This means the user doesn't have to provide
+the WWPN and LUN IDs.
+
 3.4.0
 ======
 * `LVM VDO Support`_
