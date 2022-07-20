@@ -14,7 +14,8 @@ class StratisTestCase(StorageTestCase):
     def setUpClass(cls):
         unavailable_deps = StratisFilesystemDevice.unavailable_type_dependencies()
         if unavailable_deps:
-            raise unittest.SkipTest("some unavailable dependencies required for this test: %s" % unavailable_deps)
+            dep_str = ", ".join([d.name for d in unavailable_deps])
+            raise unittest.SkipTest("some unavailable dependencies required for this test: %s" % dep_str)
 
     def setUp(self):
         super().setUp()
