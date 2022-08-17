@@ -41,7 +41,7 @@ class MDRaidMember(DeviceFormat):
     """ An mdraid member disk. """
     _type = "mdmember"
     _name = N_("software RAID")
-    _udev_types = ["linux_raid_member"]
+    _udev_types = ["linux_raid_member", "ddf_raid_member"]
     parted_flag = PARTITION_RAID
     _formattable = True                 # can be formatted
     _supported = True                   # is supported
