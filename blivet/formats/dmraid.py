@@ -43,7 +43,7 @@ class DMRaidMember(DeviceFormat):
     #
     #     One problem that presents is the possibility of someone passing
     #     a dmraid member to the MDRaidArrayDevice constructor.
-    _udev_types = ["adaptec_raid_member", "ddf_raid_member",
+    _udev_types = ["adaptec_raid_member",
                    "hpt37x_raid_member", "hpt45x_raid_member",
                    "isw_raid_member",
                    "jmicron_raid_member", "lsi_mega_raid_member",
