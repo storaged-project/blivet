@@ -98,17 +98,21 @@ class MDFormatPopulator(FormatPopulator):
 
     def _get_kwargs(self):
         kwargs = super(MDFormatPopulator, self)._get_kwargs()
-        try:
-            # ID_FS_UUID contains the array UUID
-            kwargs["md_uuid"] = udev.device_get_uuid(self.data)
-        except KeyError:
-            log.warning("mdraid member %s has no md uuid", udev.device_get_name(self.data))
+        kwargs["biosraid"] = udev.device_is_biosraid_member(self.data)
+        if not kwargs["biosraid"]:
+            try:
+                # ID_FS_UUID contains the array UUID
+                kwargs["md_uuid"] = udev.device_get_uuid(self.data)
+            except KeyError:
+                log.warning("mdraid member %s has no md uuid", udev.device_get_name(self.data))
+        else:
+            # for BIOS RAIDs we can't get the UUID from udev, we'll get it from mdadm in `run` below
+            kwargs["md_uuid"] = None
 
         # reset the uuid to the member-specific value
         # this will be None for members of v0 metadata arrays
         kwargs["uuid"] = udev.device_get_md_device_uuid(self.data)
 
-        kwargs["biosraid"] = udev.device_is_biosraid_member(self.data)
         return kwargs
 
     def run(self):
