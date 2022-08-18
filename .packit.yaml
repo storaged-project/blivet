@@ -10,3 +10,9 @@ jobs:
     targets:
     - fedora-all
   trigger: pull_request
+srpm_build_deps:
+ - make
+ - systemd
+ - gettext
+ - python3-devel
+ - python3-setuptools
