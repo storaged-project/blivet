@@ -16,3 +16,5 @@ srpm_build_deps:
  - gettext
  - python3-devel
  - python3-setuptools
+
+downstream_package_name: python-blivet
