@@ -88,7 +88,6 @@ class Blivet(object):
         self.devicetree = DeviceTree(ignored_disks=self.ignored_disks,
                                      exclusive_disks=self.exclusive_disks,
                                      disk_images=self.disk_images)
-        self.roots = []
 
     @property
     def short_product_name(self):
@@ -1314,26 +1313,6 @@ class Blivet(object):
 
             p = partition.disk.format.parted_disk.getPartitionByPath(partition.path)
             partition.parted_partition = p
-
-        for root in new.roots:
-            root.swaps = [new.devicetree.get_device_by_id(d.id, hidden=True) for d in root.swaps]
-            root.swaps = [s for s in root.swaps if s]
-
-            removed = set()
-            for (mountpoint, old_dev) in root.mounts.items():
-                if old_dev is None:
-                    continue
-
-                new_dev = new.devicetree.get_device_by_id(old_dev.id, hidden=True)
-                if new_dev is None:
-                    # if the device has been removed don't include this
-                    # mountpoint at all
-                    removed.add(mountpoint)
-                else:
-                    root.mounts[mountpoint] = new_dev
-
-            for mnt in removed:
-                del root.mounts[mnt]
 
         log.debug("finished Blivet copy")
         return new

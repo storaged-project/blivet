@@ -383,7 +383,6 @@ class DeviceFactory(object):
         # used for error recovery
         self.__devices = []
         self.__actions = []
-        self.__roots = []
 
     def _is_container_encrypted(self):
         return all(isinstance(p, LUKSDevice) for p in self.device.container.parents)
@@ -995,12 +994,10 @@ class DeviceFactory(object):
         _blivet_copy = self.storage.copy()
         self.__devices = _blivet_copy.devicetree._devices
         self.__actions = _blivet_copy.devicetree._actions
-        self.__roots = _blivet_copy.roots
 
     def _revert_devicetree(self):
         self.storage.devicetree._devices = self.__devices
         self.storage.devicetree._actions = self.__actions
-        self.storage.roots = self.__roots
 
 
 class PartitionFactory(DeviceFactory):
