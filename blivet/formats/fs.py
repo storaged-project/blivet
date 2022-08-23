@@ -1422,7 +1422,7 @@ class TmpFS(NoDevFS):
 
         # if the size is 0, which is probably not set, accept the default
         # size when mounting.
-        self._accept_default_size = not(self._size)
+        self._accept_default_size = not self._size
 
     def create(self, **kwargs):
         """ A filesystem is created automatically once tmpfs is mounted. """
