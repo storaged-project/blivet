@@ -886,4 +886,4 @@ class StorageDevice(Device):
             return all(self.is_name_valid(n) for n in name.split('/'))
 
         badchars = any(c in ('\x00', '/') for c in name)
-        return not(badchars or name == '.' or name == '..')
+        return not badchars and name != '.' and name != '..'
