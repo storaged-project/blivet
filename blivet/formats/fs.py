@@ -1091,7 +1091,7 @@ class XFS(FS):
     _modules = ["xfs"]
     _labelfs = fslabeling.XFSLabeling()
     _uuidfs = fsuuid.XFSUUID()
-    _min_size = Size("16 MiB")
+    _min_size = Size("300 MiB")
     _max_size = Size("16 EiB")
     _formattable = True
     _linux_native = True
@@ -1422,7 +1422,7 @@ class TmpFS(NoDevFS):
 
         # if the size is 0, which is probably not set, accept the default
         # size when mounting.
-        self._accept_default_size = not(self._size)
+        self._accept_default_size = not self._size
 
     def create(self, **kwargs):
         """ A filesystem is created automatically once tmpfs is mounted. """

@@ -130,7 +130,7 @@ class FileDevice(StorageDevice):
 
     def is_name_valid(self, name):
         # Override StorageDevice.is_name_valid to allow /
-        return not('\x00' in name or name == '.' or name == '..')
+        return '\x00' not in name and name != '.' and name != '..'
 
     def update_sysfs_path(self):
         pass

@@ -3,7 +3,6 @@ try:
 except ImportError:
     from mock import patch, Mock, PropertyMock, sentinel
 
-import os
 import six
 import unittest
 
@@ -77,7 +76,7 @@ class DeviceTreeTestCase(unittest.TestCase):
             mock_lvs_cache.return_value = {"sdmock": "dummy", "testvg-testlv": "dummy"}
 
             tree = DeviceTree()
-            dev_names = ["sda", "sdb", "sdc"]
+            dev_names = ["test_sda", "test_sdb", "test_sdc"]
 
             for dev_name in dev_names:
                 dev = DiskDevice(dev_name, size=Size("1 GiB"))
@@ -98,9 +97,9 @@ class DeviceTreeTestCase(unittest.TestCase):
             # * hide sda
             # * hide and unhide again sdb
             # * leave sdc unchanged
-            tree.hide(tree.get_device_by_name("sda"))
-            tree.hide(tree.get_device_by_name("sdb"))
-            tree.unhide(tree.get_device_by_name("sdb", hidden=True))
+            tree.hide(tree.get_device_by_name("test_sda"))
+            tree.hide(tree.get_device_by_name("test_sdb"))
+            tree.unhide(tree.get_device_by_name("test_sdb", hidden=True))
 
             # some lvs names may be already present in the system (mocked)
             lv_info = list(lvs_info.cache.keys())
@@ -114,7 +113,11 @@ class DeviceTreeTestCase(unittest.TestCase):
             tree._remove_device(lv)
             self.assertFalse(lv.name in tree.names)
 
-    @unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
+    # XXX: the lvm_devices_* functions are decorated with needs_config_refresh decorator which
+    #      at this point is already applied as a no-op because LVM libblockdev plugin is not available
+    @patch("blivet.devicelibs.lvm.lvm_devices_add", new=lvm._lvm_devices.add)
+    @patch("blivet.devicelibs.lvm.lvm_devices_remove", new=lvm._lvm_devices.remove)
+    @patch("blivet.devicelibs.lvm.lvm_devices_reset", new=lvm._lvm_devices.clear)
     def test_reset(self):
         dt = DeviceTree()
         names = ["fakedev1", "fakedev2"]
@@ -327,10 +330,10 @@ class DeviceTreeTestCase(unittest.TestCase):
     def test_expand_taglist(self):
         tree = DeviceTree()
 
-        sda = DiskDevice("sda")
-        sdb = DiskDevice("sdb")
-        sdc = DiskDevice("sdc")
-        sdd = DiskDevice("sdd")
+        sda = DiskDevice("test_sda")
+        sdb = DiskDevice("test_sdb")
+        sdc = DiskDevice("test_sdc")
+        sdd = DiskDevice("test_sdd")
 
         tree._add_device(sda)
         tree._add_device(sdb)
@@ -342,19 +345,19 @@ class DeviceTreeTestCase(unittest.TestCase):
         sdc.tags = {Tags.local, Tags.ssd}
         sdd.tags = set()
 
-        self.assertEqual(tree.expand_taglist(["sda", "sdb"]), {"sda", "sdb"})
-        self.assertEqual(tree.expand_taglist(["@local"]), {"sdc"})
-        self.assertEqual(tree.expand_taglist(["@ssd"]), {"sdb", "sdc"})
-        self.assertEqual(tree.expand_taglist(["@ssd", "sdd", "@local"]), {"sdb", "sdc", "sdd"})
+        self.assertEqual(tree.expand_taglist(["test_sda", "test_sdb"]), {"test_sda", "test_sdb"})
+        self.assertEqual(tree.expand_taglist(["@local"]), {"test_sdc"})
+        self.assertEqual(tree.expand_taglist(["@ssd"]), {"test_sdb", "test_sdc"})
+        self.assertEqual(tree.expand_taglist(["@ssd", "test_sdd", "@local"]), {"test_sdb", "test_sdc", "test_sdd"})
         with self.assertRaises(ValueError):
-            tree.expand_taglist(["sdd", "@invalid_tag"])
+            tree.expand_taglist(["test_sdd", "@invalid_tag"])
 
     def test_hide_ignored_disks(self):
         tree = DeviceTree()
 
-        sda = DiskDevice("sda")
-        sdb = DiskDevice("sdb")
-        sdc = DiskDevice("sdc")
+        sda = DiskDevice("test_sda")
+        sdb = DiskDevice("test_sdb")
+        sdc = DiskDevice("test_sdc")
 
         tree._add_device(sda)
         tree._add_device(sdb)
@@ -365,7 +368,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertTrue(sdc in tree.devices)
 
         # test ignored_disks
-        tree.ignored_disks = ["sdb"]
+        tree.ignored_disks = ["test_sdb"]
 
         # verify hide is called as expected
         with patch.object(tree, "hide") as hide:
@@ -386,7 +389,7 @@ class DeviceTreeTestCase(unittest.TestCase):
 
         # test exclusive_disks
         tree.ignored_disks = []
-        tree.exclusive_disks = ["sdc"]
+        tree.exclusive_disks = ["test_sdc"]
         with patch.object(tree, "hide") as hide:
             tree._hide_ignored_disks()
             hide.assert_any_call(sda)
@@ -406,9 +409,9 @@ class DeviceTreeTestCase(unittest.TestCase):
     def test_get_related_disks(self):
         tree = DeviceTree()
 
-        sda = DiskDevice("sda", size=Size('300g'), exists=False)
-        sdb = DiskDevice("sdb", size=Size('300g'), exists=False)
-        sdc = DiskDevice("sdc", size=Size('300G'), exists=False)
+        sda = DiskDevice("test_sda", size=Size('300g'), exists=False)
+        sdb = DiskDevice("test_sdb", size=Size('300g'), exists=False)
+        sdc = DiskDevice("test_sdc", size=Size('300G'), exists=False)
 
         tree._add_device(sda)
         tree._add_device(sdb)
@@ -436,11 +439,15 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
         self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
 
+    # XXX: the lvm_devices_* functions are decorated with needs_config_refresh decorator which
+    #      at this point is already applied as a no-op because LVM libblockdev plugin is not available
+    @patch("blivet.devicelibs.lvm.lvm_devices_add", new=lvm._lvm_devices.add)
+    @patch("blivet.devicelibs.lvm.lvm_devices_remove", new=lvm._lvm_devices.remove)
     def test_lvm_filter_hide_unhide(self):
         tree = DeviceTree()
 
-        sda = DiskDevice("sda", size=Size("30 GiB"))
-        sdb = DiskDevice("sdb", size=Size("30 GiB"))
+        sda = DiskDevice("test_sda", size=Size("30 GiB"))
+        sdb = DiskDevice("test_sdb", size=Size("30 GiB"))
 
         tree._add_device(sda)
         tree._add_device(sdb)
@@ -473,9 +480,9 @@ class DeviceTreeIgnoredExclusiveMultipathTestCase(unittest.TestCase):
     def setUp(self):
         self.tree = DeviceTree()
 
-        self.sda = DiskDevice("sda")
-        self.sdb = DiskDevice("sdb")
-        self.sdc = DiskDevice("sdc")
+        self.sda = DiskDevice("test_sda")
+        self.sdb = DiskDevice("test_sdb")
+        self.sdc = DiskDevice("test_sdc")
 
         self.tree._add_device(self.sda)
         self.tree._add_device(self.sdb)
@@ -509,7 +516,7 @@ class DeviceTreeIgnoredExclusiveMultipathTestCase(unittest.TestCase):
 
     def test_exclusive_disks_multipath_2(self):
         # all disks exclusive -> mpath should also be exclusive
-        self.tree.exclusive_disks = ["sda", "sdb", "sdc"]
+        self.tree.exclusive_disks = ["test_sda", "test_sdb", "test_sdc"]
         with patch.object(self.tree, "hide") as hide:
             self.tree._hide_ignored_disks()
             self.assertFalse(hide.called)
@@ -522,7 +529,7 @@ class DeviceTreeIgnoredExclusiveMultipathTestCase(unittest.TestCase):
 
     def test_exclusive_disks_multipath_3(self):
         # some disks exclusive -> mpath should be hidden
-        self.tree.exclusive_disks = ["sda", "sdb"]
+        self.tree.exclusive_disks = ["test_sda", "test_sdb"]
         with patch.object(self.tree, "hide") as hide:
             self.tree._hide_ignored_disks()
             hide.assert_any_call(self.mpatha)
@@ -555,7 +562,7 @@ class DeviceTreeIgnoredExclusiveMultipathTestCase(unittest.TestCase):
 
     def test_ignored_disks_multipath_2(self):
         # all disks ignored -> mpath should be hidden
-        self.tree.ignored_disks = ["sda", "sdb", "sdc"]
+        self.tree.ignored_disks = ["test_sda", "test_sdb", "test_sdc"]
         self.tree.exclusive_disks = []
 
         with patch.object(self.tree, "hide") as hide:
@@ -573,7 +580,7 @@ class DeviceTreeIgnoredExclusiveMultipathTestCase(unittest.TestCase):
 
     def test_ignored_disks_multipath_3(self):
         # some disks ignored -> error
-        self.tree.ignored_disks = ["sda", "sdb"]
+        self.tree.ignored_disks = ["test_sda", "test_sdb"]
         self.tree.exclusive_disks = []
 
         with self.assertRaises(InvalidMultideviceSelection):

@@ -2,6 +2,7 @@ import unittest
 
 import blivet.formats.fs as fs
 import blivet.formats.swap as swap
+from blivet.size import Size
 
 from . import fsuuid
 
@@ -52,12 +53,14 @@ class XFSTestCase(fsuuid.SetUUIDWithMkFs):
     _fs_class = fs.XFS
     _invalid_uuid = "abcdefgh-ijkl-mnop-qrst-uvwxyz123456"
     _valid_uuid = "97e3d40f-dca8-497d-8b86-92f257402465"
+    _DEVICE_SIZE = Size("500 MiB")
 
 
 class XFSAfterTestCase(fsuuid.SetUUIDAfterMkFs):
     _fs_class = fs.XFS
     _invalid_uuid = "abcdefgh-ijkl-mnop-qrst-uvwxyz123456"
     _valid_uuid = "97e3d40f-dca8-497d-8b86-92f257402465"
+    _DEVICE_SIZE = Size("500 MiB")
 
 
 class FATFSTestCase(fsuuid.SetUUIDWithMkFs):

@@ -947,6 +947,7 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
 
     @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.stratis.StratisPoolDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
     def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         device_type = self.device_type
         kwargs = {"disks": self.b.disks,
@@ -1001,6 +1002,7 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
 
     @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.stratis.StratisPoolDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
     def test_get_free_disk_space(self, *args):  # pylint: disable=unused-argument
         # get_free_disk_space should return the total free space on disks
         kwargs = self._get_test_factory_args()

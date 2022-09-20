@@ -10,7 +10,7 @@ from blivet.errors import DeviceFormatError
 from blivet.formats import get_format
 from blivet.devices import PartitionDevice, DiskDevice
 
-from . import loopbackedtestcase
+from .loopbackedtestcase import LoopBackedTestCase
 
 from . import fstesting
 
@@ -54,6 +54,7 @@ class ReiserFSTestCase(fstesting.FSAsRoot):
 
 class XFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.XFS
+    _DEVICE_SIZE = Size("500 MiB")
 
     def can_resize(self, an_fs):
         resize_tasks = (an_fs._resize, an_fs._size_info)
@@ -95,12 +96,12 @@ class XFSTestCase(fstesting.FSAsRoot):
             self.assertFalse(an_fs.resizable)
             # Not resizable, so can not do resizing actions.
             with self.assertRaises(DeviceFormatError):
-                an_fs.target_size = Size("64 MiB")
+                an_fs.target_size = Size("300 MiB")
             with self.assertRaises(DeviceFormatError):
                 an_fs.do_resize()
         else:
             disk = DiskDevice(os.path.basename(self.loop_devices[0]))
-            part = self._create_partition(disk, Size("50 MiB"))
+            part = self._create_partition(disk, Size("300 MiB"))
             an_fs = self._fs_class()
             an_fs.device = part.path
             self.assertIsNone(an_fs.create())
@@ -113,7 +114,7 @@ class XFSTestCase(fstesting.FSAsRoot):
             part = self._create_partition(disk, size=part.size + Size("40 MiB"))
 
             # Try a reasonable target size
-            TARGET_SIZE = Size("64 MiB")
+            TARGET_SIZE = Size("325 MiB")
             an_fs.target_size = TARGET_SIZE
             self.assertEqual(an_fs.target_size, TARGET_SIZE)
             self.assertNotEqual(an_fs._size, TARGET_SIZE)
@@ -213,7 +214,7 @@ class BindFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.BindFS
 
 
-class SimpleTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
+class SimpleTmpFSTestCase(LoopBackedTestCase):
 
     def __init__(self, methodName='run_test'):
         super(SimpleTmpFSTestCase, self).__init__(methodName=methodName)
@@ -227,7 +228,7 @@ class SimpleTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.assertTrue(an_fs.test_mount())
 
 
-class ResizeTmpFSTestCase(loopbackedtestcase.LoopBackedTestCase):
+class ResizeTmpFSTestCase(LoopBackedTestCase):
 
     def __init__(self, methodName='run_test'):
         super(ResizeTmpFSTestCase, self).__init__(methodName=methodName)

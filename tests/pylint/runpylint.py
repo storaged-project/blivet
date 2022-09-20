@@ -6,8 +6,6 @@ import sys
 import tempfile
 import os
 
-from os import path
-
 from censorship import CensorshipConfig, CensorshipLinter, FalsePositive
 
 
@@ -43,7 +41,7 @@ class BlivetLintConfig(CensorshipConfig):
     def _get_py_paths(self, directory):
         retval = []
 
-        for (root, dirnames, files) in os.walk(directory):
+        for (root, _dirnames, files) in os.walk(directory):
 
             # skip scanning of already added python modules
             skip = False
@@ -90,23 +88,23 @@ def setup_environment():
     # actually tries to do something with it.
     if "XDG_RUNTIME_DIR" not in os.environ:
         d = tempfile.mkdtemp()
-        os.environ["XDG_RUNTIME_DIR"] = d
+        os.environ["XDG_RUNTIME_DIR"] = d  # pylint: disable=environment-modify
         atexit.register(_del_xdg_runtime_dir)
 
     # Unset TERM so that things that use readline don't output terminal garbage.
     if "TERM" in os.environ:
-        os.environ.pop("TERM")
+        os.environ.pop("TERM")  # pylint: disable=environment-modify
 
     # Don't try to connect to the accessibility socket.
-    os.environ["NO_AT_BRIDGE"] = "1"
+    os.environ["NO_AT_BRIDGE"] = "1"  # pylint: disable=environment-modify
 
     # Force the GDK backend to X11.  Otherwise if no display can be found, Gdk
     # tries every backend type, which includes "broadway", which prints an error
     # and keeps changing the content of said error.
-    os.environ["GDK_BACKEND"] = "x11"
+    os.environ["GDK_BACKEND"] = "x11"  # pylint: disable=environment-modify
 
     # Save analysis data in the pylint directory.
-    os.environ["PYLINTHOME"] = builddir + "/tests/pylint/.pylint.d"
+    os.environ["PYLINTHOME"] = builddir + "/tests/pylint/.pylint.d"  # pylint: disable=environment-modify
     if not os.path.exists(os.environ["PYLINTHOME"]):
         os.mkdir(os.environ["PYLINTHOME"])
 
