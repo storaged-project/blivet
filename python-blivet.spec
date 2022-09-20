@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.5.0
+Version: 3.6.0
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -192,6 +192,46 @@ configuration.
 %endif
 
 %changelog
+* Tue Sep 20 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.6.0-1
+- pylint: Explicitly allow loading the _ped module from pyparted (vtrefny)
+- ci: Run static analysis on Ubuntu 22.04 (vtrefny)
+- tests: Create bigger devices for XFS testing (vtrefny)
+- Set XFS minimal size to 300 MiB (vtrefny)
+- Fix missing whitespaces around not keyword (vtrefny)
+- Remove the Blivet.roots attribute (vponcova)
+- packit: Set downstream_package_name to python-blivet (vtrefny)
+- packit: Add srpm_build_deps for SRPM builds in Copr (vtrefny)
+- tests: Fix message when skipping stratis tests (vtrefny)
+- tests: Tell pytest to ignore symlinks when gathering test cases (vtrefny)
+- Configure ids for Mock devices in populator_test (vtrefny)
+- Add storage tests for Stratis (vtrefny)
+- ci: Fix installing targetcli on Debian/Ubuntu (vtrefny)
+- tests: Add test for creating and attaching cache pools (vtrefny)
+- tests: Add storage tests for more LVM RAID levels (vtrefny)
+- tests: Add test for ActionAddMember/ActionRemoveMember (vtrefny)
+- tests: Add a test for creating and attaching a cache pool (vtrefny)
+- Mark LVM cache pool format as immutable (vtrefny)
+- tests: Skip test_lvcreate_type on CentOS/RHEL 9 (vtrefny)
+- Add a YAML config for skipping tests on specified distributions (vtrefny)
+- Add targetcli to the test dependencies playbook (vtrefny)
+- Add a simple LVM test case that uses real storage (vtrefny)
+- Add a test case that creates targetcli disks to run tests on (vtrefny)
+- Allow running action_test even if some dependencies are missing (vtrefny)
+- Use "fake" names for disks in DeviceTreeTestCase (vtrefny)
+- Change how we import LoopBackedTestCase in fs_test (vtrefny)
+- Add information about the new test suites to tests/README.rst (vtrefny)
+- Makefile: Add targets to run the two new test suites separately (vtrefny)
+- Fix typo in name of test_new_encrypted_stratis (vtrefny)
+- Patch access to lvs in stratis tests (vtrefny)
+- Fix pylint issues in the tests/pylint scripts (vtrefny)
+- Make sure LVM unit tests can run without dependencies (vtrefny)
+- Patch _pre_create in StorageDeviceMethodsTestCase.test_create (vtrefny)
+- Assure that tests that set LVM devices filter can run without root (vtrefny)
+- Fix running StratisFactoryTestCase as a non-root user (vtrefny)
+- Split the test suite into "unit" and "storage" tests (vtrefny)
+- Add support for attaching and creating LVM writecached LVs (vtrefny)
+- Add support for enabling/disabling compression/deduplication (vtrefny)
+
 * Tue Jul 19 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.5.0-1
 - tests: Fix patching NVDIMM static data in populator_test (vtrefny)
 - Ignore pylint false positives about missing methods in Gio and GLib (vtrefny)

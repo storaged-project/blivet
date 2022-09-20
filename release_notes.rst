@@ -1,3 +1,27 @@
+3.6.0
+======
+* `LVM writecache support`_
+* `Support for enabling/disabling compression/deduplication for existing LVM VDO volumes`_
+* `Test suite improvements`_
+
+LVM writecache support
+-----------------------
+Blivet can now create LVM writecache devices and attach them to
+existing LVM volumes as well as create new LVM volumes with with
+write cache attached to them.
+
+Support for enabling/disabling compression/deduplication for existing LVM VDO volumes
+--------------------------------------------------------------------------------------
+Deduplication and compression can be now enabled or disabled on
+existing LVM VDO volumes.
+
+Test suite improvements
+------------------------
+The blivet test suite has been split into two separate test suites:
+unit tests that don't require root privileges and don't use real
+storage devices and "storage" tests that use either loop devices or
+virtual scsi devices for testing.
+
 3.5.0
 ======
 * `Stratis support`_
