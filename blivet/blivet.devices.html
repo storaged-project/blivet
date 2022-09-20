@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>blivet.devices package &#8212; Blivet 3.5.0 documentation</title>
+    <title>blivet.devices package &#8212; Blivet 3.6.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -35,7 +36,7 @@
         <li class="right" >
           <a href="blivet.devicelibs.html" title="blivet.devicelibs package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.5.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devices package</a></li> 
       </ul>
@@ -47,16 +48,16 @@
           <div class="body" role="main">
             
   <section id="blivet-devices-package">
-<h1>blivet.devices package<a class="headerlink" href="#blivet-devices-package" title="Permalink to this headline">¶</a></h1>
+<h1>blivet.devices package<a class="headerlink" href="#blivet-devices-package" title="Permalink to this heading">¶</a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-blivet.devices.btrfs">
-<span id="blivet-devices-btrfs-module"></span><h2>blivet.devices.btrfs module<a class="headerlink" href="#module-blivet.devices.btrfs" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-btrfs-module"></span><h2>blivet.devices.btrfs module<a class="headerlink" href="#module-blivet.devices.btrfs" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.btrfs.BTRFSDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.btrfs.</span></span><span class="sig-name descname"><span class="pre">BTRFSDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.btrfs.BTRFSDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></p>
 <p>Base class for BTRFS volume and sub-volume devices.</p>
 <p>Passing None or no name means auto-generate one like btrfs.%d</p>
 <dl class="py property">
@@ -119,13 +120,13 @@ the size from /sys.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.btrfs.BTRFSSnapShotDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.btrfs.</span></span><span class="sig-name descname"><span class="pre">BTRFSSnapShotDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.btrfs.BTRFSSnapShotDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice" title="blivet.devices.btrfs.BTRFSSubVolumeDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.btrfs.BTRFSSubVolumeDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice" title="blivet.devices.btrfs.BTRFSSubVolumeDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">BTRFSSubVolumeDevice</span></code></a></p>
 <p>A btrfs snapshot pseudo-device.</p>
 <p>BTRFS snapshots are a specialized type of subvolume that contains a
 source attribute which identifies which subvolume the snapshot was taken
 from. They do not have to be removed when removing the source subvolume.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the subvolume name</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -148,13 +149,13 @@ from. They do not have to be removed when removing the source subvolume.</p>
 ancestor of this device. For example, a PartitionDevice depends on
 the DiskDevice on which it resides.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>dep</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code>) – the other device</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>whether this device depends on ‘dep’</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
 </dl>
@@ -171,10 +172,10 @@ the DiskDevice on which it resides.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.btrfs.BTRFSSubVolumeDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.btrfs.</span></span><span class="sig-name descname"><span class="pre">BTRFSSubVolumeDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.btrfs.BTRFSDevice" title="blivet.devices.btrfs.BTRFSDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.btrfs.BTRFSDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.btrfs.BTRFSDevice" title="blivet.devices.btrfs.BTRFSDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">BTRFSDevice</span></code></a></p>
 <p>A btrfs subvolume pseudo-device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the subvolume name</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -191,7 +192,7 @@ the DiskDevice on which it resides.</p>
 <span class="sig-name descname"><span class="pre">add_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice.add_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform actions related to adding a device to the devicetree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
 </dd>
 </dl>
@@ -216,7 +217,7 @@ False that are normally performed as part of the device constructor.</p>
 <span class="sig-name descname"><span class="pre">remove_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modparent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice.remove_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform actions related to removing a device from the devicetree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to account for removal in parents</p>
 </dd>
 </dl>
@@ -247,9 +248,9 @@ BTRFSVolumeDevice.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.btrfs.BTRFSVolumeDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.btrfs.</span></span><span class="sig-name descname"><span class="pre">BTRFSVolumeDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.btrfs.BTRFSVolumeDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.btrfs.BTRFSDevice" title="blivet.devices.btrfs.BTRFSDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.btrfs.BTRFSDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.container.ContainerDevice" title="blivet.devices.container.ContainerDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.container.ContainerDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.raid.RaidDevice" title="blivet.devices.raid.RaidDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.raid.RaidDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.btrfs.BTRFSDevice" title="blivet.devices.btrfs.BTRFSDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">BTRFSDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.container.ContainerDevice" title="blivet.devices.container.ContainerDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContainerDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.raid.RaidDevice" title="blivet.devices.raid.RaidDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">RaidDevice</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the volume name</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -271,10 +272,10 @@ BTRFSVolumeDevice.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_level</span></span><a class="headerlink" href="#blivet.devices.btrfs.BTRFSVolumeDevice.data_level" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the RAID level for data.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>raid level</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>an object that represents a raid level</p>
 </dd>
 </dl>
@@ -308,10 +309,10 @@ BTRFSVolumeDevice.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">metadata_level</span></span><a class="headerlink" href="#blivet.devices.btrfs.BTRFSVolumeDevice.metadata_level" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the RAID level for metadata.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>raid level</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>an object that represents a raid level</p>
 </dd>
 </dl>
@@ -336,7 +337,7 @@ BTRFSVolumeDevice.</p>
 
 </section>
 <section id="module-blivet.devices.cache">
-<span id="blivet-devices-cache-module"></span><h2>blivet.devices.cache module<a class="headerlink" href="#module-blivet.devices.cache" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-cache-module"></span><h2>blivet.devices.cache module<a class="headerlink" href="#module-blivet.devices.cache" title="Permalink to this heading">¶</a></h2>
 <p>Module providing common helper classes, functions and other things related to
 cached devices (like bcache, LVM cache and whatever appears in the future).</p>
 <dl class="py class">
@@ -455,11 +456,11 @@ attributes on top of the common set.</p>
 
 </section>
 <section id="module-blivet.devices.container">
-<span id="blivet-devices-container-module"></span><h2>blivet.devices.container module<a class="headerlink" href="#module-blivet.devices.container" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-container-module"></span><h2>blivet.devices.container module<a class="headerlink" href="#module-blivet.devices.container" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.container.ContainerDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.container.</span></span><span class="sig-name descname"><span class="pre">ContainerDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.container.ContainerDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></p>
 <p>A device that aggregates a set of member devices.</p>
 <p>The only interfaces provided by this class are for addition and removal
 of member devices – one set for modifying the member set of the
@@ -472,7 +473,7 @@ disk representation. These methods should normally only be called from
 within <a class="reference internal" href="blivet.html#blivet.deviceaction.ActionAddMember.execute" title="blivet.deviceaction.ActionAddMember.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">deviceaction.ActionAddMember.execute()</span></code></a> and
 <a class="reference internal" href="blivet.html#blivet.deviceaction.ActionRemoveMember.execute" title="blivet.deviceaction.ActionRemoveMember.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">deviceaction.ActionRemoveMember.execute()</span></code></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -495,7 +496,7 @@ within <a class="reference internal" href="blivet.html#blivet.deviceaction.Actio
 <span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">member</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.container.ContainerDevice.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a member to the container.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>member</strong> (<a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a>) – the member device to add</p>
 </dd>
 </dl>
@@ -507,7 +508,7 @@ within <a class="reference internal" href="blivet.html#blivet.deviceaction.Actio
 <span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">member</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.container.ContainerDevice.remove" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove a member from the container.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>member</strong> (<a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a>) – the member device to remove</p>
 </dd>
 </dl>
@@ -531,11 +532,11 @@ the size from /sys.</p>
 
 </section>
 <section id="module-blivet.devices.device">
-<span id="blivet-devices-device-module"></span><h2>blivet.devices.device module<a class="headerlink" href="#module-blivet.devices.device" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-device-module"></span><h2>blivet.devices.device module<a class="headerlink" href="#module-blivet.devices.device" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.device.Device">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.device.</span></span><span class="sig-name descname"><span class="pre">Device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.device.Device" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="blivet.html#blivet.util.ObjectID" title="blivet.util.ObjectID"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.util.ObjectID</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="blivet.html#blivet.util.ObjectID" title="blivet.util.ObjectID"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectID</span></code></a></p>
 <p>A generic device.</p>
 <p>Device instances know which devices they depend upon (parents
 attribute). They do not know which devices depend upon them, but
@@ -568,7 +569,7 @@ DMCryptDevice</p>
 <p>A Device’s destroy method should destroy any resident format
 before destroying the device itself.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>parents</strong> (list of <a class="reference internal" href="#blivet.devices.device.Device" title="blivet.devices.device.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code></a> instances) – a list of parent devices</p></li>
@@ -607,13 +608,13 @@ before destroying the device itself.</p>
 ancestor of this device. For example, a PartitionDevice depends on
 the DiskDevice on which it resides.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>dep</strong> (<a class="reference internal" href="#blivet.devices.device.Device" title="blivet.devices.device.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code></a>) – the other device</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>whether this device depends on ‘dep’</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
 </dl>
@@ -641,10 +642,10 @@ the DiskDevice on which it resides.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">external_dependencies</span></span><a class="headerlink" href="#blivet.devices.device.Device.external_dependencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of external dependencies of this device and its parents.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>the external dependencies of this device and all parents.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>set of availability.ExternalResource</p>
 </dd>
 </dl>
@@ -674,10 +675,10 @@ the DiskDevice on which it resides.</p>
 <dd><p>List of packages required to manage this device and all its
 ancestor devices. Does not contain duplicates.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>names of packages required by device and all ancestors</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of str</p>
 </dd>
 </dl>
@@ -706,7 +707,7 @@ ancestor devices. Does not contain duplicates.</p>
 <span class="sig-name descname"><span class="pre">setup_parents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.device.Device.setup_parents" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run setup method of all parent devices.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>orig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – set up original format instead of current format</p>
 </dd>
 </dl>
@@ -735,7 +736,7 @@ ancestor devices. Does not contain duplicates.</p>
 <span class="sig-name descname"><span class="pre">teardown_parents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.device.Device.teardown_parents" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run teardown method of all parent devices.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>recursive</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – tear down all ancestor devices recursively</p>
 </dd>
 </dl>
@@ -758,10 +759,10 @@ ancestor devices. Does not contain duplicates.</p>
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type_external_dependencies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.device.Device.type_external_dependencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of external dependencies of this device type.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>a set of external dependencies</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>set of availability.ExternalResource</p>
 </dd>
 </dl>
@@ -775,10 +776,10 @@ device type and of all superclass device types.</p>
 <dd><p>Any unavailable external dependencies of this device or its
 parents.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>A list of unavailable external dependencies.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>set of availability.external_resource</p>
 </dd>
 </dl>
@@ -789,10 +790,10 @@ parents.</p>
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unavailable_type_dependencies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.device.Device.unavailable_type_dependencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>A set of unavailable dependencies for this type.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>the unavailable external dependencies for this type</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>set of availability.ExternalResource</p>
 </dd>
 </dl>
@@ -802,14 +803,14 @@ parents.</p>
 
 </section>
 <section id="module-blivet.devices.disk">
-<span id="blivet-devices-disk-module"></span><h2>blivet.devices.disk module<a class="headerlink" href="#module-blivet.devices.disk" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-disk-module"></span><h2>blivet.devices.disk module<a class="headerlink" href="#module-blivet.devices.disk" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.disk.DASDDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">DASDDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.DASDDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.disk.DiskDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskDevice</span></code></a></p>
 <p>A mainframe DASD.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -843,10 +844,10 @@ parents.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.disk.DMRaidArrayDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">DMRaidArrayDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.DMRaidArrayDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.dm.DMDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.container.ContainerDevice" title="blivet.devices.container.ContainerDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.container.ContainerDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.container.ContainerDevice" title="blivet.devices.container.ContainerDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContainerDevice</span></code></a></p>
 <p>A dmraid (device-mapper RAID) device</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
@@ -905,13 +906,13 @@ them.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.disk.DiskDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">DiskDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.DiskDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></p>
 <p>A local/generic disk.</p>
 <p>This is not the only kind of device that is treated as a disk. More
 useful than checking isinstance(device, DiskDevice) is checking
 device.is_disk.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
@@ -971,14 +972,14 @@ this device (which one is available)</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.disk.DiskFile">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">DiskFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.DiskFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.disk.DiskDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskDevice</span></code></a></p>
 <p>This is a file that we will pretend is a disk.</p>
 <p>This is intended only for testing purposes. The benefit of this class
 is that you can instantiate a disk-like device with a working disklabel
 class as a non-root user. It is not known how the system will behave if
 partitions are committed to one of these disks.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the full path to the backing regular file</p>
 </dd>
 </dl>
@@ -1005,10 +1006,10 @@ partitions are committed to one of these disks.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.disk.FcoeDiskDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">FcoeDiskDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.FcoeDiskDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.disk.DiskDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.network.NetworkStorageDevice" title="blivet.devices.network.NetworkStorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.network.NetworkStorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.network.NetworkStorageDevice" title="blivet.devices.network.NetworkStorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkStorageDevice</span></code></a></p>
 <p>An FCoE disk.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1032,10 +1033,10 @@ partitions are committed to one of these disks.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.disk.MultipathDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">MultipathDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.MultipathDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.dm.DMDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMDevice</span></code></a></p>
 <p>A multipath device</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
@@ -1077,10 +1078,10 @@ them.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.disk.NVDIMMNamespaceDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">NVDIMMNamespaceDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.NVDIMMNamespaceDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.disk.DiskDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskDevice</span></code></a></p>
 <p>Non-volatile memory namespace</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1110,10 +1111,10 @@ them.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.disk.ZFCPDiskDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">ZFCPDiskDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.ZFCPDiskDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.disk.DiskDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskDevice</span></code></a></p>
 <p>A mainframe ZFCP disk.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1146,10 +1147,10 @@ them.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.disk.iScsiDiskDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">iScsiDiskDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.iScsiDiskDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.disk.DiskDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.network.NetworkStorageDevice" title="blivet.devices.network.NetworkStorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.network.NetworkStorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.network.NetworkStorageDevice" title="blivet.devices.network.NetworkStorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkStorageDevice</span></code></a></p>
 <p>An iSCSI disk.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1166,13 +1167,13 @@ them.</p>
 <li><p><strong>port</strong> – port of the target</p></li>
 </ul>
 </dd>
-<dt class="field-even">Type</dt>
+<dt class="field-even">Type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
-<dt class="field-even">Type</dt>
+<dt class="field-even">Type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
@@ -1185,14 +1186,14 @@ them.</p>
 
 </section>
 <section id="module-blivet.devices.dm">
-<span id="blivet-devices-dm-module"></span><h2>blivet.devices.dm module<a class="headerlink" href="#module-blivet.devices.dm" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-dm-module"></span><h2>blivet.devices.dm module<a class="headerlink" href="#module-blivet.devices.dm" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.dm.DMCryptDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.dm.</span></span><span class="sig-name descname"><span class="pre">DMCryptDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.dm.DMCryptDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.dm.DMDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMDevice</span></code></a></p>
 <p>A dm-crypt device</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1208,10 +1209,10 @@ them.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.dm.DMDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.dm.</span></span><span class="sig-name descname"><span class="pre">DMDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.dm.DMDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></p>
 <p>A device-mapper device</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1275,10 +1276,10 @@ stored in device metadata on disk.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.dm.DMIntegrityDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.dm.</span></span><span class="sig-name descname"><span class="pre">DMIntegrityDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.dm.DMIntegrityDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.dm.DMDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMDevice</span></code></a></p>
 <p>A dm-integrity device</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1294,9 +1295,9 @@ stored in device metadata on disk.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.dm.DMLinearDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.dm.</span></span><span class="sig-name descname"><span class="pre">DMLinearDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.dm.DMLinearDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.dm.DMDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMDevice</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1329,15 +1330,15 @@ stored in device metadata on disk.</p>
 
 </section>
 <section id="module-blivet.devices.file">
-<span id="blivet-devices-file-module"></span><h2>blivet.devices.file module<a class="headerlink" href="#module-blivet.devices.file" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-file-module"></span><h2>blivet.devices.file module<a class="headerlink" href="#module-blivet.devices.file" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.file.DirectoryDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.file.</span></span><span class="sig-name descname"><span class="pre">DirectoryDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.file.DirectoryDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.file.FileDevice" title="blivet.devices.file.FileDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.file.FileDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.file.FileDevice" title="blivet.devices.file.FileDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileDevice</span></code></a></p>
 <p>A directory on a filesystem.</p>
 <p>This exists because of bind mounts.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – full path to the file</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1352,11 +1353,11 @@ stored in device metadata on disk.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.file.FileDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.file.</span></span><span class="sig-name descname"><span class="pre">FileDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.file.FileDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></p>
 <p>A file on a filesystem.</p>
 <p>This exists because of swap files.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – full path to the file</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1400,11 +1401,11 @@ stored in device metadata on disk.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.file.SparseFileDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.file.</span></span><span class="sig-name descname"><span class="pre">SparseFileDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.file.SparseFileDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.file.FileDevice" title="blivet.devices.file.FileDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.file.FileDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.file.FileDevice" title="blivet.devices.file.FileDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileDevice</span></code></a></p>
 <p>A sparse file on a filesystem.
 This exists for sparse disk images.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – full path to the file</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1418,7 +1419,7 @@ This exists for sparse disk images.</p>
 
 </section>
 <section id="module-blivet.devices.lib">
-<span id="blivet-devices-lib-module"></span><h2>blivet.devices.lib module<a class="headerlink" href="#module-blivet.devices.lib" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-lib-module"></span><h2>blivet.devices.lib module<a class="headerlink" href="#module-blivet.devices.lib" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lib.ParentList">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lib.</span></span><span class="sig-name descname"><span class="pre">ParentList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">appendfunc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">removefunc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lib.ParentList" title="Permalink to this definition">¶</a></dt>
@@ -1438,7 +1439,7 @@ making it easy to ensure that changes pass through the check functions.</p>
 </pre></div>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>items</strong> (<em>any iterable</em>) – initial contents</p></li>
 <li><p><strong>appendfunc</strong> (<em>callable</em>) – a function to call before adding an item</p></li>
@@ -1482,8 +1483,8 @@ functions themselves should not modify the <a class="reference internal" href="#
 
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lib.Tags">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lib.</span></span><span class="sig-name descname"><span class="pre">Tags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lib.Tags" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lib.</span></span><span class="sig-name descname"><span class="pre">Tags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lib.Tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
 <p>Tags that describe various classes of disk.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.devices.lib.Tags.local">
@@ -1522,13 +1523,13 @@ functions themselves should not modify the <a class="reference internal" href="#
 <span class="sig-prename descclassname"><span class="pre">blivet.devices.lib.</span></span><span class="sig-name descname"><span class="pre">device_name_to_disk_by_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lib.device_name_to_disk_by_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a /dev/disk/by-path/ symlink path for the given device name.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>device_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the full path to a /dev/disk/by-path/ symlink, or None</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a> or NoneType</p>
 </dd>
 </dl>
@@ -1539,13 +1540,13 @@ functions themselves should not modify the <a class="reference internal" href="#
 <span class="sig-prename descclassname"><span class="pre">blivet.devices.lib.</span></span><span class="sig-name descname"><span class="pre">device_path_to_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lib.device_path_to_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a name based on the given path to a device node.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>device_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the path to a device node</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the name</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
@@ -1556,10 +1557,10 @@ functions themselves should not modify the <a class="reference internal" href="#
 <span class="sig-prename descclassname"><span class="pre">blivet.devices.lib.</span></span><span class="sig-name descname"><span class="pre">get_device_type_by_major</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">major</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lib.get_device_type_by_major" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a device-type string for the given major number.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – major number</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
@@ -1574,10 +1575,10 @@ functions themselves should not modify the <a class="reference internal" href="#
 <span class="sig-prename descclassname"><span class="pre">blivet.devices.lib.</span></span><span class="sig-name descname"><span class="pre">get_majors_by_device_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lib.get_majors_by_device_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of major numbers for the given device type.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>device_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – device type string (eg: ‘device-mapper’, ‘md’)</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of int</p>
 </dd>
 </dl>
@@ -1589,14 +1590,14 @@ functions themselves should not modify the <a class="reference internal" href="#
 
 </section>
 <section id="module-blivet.devices.loop">
-<span id="blivet-devices-loop-module"></span><h2>blivet.devices.loop module<a class="headerlink" href="#module-blivet.devices.loop" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-loop-module"></span><h2>blivet.devices.loop module<a class="headerlink" href="#module-blivet.devices.loop" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.loop.LoopDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.loop.</span></span><span class="sig-name descname"><span class="pre">LoopDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.loop.LoopDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></p>
 <p>A loop device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1629,14 +1630,14 @@ functions themselves should not modify the <a class="reference internal" href="#
 
 </section>
 <section id="module-blivet.devices.luks">
-<span id="blivet-devices-luks-module"></span><h2>blivet.devices.luks module<a class="headerlink" href="#module-blivet.devices.luks" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-luks-module"></span><h2>blivet.devices.luks module<a class="headerlink" href="#module-blivet.devices.luks" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.luks.IntegrityDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.luks.</span></span><span class="sig-name descname"><span class="pre">IntegrityDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.luks.IntegrityDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMIntegrityDevice" title="blivet.devices.dm.DMIntegrityDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.dm.DMIntegrityDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMIntegrityDevice" title="blivet.devices.dm.DMIntegrityDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMIntegrityDevice</span></code></a></p>
 <p>A mapped integrity device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1671,10 +1672,10 @@ functions themselves should not modify the <a class="reference internal" href="#
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.luks.LUKSDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.luks.</span></span><span class="sig-name descname"><span class="pre">LUKSDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.luks.LUKSDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMCryptDevice" title="blivet.devices.dm.DMCryptDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.dm.DMCryptDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMCryptDevice" title="blivet.devices.dm.DMCryptDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMCryptDevice</span></code></a></p>
 <p>A mapped LUKS device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -1740,13 +1741,13 @@ enforced by ActionResizeDevice.__init__ are assumed to hold.</p>
 
 </section>
 <section id="module-blivet.devices.lvm">
-<span id="blivet-devices-lvm-module"></span><h2>blivet.devices.lvm module<a class="headerlink" href="#module-blivet.devices.lvm" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-lvm-module"></span><h2>blivet.devices.lvm module<a class="headerlink" href="#module-blivet.devices.lvm" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMCache">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cached_lv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">md_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exists</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMCache" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.cache.Cache" title="blivet.devices.cache.Cache"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.cache.Cache</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.cache.Cache" title="blivet.devices.cache.Cache"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cache</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cached_lv</strong> (<a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeDevice" title="blivet.devices.lvm.LVMLogicalVolumeDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice</span></code></a>) – the LV the cache functionality of which to provide</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – size of the cache (useful mainly for non-existing caches
@@ -1811,10 +1812,10 @@ that the whole cache (data+metadata) fits in the space of size
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMCache.pv_space_used">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pv_space_used</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMCache.pv_space_used" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>space to be occupied by the cache on its LV’s VG’s PVs (one has to love LVM)</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of LVPVSpec</p>
 </dd>
 </dl>
@@ -1874,6 +1875,11 @@ and sets it while subtracting the size from self.size.</p>
 <dd></dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMCachePoolMixin.format_immutable">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">format_immutable</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMCachePoolMixin.format_immutable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMCachePoolMixin.is_cache_pool">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_cache_pool</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMCachePoolMixin.is_cache_pool" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1907,18 +1913,24 @@ and sets it while subtracting the size from self.size.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMCacheRequest">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMCacheRequest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMCacheRequest" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.cache.CacheRequest" title="blivet.devices.cache.CacheRequest"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.cache.CacheRequest</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMCacheRequest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">LVMCacheType.lvmcache</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMCacheRequest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.cache.CacheRequest" title="blivet.devices.cache.CacheRequest"><code class="xref py py-class docutils literal notranslate"><span class="pre">CacheRequest</span></code></a></p>
 <p>Class representing the LVM cache creation request</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – requested size of the cache</p></li>
 <li><p><strong>pvs</strong> (list of (<a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> or <a class="reference internal" href="#blivet.devices.lvm.LVPVSpec" title="blivet.devices.lvm.LVPVSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVPVSpec</span></code></a>)) – PVs to allocate the cache on/from</p></li>
 <li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – requested mode for the cache (<code class="docutils literal notranslate"><span class="pre">None</span></code> means the default is used)</p></li>
+<li><p><strong>cache_type</strong> (enum <a class="reference internal" href="#blivet.devices.lvm.LVMCacheType" title="blivet.devices.lvm.LVMCacheType"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMCacheType</span></code></a>) – type of the cache to use (writecache or “normal” cache)</p></li>
 </ul>
 </dd>
 </dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMCacheRequest.cache_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cache_type</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMCacheRequest.cache_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMCacheRequest.fast_devs">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fast_devs</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMCacheRequest.fast_devs" title="Permalink to this definition">¶</a></dt>
@@ -1935,10 +1947,10 @@ and sets it while subtracting the size from self.size.</p>
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMCacheRequest.pv_space_requests">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pv_space_requests</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMCacheRequest.pv_space_requests" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>space to be occupied by the cache on its LV’s VG’s PVs (one has to love LVM)</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of LVPVSpec</p>
 </dd>
 </dl>
@@ -1955,9 +1967,9 @@ and sets it while subtracting the size from self.size.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMCacheStats">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMCacheStats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stats_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMCacheStats" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.cache.CacheStats" title="blivet.devices.cache.CacheStats"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.cache.CacheStats</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.cache.CacheStats" title="blivet.devices.cache.CacheStats"><code class="xref py py-class docutils literal notranslate"><span class="pre">CacheStats</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>stats_data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">blockdev.LVMCacheStats</span></code>) – cache stats data</p>
 </dd>
 </dl>
@@ -2029,10 +2041,25 @@ and sets it while subtracting the size from self.size.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMCacheType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMCacheType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMCacheType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMCacheType.lvmcache">
+<span class="sig-name descname"><span class="pre">lvmcache</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#blivet.devices.lvm.LVMCacheType.lvmcache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMCacheType.lvmwritecache">
+<span class="sig-name descname"><span class="pre">lvmwritecache</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#blivet.devices.lvm.LVMCacheType.lvmwritecache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMInternalLVtype">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMInternalLVtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMInternalLVtype" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
-<p>An enumeration.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMInternalLVtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMInternalLVtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMInternalLVtype.cache_pool">
 <span class="sig-name descname"><span class="pre">cache_pool</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></em><a class="headerlink" href="#blivet.devices.lvm.LVMInternalLVtype.cache_pool" title="Permalink to this definition">¶</a></dt>
@@ -2185,12 +2212,12 @@ and sets it while subtracting the size from self.size.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeBase">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMLogicalVolumeBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeBase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.dm.DMDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.raid.RaidDevice" title="blivet.devices.raid.RaidDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.raid.RaidDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.raid.RaidDevice" title="blivet.devices.raid.RaidDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">RaidDevice</span></code></a></p>
 <p>Abstract base class for LVM LVs</p>
 <p>Attributes, properties and methods defined in this class are common too all
 LVs.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -2242,6 +2269,11 @@ format used.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">complete</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeBase.complete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test if vg exits and if it has all pvs.</p>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeBase.config_actions_map">
+<span class="sig-name descname"><span class="pre">config_actions_map</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'compression':</span> <span class="pre">'_set_compression',</span> <span class="pre">'deduplication':</span> <span class="pre">'_set_deduplication',</span> <span class="pre">'name':</span> <span class="pre">'_rename'}</span></em><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeBase.config_actions_map" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeBase.container">
@@ -2348,10 +2380,10 @@ format used.</p>
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeBase.pv_space_used">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pv_space_used</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeBase.pv_space_used" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>space occupied by this LV on its VG’s PVs (if we have and idea)</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of LVPVSpec</p>
 </dd>
 </dl>
@@ -2391,10 +2423,10 @@ format used.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMLogicalVolumeDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeBase" title="blivet.devices.lvm.LVMLogicalVolumeBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.lvm.LVMLogicalVolumeBase</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMInternalLogicalVolumeMixin" title="blivet.devices.lvm.LVMInternalLogicalVolumeMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.lvm.LVMInternalLogicalVolumeMixin</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMSnapshotMixin" title="blivet.devices.lvm.LVMSnapshotMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.lvm.LVMSnapshotMixin</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMThinPoolMixin" title="blivet.devices.lvm.LVMThinPoolMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.lvm.LVMThinPoolMixin</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMThinLogicalVolumeMixin" title="blivet.devices.lvm.LVMThinLogicalVolumeMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.lvm.LVMThinLogicalVolumeMixin</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMVDOPoolMixin" title="blivet.devices.lvm.LVMVDOPoolMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.lvm.LVMVDOPoolMixin</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMVDOLogicalVolumeMixin" title="blivet.devices.lvm.LVMVDOLogicalVolumeMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.lvm.LVMVDOLogicalVolumeMixin</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMCachePoolMixin" title="blivet.devices.lvm.LVMCachePoolMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.lvm.LVMCachePoolMixin</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeBase" title="blivet.devices.lvm.LVMLogicalVolumeBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMLogicalVolumeBase</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMInternalLogicalVolumeMixin" title="blivet.devices.lvm.LVMInternalLogicalVolumeMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMInternalLogicalVolumeMixin</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMSnapshotMixin" title="blivet.devices.lvm.LVMSnapshotMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMSnapshotMixin</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMThinPoolMixin" title="blivet.devices.lvm.LVMThinPoolMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMThinPoolMixin</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMThinLogicalVolumeMixin" title="blivet.devices.lvm.LVMThinLogicalVolumeMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMThinLogicalVolumeMixin</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMVDOPoolMixin" title="blivet.devices.lvm.LVMVDOPoolMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMVDOPoolMixin</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMVDOLogicalVolumeMixin" title="blivet.devices.lvm.LVMVDOLogicalVolumeMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMVDOLogicalVolumeMixin</span></code></a>, <a class="reference internal" href="#blivet.devices.lvm.LVMCachePoolMixin" title="blivet.devices.lvm.LVMCachePoolMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMCachePoolMixin</span></code></a></p>
 <p>An LVM Logical Volume</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -2409,7 +2441,7 @@ format used.</p>
 </dl>
 <p>For non-existent LVs only:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>grow</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to grow this LV</p></li>
 <li><p><strong>maxsize</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – maximum size for growable LV</p></li>
@@ -2421,7 +2453,7 @@ format used.</p>
 </dl>
 <p>For internal LVs only:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>parent_lv</strong> (<a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeDevice" title="blivet.devices.lvm.LVMLogicalVolumeDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice</span></code></a>) – parent LV of this internal LV</p></li>
 <li><p><strong>int_type</strong> (<a class="reference internal" href="#blivet.devices.lvm.LVMInternalLVtype" title="blivet.devices.lvm.LVMInternalLVtype"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMInternalLVtype</span></code></a>) – type of this internal LV</p></li>
@@ -2430,7 +2462,7 @@ format used.</p>
 </dl>
 <p>For snapshots only:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>origin</strong> (<a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a>) – origin of this snapshot</p></li>
 <li><p><strong>vorigin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – is this a vorigin snapshot?</p></li>
@@ -2439,7 +2471,7 @@ format used.</p>
 </dl>
 <p>For thin pools (seg_type=”thin-pool”) only:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>metadata_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the size of the metadata LV</p></li>
 <li><p><strong>chunk_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – chunk size for the pool</p></li>
@@ -2449,13 +2481,13 @@ format used.</p>
 </dl>
 <p>For new LVs created from other LVs:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>from_lvs</strong> (tuple of <a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeDevice" title="blivet.devices.lvm.LVMLogicalVolumeDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice</span></code></a>) – LVs to create the new LV from (in the (data_lv, metadata_lv) order)</p>
 </dd>
 </dl>
 <p>For VDO pools only:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>compression</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to enable compression on the VDO pool</p></li>
 <li><p><strong>dudplication</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to enable dudplication on the VDO pool</p></li>
@@ -2466,7 +2498,7 @@ format used.</p>
 </dl>
 <p>For cache pools only:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>metadata_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the size of the metadata LV</p></li>
 <li><p><strong>cache_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – mode for the cache or None for default (writethrough)</p></li>
@@ -2480,7 +2512,7 @@ be attached to when created</p></li>
 <span class="sig-name descname"><span class="pre">add_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.add_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform actions related to adding a device to the devicetree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
 </dd>
 </dl>
@@ -2492,6 +2524,11 @@ False that are normally performed as part of the device constructor.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeDevice.attach_cache">
 <span class="sig-name descname"><span class="pre">attach_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cache_pool_lv</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.attach_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeDevice.attach_writecache">
+<span class="sig-name descname"><span class="pre">attach_writecache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">writecache_lv</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.attach_writecache" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -2509,13 +2546,13 @@ and sets it while subtracting the size from self.size.</p>
 ancestor of this device. For example, a PartitionDevice depends on
 the DiskDevice on which it resides.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>dep</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code>) – the other device</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>whether this device depends on ‘dep’</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
 </dl>
@@ -2613,7 +2650,7 @@ the DiskDevice on which it resides.</p>
 <span class="sig-name descname"><span class="pre">remove_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modparent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.remove_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform actions related to removing a device from the devicetree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to account for removal in parents</p>
 </dd>
 </dl>
@@ -3001,10 +3038,10 @@ and sets it while subtracting the size from self.size.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMVolumeGroupDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMVolumeGroupDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMVolumeGroupDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.container.ContainerDevice" title="blivet.devices.container.ContainerDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.container.ContainerDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.container.ContainerDevice" title="blivet.devices.container.ContainerDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContainerDevice</span></code></a></p>
 <p>An LVM Volume Group</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -3016,7 +3053,7 @@ and sets it while subtracting the size from self.size.</p>
 </dl>
 <p>For existing VG’s only:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the VG’s size</p>
 </dd>
 </dl>
@@ -3035,7 +3072,7 @@ and sets it while subtracting the size from self.size.</p>
 <span class="sig-name descname"><span class="pre">add_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMVolumeGroupDevice.add_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform actions related to adding a device to the devicetree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
 </dd>
 </dl>
@@ -3163,10 +3200,10 @@ biggest metadata LV in the VG.</p>
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMVolumeGroupDevice.pv_free_info">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pv_free_info</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMVolumeGroupDevice.pv_free_info" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>information about sizes and free space in this VG’s PVs</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of PVFreeInfo</p>
 </dd>
 </dl>
@@ -3183,7 +3220,7 @@ biggest metadata LV in the VG.</p>
 <span class="sig-name descname"><span class="pre">remove_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modparent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMVolumeGroupDevice.remove_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform actions related to removing a device from the devicetree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to account for removal in parents</p>
 </dd>
 </dl>
@@ -3246,8 +3283,8 @@ override the default value of modparent in new code.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMWriteCache">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMWriteCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cached_lv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exists</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMWriteCache" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.cache.Cache" title="blivet.devices.cache.Cache"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.cache.Cache</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMWriteCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cached_lv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exists</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMWriteCache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.cache.Cache" title="blivet.devices.cache.Cache"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cache</span></code></a></p>
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMWriteCache.backing_device_name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">backing_device_name</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMWriteCache.backing_device_name" title="Permalink to this definition">¶</a></dt>
@@ -3274,9 +3311,27 @@ override the default value of modparent in new code.</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMWriteCache.fast_pvs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fast_pvs</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMWriteCache.fast_pvs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMWriteCache.md_size">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">md_size</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMWriteCache.md_size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMWriteCache.pv_space_used">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pv_space_used</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMWriteCache.pv_space_used" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>space to be occupied by the cache on its LV’s VG’s PVs (one has to love LVM)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of LVPVSpec</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMWriteCache.size">
@@ -3369,13 +3424,13 @@ override the default value of modparent in new code.</p>
 
 </section>
 <section id="module-blivet.devices.md">
-<span id="blivet-devices-md-module"></span><h2>blivet.devices.md module<a class="headerlink" href="#module-blivet.devices.md" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-md-module"></span><h2>blivet.devices.md module<a class="headerlink" href="#module-blivet.devices.md" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.md.MDBiosRaidArrayDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.md.</span></span><span class="sig-name descname"><span class="pre">MDBiosRaidArrayDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.md.MDBiosRaidArrayDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.md.MDRaidArrayDevice" title="blivet.devices.md.MDRaidArrayDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.md.MDRaidArrayDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.md.MDRaidArrayDevice" title="blivet.devices.md.MDRaidArrayDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDRaidArrayDevice</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -3458,9 +3513,9 @@ treated like a disk.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.md.MDContainerDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.md.</span></span><span class="sig-name descname"><span class="pre">MDContainerDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.md.MDContainerDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.md.MDRaidArrayDevice" title="blivet.devices.md.MDRaidArrayDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.md.MDRaidArrayDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.md.MDRaidArrayDevice" title="blivet.devices.md.MDRaidArrayDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDRaidArrayDevice</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -3531,10 +3586,10 @@ treated like a disk.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.md.MDRaidArrayDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.md.</span></span><span class="sig-name descname"><span class="pre">MDRaidArrayDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.md.MDRaidArrayDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.container.ContainerDevice" title="blivet.devices.container.ContainerDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.container.ContainerDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.raid.RaidDevice" title="blivet.devices.raid.RaidDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.raid.RaidDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.container.ContainerDevice" title="blivet.devices.container.ContainerDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContainerDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.raid.RaidDevice" title="blivet.devices.raid.RaidDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">RaidDevice</span></code></a></p>
 <p>An mdraid (Linux RAID) device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -3626,13 +3681,13 @@ component devices as its count of active devices.</p>
 <dd><p>Estimate the superblock size for a member of an array,
 given the total available memory for this array and raid level.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>raw_array_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – total available for this array and level</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>estimated superblock size</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a></p>
 </dd>
 </dl>
@@ -3649,10 +3704,10 @@ given the total available memory for this array and raid level.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">level</span></span><a class="headerlink" href="#blivet.devices.md.MDRaidArrayDevice.level" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the raid level</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>raid level value</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>an object that represents a RAID level</p>
 </dd>
 </dl>
@@ -3669,10 +3724,10 @@ given the total available memory for this array and raid level.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mdadm_format_uuid</span></span><a class="headerlink" href="#blivet.devices.md.MDRaidArrayDevice.mdadm_format_uuid" title="Permalink to this definition">¶</a></dt>
 <dd><p>This array’s UUID, formatted for external use.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>the array’s UUID in mdadm format, if available</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a> or NoneType</p>
 </dd>
 </dl>
@@ -3694,7 +3749,7 @@ given the total available memory for this array and raid level.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">members</span></span><a class="headerlink" href="#blivet.devices.md.MDRaidArrayDevice.members" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns this array’s members.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></p>
 </dd>
 </dl>
@@ -3787,7 +3842,7 @@ the size from /sys.</p>
 
 </section>
 <section id="module-blivet.devices.network">
-<span id="blivet-devices-network-module"></span><h2>blivet.devices.network module<a class="headerlink" href="#module-blivet.devices.network" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-network-module"></span><h2>blivet.devices.network module<a class="headerlink" href="#module-blivet.devices.network" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.network.NetworkStorageDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.network.</span></span><span class="sig-name descname"><span class="pre">NetworkStorageDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host_address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.network.NetworkStorageDevice" title="Permalink to this definition">¶</a></dt>
@@ -3806,7 +3861,7 @@ class MyStorageDevice(StorageDevice, NetworkStorageDevice):</p>
 the storage <em>or</em> the NIC through which the storage is connected</p></li>
 </ol>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>host_address</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – host address of the backing server</p></li>
 <li><p><strong>nic</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – NIC to which the block device is bound</p></li>
@@ -3817,14 +3872,14 @@ the storage <em>or</em> the NIC through which the storage is connected</p></li>
 
 </section>
 <section id="module-blivet.devices.nfs">
-<span id="blivet-devices-nfs-module"></span><h2>blivet.devices.nfs module<a class="headerlink" href="#module-blivet.devices.nfs" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-nfs-module"></span><h2>blivet.devices.nfs module<a class="headerlink" href="#module-blivet.devices.nfs" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.nfs.NFSDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.nfs.</span></span><span class="sig-name descname"><span class="pre">NFSDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.nfs.NFSDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.network.NetworkStorageDevice" title="blivet.devices.network.NetworkStorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.network.NetworkStorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.network.NetworkStorageDevice" title="blivet.devices.network.NetworkStorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkStorageDevice</span></code></a></p>
 <p>An NFS device</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
@@ -3891,14 +3946,14 @@ the size from /sys.</p>
 
 </section>
 <section id="module-blivet.devices.nodev">
-<span id="blivet-devices-nodev-module"></span><h2>blivet.devices.nodev module<a class="headerlink" href="#module-blivet.devices.nodev" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-nodev-module"></span><h2>blivet.devices.nodev module<a class="headerlink" href="#module-blivet.devices.nodev" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.nodev.NoDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.nodev.</span></span><span class="sig-name descname"><span class="pre">NoDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.nodev.NoDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></p>
 <p>A nodev device for nodev filesystems like tmpfs.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – the device’s formatting</p>
 </dd>
 </dl>
@@ -3956,7 +4011,7 @@ the size from /sys.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.nodev.TmpFSDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.nodev.</span></span><span class="sig-name descname"><span class="pre">TmpFSDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.nodev.TmpFSDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.nodev.NoDevice" title="blivet.devices.nodev.NoDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.nodev.NoDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.nodev.NoDevice" title="blivet.devices.nodev.NoDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoDevice</span></code></a></p>
 <p>A nodev device for a tmpfs filesystem.</p>
 <p>Create a tmpfs device</p>
 <dl class="py property">
@@ -3980,15 +4035,15 @@ the size from /sys.</p>
 
 </section>
 <section id="module-blivet.devices.optical">
-<span id="blivet-devices-optical-module"></span><h2>blivet.devices.optical module<a class="headerlink" href="#module-blivet.devices.optical" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-optical-module"></span><h2>blivet.devices.optical module<a class="headerlink" href="#module-blivet.devices.optical" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.optical.OpticalDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.optical.</span></span><span class="sig-name descname"><span class="pre">OpticalDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.optical.OpticalDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></p>
 <p>An optical drive, eg: cdrom, dvd+r, &amp;c.</p>
 <p>XXX Is this useful?</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -4023,11 +4078,11 @@ media.</p>
 
 </section>
 <section id="module-blivet.devices.partition">
-<span id="blivet-devices-partition-module"></span><h2>blivet.devices.partition module<a class="headerlink" href="#module-blivet.devices.partition" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-partition-module"></span><h2>blivet.devices.partition module<a class="headerlink" href="#module-blivet.devices.partition" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.partition.PartitionDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.partition.</span></span><span class="sig-name descname"><span class="pre">PartitionDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.partition.PartitionDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></p>
 <p>A disk partition.</p>
 <p>On types and flags…</p>
 <p>We don’t need to deal with numerical partition types at all. The
@@ -4035,7 +4090,7 @@ only type we are concerned with is primary/logical/extended. Usage
 specification is accomplished through the use of flags, which we
 will set according to the partition’s format.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -4047,7 +4102,7 @@ will set according to the partition’s format.</p>
 </dl>
 <p>For existing partitions only:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – partition UUID (not filesystem UUID)</p></li>
 <li><p><strong>major</strong> (<em>long</em>) – the device major</p></li>
@@ -4058,7 +4113,7 @@ will set according to the partition’s format.</p>
 </dl>
 <p>For non-existent partitions only:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>part_type</strong> (<em>parted partition type constant</em>) – parted type constant, eg:
 <code class="xref py py-const docutils literal notranslate"><span class="pre">parted.PARTITION_NORMAL</span></code></p></li>
@@ -4092,7 +4147,7 @@ specified, the explicit disk set will be used.</p>
 <span class="sig-name descname"><span class="pre">add_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.partition.PartitionDevice.add_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform actions related to adding a device to the devicetree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
 </dd>
 </dl>
@@ -4111,10 +4166,10 @@ False that are normally performed as part of the device constructor.</p>
 <div><p>the disk</p>
 </div></blockquote>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>newsize modified to yield an end-aligned partition</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a></p>
 </dd>
 </dl>
@@ -4282,7 +4337,7 @@ format used.</p>
 <span class="sig-name descname"><span class="pre">remove_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modparent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.partition.PartitionDevice.remove_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform actions related to removing a device from the devicetree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to account for removal in parents</p>
 </dd>
 </dl>
@@ -4340,14 +4395,14 @@ enforced by ActionResizeDevice.__init__ are assumed to hold.</p>
 
 </section>
 <section id="module-blivet.devices.raid">
-<span id="blivet-devices-raid-module"></span><h2>blivet.devices.raid module<a class="headerlink" href="#module-blivet.devices.raid" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-raid-module"></span><h2>blivet.devices.raid module<a class="headerlink" href="#module-blivet.devices.raid" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.raid.RaidDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.raid.</span></span><span class="sig-name descname"><span class="pre">RaidDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.raid.RaidDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></p>
 <p>Metaclass for devices that support RAID in some form.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -4387,18 +4442,18 @@ def my_abstract_property(self):</p>
 
 </section>
 <section id="module-blivet.devices.storage">
-<span id="blivet-devices-storage-module"></span><h2>blivet.devices.storage module<a class="headerlink" href="#module-blivet.devices.storage" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-storage-module"></span><h2>blivet.devices.storage module<a class="headerlink" href="#module-blivet.devices.storage" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.storage.StorageDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.storage.</span></span><span class="sig-name descname"><span class="pre">StorageDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.storage.StorageDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.device.Device" title="blivet.devices.device.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.device.Device</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.device.Device" title="blivet.devices.device.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code></a></p>
 <p>A generic storage device.</p>
 <p>A fully qualified path to the device node can be obtained via the
 path attribute, although it is not guaranteed to be useful, or
 even present, unless the StorageDevice’s setup method has been
 run.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -4421,7 +4476,7 @@ run.</p>
 <span class="sig-name descname"><span class="pre">add_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.storage.StorageDevice.add_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform actions related to adding a device to the devicetree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
 </dd>
 </dl>
@@ -4647,7 +4702,7 @@ currently unavailable.</p>
 <span class="sig-name descname"><span class="pre">remove_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modparent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.storage.StorageDevice.remove_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform actions related to removing a device from the devicetree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to account for removal in parents</p>
 </dd>
 </dl>
@@ -4756,14 +4811,14 @@ the size from /sys.</p>
 
 </section>
 <section id="module-blivet.devices.stratis">
-<span id="blivet-devices-stratis-module"></span><h2>blivet.devices.stratis module<a class="headerlink" href="#module-blivet.devices.stratis" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-devices-stratis-module"></span><h2>blivet.devices.stratis module<a class="headerlink" href="#module-blivet.devices.stratis" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.stratis.StratisFilesystemDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.stratis.</span></span><span class="sig-name descname"><span class="pre">StratisFilesystemDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.stratis.StratisFilesystemDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></p>
 <p>A stratis pool device</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
@@ -4809,13 +4864,13 @@ the size from /sys.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.stratis.StratisPoolDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.stratis.</span></span><span class="sig-name descname"><span class="pre">StratisPoolDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.stratis.StratisPoolDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.devices.storage.StorageDevice</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a></p>
 <p>A stratis pool device</p>
 <dl class="field-list simple">
-<dt class="field-odd">Encrypted</dt>
+<dt class="field-odd">Encrypted<span class="colon">:</span></dt>
 <dd class="field-odd"><p>whether this pool is encrypted or not</p>
 </dd>
-<dt class="field-even">Parameters</dt>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>passphrase</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – device passphrase</p></li>
 <li><p><strong>key_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – path to a file containing a key</p></li>
@@ -4827,7 +4882,7 @@ the size from /sys.</p>
 <span class="sig-name descname"><span class="pre">add_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.stratis.StratisPoolDevice.add_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform actions related to adding a device to the devicetree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
 </dd>
 </dl>
@@ -4888,7 +4943,7 @@ False that are normally performed as part of the device constructor.</p>
 <span class="sig-name descname"><span class="pre">remove_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modparent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.stratis.StratisPoolDevice.remove_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform actions related to removing a device from the devicetree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to account for removal in parents</p>
 </dd>
 </dl>
@@ -4909,7 +4964,7 @@ override the default value of modparent in new code.</p>
 
 </section>
 <section id="module-blivet.devices">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-blivet.devices" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-blivet.devices" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 
@@ -4977,7 +5032,7 @@ override the default value of modparent in new code.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -4997,14 +5052,14 @@ override the default value of modparent in new code.</p>
         <li class="right" >
           <a href="blivet.devicelibs.html" title="blivet.devicelibs package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.5.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devices package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2022, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

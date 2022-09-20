@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Introduction to Blivet &#8212; Blivet 3.5.0 documentation</title>
+    <title>Introduction to Blivet &#8212; Blivet 3.6.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -35,7 +36,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to Blivet’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.5.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.6.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Introduction to Blivet</a></li> 
       </ul>
     </div>  
@@ -46,7 +47,7 @@
           <div class="body" role="main">
             
   <section id="introduction-to-blivet">
-<h1>Introduction to Blivet<a class="headerlink" href="#introduction-to-blivet" title="Permalink to this headline">¶</a></h1>
+<h1>Introduction to Blivet<a class="headerlink" href="#introduction-to-blivet" title="Permalink to this heading">¶</a></h1>
 <p>Blivet is a python module for system storage configuration.</p>
 <p>The main thing that blivet offers is the ability to model a series of changes
 without necessarily commiting any of the changes to disk. You can schedule an
@@ -54,7 +55,7 @@ arbitrarily large series of changes (called ‘actions’), seeing the effects o
 each (within the <a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTree" title="blivet.devicetree.DeviceTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceTree</span></code></a> instance) as it is scheduled.
 Nothing is written to disk, however, until you execute the actions.</p>
 <section id="building-blocks">
-<h2>Building Blocks<a class="headerlink" href="#building-blocks" title="Permalink to this headline">¶</a></h2>
+<h2>Building Blocks<a class="headerlink" href="#building-blocks" title="Permalink to this heading">¶</a></h2>
 <p>Individual block devices are represented by the various subclasses of
 <a class="reference internal" href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a>, while the formatting of the data they contain
 is represented by the various subclasses of <a class="reference internal" href="blivet/blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a>.
@@ -93,9 +94,9 @@ devices (<a class="reference internal" href="blivet/blivet.html#blivet.devicetre
 that build upon a device (<a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTreeBase.get_dependent_devices" title="blivet.devicetree.DeviceTreeBase.get_dependent_devices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_dependent_devices()</span></code></a>).</p>
 </section>
 <section id="getting-started">
-<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this heading">¶</a></h2>
 <section id="first-steps">
-<h3>First Steps<a class="headerlink" href="#first-steps" title="Permalink to this headline">¶</a></h3>
+<h3>First Steps<a class="headerlink" href="#first-steps" title="Permalink to this heading">¶</a></h3>
 <p>First, create an instance of the <a class="reference internal" href="blivet/blivet.html#blivet.blivet.Blivet" title="blivet.blivet.Blivet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Blivet</span></code></a> class:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">blivet</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">blivet</span><span class="o">.</span><span class="n">Blivet</span><span class="p">()</span>
@@ -154,7 +155,7 @@ following line:</p>
 </div>
 </section>
 <section id="scheduling-a-series-of-actions">
-<h3>Scheduling a Series of Actions<a class="headerlink" href="#scheduling-a-series-of-actions" title="Permalink to this headline">¶</a></h3>
+<h3>Scheduling a Series of Actions<a class="headerlink" href="#scheduling-a-series-of-actions" title="Permalink to this heading">¶</a></h3>
 <p>Start out as before:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">blivet</span>
 <span class="kn">from</span> <span class="nn">blivet.size</span> <span class="kn">import</span> <span class="n">Size</span>
@@ -186,7 +187,7 @@ following line:</p>
 </div>
 </section>
 <section id="disk-partitions">
-<h3>Disk Partitions<a class="headerlink" href="#disk-partitions" title="Permalink to this headline">¶</a></h3>
+<h3>Disk Partitions<a class="headerlink" href="#disk-partitions" title="Permalink to this heading">¶</a></h3>
 <p>Disk partitions are a little bit tricky in that they require an extra step to
 actually allocate the partitions from free space on the disk(s). What that
 means is deciding exactly which sectors on which disk the new partition will
@@ -275,7 +276,7 @@ from which to allocate the partition:</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -295,13 +296,13 @@ from which to allocate the partition:</p>
         <li class="right" >
           <a href="index.html" title="Welcome to Blivet’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.5.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.6.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Introduction to Blivet</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2022, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

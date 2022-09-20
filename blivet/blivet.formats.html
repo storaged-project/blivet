@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>blivet.formats package &#8212; Blivet 3.5.0 documentation</title>
+    <title>blivet.formats package &#8212; Blivet 3.6.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -35,7 +36,7 @@
         <li class="right" >
           <a href="blivet.events.html" title="blivet.events package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.5.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.formats package</a></li> 
       </ul>
@@ -47,19 +48,19 @@
           <div class="body" role="main">
             
   <section id="blivet-formats-package">
-<h1>blivet.formats package<a class="headerlink" href="#blivet-formats-package" title="Permalink to this headline">¶</a></h1>
+<h1>blivet.formats package<a class="headerlink" href="#blivet-formats-package" title="Permalink to this heading">¶</a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-blivet.formats.biosboot">
-<span id="blivet-formats-biosboot-module"></span><h2>blivet.formats.biosboot module<a class="headerlink" href="#module-blivet.formats.biosboot" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-formats-biosboot-module"></span><h2>blivet.formats.biosboot module<a class="headerlink" href="#module-blivet.formats.biosboot" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.biosboot.BIOSBoot">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.biosboot.</span></span><span class="sig-name descname"><span class="pre">BIOSBoot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.biosboot.BIOSBoot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 <p>BIOS boot partition for GPT disklabels.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – path to the block device node</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether the formatting exists</p></li>
@@ -91,14 +92,14 @@
 
 </section>
 <section id="module-blivet.formats.disklabel">
-<span id="blivet-formats-disklabel-module"></span><h2>blivet.formats.disklabel module<a class="headerlink" href="#module-blivet.formats.disklabel" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-formats-disklabel-module"></span><h2>blivet.formats.disklabel module<a class="headerlink" href="#module-blivet.formats.disklabel" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.disklabel.DiskLabel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.disklabel.</span></span><span class="sig-name descname"><span class="pre">DiskLabel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.disklabel.DiskLabel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 <p>Disklabel</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – full path to the block device node</p></li>
 <li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – disklabel UUID</p></li>
@@ -112,7 +113,7 @@
 <span class="sig-name descname"><span class="pre">add_partition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.disklabel.DiskLabel.add_partition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a partition to the disklabel.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – start sector</p></li>
 <li><p><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – end sector</p></li>
@@ -190,13 +191,13 @@ an extended partition.</p>
 <span class="sig-name descname"><span class="pre">get_alignment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.disklabel.DiskLabel.get_alignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an appropriate alignment for a new partition.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – proposed partition size (optional)</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the appropriate alignment to use</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">parted.Alignment</span></code></p>
 </dd>
 </dl>
@@ -211,16 +212,16 @@ an extended partition.</p>
 <span class="sig-name descname"><span class="pre">get_end_alignment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alignment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.disklabel.DiskLabel.get_end_alignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an appropriate end-alignment for a new partition.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – proposed partition size (optional)</p></li>
 <li><p><strong>alignment</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">parted.Alignment</span></code>) – the start alignment (optional)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the appropriate alignment to use</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">parted.Alignment</span></code></p>
 </dd>
 </dl>
@@ -235,7 +236,7 @@ an extended partition.</p>
 <span class="sig-name descname"><span class="pre">get_minimal_alignment</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.disklabel.DiskLabel.get_minimal_alignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the device’s minimal alignment for new partitions.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">parted.Alignment</span></code></p>
 </dd>
 </dl>
@@ -246,7 +247,7 @@ an extended partition.</p>
 <span class="sig-name descname"><span class="pre">get_optimal_alignment</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.disklabel.DiskLabel.get_optimal_alignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the device’s optimal alignment for new partitions.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">parted.Alignment</span></code></p>
 </dd>
 </dl>
@@ -315,7 +316,7 @@ returns the minimal device alignment.</p>
 <span class="sig-name descname"><span class="pre">remove_partition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.disklabel.DiskLabel.remove_partition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove a partition from the disklabel.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>partition</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">parted.Partition</span></code>) – the partition to remove</p>
 </dd>
 </dl>
@@ -377,14 +378,14 @@ returns the minimal device alignment.</p>
 
 </section>
 <section id="module-blivet.formats.dmraid">
-<span id="blivet-formats-dmraid-module"></span><h2>blivet.formats.dmraid module<a class="headerlink" href="#module-blivet.formats.dmraid" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-formats-dmraid-module"></span><h2>blivet.formats.dmraid module<a class="headerlink" href="#module-blivet.formats.dmraid" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.dmraid.DMRaidMember">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.dmraid.</span></span><span class="sig-name descname"><span class="pre">DMRaidMember</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.dmraid.DMRaidMember" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 <p>A dmraid member disk.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – path to the underlying device (required)</p></li>
 <li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – this format’s UUID</p></li>
@@ -397,13 +398,13 @@ returns the minimal device alignment.</p>
 <span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.dmraid.DMRaidMember.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the formatting to the specified block device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>device</strong> (<em>str.</em>) – path to device node</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p>FormatCreateError</p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None.</p>
 </dd>
 </dl>
@@ -414,10 +415,10 @@ returns the minimal device alignment.</p>
 <span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.dmraid.DMRaidMember.destroy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove the formatting from the associated block device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p>FormatDestroyError</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None.</p>
 </dd>
 </dl>
@@ -433,14 +434,14 @@ returns the minimal device alignment.</p>
 
 </section>
 <section id="module-blivet.formats.fs">
-<span id="blivet-formats-fs-module"></span><h2>blivet.formats.fs module<a class="headerlink" href="#module-blivet.formats.fs" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-formats-fs-module"></span><h2>blivet.formats.fs module<a class="headerlink" href="#module-blivet.formats.fs" title="Permalink to this heading">¶</a></h2>
 <p>Filesystem classes.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.AppleBootstrapFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">AppleBootstrapFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.AppleBootstrapFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.HFS" title="blivet.formats.fs.HFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.HFS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.HFS" title="blivet.formats.fs.HFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">HFS</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -472,10 +473,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.BTRFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">BTRFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.BTRFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <p>btrfs filesystem</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -507,13 +508,13 @@ it via the ‘device’ kwarg to the <a class="reference internal" href="#blivet
 <span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.BTRFS.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the formatting to the specified block device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>device</strong> (<em>str.</em>) – path to device node</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p>FormatCreateError</p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None.</p>
 </dd>
 </dl>
@@ -524,10 +525,10 @@ it via the ‘device’ kwarg to the <a class="reference internal" href="#blivet
 <span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.BTRFS.destroy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove the formatting from the associated block device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p>FormatDestroyError</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None.</p>
 </dd>
 </dl>
@@ -538,9 +539,9 @@ it via the ‘device’ kwarg to the <a class="reference internal" href="#blivet
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.BindFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">BindFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.BindFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -566,10 +567,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.DevPtsFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">DevPtsFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.DevPtsFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.NoDevFS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoDevFS</span></code></a></p>
 <p>devpts filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -595,9 +596,9 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.EFIFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">EFIFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.EFIFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FATFS" title="blivet.formats.fs.FATFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FATFS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FATFS" title="blivet.formats.fs.FATFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FATFS</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -634,9 +635,9 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.EFIVarFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">EFIVarFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.EFIVarFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.NoDevFS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoDevFS</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -662,9 +663,9 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.ExFATFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">ExFATFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.ExFATFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -690,10 +691,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.Ext2FS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">Ext2FS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.Ext2FS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <p>ext2 filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -724,10 +725,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.Ext3FS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">Ext3FS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.Ext3FS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.Ext2FS" title="blivet.formats.fs.Ext2FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.Ext2FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.Ext2FS" title="blivet.formats.fs.Ext2FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">Ext2FS</span></code></a></p>
 <p>ext3 filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -758,10 +759,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.Ext4FS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">Ext4FS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.Ext4FS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.Ext3FS" title="blivet.formats.fs.Ext3FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.Ext3FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.Ext3FS" title="blivet.formats.fs.Ext3FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">Ext3FS</span></code></a></p>
 <p>ext4 filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -792,10 +793,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.F2FS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">F2FS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.F2FS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <p>f2fs filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -821,10 +822,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.FATFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">FATFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FATFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <p>FAT filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -850,7 +851,7 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <span class="sig-name descname"><span class="pre">generate_new_uuid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FATFS.generate_new_uuid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a new random UUID in the RFC 4122 format.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
@@ -866,10 +867,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.FS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">FS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 <p>Filesystem base class.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -896,10 +897,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dd><p>Get format class from list of format classes with largest space taken
 by metadata.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>fs_list</strong> (list of classes with parent <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a>) – list of input filesystems</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>FS which takes most space by metadata</p>
 </dd>
 </dl>
@@ -911,7 +912,7 @@ by metadata.</p>
 <dd><p>Returns True if it’s possible to set the UUID of this filesystem
 after it has been created, otherwise False.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
 </dl>
@@ -923,7 +924,7 @@ after it has been created, otherwise False.</p>
 <dd><p>Returns True if this filesystem supports nodiscard option during
 creation, otherwise False.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
 </dl>
@@ -935,7 +936,7 @@ creation, otherwise False.</p>
 <dd><p>Returns True if this filesystem supports setting an UUID during
 creation, otherwise False.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
 </dl>
@@ -975,7 +976,7 @@ creation, otherwise False.</p>
 <span class="sig-name descname"><span class="pre">do_check</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FS.do_check" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a filesystem check.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p>FSError</p>
 </dd>
 </dl>
@@ -1005,13 +1006,13 @@ with size <code class="docutils literal notranslate"><span class="pre">device_si
 space taken the FS must provide this number to us.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>device_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a> object) – original device size</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>estimated free size after format</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a></p>
 </dd>
 </dl>
@@ -1022,7 +1023,7 @@ space taken the FS must provide this number to us.</p>
 <span class="sig-name descname"><span class="pre">generate_new_uuid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FS.generate_new_uuid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a new random UUID in the RFC 4122 format.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
@@ -1039,14 +1040,14 @@ This calculation will add metadata to usable device on the FS.</p>
 space taken the FS must provide this number to us.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>free_space</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a> object) – how much usable size we want on newly created device</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>estimated size of the device which will have given amount of
 <code class="docutils literal notranslate"><span class="pre">free_space</span></code></p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a></p>
 </dd>
 </dl>
@@ -1065,7 +1066,7 @@ space taken the FS must provide this number to us.</p>
 filesystem. None, which represents accepting the default for this
 device, is always acceptable.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><em>None</em>) – A possible label</p>
 </dd>
 </dl>
@@ -1076,7 +1077,7 @@ device, is always acceptable.</p>
 <span class="sig-name descname"><span class="pre">labeling</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FS.labeling" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if this filesystem uses labels, otherwise False.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
 </dl>
@@ -1088,19 +1089,19 @@ device, is always acceptable.</p>
 <dd><p>Mount this filesystem.</p>
 <blockquote>
 <div><dl class="field-list simple">
-<dt class="field-odd">keyword options</dt>
+<dt class="field-odd">keyword options<span class="colon">:</span></dt>
 <dd class="field-odd"><p>mount options (overrides all other option strings)</p>
 </dd>
-<dt class="field-even">type options</dt>
+<dt class="field-even">type options<span class="colon">:</span></dt>
 <dd class="field-even"><p>str.</p>
 </dd>
-<dt class="field-odd">keyword chroot</dt>
+<dt class="field-odd">keyword chroot<span class="colon">:</span></dt>
 <dd class="field-odd"><p>prefix to apply to mountpoint</p>
 </dd>
-<dt class="field-even">keyword mountpoint</dt>
+<dt class="field-even">keyword mountpoint<span class="colon">:</span></dt>
 <dd class="field-even"><p>mountpoint (overrides self.mountpoint)</p>
 </dd>
-<dt class="field-odd">raises</dt>
+<dt class="field-odd">raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p>FSError</p>
 </dd>
 </dl>
@@ -1135,10 +1136,10 @@ recent one listed by the system.</p>
 <span class="sig-name descname"><span class="pre">read_label</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FS.read_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read this filesystem’s label.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>the filesystem’s label</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
@@ -1151,7 +1152,7 @@ recent one listed by the system.</p>
 <dd><p>Returns True if it is possible to relabel this filesystem
 after creation, otherwise False.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
 </dl>
@@ -1209,10 +1210,10 @@ rtype: str or None</p>
 <span class="sig-name descname"><span class="pre">unmount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FS.unmount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unmount this filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>mountpoint</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Optional mountpoint to be unmounted.</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p>FSError</p>
 </dd>
 </dl>
@@ -1239,7 +1240,7 @@ will be raised in either case if the path doesn’t exist.</p>
 <dd><p>Return True if the UUID has an acceptable format for this
 filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – An UUID</p>
 </dd>
 </dl>
@@ -1250,7 +1251,7 @@ filesystem.</p>
 <span class="sig-name descname"><span class="pre">write_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FS.write_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a label for this filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p>FSError</p>
 </dd>
 </dl>
@@ -1264,7 +1265,7 @@ an FSError in this case.</p>
 <span class="sig-name descname"><span class="pre">write_uuid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FS.write_uuid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set an UUID for this filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p>FSError</p>
 </dd>
 </dl>
@@ -1276,10 +1277,10 @@ an FSError in this case.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.GFS2">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">GFS2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.GFS2" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <p>gfs2 filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1311,9 +1312,9 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.HFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">HFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.HFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1344,9 +1345,9 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.HFSPlus">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">HFSPlus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.HFSPlus" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1377,10 +1378,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.Iso9660FS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">Iso9660FS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.Iso9660FS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <p>ISO9660 filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1406,10 +1407,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.JFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">JFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.JFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <p>JFS filesystem</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1446,9 +1447,9 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.MacEFIFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">MacEFIFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.MacEFIFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.HFSPlus" title="blivet.formats.fs.HFSPlus"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.HFSPlus</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.HFSPlus" title="blivet.formats.fs.HFSPlus"><code class="xref py py-class docutils literal notranslate"><span class="pre">HFSPlus</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1480,10 +1481,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.NFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">NFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.NFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <p>NFS filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1509,10 +1510,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.NFSv4">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">NFSv4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.NFSv4" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NFS" title="blivet.formats.fs.NFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.NFS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NFS" title="blivet.formats.fs.NFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">NFS</span></code></a></p>
 <p>NFSv4 filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1538,10 +1539,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.NTFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">NTFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.NTFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <p>ntfs filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1567,7 +1568,7 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <span class="sig-name descname"><span class="pre">generate_new_uuid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.NTFS.generate_new_uuid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a new random UUID in the RFC 4122 format.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
@@ -1583,10 +1584,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.NoDevFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">NoDevFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.NoDevFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <p>nodev filesystem base class</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1618,9 +1619,9 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.ProcFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">ProcFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.ProcFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.NoDevFS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoDevFS</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1646,10 +1647,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.ReiserFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">ReiserFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.ReiserFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <p>reiserfs filesystem</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1686,9 +1687,9 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.SELinuxFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">SELinuxFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.SELinuxFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.NoDevFS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoDevFS</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1714,10 +1715,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.StratisXFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">StratisXFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.StratisXFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.XFS" title="blivet.formats.fs.XFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.XFS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.XFS" title="blivet.formats.fs.XFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">XFS</span></code></a></p>
 <p>XFS on top of Stratis filesystem device</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1743,9 +1744,9 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.SysFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">SysFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.SysFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.NoDevFS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoDevFS</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1771,9 +1772,9 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.TmpFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">TmpFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.TmpFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.NoDevFS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoDevFS</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1812,7 +1813,7 @@ mountpoint is unmounted.</p>
 <span class="sig-name descname"><span class="pre">do_resize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.TmpFS.do_resize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resize this filesystem based on this instance’s target_size attr.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p>FSResizeError, FormatResizeError</p>
 </dd>
 </dl>
@@ -1829,9 +1830,9 @@ mountpoint is unmounted.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.USBFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">USBFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.USBFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.NoDevFS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoDevFS</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1857,10 +1858,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.XFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">XFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.XFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.fs.FS</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
 <p>XFS filesystem</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node (required for
 existing filesystems)</p></li>
@@ -1891,7 +1892,7 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <span class="sig-name descname"><span class="pre">write_uuid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.XFS.write_uuid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set an UUID for this filesystem.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p>FSError</p>
 </dd>
 </dl>
@@ -1902,7 +1903,7 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 
 </section>
 <section id="module-blivet.formats.fslib">
-<span id="blivet-formats-fslib-module"></span><h2>blivet.formats.fslib module<a class="headerlink" href="#module-blivet.formats.fslib" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-formats-fslib-module"></span><h2>blivet.formats.fslib module<a class="headerlink" href="#module-blivet.formats.fslib" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="blivet.formats.fslib.update_kernel_filesystems">
 <span class="sig-prename descclassname"><span class="pre">blivet.formats.fslib.</span></span><span class="sig-name descname"><span class="pre">update_kernel_filesystems</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fslib.update_kernel_filesystems" title="Permalink to this definition">¶</a></dt>
@@ -1910,14 +1911,14 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 
 </section>
 <section id="module-blivet.formats.luks">
-<span id="blivet-formats-luks-module"></span><h2>blivet.formats.luks module<a class="headerlink" href="#module-blivet.formats.luks" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-formats-luks-module"></span><h2>blivet.formats.luks module<a class="headerlink" href="#module-blivet.formats.luks" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.luks.Integrity">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.luks.</span></span><span class="sig-name descname"><span class="pre">Integrity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.luks.Integrity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 <p>DM integrity format</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – the path to the underlying device</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – indicates whether this is an existing format</p></li>
@@ -1952,9 +1953,9 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.luks.LUKS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.luks.</span></span><span class="sig-name descname"><span class="pre">LUKS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.luks.LUKS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – the path to the underlying device</p></li>
 <li><p><strong>uuid</strong> – the LUKS UUID</p></li>
@@ -2091,14 +2092,14 @@ header.</p>
 
 </section>
 <section id="module-blivet.formats.lvmpv">
-<span id="blivet-formats-lvmpv-module"></span><h2>blivet.formats.lvmpv module<a class="headerlink" href="#module-blivet.formats.lvmpv" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-formats-lvmpv-module"></span><h2>blivet.formats.lvmpv module<a class="headerlink" href="#module-blivet.formats.lvmpv" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.lvmpv.LVMPhysicalVolume">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.lvmpv.</span></span><span class="sig-name descname"><span class="pre">LVMPhysicalVolume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.lvmpv.LVMPhysicalVolume" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 <p>An LVM physical volume.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node</p></li>
 <li><p><strong>uuid</strong> – this PV’s uuid (not the VG uuid)</p></li>
@@ -2186,14 +2187,14 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 
 </section>
 <section id="module-blivet.formats.mdraid">
-<span id="blivet-formats-mdraid-module"></span><h2>blivet.formats.mdraid module<a class="headerlink" href="#module-blivet.formats.mdraid" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-formats-mdraid-module"></span><h2>blivet.formats.mdraid module<a class="headerlink" href="#module-blivet.formats.mdraid" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.mdraid.MDRaidMember">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.mdraid.</span></span><span class="sig-name descname"><span class="pre">MDRaidMember</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.mdraid.MDRaidMember" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 <p>An mdraid member disk.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to block device node</p></li>
 <li><p><strong>uuid</strong> – this member device’s uuid</p></li>
@@ -2257,14 +2258,14 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 
 </section>
 <section id="module-blivet.formats.multipath">
-<span id="blivet-formats-multipath-module"></span><h2>blivet.formats.multipath module<a class="headerlink" href="#module-blivet.formats.multipath" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-formats-multipath-module"></span><h2>blivet.formats.multipath module<a class="headerlink" href="#module-blivet.formats.multipath" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.multipath.MultipathMember">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.multipath.</span></span><span class="sig-name descname"><span class="pre">MultipathMember</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.multipath.MultipathMember" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 <p>A multipath member disk.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the underlying device (required)</p></li>
 <li><p><strong>uuid</strong> – this format’s UUID</p></li>
@@ -2277,13 +2278,13 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.multipath.MultipathMember.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the formatting to the specified block device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>device</strong> (<em>str.</em>) – path to device node</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p>FormatCreateError</p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None.</p>
 </dd>
 </dl>
@@ -2294,10 +2295,10 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 <span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.multipath.MultipathMember.destroy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove the formatting from the associated block device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p>FormatDestroyError</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None.</p>
 </dd>
 </dl>
@@ -2313,14 +2314,14 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 
 </section>
 <section id="module-blivet.formats.prepboot">
-<span id="blivet-formats-prepboot-module"></span><h2>blivet.formats.prepboot module<a class="headerlink" href="#module-blivet.formats.prepboot" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-formats-prepboot-module"></span><h2>blivet.formats.prepboot module<a class="headerlink" href="#module-blivet.formats.prepboot" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.prepboot.PPCPRePBoot">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.prepboot.</span></span><span class="sig-name descname"><span class="pre">PPCPRePBoot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.prepboot.PPCPRePBoot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 <p>Generic device format.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to block device node</p></li>
 <li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this is an existing format</p></li>
@@ -2356,14 +2357,14 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 
 </section>
 <section id="module-blivet.formats.stratis">
-<span id="blivet-formats-stratis-module"></span><h2>blivet.formats.stratis module<a class="headerlink" href="#module-blivet.formats.stratis" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-formats-stratis-module"></span><h2>blivet.formats.stratis module<a class="headerlink" href="#module-blivet.formats.stratis" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.stratis.StratisBlockdev">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.stratis.</span></span><span class="sig-name descname"><span class="pre">StratisBlockdev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.stratis.StratisBlockdev" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 <p>A Stratis block device</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node</p></li>
 <li><p><strong>uuid</strong> – this Stratis block device UUID (not the pool UUID)</p></li>
@@ -2424,14 +2425,14 @@ it via the ‘device’ kwarg to the <code class="xref py py-meth docutils liter
 
 </section>
 <section id="module-blivet.formats.swap">
-<span id="blivet-formats-swap-module"></span><h2>blivet.formats.swap module<a class="headerlink" href="#module-blivet.formats.swap" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-formats-swap-module"></span><h2>blivet.formats.swap module<a class="headerlink" href="#module-blivet.formats.swap" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.swap.SwapSpace">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.swap.</span></span><span class="sig-name descname"><span class="pre">SwapSpace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.swap.SwapSpace" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.formats.DeviceFormat</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 <p>Swap space</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> – path to the block device node</p></li>
 <li><p><strong>uuid</strong> – this swap space’s uuid</p></li>
@@ -2535,7 +2536,7 @@ runs. You can specify the device at the last moment by via the
 <span class="sig-name descname"><span class="pre">write_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.swap.SwapSpace.write_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a label for this format.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SwapSpaceError</p>
 </dd>
 </dl>
@@ -2548,24 +2549,24 @@ an SwapSpaceError in this case.</p>
 
 </section>
 <section id="module-blivet.formats">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-blivet.formats" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-blivet.formats" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.DeviceFormat">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.</span></span><span class="sig-name descname"><span class="pre">DeviceFormat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.DeviceFormat" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="blivet.html#blivet.util.ObjectID" title="blivet.util.ObjectID"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.util.ObjectID</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="blivet.html#blivet.util.ObjectID" title="blivet.util.ObjectID"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectID</span></code></a></p>
 <p>Generic device format.</p>
 <p>This represents the absence of recognized formatting. That could mean a
 device is uninitialized, has had zeros written to it, or contains some
 valid formatting that this module does not support.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The path to the device node.</p></li>
 <li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the formatting’s UUID.</p></li>
 <li><p><strong>exists</strong> – Whether the formatting exists. (default: False)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p>ValueError</p>
 </dd>
 </dl>
@@ -2589,10 +2590,10 @@ it via the ‘device’ kwarg to the <a class="reference internal" href="#blivet
 <dd><p>Are external utilities available to allow this format to be both
 setup and teared down.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>True if this format can be set up, otherwise False</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
 </dl>
@@ -2603,13 +2604,13 @@ setup and teared down.</p>
 <span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.DeviceFormat.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the formatting to the specified block device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>device</strong> (<em>str.</em>) – path to device node</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p>FormatCreateError</p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None.</p>
 </dd>
 </dl>
@@ -2638,10 +2639,10 @@ setup and teared down.</p>
 <span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.DeviceFormat.destroy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove the formatting from the associated block device.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p>FormatDestroyError</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None.</p>
 </dd>
 </dl>
@@ -2670,7 +2671,7 @@ setup and teared down.</p>
 <span class="sig-name descname"><span class="pre">do_resize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.DeviceFormat.do_resize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resize this filesystem based on this instance’s target_size attr.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p>FSResizeError, FormatResizeError</p>
 </dd>
 </dl>
@@ -2708,13 +2709,13 @@ application is used by blivet to write a label for this format.
 If there is no application that blivet uses to write a label,
 then no format is acceptable, so must return False.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The label to be checked</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>True if the format of the label is OK, otherwise False</p>
 </dd>
 </dl>
@@ -2800,13 +2801,13 @@ then no format is acceptable, so must return False.</p>
 <span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.DeviceFormat.setup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Activate the formatting.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>device</strong> (<em>str.</em>) – device node path</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p>FormatSetupError.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None.</p>
 </dd>
 </dl>
@@ -2869,13 +2870,13 @@ the environment in which blivet is running?</p>
 <span class="sig-prename descclassname"><span class="pre">blivet.formats.</span></span><span class="sig-name descname"><span class="pre">get_device_format_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.get_device_format_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an appropriate format class.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>fmt_type</strong> (<em>str.</em>) – The name of the format type.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The chosen DeviceFormat class</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>class.</p>
 </dd>
 </dl>
@@ -2887,16 +2888,16 @@ the environment in which blivet is running?</p>
 <span class="sig-prename descclassname"><span class="pre">blivet.formats.</span></span><span class="sig-name descname"><span class="pre">get_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.get_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an instance of the appropriate DeviceFormat class.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>fmt_type</strong> (<em>str.</em>) – The name of the formatting type</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the format instance</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a></p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p>ValueError</p>
 </dd>
 </dl>
@@ -2972,7 +2973,7 @@ for an exhaustive list of the arguments that can be passed.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -2992,14 +2993,14 @@ for an exhaustive list of the arguments that can be passed.</p>
         <li class="right" >
           <a href="blivet.events.html" title="blivet.events package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.5.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.formats package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2022, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

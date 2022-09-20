@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>tests &#8212; Blivet 3.5.0 documentation</title>
+    <title>tests &#8212; Blivet 3.6.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -27,7 +28,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.5.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">tests</a></li> 
       </ul>
     </div>  
@@ -38,101 +39,120 @@
           <div class="body" role="main">
             
   <section id="tests">
-<h1>tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h1>
+<h1>tests<a class="headerlink" href="#tests" title="Permalink to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="tests.html">tests package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tests.devicelibs_test.html">tests.devicelibs_test package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tests.devicelibs_test.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devicelibs_test.html#module-tests.devicelibs_test.disk_test">tests.devicelibs_test.disk_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devicelibs_test.html#module-tests.devicelibs_test.edd_test">tests.devicelibs_test.edd_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devicelibs_test.html#module-tests.devicelibs_test.lib">tests.devicelibs_test.lib module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devicelibs_test.html#module-tests.devicelibs_test.mdraid_test">tests.devicelibs_test.mdraid_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devicelibs_test.html#module-tests.devicelibs_test.raid_test">tests.devicelibs_test.raid_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devicelibs_test.html#module-tests.devicelibs_test">Module contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conftest.html">conftest module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run_tests.html">run_tests module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage_tests.html">storage_tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storage_tests.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storage_tests.devices_test.html">storage_tests.devices_test package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.devices_test.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.devices_test.html#storage-tests-devices-test-lvm-test-module">storage_tests.devices_test.lvm_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.devices_test.html#storage-tests-devices-test-partition-test-module">storage_tests.devices_test.partition_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.devices_test.html#storage-tests-devices-test-stratis-test-module">storage_tests.devices_test.stratis_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.devices_test.html#module-contents">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="tests.devices_test.html">tests.devices_test package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.dependencies_test">tests.devices_test.dependencies_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.device_methods_test">tests.devices_test.device_methods_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.device_names_test">tests.devices_test.device_names_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.device_packages_test">tests.devices_test.device_packages_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.device_properties_test">tests.devices_test.device_properties_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.disk_test">tests.devices_test.disk_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.lvm_test">tests.devices_test.lvm_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.md_test">tests.devices_test.md_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.network_test">tests.devices_test.network_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.partition_test">tests.devices_test.partition_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.size_test">tests.devices_test.size_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.stratis_test">tests.devices_test.stratis_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test.tags_test">tests.devices_test.tags_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.devices_test.html#module-tests.devices_test">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="tests.formats_test.html">tests.formats_test package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.device_test">tests.formats_test.device_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.disklabel_test">tests.formats_test.disklabel_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.fs_test">tests.formats_test.fs_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.fslabeling">tests.formats_test.fslabeling module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.fstesting">tests.formats_test.fstesting module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.fsuuid">tests.formats_test.fsuuid module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.init_test">tests.formats_test.init_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.labeling_test">tests.formats_test.labeling_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.loopbackedtestcase">tests.formats_test.loopbackedtestcase module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.luks_test">tests.formats_test.luks_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.lvmpv_test">tests.formats_test.lvmpv_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.methods_test">tests.formats_test.methods_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.misc_test">tests.formats_test.misc_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.selinux_test">tests.formats_test.selinux_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.swap_test">tests.formats_test.swap_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test.uuid_test">tests.formats_test.uuid_test module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.formats_test.html#module-tests.formats_test">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="tests.tasks_test.html">tests.tasks_test package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tests.tasks_test.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.tasks_test.html#module-tests.tasks_test.basic_tests">tests.tasks_test.basic_tests module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.tasks_test.html#module-tests.tasks_test">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="tests.udev_data.html">tests.udev_data package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tests.udev_data.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.udev_data.html#module-tests.udev_data.raid_data">tests.udev_data.raid_data module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.udev_data.html#module-tests.udev_data">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="tests.vmtests.html">tests.vmtests package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tests.vmtests.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.vmtests.html#module-tests.vmtests.blivet_reset_vmtest">tests.vmtests.blivet_reset_vmtest module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.vmtests.html#module-tests.vmtests.runvmtests">tests.vmtests.runvmtests module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.vmtests.html#module-tests.vmtests.vmbackedtestcase">tests.vmtests.vmbackedtestcase module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tests.vmtests.html#module-tests.vmtests">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storage_tests.formats_test.html">storage_tests.formats_test package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.formats_test.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.formats_test.html#storage-tests-formats-test-fs-test-module">storage_tests.formats_test.fs_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.formats_test.html#storage-tests-formats-test-fslabeling-module">storage_tests.formats_test.fslabeling module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.formats_test.html#storage-tests-formats-test-fstesting-module">storage_tests.formats_test.fstesting module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.formats_test.html#storage-tests-formats-test-fsuuid-module">storage_tests.formats_test.fsuuid module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.formats_test.html#storage-tests-formats-test-labeling-test-module">storage_tests.formats_test.labeling_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.formats_test.html#storage-tests-formats-test-loopbackedtestcase-module">storage_tests.formats_test.loopbackedtestcase module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.formats_test.html#storage-tests-formats-test-luks-test-module">storage_tests.formats_test.luks_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.formats_test.html#storage-tests-formats-test-lvmpv-test-module">storage_tests.formats_test.lvmpv_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.formats_test.html#storage-tests-formats-test-uuid-test-module">storage_tests.formats_test.uuid_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="storage_tests.formats_test.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#tests-action-test-module">tests.action_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.dbus_test">tests.dbus_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.devicefactory_test">tests.devicefactory_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.devicetree_test">tests.devicetree_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.events_test">tests.events_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.imagebackedtestcase">tests.imagebackedtestcase module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.misc_test">tests.misc_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.parentlist_test">tests.parentlist_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#tests-partitioning-test-module">tests.partitioning_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.populator_test">tests.populator_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.run_tests">tests.run_tests module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.size_test">tests.size_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.storagetestcase">tests.storagetestcase module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.tsort_test">tests.tsort_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#tests-udev-test-module">tests.udev_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.unsupported_disklabel_test">tests.unsupported_disklabel_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests.util_test">tests.util_test module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests.html#module-tests">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_tests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_tests.html#storage-tests-imagebackedtestcase-module">storage_tests.imagebackedtestcase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_tests.html#storage-tests-partitioning-test-module">storage_tests.partitioning_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_tests.html#storage-tests-storagetestcase-module">storage_tests.storagetestcase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_tests.html#storage-tests-unsupported-disklabel-test-module">storage_tests.unsupported_disklabel_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_tests.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="unit_tests.html">unit_tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="unit_tests.devicelibs_test.html">unit_tests.devicelibs_test package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devicelibs_test.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devicelibs_test.html#unit-tests-devicelibs-test-disk-test-module">unit_tests.devicelibs_test.disk_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devicelibs_test.html#unit-tests-devicelibs-test-edd-test-module">unit_tests.devicelibs_test.edd_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devicelibs_test.html#unit-tests-devicelibs-test-lib-module">unit_tests.devicelibs_test.lib module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devicelibs_test.html#unit-tests-devicelibs-test-mdraid-test-module">unit_tests.devicelibs_test.mdraid_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devicelibs_test.html#unit-tests-devicelibs-test-raid-test-module">unit_tests.devicelibs_test.raid_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devicelibs_test.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="unit_tests.devices_test.html">unit_tests.devices_test package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#unit-tests-devices-test-device-dependencies-test-module">unit_tests.devices_test.device_dependencies_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#unit-tests-devices-test-device-methods-test-module">unit_tests.devices_test.device_methods_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#unit-tests-devices-test-device-names-test-module">unit_tests.devices_test.device_names_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#unit-tests-devices-test-device-packages-test-module">unit_tests.devices_test.device_packages_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#unit-tests-devices-test-device-properties-test-module">unit_tests.devices_test.device_properties_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#unit-tests-devices-test-device-size-test-module">unit_tests.devices_test.device_size_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#unit-tests-devices-test-disk-test-module">unit_tests.devices_test.disk_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#unit-tests-devices-test-lvm-test-module">unit_tests.devices_test.lvm_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#unit-tests-devices-test-md-test-module">unit_tests.devices_test.md_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#unit-tests-devices-test-network-test-module">unit_tests.devices_test.network_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#unit-tests-devices-test-partition-test-module">unit_tests.devices_test.partition_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#unit-tests-devices-test-stratis-test-module">unit_tests.devices_test.stratis_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.devices_test.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="unit_tests.formats_tests.html">unit_tests.formats_tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.formats_tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.formats_tests.html#unit-tests-formats-tests-device-test-module">unit_tests.formats_tests.device_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.formats_tests.html#unit-tests-formats-tests-disklabel-test-module">unit_tests.formats_tests.disklabel_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.formats_tests.html#unit-tests-formats-tests-init-test-module">unit_tests.formats_tests.init_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.formats_tests.html#unit-tests-formats-tests-luks-test-module">unit_tests.formats_tests.luks_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.formats_tests.html#unit-tests-formats-tests-methods-test-module">unit_tests.formats_tests.methods_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.formats_tests.html#unit-tests-formats-tests-misc-test-module">unit_tests.formats_tests.misc_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.formats_tests.html#unit-tests-formats-tests-selinux-test-module">unit_tests.formats_tests.selinux_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.formats_tests.html#unit-tests-formats-tests-swap-test-module">unit_tests.formats_tests.swap_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.formats_tests.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="unit_tests.udev_data.html">unit_tests.udev_data package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.udev_data.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.udev_data.html#unit-tests-udev-data-raid-data-module">unit_tests.udev_data.raid_data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="unit_tests.udev_data.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-action-test-module">unit_tests.action_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-dbus-test-module">unit_tests.dbus_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-devicefactory-test-module">unit_tests.devicefactory_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-devicetree-test-module">unit_tests.devicetree_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-events-test-module">unit_tests.events_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-misc-test-module">unit_tests.misc_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-parentlist-test-module">unit_tests.parentlist_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-populator-test-module">unit_tests.populator_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-size-test-module">unit_tests.size_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-storagetestcase-module">unit_tests.storagetestcase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-tags-test-module">unit_tests.tags_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-task-tests-module">unit_tests.task_tests module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-tsort-test-module">unit_tests.tsort_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-udev-test-module">unit_tests.udev_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#unit-tests-util-test-module">unit_tests.util_test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vmtests.html">vmtests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vmtests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vmtests.html#vmtests-blivet-reset-vmtest-module">vmtests.blivet_reset_vmtest module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vmtests.html#vmtests-runvmtests-module">vmtests.runvmtests module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vmtests.html#vmtests-vmbackedtestcase-module">vmtests.vmbackedtestcase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vmtests.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -162,7 +182,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -176,13 +196,13 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.5.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">tests</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2022, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

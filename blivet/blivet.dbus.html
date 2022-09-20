@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>blivet.dbus package &#8212; Blivet 3.5.0 documentation</title>
+    <title>blivet.dbus package &#8212; Blivet 3.6.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -35,7 +36,7 @@
         <li class="right" >
           <a href="blivet.html" title="blivet package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.5.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.dbus package</a></li> 
       </ul>
@@ -47,20 +48,20 @@
           <div class="body" role="main">
             
   <section id="blivet-dbus-package">
-<h1>blivet.dbus package<a class="headerlink" href="#blivet-dbus-package" title="Permalink to this headline">¶</a></h1>
+<h1>blivet.dbus package<a class="headerlink" href="#blivet-dbus-package" title="Permalink to this heading">¶</a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-blivet.dbus.action">
-<span id="blivet-dbus-action-module"></span><h2>blivet.dbus.action module<a class="headerlink" href="#module-blivet.dbus.action" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-dbus-action-module"></span><h2>blivet.dbus.action module<a class="headerlink" href="#module-blivet.dbus.action" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.dbus.action.DBusAction">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.dbus.action.</span></span><span class="sig-name descname"><span class="pre">DBusAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.action.DBusAction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.dbus.object.DBusObject" title="blivet.dbus.object.DBusObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.dbus.object.DBusObject</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.dbus.object.DBusObject" title="blivet.dbus.object.DBusObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">DBusObject</span></code></a></p>
 <p>Constructor. Either conn or bus_name is required; object_path
 is also required.</p>
 <dl class="field-list">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
 <dt><cite>conn</cite><span class="classifier">dbus.connection.Connection or None</span></dt><dd><p>The connection on which to export this object.</p>
 <p>If None, use the Bus associated with the given <code class="docutils literal notranslate"><span class="pre">bus_name</span></code>.
@@ -111,18 +112,18 @@ Object’s lifetime (unless it’s released manually).</p>
 
 </section>
 <section id="module-blivet.dbus.blivet">
-<span id="blivet-dbus-blivet-module"></span><h2>blivet.dbus.blivet module<a class="headerlink" href="#module-blivet.dbus.blivet" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-dbus-blivet-module"></span><h2>blivet.dbus.blivet module<a class="headerlink" href="#module-blivet.dbus.blivet" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.dbus.blivet.DBusBlivet">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.dbus.blivet.</span></span><span class="sig-name descname"><span class="pre">DBusBlivet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.blivet.DBusBlivet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.dbus.object.DBusObject" title="blivet.dbus.object.DBusObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.dbus.object.DBusObject</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.dbus.object.DBusObject" title="blivet.dbus.object.DBusObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">DBusObject</span></code></a></p>
 <p>This class provides the main entry point to the Blivet1 service.</p>
 <p>It provides methods for controlling the blivet service and querying its
 state.</p>
 <p>Constructor. Either conn or bus_name is required; object_path
 is also required.</p>
 <dl class="field-list">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
 <dt><cite>conn</cite><span class="classifier">dbus.connection.Connection or None</span></dt><dd><p>The connection on which to export this object.</p>
 <p>If None, use the Bus associated with the given <code class="docutils literal notranslate"><span class="pre">bus_name</span></code>.
@@ -225,18 +226,18 @@ Object’s lifetime (unless it’s released manually).</p>
 
 </section>
 <section id="module-blivet.dbus.constants">
-<span id="blivet-dbus-constants-module"></span><h2>blivet.dbus.constants module<a class="headerlink" href="#module-blivet.dbus.constants" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-dbus-constants-module"></span><h2>blivet.dbus.constants module<a class="headerlink" href="#module-blivet.dbus.constants" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-blivet.dbus.device">
-<span id="blivet-dbus-device-module"></span><h2>blivet.dbus.device module<a class="headerlink" href="#module-blivet.dbus.device" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-dbus-device-module"></span><h2>blivet.dbus.device module<a class="headerlink" href="#module-blivet.dbus.device" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.dbus.device.DBusDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.dbus.device.</span></span><span class="sig-name descname"><span class="pre">DBusDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.device.DBusDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.dbus.object.DBusObject" title="blivet.dbus.object.DBusObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.dbus.object.DBusObject</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.dbus.object.DBusObject" title="blivet.dbus.object.DBusObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">DBusObject</span></code></a></p>
 <p>Constructor. Either conn or bus_name is required; object_path
 is also required.</p>
 <dl class="field-list">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
 <dt><cite>conn</cite><span class="classifier">dbus.connection.Connection or None</span></dt><dd><p>The connection on which to export this object.</p>
 <p>If None, use the Bus associated with the given <code class="docutils literal notranslate"><span class="pre">bus_name</span></code>.
@@ -299,15 +300,15 @@ Object’s lifetime (unless it’s released manually).</p>
 
 </section>
 <section id="module-blivet.dbus.format">
-<span id="blivet-dbus-format-module"></span><h2>blivet.dbus.format module<a class="headerlink" href="#module-blivet.dbus.format" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-dbus-format-module"></span><h2>blivet.dbus.format module<a class="headerlink" href="#module-blivet.dbus.format" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.dbus.format.DBusFormat">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.dbus.format.</span></span><span class="sig-name descname"><span class="pre">DBusFormat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.format.DBusFormat" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.dbus.object.DBusObject" title="blivet.dbus.object.DBusObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">blivet.dbus.object.DBusObject</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#blivet.dbus.object.DBusObject" title="blivet.dbus.object.DBusObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">DBusObject</span></code></a></p>
 <p>Constructor. Either conn or bus_name is required; object_path
 is also required.</p>
 <dl class="field-list">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
 <dt><cite>conn</cite><span class="classifier">dbus.connection.Connection or None</span></dt><dd><p>The connection on which to export this object.</p>
 <p>If None, use the Bus associated with the given <code class="docutils literal notranslate"><span class="pre">bus_name</span></code>.
@@ -368,11 +369,11 @@ Object’s lifetime (unless it’s released manually).</p>
 
 </section>
 <section id="module-blivet.dbus.manager">
-<span id="blivet-dbus-manager-module"></span><h2>blivet.dbus.manager module<a class="headerlink" href="#module-blivet.dbus.manager" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-dbus-manager-module"></span><h2>blivet.dbus.manager module<a class="headerlink" href="#module-blivet.dbus.manager" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.dbus.manager.ObjectManager">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.dbus.manager.</span></span><span class="sig-name descname"><span class="pre">ObjectManager</span></span><a class="headerlink" href="#blivet.dbus.manager.ObjectManager" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dbus.service.Object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Object</span></code></p>
 <p>Class to implement org.freedesktop.DBus.ObjectManager interface.</p>
 <p>Blivet’s ObjectManager interface will manage subtrees for objects that
 variously (and with mutual-exclusivity) implement blivet’s Device,
@@ -380,7 +381,7 @@ Format, Action interfaces.</p>
 <p>Constructor. Either conn or bus_name is required; object_path
 is also required.</p>
 <dl class="field-list">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
 <dt><cite>conn</cite><span class="classifier">dbus.connection.Connection or None</span></dt><dd><p>The connection on which to export this object.</p>
 <p>If None, use the Bus associated with the given <code class="docutils literal notranslate"><span class="pre">bus_name</span></code>.
@@ -447,16 +448,16 @@ Object’s lifetime (unless it’s released manually).</p>
 
 </section>
 <section id="module-blivet.dbus.object">
-<span id="blivet-dbus-object-module"></span><h2>blivet.dbus.object module<a class="headerlink" href="#module-blivet.dbus.object" title="Permalink to this headline">¶</a></h2>
+<span id="blivet-dbus-object-module"></span><h2>blivet.dbus.object module<a class="headerlink" href="#module-blivet.dbus.object" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.dbus.object.DBusObject">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.dbus.object.</span></span><span class="sig-name descname"><span class="pre">DBusObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.dbus.object.DBusObject" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dbus.service.Object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Object</span></code></p>
 <p>Base class for dbus objects.</p>
 <p>Constructor. Either conn or bus_name is required; object_path
 is also required.</p>
 <dl class="field-list">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
 <dt><cite>conn</cite><span class="classifier">dbus.connection.Connection or None</span></dt><dd><p>The connection on which to export this object.</p>
 <p>If None, use the Bus associated with the given <code class="docutils literal notranslate"><span class="pre">bus_name</span></code>.
@@ -536,7 +537,7 @@ Object’s lifetime (unless it’s released manually).</p>
 and object path. If no connection or path is specified,
 the object ceases to be accessible via any connection or path.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><cite>connection</cite><span class="classifier">dbus.connection.Connection or None</span></dt><dd><p>Only remove the object from this Connection. If None,
 remove from all Connections on which it’s exported.</p>
@@ -546,11 +547,11 @@ remove from all object paths.</p>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Raises LookupError</dt>
+<dt class="field-even">Raises LookupError<span class="colon">:</span></dt>
 <dd class="field-even"><p>if the object was not exported on the requested connection
 or path, or (if both are None) was not exported at all.</p>
 </dd>
-<dt class="field-odd">Since</dt>
+<dt class="field-odd">Since<span class="colon">:</span></dt>
 <dd class="field-odd"><p>0.81.1</p>
 </dd>
 </dl>
@@ -560,7 +561,7 @@ or path, or (if both are None) was not exported at all.</p>
 
 </section>
 <section id="module-blivet.dbus">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-blivet.dbus" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-blivet.dbus" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 
@@ -615,7 +616,7 @@ or path, or (if both are None) was not exported at all.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -635,14 +636,14 @@ or path, or (if both are None) was not exported at all.</p>
         <li class="right" >
           <a href="blivet.html" title="blivet package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.5.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.dbus package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2022, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>
