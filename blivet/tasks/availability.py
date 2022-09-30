@@ -486,7 +486,7 @@ BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("libblockdev swap plugin", BLOCKDEV_SWAP_
 E2FSPROGS_INFO = AppVersionInfo(app_name="e2fsck",
                                 required_version="1.41.0",
                                 version_opt="-V",
-                                version_regex=r"e2fsck ([0-9+\.]+) .*")
+                                version_regex=r"e2fsck ([0-9+\.]+)[\-rc0-9+]* .*")
 E2FSPROGS_VERSION = VersionMethod(E2FSPROGS_INFO)
 
 
