@@ -3,6 +3,7 @@
 import os
 import six
 import unittest
+from uuid import UUID
 import parted
 
 try:
@@ -204,3 +205,20 @@ class PartitionDeviceTestCase(unittest.TestCase):
             end_free = (extended_end - logical_end) * sector_size
             self.assertEqual(extended_device.min_size,
                              extended_device.align_target_size(extended_device.current_size - end_free))
+
+    @unittest.skipUnless(hasattr(parted.Partition, "type_uuid"),
+                         "requires part type UUID in pyparted")
+    def test_part_type_uuid(self):
+        with sparsetmpfile("part_type_uuid", Size("10 MiB")) as disk_file:
+            disk = DiskFile(disk_file)
+            disk.format = get_format("disklabel", device=disk.path, label_type="gpt")
+            grain_size = Size(disk.format.alignment.grainSize)
+            sector_size = Size(disk.format.parted_device.sectorSize)
+            start = int(grain_size)
+            end = start + int(Size("6 MiB") / sector_size)
+            uuid = UUID("98bae220-872f-4895-853a-00ca5cadab1e")
+            disk.format.add_partition(start, end, part_type_uuid=uuid)
+            partition = disk.format.parted_disk.getPartitionBySector(start)
+            self.assertNotEqual(partition, None)
+
+            self.assertEqual(partition.type_uuid, uuid.bytes)
