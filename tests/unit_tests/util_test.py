@@ -8,10 +8,14 @@ import os
 import six
 import tempfile
 import unittest
+from unittest.mock import patch
 from decimal import Decimal
+from textwrap import dedent
+from io import StringIO
 
 from blivet import errors
 from blivet import util
+from blivet.size import Size
 
 
 class MiscTest(unittest.TestCase):
@@ -193,3 +197,112 @@ class GetKernelModuleParameterTestCase(unittest.TestCase):
         with mock.patch('blivet.util.open', mock.mock_open(read_data='value\n')):
             value = util.get_kernel_module_parameter("module", "parameter")
         self.assertEqual(value, "value")
+
+
+class MemoryTests(unittest.TestCase):
+
+    MEMINFO = dedent(
+        """MemTotal:       32526648 kB
+           MemFree:         8196560 kB
+           MemAvailable:   21189232 kB
+           Buffers:            4012 kB
+           Cached:         13974708 kB
+           SwapCached:            0 kB
+           Active:          4934172 kB
+           Inactive:       17128972 kB
+           Active(anon):       7184 kB
+           Inactive(anon):  9202192 kB
+           Active(file):    4926988 kB
+           Inactive(file):  7926780 kB
+           Unevictable:     1009932 kB
+           Mlocked:             152 kB
+           SwapTotal:       8388604 kB
+           SwapFree:        8388604 kB
+           Zswap:                 0 kB
+           Zswapped:              0 kB
+           Dirty:              4508 kB
+           Writeback:             0 kB
+           AnonPages:       9094440 kB
+           Mapped:          1224920 kB
+           Shmem:           1124952 kB
+           KReclaimable:     605048 kB
+           Slab:             969324 kB
+           SReclaimable:     605048 kB
+           SUnreclaim:       364276 kB
+           KernelStack:       36672 kB
+           PageTables:        85696 kB
+           NFS_Unstable:          0 kB
+           Bounce:                0 kB
+           WritebackTmp:          0 kB
+           CommitLimit:    24651928 kB
+           Committed_AS:   19177064 kB
+           VmallocTotal:   34359738367 kB
+           VmallocUsed:      102060 kB
+           VmallocChunk:          0 kB
+           Percpu:            11392 kB
+           HardwareCorrupted:     0 kB
+           AnonHugePages:         0 kB
+           ShmemHugePages:        0 kB
+           ShmemPmdMapped:        0 kB
+           FileHugePages:         0 kB
+           FilePmdMapped:         0 kB
+           CmaTotal:              0 kB
+           CmaFree:               0 kB
+           HugePages_Total:       0
+           HugePages_Free:        0
+           HugePages_Rsvd:        0
+           HugePages_Surp:        0
+           Hugepagesize:       2048 kB
+           Hugetlb:               0 kB
+           DirectMap4k:      829716 kB
+           DirectMap2M:    27138048 kB
+           DirectMap1G:     6291456 kB
+        """
+    )
+
+    @patch("blivet.util.open")
+    def test_total_memory_real(self, open_mock):
+        """Test total_memory with real data"""
+        open_mock.return_value = StringIO(self.MEMINFO)
+        assert util.total_memory() == Size("32657720.0 KiB")
+        open_mock.assert_called_once_with("/proc/meminfo", "r")
+
+    @patch("blivet.util.open")
+    def test_total_memory_missing(self, open_mock):
+        """Test total_memory with missing value"""
+        missing = self.MEMINFO.replace("MemTotal", "Nonsense")
+        open_mock.return_value = StringIO(missing)
+        with self.assertRaises(RuntimeError):
+            util.total_memory()
+        open_mock.assert_called_once_with("/proc/meminfo", "r")
+
+    @patch("blivet.util.open")
+    def test_total_memory_not_number(self, open_mock):
+        """Test total_memory with bad format"""
+        missing = self.MEMINFO.replace(
+            "MemTotal:       32526648 kB",
+            "MemTotal:       nonsense kB"
+        )
+        open_mock.return_value = StringIO(missing)
+        with self.assertRaises(RuntimeError):
+            util.total_memory()
+
+        malformed = self.MEMINFO.replace(
+            "MemTotal:       32526648 kB",
+            "MemTotal:       32526648 kB as of right now"
+        )
+        open_mock.return_value = StringIO(malformed)
+        with self.assertRaises(RuntimeError):
+            util.total_memory()
+
+    @patch("blivet.util.open")
+    def test_total_memory_calculations(self, open_mock):
+        """Test total_memory calculates correctly."""
+        open_mock.return_value = StringIO("MemTotal: 1024 kB")
+        assert util.total_memory() == Size("132096.0 KiB")
+
+        open_mock.return_value = StringIO("MemTotal: 65536 kB")
+        assert util.total_memory() == Size("196608.0 KiB")
+
+        open_mock.return_value = StringIO("MemTotal: 10000000 kB")
+        assert util.total_memory() == Size("10131072.0 KiB")

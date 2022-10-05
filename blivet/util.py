@@ -305,23 +305,40 @@ def get_mount_device(mountpoint):
 
 
 def total_memory():
-    """ Return the amount of system RAM.
+    """Return the amount of system RAM.
+
+        Returns total system RAM in kB (given to us by /proc/meminfo).
 
         :rtype: :class:`~.size.Size`
     """
     # import locally to avoid a cycle with size importing util
     from .size import Size
 
-    with open("/proc/meminfo") as lines:
-        line = six.next(l for l in lines if l.startswith("MemTotal:"))
-        mem = Size("%s KiB" % line.split()[1])
+    with open("/proc/meminfo", "r") as fobj:
+        for line in fobj:
+            if not line.startswith("MemTotal"):
+                # we are only interested in the MemTotal: line
+                continue
 
-    # Because /proc/meminfo only gives us the MemTotal (total physical RAM
-    # minus the kernel binary code), we need to round this up. Assuming
-    # every machine has the total RAM MiB number divisible by 128. */
-    bs = Size("128MiB")
-    mem = (mem / bs + 1) * bs
-    return mem
+            fields = line.split()
+            if len(fields) != 3:
+                log.warning("unknown format for MemTotal line in /proc/meminfo: %s", line.rstrip())
+                continue
+
+            try:
+                mem = Size("%s KiB" % fields[1])
+            except ValueError:
+                log.warning("invalid value of MemTotal /proc/meminfo: %s", fields[1])
+                continue
+
+            # Because /proc/meminfo only gives us the MemTotal (total physical RAM
+            # minus the kernel binary code), we need to round this up. Assuming
+            # every machine has the total RAM MiB number divisible by 128.
+            bs = Size("128MiB")
+            mem = (mem / bs + 1) * bs
+            return mem
+
+        raise RuntimeError("no valid line with MemTotal found in /proc/meminfo")
 
 
 def available_memory():
