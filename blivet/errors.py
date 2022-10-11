@@ -330,3 +330,7 @@ class ISCSIError(StorageError, OSError):
 
 class NVMeError(StorageError, OSError):
     pass
+
+
+class GPTVolUUIDError(StorageError):
+    pass
