@@ -13,7 +13,9 @@ except ImportError:
 
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
+from blivet.devicelibs.gpt import gpt_part_uuid_for_mountpoint
 from blivet.formats import get_format
+from blivet.flags import flags
 from blivet.size import Size
 from blivet.util import sparsetmpfile
 
@@ -254,3 +256,22 @@ class PartitionDeviceTestCase(unittest.TestCase):
 
             self.assertEqual(device.part_type_uuid, uuid1)
             self.assertEqual(device.part_type_uuid_req, uuid2)
+
+    @unittest.skipUnless(hasattr(parted.Partition, "type_uuid"),
+                         "requires part type UUID in pyparted")
+    def test_dev_part_type_gpt_autodiscover(self):
+        with sparsetmpfile("part_type_uuid", Size("10 MiB")) as disk_file:
+            disk = DiskFile(disk_file)
+            disk.format = get_format("disklabel", device=disk.path, label_type="gpt")
+            sector_size = Size(disk.format.parted_device.sectorSize)
+            device = PartitionDevice("demo",
+                                     size=int(Size("6 MiB") / sector_size),
+                                     exists=False,
+                                     mountpoint="/home")
+            device.disk = disk
+
+            flags.gpt_discoverable_partitions = False
+            self.assertEqual(device.part_type_uuid, None)
+            flags.gpt_discoverable_partitions = True
+            self.assertEqual(device.part_type_uuid,
+                             gpt_part_uuid_for_mountpoint("/home"))

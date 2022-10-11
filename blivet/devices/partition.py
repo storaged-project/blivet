@@ -36,6 +36,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
 from ..formats import DeviceFormat, get_format
+from ..devicelibs.gpt import gpt_part_uuid_for_mountpoint
 from ..size import Size, MiB, ROUND_DOWN
 
 import logging
@@ -72,7 +73,7 @@ class PartitionDevice(StorageDevice):
                  major=None, minor=None, bootable=None,
                  sysfs_path='', parents=None, exists=False,
                  part_type=None, primary=False, weight=None, disk_tags=None,
-                 part_type_uuid=None):
+                 part_type_uuid=None, mountpoint=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -116,6 +117,8 @@ class PartitionDevice(StorageDevice):
             :type disk_tags: iterable
             :keyword part_type_uuid: GPT partition type UUID or None
             :type part_type_uuid: uuid.UUID or NoneType
+            :keyword mountpoint: where the partition's format will be mounted
+            :type mountpoint: str or NoneType
 
             .. note::
 
@@ -156,6 +159,7 @@ class PartitionDevice(StorageDevice):
         self._parted_partition = None
         self._orig_path = None
         self._part_type_uuid = None
+        self._mountpoint = mountpoint
 
         if not exists and size is None:
             if start is not None and end is not None:
@@ -343,6 +347,18 @@ class PartitionDevice(StorageDevice):
     def part_type_uuid_req(self):
         if self.req_part_type_uuid is not None:
             return self.req_part_type_uuid
+
+        discoverable = (
+            flags.gpt_discoverable_partitions and
+            self.disk.format.label_type == "gpt" and
+            self._mountpoint is not None and
+            hasattr(parted.Partition, "type_uuid"))
+
+        if discoverable:
+            parttype = gpt_part_uuid_for_mountpoint(self._mountpoint)
+            log.debug("Discovered partition type UUID %s for mount '%s'",
+                      parttype, self._mountpoint)
+            return parttype
         return None
 
     @property
