@@ -2,6 +2,7 @@ import argparse
 import logging
 import libvirt
 import paramiko
+import re
 import sys
 import time
 from contextlib import contextmanager
@@ -33,6 +34,7 @@ def parse_args():
     parser.add_argument("--virtpass", type=str, help="Root passphrase for the libvirt host", required=False)
     parser.add_argument("--verbose", "-v", action='store_true', help="Display verbose information")
     parser.add_argument("--debug", "-d", action='store_true', help="Display debugging information")
+    parser.add_argument("--test", "-t", help="Filter test classes to PATTERN")
     args = parser.parse_args()
     return args
 
@@ -133,10 +135,17 @@ def run_tests(cmd_args):
 
     """
 
+    pattern = None
+    if cmd_args.test is not None:
+        pattern = re.compile(cmd_args.test)
+
     with virtual_machine(cmd_args) as virt:
         test_results = []
         fails = errors = skips = 0
         for test in TESTS:
+            if pattern is not None and not pattern.search(test):
+                log.info("Skipping test '%s' in VM '%s'", test, cmd_args.name)
+                continue
             log.info("Running test '%s' in VM '%s'", test, cmd_args.name)
             with ssh_connection(cmd_args) as ssh:
                 # clone the repository with tests
