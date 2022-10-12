@@ -1,10 +1,13 @@
 import argparse
+import logging
 import libvirt
 import paramiko
 import sys
 import time
 from contextlib import contextmanager
 
+
+log = logging.getLogger()
 
 TESTS = ["tests.vmtests.blivet_reset_vmtest.LVMTestCase",
          "tests.vmtests.blivet_reset_vmtest.LVMSnapShotTestCase",
@@ -28,6 +31,8 @@ def parse_args():
     parser.add_argument("--ip", type=str, help="IP adress of the virtual machine", required=True)
     parser.add_argument("--vmpass", type=str, help="Root passphrase for the virtual machine", required=True)
     parser.add_argument("--virtpass", type=str, help="Root passphrase for the libvirt host", required=False)
+    parser.add_argument("--verbose", "-v", action='store_true', help="Display verbose information")
+    parser.add_argument("--debug", "-d", action='store_true', help="Display debugging information")
     args = parser.parse_args()
     return args
 
@@ -45,11 +50,13 @@ def request_cred(credentials, cmd_args):
 def virtual_machine(cmd_args):
     auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE], request_cred, None]
     try:
+        log.info("Connecting to libvirt '%s'", cmd_args.connection)
         conn = libvirt.openAuth(cmd_args.connection, auth, 0)
     except libvirt.libvirtError as e:
         raise RuntimeError("Failed to open connection:\n%s" % str(e))
 
     try:
+        log.info("Finding VM '%s'", cmd_args.name)
         dom = conn.lookupByName(cmd_args.name)
     except libvirt.libvirtError:
         raise RuntimeError("Virtual machine %s not found" % cmd_args.name)
@@ -57,6 +64,7 @@ def virtual_machine(cmd_args):
     snapshots = dom.snapshotListNames()
     if SNAP_NAME in snapshots:
         try:
+            log.info("Deleting snapshot '%s'", SNAP_NAME)
             snap = dom.snapshotLookupByName(SNAP_NAME)
             snap.delete()
         except libvirt.libvirtError as e:
@@ -64,15 +72,19 @@ def virtual_machine(cmd_args):
 
     # start the VM
     try:
+        log.info("Starting VM '%s'", cmd_args.name)
         dom.create()
     except libvirt.libvirtError as e:
         raise RuntimeError("Failed to start virtual machine:%s" % str(e))
 
     # wait for virtual machine to boot and create snapshot
+    log.info("Waiting 120 seconds for VM  '%s' to boot", cmd_args.name)
     time.sleep(120)
     with ssh_connection(cmd_args):
+        log.info("Connected to SSH port in VM '%s'", cmd_args.name)
         try:
             snap_xml = "<domainsnapshot><name>%s</name></domainsnapshot>" % SNAP_NAME
+            log.info("Creating snapshot of VM '%s'", cmd_args.name)
             dom.snapshotCreateXML(snap_xml)
         except libvirt.libvirtError as e:
             raise RuntimeError("Failed to create snapshot:\n%s." % str(e))
@@ -81,12 +93,14 @@ def virtual_machine(cmd_args):
 
     # stop the VM
     try:
+        log.info("Powering off VM '%s'", cmd_args.name)
         dom.destroy()
     except libvirt.libvirtError as e:
         raise RuntimeError("Failed to stop virtual machine:%s" % str(e))
 
     # remove the snapshot
     try:
+        log.info("Deleting snapshot '%s' in VM '%s'", SNAP_NAME, cmd_args.name)
         snap = dom.snapshotLookupByName(SNAP_NAME)
         snap.delete()
     except libvirt.libvirtError as e:
@@ -119,6 +133,7 @@ def run_tests(cmd_args):
         test_results = []
         fails = errors = skips = 0
         for test in TESTS:
+            log.info("Running test '%s' in VM '%s'", test, cmd_args.name)
             with ssh_connection(cmd_args) as ssh:
                 # clone the repository with tests
                 _stdin, stdout, stderr = ssh.exec_command("git clone %s" % cmd_args.repo)
@@ -179,6 +194,15 @@ def run_tests(cmd_args):
 
 def main():
     cmd_args = parse_args()
+    if cmd_args.debug or cmd_args.verbose:
+        if cmd_args.debug:
+            logging.basicConfig(level="DEBUG")
+        else:
+            logging.basicConfig(level="INFO")
+        formatter = logging.Formatter("[%(levelname)s]: %(message)s")
+        handler = log.handlers[0]
+        handler.setFormatter(formatter)
+
     ret = run_tests(cmd_args)
     sys.exit(ret)
 
