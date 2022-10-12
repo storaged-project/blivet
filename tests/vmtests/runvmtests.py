@@ -71,15 +71,18 @@ def virtual_machine(cmd_args):
             raise RuntimeError("Failed to delete snapshot:\n %s" % str(e))
 
     # start the VM
-    try:
-        log.info("Starting VM '%s'", cmd_args.name)
-        dom.create()
-    except libvirt.libvirtError as e:
-        raise RuntimeError("Failed to start virtual machine:%s" % str(e))
+    wasRunning = dom.isActive()
+    if not wasRunning:
+        try:
+            log.info("Starting VM '%s'", cmd_args.name)
+            dom.create()
+        except libvirt.libvirtError as e:
+            raise RuntimeError("Failed to start virtual machine:%s" % str(e))
 
-    # wait for virtual machine to boot and create snapshot
-    log.info("Waiting 120 seconds for VM  '%s' to boot", cmd_args.name)
-    time.sleep(120)
+        # wait for virtual machine to boot and create snapshot
+        log.info("Waiting 120 seconds for VM  '%s' to boot", cmd_args.name)
+        time.sleep(120)
+
     with ssh_connection(cmd_args):
         log.info("Connected to SSH port in VM '%s'", cmd_args.name)
         try:
@@ -91,12 +94,13 @@ def virtual_machine(cmd_args):
 
     yield dom
 
-    # stop the VM
-    try:
-        log.info("Powering off VM '%s'", cmd_args.name)
-        dom.destroy()
-    except libvirt.libvirtError as e:
-        raise RuntimeError("Failed to stop virtual machine:%s" % str(e))
+    if not wasRunning:
+        # stop the VM
+        try:
+            log.info("Powering off VM '%s'", cmd_args.name)
+            dom.destroy()
+        except libvirt.libvirtError as e:
+            raise RuntimeError("Failed to stop virtual machine:%s" % str(e))
 
     # remove the snapshot
     try:
