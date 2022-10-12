@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument("--connection", type=str, help="Libvirt connection URI", required=True)
     parser.add_argument("--name", type=str, help="Name of the virtual machine", required=True)
     parser.add_argument("--ip", type=str, help="IP adress of the virtual machine", required=True)
-    parser.add_argument("--vmpass", type=str, help="Root passphrase for the virtual machine", required=True)
+    parser.add_argument("--vmpass", type=str, help="Root passphrase for the virtual machine", required=False)
     parser.add_argument("--virtpass", type=str, help="Root passphrase for the libvirt host", required=False)
     parser.add_argument("--verbose", "-v", action='store_true', help="Display verbose information")
     parser.add_argument("--debug", "-d", action='store_true', help="Display debugging information")
@@ -113,7 +113,7 @@ def ssh_connection(cmd_args):
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     try:
-        ssh.connect(cmd_args.ip, username="root", password=cmd_args.virtpass)
+        ssh.connect(cmd_args.ip, username="root", password=cmd_args.vmpass)
     except paramiko.AuthenticationException:
         raise RuntimeError("Authentication failed while trying to connect to virtual machine.")
 
