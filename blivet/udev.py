@@ -1023,6 +1023,39 @@ def device_is_nvdimm_namespace(info):
     return ninfo is not None
 
 
+def device_is_nvme_namespace(info):
+    if info.get("DEVTYPE") != "disk":
+        return False
+
+    if not info.get("SYS_PATH"):
+        return False
+
+    device = pyudev.Devices.from_sys_path(global_udev, info.get("SYS_PATH"))
+    while device:
+        if device.subsystem and device.subsystem.startswith("nvme"):
+            return True
+        device = device.parent
+
+    return False
+
+
+def device_is_nvme_fabrics(info):
+    if not device_is_nvme_namespace(info):
+        return False
+
+    if not hasattr(blockdev.Plugin, "NVME") or not blockdev.is_plugin_available(blockdev.Plugin.NVME):  # pylint: disable=no-member
+        # nvme plugin is not available -- even if this is an nvme fabrics device we
+        # don't have tools to work with it, so we should pretend it's just a normal nvme
+        return False
+
+    controllers = blockdev.nvme_find_ctrls_for_ns(info.get("SYS_PATH", ""))
+    if not controllers:
+        return False
+
+    transport = util.get_sysfs_attr(controllers[0], "transport")
+    return transport in ("rdma", "fc", "tcp", "loop")
+
+
 def device_is_hidden(info):
     sysfs_path = device_get_sysfs_path(info)
     hidden = util.get_sysfs_attr(sysfs_path, "hidden")

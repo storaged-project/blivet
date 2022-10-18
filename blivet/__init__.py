@@ -67,6 +67,10 @@ if arch.is_s390():
 else:
     _REQUESTED_PLUGIN_NAMES = set(("swap", "crypto", "loop", "mdraid", "mpath", "dm", "nvdimm"))
 
+# nvme plugin is not generally available
+if hasattr(blockdev.Plugin, "NVME"):
+    _REQUESTED_PLUGIN_NAMES.add("nvme")
+
 _requested_plugins = blockdev.plugin_specs_from_names(_REQUESTED_PLUGIN_NAMES)
 # XXX force non-dbus LVM plugin
 lvm_plugin = blockdev.PluginSpec()
@@ -74,7 +78,7 @@ lvm_plugin.name = blockdev.Plugin.LVM
 lvm_plugin.so_name = "libbd_lvm.so.2"
 _requested_plugins.append(lvm_plugin)
 try:
-    # do not check for dependencies during libblockdev initializtion, do runtime
+    # do not check for dependencies during libblockdev initialization, do runtime
     # checks instead
     blockdev.switch_init_checks(False)
     succ_, avail_plugs = blockdev.try_reinit(require_plugins=_requested_plugins, reload=False, log_func=log_bd_message)
