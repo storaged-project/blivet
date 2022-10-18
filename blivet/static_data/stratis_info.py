@@ -124,20 +124,22 @@ class StratisInfo(object):
             log.error("Failed to get DBus properties of '%s'", blockdev_path)
             return None
 
+        blockdev_uuid = str(uuid.UUID(properties["Uuid"]))
+
         pool_path = properties["Pool"]
         if pool_path == "/":
             pool_name = ""
+            return StratisBlockdevInfo(path=properties["Devnode"], uuid=blockdev_uuid,
+                                       pool_name="", pool_uuid="", object_path=blockdev_path)
         else:
             pool_info = self._get_pool_info(properties["Pool"])
             if not pool_info:
                 return None
             pool_name = pool_info.name
 
-        blockdev_uuid = str(uuid.UUID(properties["Uuid"]))
-
-        return StratisBlockdevInfo(path=properties["Devnode"], uuid=blockdev_uuid,
-                                   pool_name=pool_name, pool_uuid=pool_info.uuid,
-                                   object_path=blockdev_path)
+            return StratisBlockdevInfo(path=properties["Devnode"], uuid=blockdev_uuid,
+                                       pool_name=pool_name, pool_uuid=pool_info.uuid,
+                                       object_path=blockdev_path)
 
     def _get_locked_pools_info(self):
         locked_pools = []
