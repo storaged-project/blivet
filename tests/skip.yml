@@ -29,3 +29,9 @@
     - distro: "centos"
       version: "9"
       reason: "Creating RAID 1 LV on CentOS/RHEL 9 causes a system deadlock"
+
+- test: storage_tests.formats_test.fs_test.XFSTestCase.test_resize
+  skip_on:
+    - distro: ["centos", "enterprise_linux"]
+      version: "9"
+      reason: "Creating partitions on loop devices is broken on CentOS/RHEL 9 latest kernel"
