@@ -79,16 +79,16 @@ Requires: python3-blockdev >= %{libblockdevver}
 Recommends: libblockdev-btrfs >= %{libblockdevver}
 Recommends: libblockdev-crypto >= %{libblockdevver}
 Recommends: libblockdev-dm >= %{libblockdevver}
-Recommends: libblockdev-fs >= %{libblockdevver}
-Recommends: libblockdev-kbd >= %{libblockdevver}
 Recommends: libblockdev-loop >= %{libblockdevver}
 Recommends: libblockdev-lvm >= %{libblockdevver}
 Recommends: libblockdev-mdraid >= %{libblockdevver}
 Recommends: libblockdev-mpath >= %{libblockdevver}
-Recommends: libblockdev-nvdimm >= %{libblockdevver}
-Recommends: libblockdev-part >= %{libblockdevver}
 Recommends: libblockdev-swap >= %{libblockdevver}
+
+%ifarch s390 s390x
 Recommends: libblockdev-s390 >= %{libblockdevver}
+%endif
+
 Requires: python3-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
 Requires: lsof

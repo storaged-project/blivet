@@ -1,6 +1,5 @@
 # vim:set fileencoding=utf-8
 
-from collections import namedtuple
 import os
 import six
 import unittest
@@ -16,19 +15,6 @@ from blivet.devices import PartitionDevice
 from blivet.formats import get_format
 from blivet.size import Size
 from blivet.util import sparsetmpfile
-
-
-Weighted = namedtuple("Weighted", ["fstype", "mountpoint", "true_funcs", "weight"])
-
-weighted = [Weighted(fstype=None, mountpoint="/", true_funcs=[], weight=0),
-            Weighted(fstype=None, mountpoint="/boot", true_funcs=[], weight=2000),
-            Weighted(fstype="biosboot", mountpoint=None, true_funcs=['is_x86'], weight=5000),
-            Weighted(fstype="efi", mountpoint="/boot/efi", true_funcs=['is_efi'], weight=5000),
-            Weighted(fstype="prepboot", mountpoint=None, true_funcs=['is_ppc', 'is_ipseries'], weight=5000),
-            Weighted(fstype="appleboot", mountpoint=None, true_funcs=['is_ppc', 'is_pmac'], weight=5000),
-            Weighted(fstype=None, mountpoint="/", true_funcs=['is_arm'], weight=-100)]
-
-arch_funcs = ['is_arm', 'is_efi', 'is_ipseries', 'is_pmac', 'is_ppc', 'is_x86']
 
 
 class PartitionDeviceTestCase(unittest.TestCase):
