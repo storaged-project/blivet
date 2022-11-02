@@ -91,7 +91,8 @@ class FS(DeviceFormat):
     # support for resize: grow/shrink, online/offline
     _resize_support = 0
 
-    config_actions_map = {"label": "write_label"}
+    config_actions_map = {"label": "write_label",
+                          "mountpoint": "change_mountpoint"}
 
     def __init__(self, **kwargs):
         """
@@ -644,6 +645,11 @@ class FS(DeviceFormat):
             self._chrooted_mountpoint = None
 
         udev.settle()
+
+    def change_mountpoint(self, dry_run=False):
+        # This function is intentionally left blank. Mountpoint change utilizes
+        # only the generic part of this code branch
+        pass
 
     def read_label(self):
         """Read this filesystem's label.
