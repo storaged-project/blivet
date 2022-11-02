@@ -75,6 +75,7 @@ Requires: python3-pyudev >= %{pyudevver}
 Requires: parted >= %{partedver}
 Requires: python3-pyparted >= %{pypartedver}
 Requires: libselinux-python3
+Requires: python3-libmount
 Requires: python3-blockdev >= %{libblockdevver}
 Recommends: libblockdev-btrfs >= %{libblockdevver}
 Recommends: libblockdev-crypto >= %{libblockdevver}
