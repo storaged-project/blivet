@@ -37,6 +37,7 @@ def parse_args():
     parser.add_argument("--verbose", "-v", action='store_true', help="Display verbose information")
     parser.add_argument("--debug", "-d", action='store_true', help="Display debugging information")
     parser.add_argument("--test", "-t", help="Filter test classes to PATTERN")
+    parser.add_argument("--logs", "-l", action='store_true', help="Capture and save blivet.log per failed test")
     args = parser.parse_args()
     return args
 
@@ -172,6 +173,14 @@ def run_tests(cmd_args):
 
                 print(out)
                 print(err)
+
+                if ret != 0 and cmd_args.logs:
+                    _stdin, stdout, _stderr = ssh.exec_command("cat /tmp/blivet.log")
+                    out = stdout.read().decode("utf-8")
+
+                    logfile = "blivet-" + test + ".log"
+                    with open(logfile, "w") as fh:
+                        print(out, file=fh)
 
                 # save the result
                 if ret != 0:
