@@ -40,6 +40,7 @@ from .devicelibs.crypto import LUKS_METADATA_SIZE
 from .errors import StorageError, DependencyError
 from .size import Size
 from .devicetree import DeviceTree
+from .fstab import FSTabManager
 from .formats import get_default_filesystem_type
 from .flags import flags
 from .formats import get_format
@@ -70,6 +71,8 @@ class Blivet(object):
 
         self.size_sets = []
         self.set_default_fstype(get_default_filesystem_type())
+
+        self.fstab = FSTabManager(src_file="/etc/fstab", dest_file ="/etc/fstab")
 
         self._short_product_name = 'blivet'
 
@@ -112,7 +115,8 @@ class Blivet(object):
 
         """
 
-        self.devicetree.actions.process(callbacks=callbacks, devices=self.devices)
+        self.devicetree.actions.process(callbacks=callbacks, devices=self.devices, fstab=self.fstab)
+        self.fstab.read()
 
     @property
     def next_id(self):
@@ -141,6 +145,8 @@ class Blivet(object):
         self.devicetree.populate(cleanup_only=cleanup_only)
         self.edd_dict = get_edd_dict(self.partitioned)
         self.devicetree.edd_dict = self.edd_dict
+
+        self.fstab.read()
 
         if flags.include_nodev:
             self.devicetree.handle_nodev_filesystems()
