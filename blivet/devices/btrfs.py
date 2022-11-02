@@ -362,7 +362,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         try:
             subvols = blockdev.btrfs.list_subvolumes(mountpoint,
                                                      snapshots_only=snapshots_only)
-        except blockdev.BtrfsError as e:
+        except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as e:
             log.debug("failed to list subvolumes: %s", e)
         else:
             self._get_default_subvolume_id()
@@ -400,7 +400,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         with self._do_temp_mount() as mountpoint:
             try:
                 subvolid = blockdev.btrfs.get_default_subvolume_id(mountpoint)
-            except blockdev.BtrfsError as e:
+            except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as e:
                 log.debug("failed to get default subvolume id: %s", e)
 
         self._default_subvolume_id = subvolid
@@ -413,7 +413,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         with self._do_temp_mount() as mountpoint:
             try:
                 blockdev.btrfs.set_default_subvolume(mountpoint, vol_id)
-            except blockdev.BtrfsError as e:
+            except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as e:
                 log.error("failed to set new default subvolume id (%s): %s",
                           vol_id, e)
                 # The only time we set a new default subvolume is so we can remove
@@ -471,7 +471,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         if not self.format.vol_uuid:
             try:
                 bd_info = blockdev.btrfs.filesystem_info(self.parents[0].path)
-            except blockdev.BtrfsError as e:
+            except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as e:
                 log.error("failed to get filesystem info for new btrfs volume %s", e)
             else:
                 self.format.vol_uuid = bd_info.uuid
