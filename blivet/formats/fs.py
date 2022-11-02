@@ -88,7 +88,8 @@ class FS(DeviceFormat):
     # value is already unpredictable and can change in the future...
     _metadata_size_factor = 1.0
 
-    config_actions_map = {"label": "write_label"}
+    config_actions_map = {"label": "write_label",
+                          "mountpoint": "change_mountpoint"}
 
     def __init__(self, **kwargs):
         """
@@ -626,6 +627,9 @@ class FS(DeviceFormat):
             self._chrooted_mountpoint = None
 
         udev.settle()
+
+    def change_mountpoint(self, dry_run=False):
+        pass
 
     def read_label(self):
         """Read this filesystem's label.
