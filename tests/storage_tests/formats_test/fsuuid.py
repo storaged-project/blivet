@@ -23,11 +23,9 @@ class SetUUID(loopbackedtestcase.LoopBackedTestCase):
     _invalid_uuid = abc.abstractproperty(
         doc="An invalid UUID for this filesystem.")
 
-    _DEVICE_SIZE = Size("100 MiB")
-
     def __init__(self, methodName='run_test'):
         super(SetUUID, self).__init__(methodName=methodName,
-                                      device_spec=[self._DEVICE_SIZE])
+                                      device_spec=[Size("100 MiB")])
 
     def setUp(self):
         an_fs = self._fs_class()

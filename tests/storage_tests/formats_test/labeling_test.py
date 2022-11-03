@@ -1,7 +1,6 @@
 import unittest
 
 from blivet.formats import device_formats
-from blivet.size import Size
 import blivet.formats.fs as fs
 import blivet.formats.swap as swap
 
@@ -62,7 +61,6 @@ class InitializationTestCase(unittest.TestCase):
 class XFSTestCase(fslabeling.CompleteLabelingAsRoot):
     _fs_class = fs.XFS
     _invalid_label = "root filesystem"
-    _DEVICE_SIZE = Size("500 MiB")
 
 
 class FATFSTestCase(fslabeling.CompleteLabelingAsRoot):
