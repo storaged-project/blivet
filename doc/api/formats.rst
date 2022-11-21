@@ -74,6 +74,7 @@ formats
     * :class:`~blivet.formats.fs.HFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.HFSPlus` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.Iso9660FS` (see :ref:`inherited public API <FSAPI>`)
+    * :class:`~blivet.formats.fs.UDFFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.JFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.MacEFIFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.NFS` (see :ref:`inherited public API <FSAPI>`)

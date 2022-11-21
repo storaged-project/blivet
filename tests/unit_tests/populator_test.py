@@ -855,6 +855,11 @@ class DiskLabelPopulatorTestCase(PopulatorHelperTestCase):
         self.assertFalse(self.helper_class.match(data, device))
         device_get_format.return_value = None
 
+        # no match for whole-disk udf filesystem
+        device_get_format.return_value = "udf"
+        self.assertFalse(self.helper_class.match(data, device))
+        device_get_format.return_value = None
+
         # no match for biosraid members
         device_is_biosraid_member.return_value = True
         self.assertFalse(self.helper_class.match(data, device))
