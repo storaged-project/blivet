@@ -1,5 +1,12 @@
 name: Run validation tests from Anaconda
-on: pull_request
+
+on:
+  pull_request:
+    branches:
+     - rhel9-branch
+  push:
+    branches:
+     - rhel9-branch
 
 permissions:
   contents: read
