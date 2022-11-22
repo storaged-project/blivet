@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
     env:
-      TARGET_BRANCH: 'master'
+      TARGET_BRANCH: 'rhel-9'
 
     steps:
       - name: Clone Anaconda repository
