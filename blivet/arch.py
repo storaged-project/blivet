@@ -322,6 +322,29 @@ def is_arm():
     return os.uname()[4].startswith('arm')
 
 
+def is_loongarch(bits=None):
+    """
+    :return: True if the hardware supports loongarch, False otherwise.
+    :rtype: boolean
+    :param bits: The number of bits used to define a memory address.
+    :type bits: int
+
+    """
+    arch = os.uname()[4]
+
+    if bits is None:
+        if arch in ('loongarch32', 'loongarch64'):
+            return True
+    elif bits == 32:
+        if arch == 'loongarch32':
+            return True
+    elif bits == 64:
+        if arch == 'loongarch64':
+            return True
+
+    return False
+
+
 def is_pmac():
     return is_ppc() and get_ppc_machine() == "PMac" and get_ppc_mac_gen() == "NewWorld"
 
@@ -355,6 +378,10 @@ def get_arch():
         return 'alpha'
     elif is_arm():
         return 'arm'
+    elif is_loongarch(bits=32):
+        return 'loongarch32'
+    elif is_loongarch(bits=64):
+        return 'loongarch64'
     else:
         return os.uname()[4]
 
