@@ -24,8 +24,6 @@
 
   - name: Install build dependencies (Fedora)
     command: "dnf -y builddep python3-blivet --nogpgcheck"
-    args:
-      warn: false
     when: ansible_distribution == 'Fedora'
 
   - name: Install blivet to get all dependencies (Fedora)
@@ -79,8 +77,6 @@
 
   - name: Install build dependencies (CentOS)
     command: "dnf -y builddep python3-blivet --nogpgcheck"
-    args:
-      warn: false
     when: ansible_distribution == 'CentOS'
 
   - name: Install blivet to get all dependencies (CentOS)
