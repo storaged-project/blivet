@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>blivet.devicelibs package &#8212; Blivet 3.6.0 documentation</title>
+    <title>blivet.devicelibs package &#8212; Blivet 3.6.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="blivet.dbus.html" title="blivet.dbus package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devicelibs package</a></li> 
       </ul>
@@ -126,7 +126,7 @@ This value will be used for the ‘max_memory_kb’ option for the
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devicelibs.edd.EddEntry">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.edd.</span></span><span class="sig-name descname"><span class="pre">EddEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sysfspath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>This object merely collects what the /sys/firmware/edd/* entries can
 provide.</p>
 <dl class="py attribute">
@@ -313,7 +313,7 @@ edd/int13_devXX/interface when self.type is USB.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devicelibs.edd.EddMatcher">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.edd.</span></span><span class="sig-name descname"><span class="pre">EddMatcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edd_entry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddMatcher" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>This object tries to match given entry to a disk device name.</p>
 <p>Assuming, heuristic analysis and guessing hapens here.</p>
 <dl class="py method">
@@ -386,7 +386,7 @@ devices.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devicelibs.lvm.ThPoolProfile">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.lvm.</span></span><span class="sig-name descname"><span class="pre">ThPoolProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.ThPoolProfile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
 <p>Create new instance of ThPoolProfile(name, desc)</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.devicelibs.lvm.ThPoolProfile.desc">
@@ -411,7 +411,7 @@ devices.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>internal_lv</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">LMVInternalLogicalVolumeDevice</span></code>) – the internal LV to determine parent LV from</p></li>
 <li><p><strong>lvs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">LMVLogicalVolumeDevice</span></code>) – LVs searched for a potential parent LV</p></li>
-<li><p><strong>lv_info</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – all available information about LVs</p></li>
+<li><p><strong>lv_info</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.11)"><em>dict</em></a>) – all available information about LVs</p></li>
 </ul>
 </dd>
 </dl>
@@ -500,7 +500,7 @@ Duplicate descriptors are ignored.</p>
 a RAID level, otherwise return True.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><em>object</em></a>) – an object representing a RAID level</p>
+<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><em>object</em></a>) – an object representing a RAID level</p>
 </dd>
 </dl>
 <p>There must be at least one element in the names list, or the level
@@ -597,7 +597,7 @@ def my_abstract_property(self):</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devicelibs.raid.RAIDLevel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.raid.</span></span><span class="sig-name descname"><span class="pre">RAIDLevel</span></span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>An abstract class which is the parent of all classes which represent
 a RAID level.</p>
 <p>It ensures that RAIDLevel objects will really be singleton objects
@@ -695,7 +695,7 @@ def my_abstract_property(self):</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devicelibs.raid.RAIDLevels">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.raid.</span></span><span class="sig-name descname"><span class="pre">RAIDLevels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A class which keeps track of registered RAID levels. This class
 may be extended, overriding the is_raid method to include any
 additional properties that a client of this package may require
@@ -715,7 +715,7 @@ Duplicate descriptors are ignored.</p>
 <dd><p>Adds level to levels if it is not already there.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><em>object</em></a>) – an object representing a RAID level</p>
+<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><em>object</em></a>) – an object representing a RAID level</p>
 </dd>
 </dl>
 <p>Raises a RaidError if level is not valid.</p>
@@ -729,7 +729,7 @@ Duplicate descriptors are ignored.</p>
 a RAID level, otherwise return True.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><em>object</em></a>) – an object representing a RAID level</p>
+<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><em>object</em></a>) – an object representing a RAID level</p>
 </dd>
 </dl>
 <p>There must be at least one element in the names list, or the level
@@ -748,7 +748,7 @@ is so restrictive that a RAIDlevel object does not satisfy it.</p>
 <dd><p>Return RAID object corresponding to descriptor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>descriptor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><em>object</em></a>) – a RAID level descriptor</p>
+<dd class="field-odd"><p><strong>descriptor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><em>object</em></a>) – a RAID level descriptor</p>
 </dd>
 </dl>
 <p>Note that descriptor may be any object that identifies a
@@ -797,7 +797,7 @@ storing only data.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – size of data to be stored</p></li>
-<li><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – number of members in this array</p></li>
+<li><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – number of members in this array</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -815,10 +815,10 @@ than 0.</p>
 <dd><p>The maximum number of spares for this level.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the number of members belonging to the array</p>
+<dd class="field-odd"><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the number of members belonging to the array</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)">int</a></p>
 </dd>
 </dl>
 <p>Raiess a RaidError if member_count is fewer than the minimum
@@ -839,7 +839,7 @@ available space in the array for both data and metadata.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the number of members in the array</p></li>
+<li><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the number of members in the array</p></li>
 <li><p><strong>smallest_member_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the size of the smallest
 member of this array</p></li>
 </ul>
@@ -863,10 +863,10 @@ than 0.</p>
 <p>Returns None if there is no recommended size.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the number of members in the array</p>
+<dd class="field-odd"><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the number of members in the array</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a> or None</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)">int</a> or None</p>
 </dd>
 </dl>
 <p>Raises a RaidError if member_count is fewer than the
@@ -881,7 +881,7 @@ minimum number of members required for this level</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>member_size</strong> (list of <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – a list of the sizes of members of this array</p></li>
-<li><p><strong>num_members</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the number of members in the array</p></li>
+<li><p><strong>num_members</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the number of members in the array</p></li>
 <li><p><strong>chunk_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the smallest unit of size read or written</p></li>
 <li><p><strong>superblock_size_func</strong> (a function from <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a> to
 <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – a function that estimates the
@@ -910,7 +910,7 @@ memory allocated for metadata.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the amount of data on this array</p></li>
-<li><p><strong>num_members</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the number of members in the array</p></li>
+<li><p><strong>num_members</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the number of members in the array</p></li>
 <li><p><strong>chunk_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the smallest unit of size read or written</p></li>
 <li><p><strong>superblock_size_func</strong> (a function from <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a> to
 <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – a function that estimates the
@@ -1007,8 +1007,8 @@ def my_abstract_property(self):</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>a</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the dividend</p></li>
-<li><p><strong>b</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the divisor</p></li>
+<li><p><strong>a</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the dividend</p></li>
+<li><p><strong>b</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the divisor</p></li>
 </ul>
 </dd>
 </dl>
@@ -1020,7 +1020,7 @@ def my_abstract_property(self):</p>
 <dd><p>Convenience function to return a RAID level for the descriptor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>descriptor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><em>object</em></a>) – a RAID level descriptor</p>
+<dd class="field-odd"><p><strong>descriptor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><em>object</em></a>) – a RAID level descriptor</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#blivet.devicelibs.raid.RAIDLevel" title="blivet.devicelibs.raid.RAIDLevel">RAIDLevel</a></p>
@@ -1155,7 +1155,7 @@ RAID level, including the RAID object itself.</p>
         <li class="right" >
           <a href="blivet.dbus.html" title="blivet.dbus package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devicelibs package</a></li> 
       </ul>

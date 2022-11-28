@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>blivet.devices package &#8212; Blivet 3.6.0 documentation</title>
+    <title>blivet.devices package &#8212; Blivet 3.6.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="blivet.devicelibs.html" title="blivet.devicelibs package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devices package</a></li> 
       </ul>
@@ -128,8 +128,8 @@ from. They do not have to be removed when removing the source subvolume.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the subvolume name</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the subvolume name</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 </ul>
 </dd>
 </dl>
@@ -156,7 +156,7 @@ the DiskDevice on which it resides.</p>
 <dd class="field-even"><p>whether this device depends on ‘dep’</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -177,8 +177,8 @@ the DiskDevice on which it resides.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the subvolume name</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the subvolume name</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 </ul>
 </dd>
 </dl>
@@ -193,7 +193,7 @@ the DiskDevice on which it resides.</p>
 <dd><p>Perform actions related to adding a device to the devicetree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
+<dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
 </dd>
 </dl>
 <p>The only intended use case for new=False is when unhiding a device
@@ -218,7 +218,7 @@ False that are normally performed as part of the device constructor.</p>
 <dd><p>Perform actions related to removing a device from the devicetree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to account for removal in parents</p>
+<dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether to account for removal in parents</p>
 </dd>
 </dl>
 <p>Parents’ list of child devices is updated regardless of modparent.
@@ -252,8 +252,8 @@ BTRFSVolumeDevice.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the volume name</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the volume name</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 </ul>
 </dd>
 </dl>
@@ -343,7 +343,7 @@ cached devices (like bcache, LVM cache and whatever appears in the future).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.cache.Cache">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.cache.</span></span><span class="sig-name descname"><span class="pre">Cache</span></span><a class="headerlink" href="#blivet.devices.cache.Cache" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Abstract base class for cache objects providing the cache-related
 functionality on cached devices. Instances of this class are not expected to
 be devices (both in what they represent as well as not instances of the
@@ -392,7 +392,7 @@ functionality of cached devices and are not devices on their own.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.cache.CacheRequest">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.cache.</span></span><span class="sig-name descname"><span class="pre">CacheRequest</span></span><a class="headerlink" href="#blivet.devices.cache.CacheRequest" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Abstract base class for cache requests specifying cache parameters for a
 cached device</p>
 <dl class="py property">
@@ -418,7 +418,7 @@ cached device</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.cache.CacheStats">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.cache.</span></span><span class="sig-name descname"><span class="pre">CacheStats</span></span><a class="headerlink" href="#blivet.devices.cache.CacheStats" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Abstract base class for common statistics of caches (cached
 devices). Inheriting classes are expected to add (cache-)type-specific
 attributes on top of the common set.</p>
@@ -475,19 +475,19 @@ within <a class="reference internal" href="blivet.html#blivet.deviceaction.Actio
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device major</p></li>
-<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device minor</p></li>
-<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the ID_SERIAL_SHORT for this device</p></li>
-<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the manufacturer of this Device</p></li>
-<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – manufacturer’s device model string</p></li>
-<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the interconnect this device uses</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device major</p></li>
+<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device minor</p></li>
+<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the ID_SERIAL_SHORT for this device</p></li>
+<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the manufacturer of this Device</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – manufacturer’s device model string</p></li>
+<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the interconnect this device uses</p></li>
 </ul>
 </dd>
 </dl>
@@ -571,7 +571,7 @@ before destroying the device itself.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>parents</strong> (list of <a class="reference internal" href="#blivet.devices.device.Device" title="blivet.devices.device.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code></a> instances) – a list of parent devices</p></li>
 </ul>
 </dd>
@@ -615,7 +615,7 @@ the DiskDevice on which it resides.</p>
 <dd class="field-even"><p>whether this device depends on ‘dep’</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -708,7 +708,7 @@ ancestor devices. Does not contain duplicates.</p>
 <dd><p>Run setup method of all parent devices.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>orig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – set up original format instead of current format</p>
+<dd class="field-odd"><p><strong>orig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – set up original format instead of current format</p>
 </dd>
 </dl>
 </dd></dl>
@@ -737,7 +737,7 @@ ancestor devices. Does not contain duplicates.</p>
 <dd><p>Run teardown method of all parent devices.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>recursive</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – tear down all ancestor devices recursively</p>
+<dd class="field-odd"><p><strong>recursive</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – tear down all ancestor devices recursively</p>
 </dd>
 </dl>
 </dd></dl>
@@ -812,12 +812,12 @@ parents.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>format</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the disk’s WWN</p></li>
+<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the disk’s WWN</p></li>
 <li><p><strong>busid</strong> – bus ID</p></li>
 <li><p><strong>opts</strong> (<em>dict with option name keys and option value values</em>) – options</p></li>
 </ul>
@@ -849,12 +849,12 @@ parents.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device’s WWN</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device’s WWN</p></li>
 </ul>
 </dd>
 </dl>
@@ -914,19 +914,19 @@ device.is_disk.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>removable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether or not this is a removable device</p></li>
-<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the ID_SERIAL_RAW, ID_SERIAL or ID_SERIAL_SHORT for
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>removable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether or not this is a removable device</p></li>
+<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the ID_SERIAL_RAW, ID_SERIAL or ID_SERIAL_SHORT for
 this device (which one is available)</p></li>
-<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the manufacturer of this Device</p></li>
-<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – manufacturer’s device model string</p></li>
-<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the interconnect this device uses</p></li>
-<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the disk’s WWN</p></li>
+<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the manufacturer of this Device</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – manufacturer’s device model string</p></li>
+<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the interconnect this device uses</p></li>
+<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the disk’s WWN</p></li>
 </ul>
 </dd>
 </dl>
@@ -980,7 +980,7 @@ class as a non-root user. It is not known how the system will behave if
 partitions are committed to one of these disks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the full path to the backing regular file</p>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the full path to the backing regular file</p>
 </dd>
 </dl>
 <p>:keyword <a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> fmt: the device’s format</p>
@@ -1011,12 +1011,12 @@ partitions are committed to one of these disks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>format</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the disk’s WWN</p></li>
+<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the disk’s WWN</p></li>
 <li><p><strong>nic</strong> – name of NIC to use</p></li>
 <li><p><strong>identifier</strong> – <p>???</p>
 </p></li>
@@ -1038,12 +1038,12 @@ partitions are committed to one of these disks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device’s WWN</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device’s WWN</p></li>
 </ul>
 </dd>
 </dl>
@@ -1083,14 +1083,14 @@ them.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>format</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – mode of the namespace</p></li>
-<li><p><strong>devname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – name of the namespace (e.g. ‘namespace0.0’)</p></li>
-<li><p><strong>sector_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sector size of the namespace in sector mode</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – mode of the namespace</p></li>
+<li><p><strong>devname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – name of the namespace (e.g. ‘namespace0.0’)</p></li>
+<li><p><strong>sector_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sector size of the namespace in sector mode</p></li>
 </ul>
 </dd>
 </dl>
@@ -1116,12 +1116,12 @@ them.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>format</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the disk’s WWN</p></li>
+<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the disk’s WWN</p></li>
 <li><p><strong>hba_id</strong> – <p>???</p>
 </p></li>
 <li><p><strong>wwpn</strong> – <p>???</p>
@@ -1152,29 +1152,29 @@ them.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>format</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the disk’s WWN</p></li>
-<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the name of the iscsi target</p></li>
+<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the disk’s WWN</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the name of the iscsi target</p></li>
 <li><p><strong>lun</strong> – lun of the target</p></li>
-<li><p><strong>iface</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – name of network interface to use for operation</p></li>
-<li><p><strong>initiator</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – initiator name</p></li>
+<li><p><strong>iface</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – name of network interface to use for operation</p></li>
+<li><p><strong>initiator</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – initiator name</p></li>
 <li><p><strong>offload</strong> – a partial offload device (qla4xxx)</p></li>
 <li><p><strong>address</strong> – ip address of the target</p></li>
 <li><p><strong>port</strong> – port of the target</p></li>
 </ul>
 </dd>
 <dt class="field-even">Type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)">bool</a></p>
 </dd>
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a></p>
 </dd>
 <dt class="field-even">Type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a></p>
 </dd>
 </dl>
 <dl class="py method">
@@ -1195,12 +1195,12 @@ them.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
 </ul>
 </dd>
 </dl>
@@ -1214,14 +1214,14 @@ them.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>dm_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – device-mapper UUID (see note below)</p></li>
-<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – device mapper table/target name (eg: “linear”)</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>dm_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – device-mapper UUID (see note below)</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – device mapper table/target name (eg: “linear”)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1281,12 +1281,12 @@ stored in device metadata on disk.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
 </ul>
 </dd>
 </dl>
@@ -1299,13 +1299,13 @@ stored in device metadata on disk.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>dm_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – device-mapper UUID</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>dm_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – device-mapper UUID</p></li>
 </ul>
 </dd>
 </dl>
@@ -1340,8 +1340,8 @@ stored in device metadata on disk.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – full path to the file</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – full path to the file</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
@@ -1359,8 +1359,8 @@ stored in device metadata on disk.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – full path to the file</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – full path to the file</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
@@ -1407,8 +1407,8 @@ This exists for sparse disk images.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – full path to the file</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – full path to the file</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
@@ -1423,11 +1423,11 @@ This exists for sparse disk images.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lib.ParentList">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lib.</span></span><span class="sig-name descname"><span class="pre">ParentList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">appendfunc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">removefunc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lib.ParentList" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A list with auditing and side-effects for additions and removals.</p>
 <p>The class provides an ordered list with guaranteed unique members and
 optional functions to run before adding or removing a member. It
-provides a subset of the functionality provided by <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>,
+provides a subset of the functionality provided by <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>,
 making it easy to ensure that changes pass through the check functions.</p>
 <p>The following operations are implemented:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ml</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -1484,7 +1484,7 @@ functions themselves should not modify the <a class="reference internal" href="#
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lib.Tags">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lib.</span></span><span class="sig-name descname"><span class="pre">Tags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lib.Tags" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
 <p>Tags that describe various classes of disk.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.devices.lib.Tags.local">
@@ -1524,13 +1524,13 @@ functions themselves should not modify the <a class="reference internal" href="#
 <dd><p>Return a /dev/disk/by-path/ symlink path for the given device name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>device_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name</p>
+<dd class="field-odd"><p><strong>device_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the full path to a /dev/disk/by-path/ symlink, or None</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a> or NoneType</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a> or NoneType</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1541,13 +1541,13 @@ functions themselves should not modify the <a class="reference internal" href="#
 <dd><p>Return a name based on the given path to a device node.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>device_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the path to a device node</p>
+<dd class="field-odd"><p><strong>device_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the path to a device node</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the name</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1558,10 +1558,10 @@ functions themselves should not modify the <a class="reference internal" href="#
 <dd><p>Return a device-type string for the given major number.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – major number</p>
+<dd class="field-odd"><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – major number</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1576,7 +1576,7 @@ functions themselves should not modify the <a class="reference internal" href="#
 <dd><p>Return a list of major numbers for the given device type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>device_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – device type string (eg: ‘device-mapper’, ‘md’)</p>
+<dd class="field-odd"><p><strong>device_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – device type string (eg: ‘device-mapper’, ‘md’)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of int</p>
@@ -1599,8 +1599,8 @@ functions themselves should not modify the <a class="reference internal" href="#
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
@@ -1639,13 +1639,13 @@ functions themselves should not modify the <a class="reference internal" href="#
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device UUID</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device UUID</p></li>
 </ul>
 </dd>
 </dl>
@@ -1677,13 +1677,13 @@ functions themselves should not modify the <a class="reference internal" href="#
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device UUID</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device UUID</p></li>
 </ul>
 </dd>
 </dl>
@@ -1755,9 +1755,9 @@ that cannot determine their size dynamically)</p></li>
 <li><p><strong>md_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a> or NoneType) – size of the metadata part (LV) of the cache (for
 non-existing caches that cannot determine their metadata
 size dynamically) or None to use the default (see note below)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether the cache exists or not</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether the cache exists or not</p></li>
 <li><p><strong>pvs</strong> (list of <a class="reference internal" href="#blivet.devices.lvm.LVPVSpec" title="blivet.devices.lvm.LVPVSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVPVSpec</span></code></a>) – PVs to allocate the cache on/from (ignored for existing)</p></li>
-<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – desired mode for non-existing cache (ignored for existing)</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – desired mode for non-existing cache (ignored for existing)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1850,7 +1850,7 @@ that the whole cache (data+metadata) fits in the space of size
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMCachePoolMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMCachePoolMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attach_to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMCachePoolMixin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMCachePoolMixin.add_hook">
 <span class="sig-name descname"><span class="pre">add_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMCachePoolMixin.add_hook" title="Permalink to this definition">¶</a></dt>
@@ -1921,7 +1921,7 @@ and sets it while subtracting the size from self.size.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – requested size of the cache</p></li>
 <li><p><strong>pvs</strong> (list of (<a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a> or <a class="reference internal" href="#blivet.devices.lvm.LVPVSpec" title="blivet.devices.lvm.LVPVSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVPVSpec</span></code></a>)) – PVs to allocate the cache on/from</p></li>
-<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – requested mode for the cache (<code class="docutils literal notranslate"><span class="pre">None</span></code> means the default is used)</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – requested mode for the cache (<code class="docutils literal notranslate"><span class="pre">None</span></code> means the default is used)</p></li>
 <li><p><strong>cache_type</strong> (enum <a class="reference internal" href="#blivet.devices.lvm.LVMCacheType" title="blivet.devices.lvm.LVMCacheType"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMCacheType</span></code></a>) – type of the cache to use (writecache or “normal” cache)</p></li>
 </ul>
 </dd>
@@ -2043,7 +2043,7 @@ and sets it while subtracting the size from self.size.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMCacheType">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMCacheType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMCacheType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMCacheType.lvmcache">
 <span class="sig-name descname"><span class="pre">lvmcache</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#blivet.devices.lvm.LVMCacheType.lvmcache" title="Permalink to this definition">¶</a></dt>
@@ -2059,7 +2059,7 @@ and sets it while subtracting the size from self.size.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMInternalLVtype">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMInternalLVtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMInternalLVtype" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMInternalLVtype.cache_pool">
 <span class="sig-name descname"><span class="pre">cache_pool</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></em><a class="headerlink" href="#blivet.devices.lvm.LVMInternalLVtype.cache_pool" title="Permalink to this definition">¶</a></dt>
@@ -2105,7 +2105,7 @@ and sets it while subtracting the size from self.size.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMInternalLogicalVolumeMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMInternalLogicalVolumeMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_lv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lv_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMInternalLogicalVolumeMixin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMInternalLogicalVolumeMixin.add_hook">
 <span class="sig-name descname"><span class="pre">add_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMInternalLogicalVolumeMixin.add_hook" title="Permalink to this definition">¶</a></dt>
@@ -2219,14 +2219,14 @@ LVs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>dm_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – device-mapper UUID (see note below)</p></li>
-<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – device mapper table/target name (eg: “linear”)</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>dm_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – device-mapper UUID (see note below)</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – device mapper table/target name (eg: “linear”)</p></li>
 </ul>
 </dd>
 </dl>
@@ -2428,14 +2428,14 @@ format used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device UUID</p></li>
-<li><p><strong>seg_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – segment type (eg: “linear”, “raid1”, “thin-pool”, “thin”,…)</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device UUID</p></li>
+<li><p><strong>seg_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – segment type (eg: “linear”, “raid1”, “thin-pool”, “thin”,…)</p></li>
 </ul>
 </dd>
 </dl>
@@ -2443,9 +2443,9 @@ format used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>grow</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to grow this LV</p></li>
+<li><p><strong>grow</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether to grow this LV</p></li>
 <li><p><strong>maxsize</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – maximum size for growable LV</p></li>
-<li><p><strong>percent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – percent of VG space to take</p></li>
+<li><p><strong>percent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – percent of VG space to take</p></li>
 <li><p><strong>cache_request</strong> (<a class="reference internal" href="#blivet.devices.lvm.LVMCacheRequest" title="blivet.devices.lvm.LVMCacheRequest"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMCacheRequest</span></code></a>) – parameters of requested cache (if any)</p></li>
 <li><p><strong>pvs</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code> or <a class="reference internal" href="#blivet.devices.lvm.LVPVSpec" title="blivet.devices.lvm.LVPVSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVPVSpec</span></code></a> objects (tuples)) – list of PVs to allocate extents from (size could be specified for each PV)</p></li>
 </ul>
@@ -2465,7 +2465,7 @@ format used.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>origin</strong> (<a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a>) – origin of this snapshot</p></li>
-<li><p><strong>vorigin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – is this a vorigin snapshot?</p></li>
+<li><p><strong>vorigin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – is this a vorigin snapshot?</p></li>
 </ul>
 </dd>
 </dl>
@@ -2489,10 +2489,10 @@ format used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>compression</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to enable compression on the VDO pool</p></li>
-<li><p><strong>dudplication</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to enable dudplication on the VDO pool</p></li>
-<li><p><strong>index_memory</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – amount of index memory (in bytes) or 0 for default</p></li>
-<li><p><strong>write_policy</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – write policy for the volume or None for default</p></li>
+<li><p><strong>compression</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether to enable compression on the VDO pool</p></li>
+<li><p><strong>dudplication</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether to enable dudplication on the VDO pool</p></li>
+<li><p><strong>index_memory</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – amount of index memory (in bytes) or 0 for default</p></li>
+<li><p><strong>write_policy</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – write policy for the volume or None for default</p></li>
 </ul>
 </dd>
 </dl>
@@ -2501,7 +2501,7 @@ format used.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>metadata_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the size of the metadata LV</p></li>
-<li><p><strong>cache_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – mode for the cache or None for default (writethrough)</p></li>
+<li><p><strong>cache_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – mode for the cache or None for default (writethrough)</p></li>
 <li><p><strong>attach_to</strong> (<a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeDevice" title="blivet.devices.lvm.LVMLogicalVolumeDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice</span></code></a>) – for non-existing cache pools a logical volume the pool should
 be attached to when created</p></li>
 </ul>
@@ -2513,7 +2513,7 @@ be attached to when created</p></li>
 <dd><p>Perform actions related to adding a device to the devicetree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
+<dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
 </dd>
 </dl>
 <p>The only intended use case for new=False is when unhiding a device
@@ -2553,7 +2553,7 @@ the DiskDevice on which it resides.</p>
 <dd class="field-even"><p>whether this device depends on ‘dep’</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2651,7 +2651,7 @@ the DiskDevice on which it resides.</p>
 <dd><p>Perform actions related to removing a device from the devicetree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to account for removal in parents</p>
+<dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether to account for removal in parents</p>
 </dd>
 </dl>
 <p>Parents’ list of child devices is updated regardless of modparent.
@@ -2729,7 +2729,7 @@ enforced by ActionResizeDevice.__init__ are assumed to hold.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMSnapshotMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMSnapshotMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vorigin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMSnapshotMixin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMSnapshotMixin.depends_on">
 <span class="sig-name descname"><span class="pre">depends_on</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dep</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMSnapshotMixin.depends_on" title="Permalink to this definition">¶</a></dt>
@@ -2799,7 +2799,7 @@ enforced by ActionResizeDevice.__init__ are assumed to hold.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMThinLogicalVolumeMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMThinLogicalVolumeMixin</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMThinLogicalVolumeMixin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMThinLogicalVolumeMixin.add_hook">
 <span class="sig-name descname"><span class="pre">add_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMThinLogicalVolumeMixin.add_hook" title="Permalink to this definition">¶</a></dt>
@@ -2854,7 +2854,7 @@ less than one chunk per thin lv, so be it.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMThinPoolMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMThinPoolMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMThinPoolMixin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMThinPoolMixin.autoset_md_size">
 <span class="sig-name descname"><span class="pre">autoset_md_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enforced</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMThinPoolMixin.autoset_md_size" title="Permalink to this definition">¶</a></dt>
@@ -2924,7 +2924,7 @@ and sets it while subtracting the size from self.size.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMVDOLogicalVolumeMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMVDOLogicalVolumeMixin</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMVDOLogicalVolumeMixin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMVDOLogicalVolumeMixin.add_hook">
 <span class="sig-name descname"><span class="pre">add_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMVDOLogicalVolumeMixin.add_hook" title="Permalink to this definition">¶</a></dt>
@@ -2980,7 +2980,7 @@ and sets it while subtracting the size from self.size.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMVDOPoolMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVMVDOPoolMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deduplication</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMVDOPoolMixin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMVDOPoolMixin.direct">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">direct</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMVDOPoolMixin.direct" title="Permalink to this definition">¶</a></dt>
@@ -3043,10 +3043,10 @@ and sets it while subtracting the size from self.size.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
 <li><p><strong>pe_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – physical extent size</p></li>
 </ul>
 </dd>
@@ -3073,7 +3073,7 @@ and sets it while subtracting the size from self.size.</p>
 <dd><p>Perform actions related to adding a device to the devicetree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
+<dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
 </dd>
 </dl>
 <p>The only intended use case for new=False is when unhiding a device
@@ -3221,7 +3221,7 @@ biggest metadata LV in the VG.</p>
 <dd><p>Perform actions related to removing a device from the devicetree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to account for removal in parents</p>
+<dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether to account for removal in parents</p>
 </dd>
 </dl>
 <p>Parents’ list of child devices is updated regardless of modparent.
@@ -3361,21 +3361,21 @@ override the default value of modparent in new code.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVPVSpec">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">LVPVSpec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVPVSpec" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class for specifying how much space on a PV should be allocated for some LV</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="blivet.devices.lvm.NotTypeSpecific">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">NotTypeSpecific</span></span><a class="headerlink" href="#blivet.devices.lvm.NotTypeSpecific" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
 <p>Exception class for invalid type-specific calls</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.PVFreeInfo">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">PVFreeInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">free</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.PVFreeInfo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
 <p>A namedtuple class holding the information about PV’s (usable) size and free space</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.devices.lvm.PVFreeInfo.free">
@@ -3400,7 +3400,7 @@ override the default value of modparent in new code.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.lvm.ThPoolReserveSpec">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.lvm.</span></span><span class="sig-name descname"><span class="pre">ThPoolReserveSpec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">percent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.ThPoolReserveSpec" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
 <p>A namedtuple class for specifying restrictions of space reserved for a thin pool to grow</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.devices.lvm.ThPoolReserveSpec.max">
@@ -3432,19 +3432,19 @@ override the default value of modparent in new code.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
 <li><p><strong>chunk_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – chunk size for the device</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device UUID</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device UUID</p></li>
 <li><p><strong>level</strong> (<em>any valid RAID level descriptor</em>) – the device’s RAID level</p></li>
-<li><p><strong>member_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the number of active member devices</p></li>
-<li><p><strong>total_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the total number of member devices</p></li>
-<li><p><strong>metadata_version</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> (</em><em>eg: &quot;0.90&quot;</em><em>)</em>) – the version of the device’s md metadata</p></li>
-<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device minor (obsolete?)</p></li>
+<li><p><strong>member_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the number of active member devices</p></li>
+<li><p><strong>total_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the total number of member devices</p></li>
+<li><p><strong>metadata_version</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em> (</em><em>eg: &quot;0.90&quot;</em><em>)</em>) – the version of the device’s md metadata</p></li>
+<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device minor (obsolete?)</p></li>
 </ul>
 </dd>
 </dl>
@@ -3517,19 +3517,19 @@ treated like a disk.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
 <li><p><strong>chunk_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – chunk size for the device</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device UUID</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device UUID</p></li>
 <li><p><strong>level</strong> (<em>any valid RAID level descriptor</em>) – the device’s RAID level</p></li>
-<li><p><strong>member_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the number of active member devices</p></li>
-<li><p><strong>total_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the total number of member devices</p></li>
-<li><p><strong>metadata_version</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> (</em><em>eg: &quot;0.90&quot;</em><em>)</em>) – the version of the device’s md metadata</p></li>
-<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device minor (obsolete?)</p></li>
+<li><p><strong>member_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the number of active member devices</p></li>
+<li><p><strong>total_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the total number of member devices</p></li>
+<li><p><strong>metadata_version</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em> (</em><em>eg: &quot;0.90&quot;</em><em>)</em>) – the version of the device’s md metadata</p></li>
+<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device minor (obsolete?)</p></li>
 </ul>
 </dd>
 </dl>
@@ -3591,19 +3591,19 @@ treated like a disk.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
 <li><p><strong>chunk_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – chunk size for the device</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device UUID</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device UUID</p></li>
 <li><p><strong>level</strong> (<em>any valid RAID level descriptor</em>) – the device’s RAID level</p></li>
-<li><p><strong>member_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the number of active member devices</p></li>
-<li><p><strong>total_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the total number of member devices</p></li>
-<li><p><strong>metadata_version</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> (</em><em>eg: &quot;0.90&quot;</em><em>)</em>) – the version of the device’s md metadata</p></li>
-<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device minor (obsolete?)</p></li>
+<li><p><strong>member_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the number of active member devices</p></li>
+<li><p><strong>total_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the total number of member devices</p></li>
+<li><p><strong>metadata_version</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em> (</em><em>eg: &quot;0.90&quot;</em><em>)</em>) – the version of the device’s md metadata</p></li>
+<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device minor (obsolete?)</p></li>
 </ul>
 </dd>
 </dl>
@@ -3728,7 +3728,7 @@ given the total available memory for this array and raid level.</p>
 <dd class="field-odd"><p>the array’s UUID in mdadm format, if available</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a> or NoneType</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a> or NoneType</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3846,7 +3846,7 @@ the size from /sys.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.network.NetworkStorageDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.network.</span></span><span class="sig-name descname"><span class="pre">NetworkStorageDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host_address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.network.NetworkStorageDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Virtual base class for network backed storage devices</p>
 <p>Note this class is only to be used as a baseclass and then only with
 multiple inheritance. The only correct use is:
@@ -3863,8 +3863,8 @@ the storage <em>or</em> the NIC through which the storage is connected</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>host_address</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – host address of the backing server</p></li>
-<li><p><strong>nic</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – NIC to which the block device is bound</p></li>
+<li><p><strong>host_address</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – host address of the backing server</p></li>
+<li><p><strong>nic</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – NIC to which the block device is bound</p></li>
 </ul>
 </dd>
 </dl>
@@ -3881,7 +3881,7 @@ the storage <em>or</em> the NIC through which the storage is connected</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
 </ul>
@@ -4045,19 +4045,19 @@ the size from /sys.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device major</p></li>
-<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device minor</p></li>
-<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the ID_SERIAL_SHORT for this device</p></li>
-<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the manufacturer of this Device</p></li>
-<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – manufacturer’s device model string</p></li>
-<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the interconnect this device uses</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device major</p></li>
+<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device minor</p></li>
+<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the ID_SERIAL_SHORT for this device</p></li>
+<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the manufacturer of this Device</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – manufacturer’s device model string</p></li>
+<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the interconnect this device uses</p></li>
 </ul>
 </dd>
 </dl>
@@ -4092,8 +4092,8 @@ will set according to the partition’s format.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (:class:<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
@@ -4104,10 +4104,10 @@ will set according to the partition’s format.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – partition UUID (not filesystem UUID)</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – partition UUID (not filesystem UUID)</p></li>
 <li><p><strong>major</strong> (<em>long</em>) – the device major</p></li>
 <li><p><strong>minor</strong> (<em>long</em>) – the device minor</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
 </ul>
 </dd>
 </dl>
@@ -4117,12 +4117,12 @@ will set according to the partition’s format.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>part_type</strong> (<em>parted partition type constant</em>) – parted type constant, eg:
 <code class="xref py py-const docutils literal notranslate"><span class="pre">parted.PARTITION_NORMAL</span></code></p></li>
-<li><p><strong>grow</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether or not to grow the partition</p></li>
+<li><p><strong>grow</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether or not to grow the partition</p></li>
 <li><p><strong>maxsize</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – max size for growable partitions</p></li>
 <li><p><strong>start</strong> (<em>long</em>) – start sector (see note, below)</p></li>
 <li><p><strong>end</strong> (<em>long</em>) – end sector (see note, below)</p></li>
-<li><p><strong>bootable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether the partition is bootable</p></li>
-<li><p><strong>weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em> or </em><em>NoneType</em>) – an initial sorting weight to assign</p></li>
+<li><p><strong>bootable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether the partition is bootable</p></li>
+<li><p><strong>weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em> or </em><em>NoneType</em>) – an initial sorting weight to assign</p></li>
 <li><p><strong>disk_tags</strong> (<em>iterable</em>) – (str) tags defining candidate disk set</p></li>
 </ul>
 </dd>
@@ -4148,7 +4148,7 @@ specified, the explicit disk set will be used.</p>
 <dd><p>Perform actions related to adding a device to the devicetree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
+<dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
 </dd>
 </dl>
 <p>The only intended use case for new=False is when unhiding a device
@@ -4338,7 +4338,7 @@ format used.</p>
 <dd><p>Perform actions related to removing a device from the devicetree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to account for removal in parents</p>
+<dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether to account for removal in parents</p>
 </dd>
 </dl>
 <p>Parents’ list of child devices is updated regardless of modparent.
@@ -4404,19 +4404,19 @@ enforced by ActionResizeDevice.__init__ are assumed to hold.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device major</p></li>
-<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device minor</p></li>
-<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the ID_SERIAL_SHORT for this device</p></li>
-<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the manufacturer of this Device</p></li>
-<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – manufacturer’s device model string</p></li>
-<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the interconnect this device uses</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device major</p></li>
+<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device minor</p></li>
+<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the ID_SERIAL_SHORT for this device</p></li>
+<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the manufacturer of this Device</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – manufacturer’s device model string</p></li>
+<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the interconnect this device uses</p></li>
 </ul>
 </dd>
 </dl>
@@ -4455,19 +4455,19 @@ run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <a class="reference internal" href="#blivet.devices.storage.StorageDevice" title="blivet.devices.storage.StorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></a>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device major</p></li>
-<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device minor</p></li>
-<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the ID_SERIAL_SHORT for this device</p></li>
-<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the manufacturer of this Device</p></li>
-<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – manufacturer’s device model string</p></li>
-<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the interconnect this device uses</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device major</p></li>
+<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device minor</p></li>
+<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the ID_SERIAL_SHORT for this device</p></li>
+<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the manufacturer of this Device</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – manufacturer’s device model string</p></li>
+<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the interconnect this device uses</p></li>
 </ul>
 </dd>
 </dl>
@@ -4477,7 +4477,7 @@ run.</p>
 <dd><p>Perform actions related to adding a device to the devicetree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
+<dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
 </dd>
 </dl>
 <p>The only intended use case for new=False is when unhiding a device
@@ -4703,7 +4703,7 @@ currently unavailable.</p>
 <dd><p>Perform actions related to removing a device from the devicetree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to account for removal in parents</p>
+<dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether to account for removal in parents</p>
 </dd>
 </dl>
 <p>Parents’ list of child devices is updated regardless of modparent.
@@ -4820,19 +4820,19 @@ the size from /sys.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
 <li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
 <li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device major</p></li>
-<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – the device minor</p></li>
-<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the ID_SERIAL_SHORT for this device</p></li>
-<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the manufacturer of this Device</p></li>
-<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – manufacturer’s device model string</p></li>
-<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the interconnect this device uses</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – universally unique identifier (device – not fs)</p></li>
+<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
+<li><p><strong>major</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device major</p></li>
+<li><p><strong>minor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – the device minor</p></li>
+<li><p><strong>serial</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the ID_SERIAL_SHORT for this device</p></li>
+<li><p><strong>vendor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the manufacturer of this Device</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – manufacturer’s device model string</p></li>
+<li><p><strong>bus</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the interconnect this device uses</p></li>
 </ul>
 </dd>
 </dl>
@@ -4872,8 +4872,8 @@ the size from /sys.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>passphrase</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – device passphrase</p></li>
-<li><p><strong>key_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – path to a file containing a key</p></li>
+<li><p><strong>passphrase</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – device passphrase</p></li>
+<li><p><strong>key_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – path to a file containing a key</p></li>
 </ul>
 </dd>
 </dl>
@@ -4883,7 +4883,7 @@ the size from /sys.</p>
 <dd><p>Perform actions related to adding a device to the devicetree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
+<dd class="field-odd"><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether this device is new to the devicetree</p>
 </dd>
 </dl>
 <p>The only intended use case for new=False is when unhiding a device
@@ -4944,7 +4944,7 @@ False that are normally performed as part of the device constructor.</p>
 <dd><p>Perform actions related to removing a device from the devicetree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – whether to account for removal in parents</p>
+<dd class="field-odd"><p><strong>modparent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether to account for removal in parents</p>
 </dd>
 </dl>
 <p>Parents’ list of child devices is updated regardless of modparent.
@@ -5052,7 +5052,7 @@ override the default value of modparent in new code.</p>
         <li class="right" >
           <a href="blivet.devicelibs.html" title="blivet.devicelibs package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devices package</a></li> 
       </ul>
