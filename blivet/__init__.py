@@ -20,7 +20,7 @@
 #                    Vratislav Podzimek <vpodzime@redhat.com>
 #
 
-__version__ = '3.6.0'
+__version__ = '3.6.1'
 
 import sys
 import importlib
