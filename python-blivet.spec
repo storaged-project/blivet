@@ -25,7 +25,7 @@ Version: 3.6.0
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
 Release: 1%{?prerelease}%{?dist}
 Epoch: 1
-License: LGPLv2+
+License: LGPL-2.1-or-later
 %global realname blivet
 %global realversion %{version}%{?prerelease}
 Source0: http://github.com/storaged-project/blivet/archive/%{realname}-%{realversion}.tar.gz
