@@ -232,6 +232,8 @@ def is_mactel():
         mactel = False
     elif not os.path.isfile(DMI_CHASSIS_VENDOR):
         mactel = False
+    elif is_t2mac():
+        mactel = False
     else:
         try:
             buf = open(DMI_CHASSIS_VENDOR).read()
