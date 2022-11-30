@@ -211,7 +211,7 @@ def is_t2mac():
         "MacBookAir8,1", "MacBookPro16,4", "MacBookPro16,3", "MacBookPro16,2",
         "MacBookPro16,1", "MacBookPro15,4", "MacBookPro15,3", "MacBookPro15,2",
         "MacBookPro15,1",
-        }
+    }
     if not is_x86():
         t2_mac = False
     elif not os.path.isfile(DMI_PRODUCT_ID):
