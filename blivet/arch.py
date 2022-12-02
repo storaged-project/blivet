@@ -34,6 +34,7 @@ from __future__ import absolute_import
 import os
 
 from .storage_log import log_exception_info
+from .util import read_file
 
 import logging
 log = logging.getLogger("blivet")
@@ -217,7 +218,7 @@ def is_t2mac():
     elif not os.path.isfile(DMI_PRODUCT_ID):
         t2_mac = False
     else:
-        buf = open(DMI_PRODUCT_ID).read()
+        buf = read_file(DMI_PRODUCT_ID)
         t2_mac = (buf in APPLE_T2_PRODUCT_NAMES)
     return t2_mac
 
@@ -236,7 +237,7 @@ def is_mactel():
         mactel = False
     else:
         try:
-            buf = open(DMI_CHASSIS_VENDOR).read()
+            buf = read_file(DMI_CHASSIS_VENDOR)
             mactel = ("apple" in buf.lower())
         except UnicodeDecodeError:
             mactel = False

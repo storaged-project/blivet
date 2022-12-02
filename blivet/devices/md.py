@@ -447,7 +447,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         state_file = "%s/md/array_state" % self.sysfs_path
         try:
-            state = open(state_file).read().strip()
+            state = util.read_file(state_file).strip()
             if state in self._true_status_strings:
                 status = True
         except OSError:
@@ -462,7 +462,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         member_name = os.path.basename(member.sysfs_path)
         path = "/sys/%s/md/dev-%s/state" % (self.sysfs_path, member_name)
         try:
-            state = open(path).read().strip()
+            state = util.read_file(path).strip()
         except OSError:
             state = None
 
@@ -474,7 +474,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         rc = False
         degraded_file = "%s/md/degraded" % self.sysfs_path
         if os.access(degraded_file, os.R_OK):
-            val = open(degraded_file).read().strip()
+            val = util.read_file(degraded_file).strip()
             if val == "1":
                 rc = True
 

@@ -280,17 +280,17 @@ def get_mount_paths(dev):
 def get_mount_device(mountpoint):
     """ Given a mountpoint, return the device node path mounted there. """
     mountpoint = os.path.realpath(mountpoint)  # eliminate symlinks
-    mounts = open("/proc/mounts").readlines()
     mount_device = None
-    for mnt in mounts:
-        try:
-            (device, path, _rest) = mnt.split(None, 2)
-        except ValueError:
-            continue
+    with open("/proc/mounts") as mounts:
+        for mnt in mounts.readline():
+            try:
+                (device, path, _rest) = mnt.split(None, 2)
+            except ValueError:
+                continue
 
-        if path == mountpoint:
-            mount_device = device
-            break
+            if path == mountpoint:
+                mount_device = device
+                break
 
     if mount_device and re.match(r'/dev/loop\d+$', mount_device):
         loop_name = os.path.basename(mount_device)
@@ -609,6 +609,12 @@ def sha256_file(filename):
             block = f.read(65536)
 
     return sha256.hexdigest()
+
+
+def read_file(filename, mode="r"):
+    with open(filename, mode) as f:
+        content = f.read()
+    return content
 
 
 class ObjectID(object):
