@@ -40,6 +40,7 @@ log = logging.getLogger("blivet")
 
 # DMI information paths
 DMI_CHASSIS_VENDOR = "/sys/class/dmi/id/chassis_vendor"
+DMI_PRODUCT_ID = "/sys/class/dmi/id/product_id"
 
 
 def get_ppc_machine():
@@ -198,6 +199,29 @@ def is_cell():
     return False
 
 
+def is_t2mac():
+    """
+    :return: True if the hardware is an Intel-based Apple Mac with the T2 security chip, False otherwise.
+    :rtype boolean
+
+    """
+    APPLE_T2_PRODUCT_NAMES = {
+        "iMac20,2", "iMac20,1", "iMacPro1,1",
+        "MacPro7,1", "Macmini8,1", "MacBookAir9,1", "MacBookAir8,2",
+        "MacBookAir8,1", "MacBookPro16,4", "MacBookPro16,3", "MacBookPro16,2",
+        "MacBookPro16,1", "MacBookPro15,4", "MacBookPro15,3", "MacBookPro15,2",
+        "MacBookPro15,1",
+    }
+    if not is_x86():
+        t2_mac = False
+    elif not os.path.isfile(DMI_PRODUCT_ID):
+        t2_mac = False
+    else:
+        buf = open(DMI_PRODUCT_ID).read()
+        t2_mac = (buf in APPLE_T2_PRODUCT_NAMES)
+    return t2_mac
+
+
 def is_mactel():
     """
     :return: True if the hardware is an Intel-based Apple Mac, False otherwise.
@@ -207,6 +231,8 @@ def is_mactel():
     if not is_x86():
         mactel = False
     elif not os.path.isfile(DMI_CHASSIS_VENDOR):
+        mactel = False
+    elif is_t2mac():
         mactel = False
     else:
         try:
