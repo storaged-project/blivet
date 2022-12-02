@@ -730,7 +730,8 @@ class NVDIMMNamespaceDevice(DiskDevice):
         return self._sector_size
 
 
-NVMeController = namedtuple("NVMeController", ["name", "serial", "nvme_ver", "id", "subsysnqn"])
+NVMeController = namedtuple("NVMeController", ["name", "serial", "nvme_ver", "id", "subsysnqn",
+                                               "transport", "transport_address"])
 
 
 class NVMeNamespaceDevice(DiskDevice):
@@ -792,11 +793,15 @@ class NVMeNamespaceDevice(DiskDevice):
             except GLib.GError as err:
                 log.debug("Failed to get controller info for %s: %s", cpath, str(err))
                 continue
+            ctrans = util.get_sysfs_attr(controller, "transport")
+            ctaddr = util.get_sysfs_attr(controller, "address")
             self._controllers.append(NVMeController(name=os.path.basename(cpath),
                                                     serial=cinfo.serial_number,
                                                     nvme_ver=cinfo.nvme_ver,
                                                     id=cinfo.ctrl_id,
-                                                    subsysnqn=cinfo.subsysnqn))
+                                                    subsysnqn=cinfo.subsysnqn,
+                                                    transport=ctrans,
+                                                    transport_address=ctaddr))
 
         return self._controllers
 
