@@ -756,6 +756,8 @@ class NVMeNamespaceDevice(DiskDevice):
             :type nsid: int
         """
         self.nsid = kwargs.pop("nsid", 0)
+        self.eui64 = kwargs.pop("eui64", "")
+        self.nguid = kwargs.pop("nguid", "")
 
         DiskDevice.__init__(self, device, **kwargs)
 

@@ -282,6 +282,9 @@ class NVMeNamespaceDevicePopulator(DiskDevicePopulator):
             log.debug("Failed to get namespace info for %s: %s", path, str(err))
         else:
             kwargs["nsid"] = ninfo.nsid
+            kwargs["uuid"] = ninfo.uuid
+            kwargs["eui64"] = ninfo.eui64
+            kwargs["nguid"] = ninfo.nguid
 
         log.info("%s is an NVMe local namespace device", udev.device_get_name(self.data))
         return kwargs
