@@ -163,6 +163,10 @@ class Iso9660FSMount(FSMount):
     options = ["ro"]
 
 
+class UDFFSMount(FSMount):
+    options = ["ro"]
+
+
 class NoDevFSMount(FSMount):
 
     @property
