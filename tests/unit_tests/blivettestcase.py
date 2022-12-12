@@ -15,15 +15,14 @@ from blivet.devices import StorageDevice
 from blivet.devices import PartitionDevice
 
 
-class StorageTestCase(unittest.TestCase):
+class BlivetTestCase(unittest.TestCase):
 
-    """ StorageTestCase
+    """ BlivetUnitTestCase
 
-        This is a base class for storage test cases. It sets up imports of
-        the blivet package, along with an Anaconda instance and a Storage
-        instance. There are lots of little patches to prevent various pieces
-        of code from trying to access filesystems and/or devices on the host
-        system, along with a couple of convenience methods.
+        This is a base class for unit test cases. It sets up imports of
+        the blivet package. There are lots of little patches to prevent various
+        pieces of code from trying to access filesystems and/or devices
+        on the host system, along with a couple of convenience methods.
 
     """
 
