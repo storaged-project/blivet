@@ -22,13 +22,16 @@
 
 import gi
 gi.require_version("BlockDev", "2.0")
+gi.require_version("GLib", "2.0")
 
 from gi.repository import BlockDev as blockdev
+from gi.repository import GLib
 
 from ... import udev
 from ... import util
 from ...devices import DASDDevice, DiskDevice, FcoeDiskDevice, iScsiDiskDevice
 from ...devices import MDBiosRaidArrayDevice, ZFCPDiskDevice, NVDIMMNamespaceDevice
+from ...devices import NVMeNamespaceDevice, NVMeFabricsNamespaceDevice
 from ...devices import device_path_to_name
 from ...storage_log import log_method_call
 from .devicepopulator import DevicePopulator
@@ -250,4 +253,68 @@ class NVDIMMNamespaceDevicePopulator(DiskDevicePopulator):
         kwargs["id_path"] = udev.device_get_path(self.data)
 
         log.info("%s is an NVDIMM namespace device", udev.device_get_name(self.data))
+        return kwargs
+
+
+class NVMeNamespaceDevicePopulator(DiskDevicePopulator):
+    priority = 20
+
+    _device_class = NVMeNamespaceDevice
+
+    @classmethod
+    def match(cls, data):
+        return (super(NVMeNamespaceDevicePopulator, NVMeNamespaceDevicePopulator).match(data) and
+                udev.device_is_nvme_namespace(data) and not udev.device_is_nvme_fabrics(data))
+
+    def _get_kwargs(self):
+        kwargs = super(NVMeNamespaceDevicePopulator, self)._get_kwargs()
+
+        log.info("%s is an NVMe local namespace device", udev.device_get_name(self.data))
+
+        if not hasattr(blockdev.Plugin, "NVME"):
+            # the nvme plugin is not generally available
+            return kwargs
+
+        path = udev.device_get_devname(self.data)
+        try:
+            ninfo = blockdev.nvme_get_namespace_info(path)
+        except GLib.GError as err:
+            log.debug("Failed to get namespace info for %s: %s", path, str(err))
+        else:
+            kwargs["nsid"] = ninfo.nsid
+            kwargs["uuid"] = ninfo.uuid
+            kwargs["eui64"] = ninfo.eui64
+            kwargs["nguid"] = ninfo.nguid
+
+        log.info("%s is an NVMe local namespace device", udev.device_get_name(self.data))
+        return kwargs
+
+
+class NVMeFabricsNamespaceDevicePopulator(DiskDevicePopulator):
+    priority = 20
+
+    _device_class = NVMeFabricsNamespaceDevice
+
+    @classmethod
+    def match(cls, data):
+        return (super(NVMeFabricsNamespaceDevicePopulator, NVMeFabricsNamespaceDevicePopulator).match(data) and
+                udev.device_is_nvme_namespace(data) and udev.device_is_nvme_fabrics(data))
+
+    def _get_kwargs(self):
+        kwargs = super(NVMeFabricsNamespaceDevicePopulator, self)._get_kwargs()
+
+        log.info("%s is an NVMe fabrics namespace device", udev.device_get_name(self.data))
+
+        if not hasattr(blockdev.Plugin, "NVME"):
+            # the nvme plugin is not generally available
+            return kwargs
+
+        path = udev.device_get_devname(self.data)
+        try:
+            ninfo = blockdev.nvme_get_namespace_info(path)
+        except GLib.GError as err:
+            log.debug("Failed to get namespace info for %s: %s", path, str(err))
+        else:
+            kwargs["nsid"] = ninfo.nsid
+
         return kwargs

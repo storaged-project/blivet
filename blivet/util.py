@@ -449,6 +449,15 @@ def get_sysfs_path_by_name(dev_node, class_name="block"):
                            "for '%s' (it is not at '%s')" % (dev_node, dev_path))
 
 
+def get_path_by_sysfs_path(sysfs_path, dev_type="block"):
+    """ Return device path for a given device sysfs path. """
+
+    dev = get_sysfs_attr(sysfs_path, "dev")
+    if not dev or not os.path.exists("/dev/%s/%s" % (dev_type, dev)):
+        raise RuntimeError("get_path_by_sysfs_path: Could not find device for %s" % sysfs_path)
+    return os.path.realpath("/dev/%s/%s" % (dev_type, dev))
+
+
 def get_cow_sysfs_path(dev_path, dev_sysfsPath):
     """ Return sysfs path of cow device for a given device.
     """
