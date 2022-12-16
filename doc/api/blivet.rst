@@ -74,6 +74,8 @@ blivet
 * :mod:`blivet.deviceaction`
     * :class:`~blivet.deviceaction.ActionAddMember`
     * :class:`~blivet.deviceaction.ActionRemoveMember`
+    * :class:`~blivet.deviceaction.ActionConfigureDevice`
+    * :class:`~blivet.deviceaction.ActionConfigureFormat`
     * :class:`~blivet.deviceaction.ActionCreateDevice`
     * :class:`~blivet.deviceaction.ActionCreateFormat`
     * :class:`~blivet.deviceaction.ActionDestroyDevice`
@@ -156,10 +158,12 @@ blivet
     * :class:`~blivet.errors.DiskLabelScanError`
     * :class:`~blivet.errors.DMError`
     * :class:`~blivet.errors.DMRaidMemberError`
+    * :class:`~blivet.errors.DuplicateUUIDError`
     * :class:`~blivet.errors.DuplicateVGError`
     * :class:`~blivet.errors.EventHandlingError`
     * :class:`~blivet.errors.EventManagerError`
     * :class:`~blivet.errors.EventParamError`
+    * :class:`~blivet.errors.FCoEError`
     * :class:`~blivet.errors.FormatCreateError`
     * :class:`~blivet.errors.FormatDestroyError`
     * :class:`~blivet.errors.FormatResizeError`
@@ -170,13 +174,18 @@ blivet
     * :class:`~blivet.errors.FSResizeError`
     * :class:`~blivet.errors.FSTabTypeMismatchError`
     * :class:`~blivet.errors.FSWriteLabelError`
+    * :class:`~blivet.errors.InconsistentPVSectorSize`
+    * :class:`~blivet.errors.IntegrityError`
     * :class:`~blivet.errors.InvalidDiskLabelError`
+    * :class:`~blivet.errors.InvalidMultideviceSelection`
+    * :class:`~blivet.errors.ISCSIError`
     * :class:`~blivet.errors.LUKSError`
     * :class:`~blivet.errors.MDMemberError`
     * :class:`~blivet.errors.MPathError`
     * :class:`~blivet.errors.MultipathMemberError`
     * :class:`~blivet.errors.NotEnoughFreeSpaceError`
     * :class:`~blivet.errors.NoDisksError`
+    * :class:`~blivet.errors.NVMeError`
     * :class:`~blivet.errors.PhysicalVolumeError`
     * :class:`~blivet.errors.PartitioningError`
     * :class:`~blivet.errors.RaidError`

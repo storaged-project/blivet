@@ -69,7 +69,9 @@ formats
     * :class:`~blivet.formats.fs.Ext2FS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.Ext3FS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.Ext4FS` (see :ref:`inherited public API <FSAPI>`)
+    * :class:`~blivet.formats.fs.ExFATFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.FATFS` (see :ref:`inherited public API <FSAPI>`)
+    * :class:`~blivet.formats.fs.F2FS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.GFS2` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.HFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.HFSPlus` (see :ref:`inherited public API <FSAPI>`)
@@ -96,6 +98,9 @@ formats
         * :attr:`~blivet.formats.luks.LUKS.has_key`
         * :meth:`~blivet.formats.luks.LUKS.map_name`
         * :meth:`~blivet.formats.luks.LUKS.remove_passphrase`
+    * :class:`~blivet.formats.luks.Integrity` (see :ref:`inherited public API <DeviceFormatAPI>`)
+        * :meth:`~blivet.formats.luks.Integrity.algorithm`
+        * :meth:`~blivet.formats.luks.Integrity.map_name`
 
 * :mod:`~blivet.formats.lvmpv`
     * :class:`~blivet.formats.lvmpv.LVMPhysicalVolume` (see :ref:`inherited public API <DeviceFormatAPI>`)
