@@ -30,6 +30,8 @@ devices
 * :mod:`~blivet.devices.luks`
     * :class:`~blivet.devices.luks.LUKSDevice` (see :ref:`inherited public API <StorageDeviceAPI>`)
         * :attr:`~blivet.devices.dm.DMDevice.map_name`
+    * :class:`~blivet.devices.luks.IntegrityDevice` (see :ref:`inherited public API <StorageDeviceAPI>`)
+        * :attr:`~blivet.devices.dm.DMDevice.map_name`
 
 * :mod:`~blivet.devices.lvm`
     * :class:`~blivet.devices.lvm.LVMCache`
