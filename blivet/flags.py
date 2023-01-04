@@ -91,6 +91,11 @@ class Flags(object):
 
         self.debug_threads = False
 
+        # Assign GPT partition type UUIDs to allow partition
+        # auto-discovery according to:
+        # https://uapi-group.org/specifications/specs/discoverable_partitions_specification/
+        self.gpt_discoverable_partitions = False
+
     def get_boot_cmdline(self):
         with open("/proc/cmdline") as f:
             buf = f.read().strip()
