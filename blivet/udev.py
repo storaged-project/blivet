@@ -915,8 +915,7 @@ def device_get_iscsi_nic(info):
     iface = None
     session = device_get_iscsi_session(info)
     if session:
-        iface = open("/sys/class/iscsi_session/%s/ifacename" %
-                     session).read().strip()
+        iface = util.read_file("/sys/class/iscsi_session/%s/ifacename" % session).strip()
     return iface
 
 
@@ -927,7 +926,7 @@ def device_get_iscsi_initiator(info):
         if host:
             initiator_file = "/sys/class/iscsi_host/%s/initiatorname" % host
             if os.access(initiator_file, os.R_OK):
-                initiator = open(initiator_file, "rb").read().strip()
+                initiator = util.read_file(initiator_file, "rb").strip()
                 initiator_name = initiator.decode("utf-8", errors="replace")
                 log.debug("found offload iscsi initiatorname %s in file %s",
                           initiator_name, initiator_file)
@@ -936,8 +935,8 @@ def device_get_iscsi_initiator(info):
     if initiator_name is None:
         session = device_get_iscsi_session(info)
         if session:
-            initiator = open("/sys/class/iscsi_session/%s/initiatorname" %
-                             session, "rb").read().strip()
+            initiator = util.read_file("/sys/class/iscsi_session/%s/initiatorname" %
+                                       session, "rb").strip()
             initiator_name = initiator.decode("utf-8", errors="replace")
             log.debug("found iscsi initiatorname %s", initiator_name)
     return initiator_name
