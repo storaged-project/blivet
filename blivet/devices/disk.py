@@ -22,10 +22,13 @@
 
 import gi
 gi.require_version("BlockDev", "2.0")
+gi.require_version("GLib", "2.0")
 
 from gi.repository import BlockDev as blockdev
+from gi.repository import GLib
 
 import os
+from collections import namedtuple
 
 from .. import errors
 from .. import util
@@ -725,3 +728,108 @@ class NVDIMMNamespaceDevice(DiskDevice):
     @property
     def sector_size(self):
         return self._sector_size
+
+
+NVMeController = namedtuple("NVMeController", ["name", "serial", "nvme_ver", "id", "subsysnqn",
+                                               "transport", "transport_address"])
+
+
+class NVMeNamespaceDevice(DiskDevice):
+
+    """ NVMe namespace """
+    _type = "nvme"
+    _packages = ["nvme-cli"]
+
+    def __init__(self, device, **kwargs):
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword nsid: namespace ID
+            :type nsid: int
+        """
+        self.nsid = kwargs.pop("nsid", 0)
+        self.eui64 = kwargs.pop("eui64", "")
+        self.nguid = kwargs.pop("nguid", "")
+
+        DiskDevice.__init__(self, device, **kwargs)
+
+        self._clear_local_tags()
+        self.tags.add(Tags.local)
+        self.tags.add(Tags.nvme)
+
+        self._controllers = None
+
+    @property
+    def controllers(self):
+        if self._controllers is not None:
+            return self._controllers
+
+        self._controllers = []
+        if not hasattr(blockdev.Plugin, "NVME"):
+            # the nvme plugin is not generally available
+            log.debug("Failed to get controllers for %s: libblockdev NVME plugin is not available", self.name)
+            return self._controllers
+
+        try:
+            controllers = blockdev.nvme_find_ctrls_for_ns(self.sysfs_path)
+        except GLib.GError as err:
+            log.debug("Failed to get controllers for %s: %s", self.name, str(err))
+            return self._controllers
+
+        for controller in controllers:
+            try:
+                cpath = util.get_path_by_sysfs_path(controller, "char")
+            except RuntimeError as err:
+                log.debug("Failed to find controller %s: %s", controller, str(err))
+                continue
+            try:
+                cinfo = blockdev.nvme_get_controller_info(cpath)
+            except GLib.GError as err:
+                log.debug("Failed to get controller info for %s: %s", cpath, str(err))
+                continue
+            ctrans = util.get_sysfs_attr(controller, "transport")
+            ctaddr = util.get_sysfs_attr(controller, "address")
+            self._controllers.append(NVMeController(name=os.path.basename(cpath),
+                                                    serial=cinfo.serial_number,
+                                                    nvme_ver=cinfo.nvme_ver,
+                                                    id=cinfo.ctrl_id,
+                                                    subsysnqn=cinfo.subsysnqn,
+                                                    transport=ctrans,
+                                                    transport_address=ctaddr))
+
+        return self._controllers
+
+
+class NVMeFabricsNamespaceDevice(NVMeNamespaceDevice, NetworkStorageDevice):
+
+    """ NVMe fabrics namespace """
+    _type = "nvme-fabrics"
+    _packages = ["nvme-cli"]
+
+    def __init__(self, device, **kwargs):
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+        """
+        NVMeNamespaceDevice.__init__(self, device, **kwargs)
+        NetworkStorageDevice.__init__(self)
+
+        self._clear_local_tags()
+        self.tags.add(Tags.remote)
+        self.tags.add(Tags.nvme)

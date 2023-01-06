@@ -58,22 +58,25 @@ inherit from them.
   Used for tests which don't touch disk space;
 
 
-- :class:`~tests.storagetestcase.StorageTestCase` - intended as a base class for
+- :class:`~tests.unit_tests.blivettestcase.BlivetTestCase` - intended as a base class for
   higher-level tests. Most of what it does is stub out operations that touch
   disks. Currently it is only used in
-  :class:`~tests.action_test.DeviceActionTestCase`;
+  :class:`~tests.unit_tests.action_test.DeviceActionTestCase`;
 
 
-- :class:`~tests.loopbackedtestcase.LoopBackedTestCase` and
-  :class:`~tests.imagebackedtestcase.ImageBackedTestCase` - both classes
+- :class:`~tests.storage_tests.loopbackedtestcase.LoopBackedTestCase`,
+  :class:`~tests.storage_tests.imagebackedtestcase.ImageBackedTestCase` and
+  :class:`~tests.storage_tests.storagetestcase.StorageTestCase` - all three classes
   represent actual storage space.
-  :class:`~tests.imagebackedtestcase.ImageBackedTestCase` uses the same stacks
+  :class:`~tests.storage_tests.imagebackedtestcase.ImageBackedTestCase` uses the same stacks
   as anaconda disk image installations. These mimic normal disks more closely
   than using loop devices directly. Usually
-  :class:`~tests.loopbackedtestcase.LoopBackedTestCase` is used for stacks of
+  :class:`~tests.storage_tests.loopbackedtestcase.LoopBackedTestCase` is used for stacks of
   limited depth (eg: md array with two loop members) and
-  :class:`~tests.imagebackedtestcase.ImageBackedTestCase` for stacks of greater
+  :class:`~tests.storage_tests.imagebackedtestcase.ImageBackedTestCase` for stacks of greater
   or arbitrary depth.
+  :class:`~tests.storage_tests.storagetestcase.StorageTestCase` uses `targetcli` to create
+  virtual SCSI drives for full stack tests on "real" hardware.
 
 
 In order to get a high level view of how test classes inherit from each other

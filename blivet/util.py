@@ -280,17 +280,17 @@ def get_mount_paths(dev):
 def get_mount_device(mountpoint):
     """ Given a mountpoint, return the device node path mounted there. """
     mountpoint = os.path.realpath(mountpoint)  # eliminate symlinks
-    mounts = open("/proc/mounts").readlines()
     mount_device = None
-    for mnt in mounts:
-        try:
-            (device, path, _rest) = mnt.split(None, 2)
-        except ValueError:
-            continue
+    with open("/proc/mounts") as mounts:
+        for mnt in mounts.readline():
+            try:
+                (device, path, _rest) = mnt.split(None, 2)
+            except ValueError:
+                continue
 
-        if path == mountpoint:
-            mount_device = device
-            break
+            if path == mountpoint:
+                mount_device = device
+                break
 
     if mount_device and re.match(r'/dev/loop\d+$', mount_device):
         loop_name = os.path.basename(mount_device)
@@ -447,6 +447,15 @@ def get_sysfs_path_by_name(dev_node, class_name="block"):
     else:
         raise RuntimeError("get_sysfs_path_by_name: Could not find sysfs path "
                            "for '%s' (it is not at '%s')" % (dev_node, dev_path))
+
+
+def get_path_by_sysfs_path(sysfs_path, dev_type="block"):
+    """ Return device path for a given device sysfs path. """
+
+    dev = get_sysfs_attr(sysfs_path, "dev")
+    if not dev or not os.path.exists("/dev/%s/%s" % (dev_type, dev)):
+        raise RuntimeError("get_path_by_sysfs_path: Could not find device for %s" % sysfs_path)
+    return os.path.realpath("/dev/%s/%s" % (dev_type, dev))
 
 
 def get_cow_sysfs_path(dev_path, dev_sysfsPath):
@@ -609,6 +618,12 @@ def sha256_file(filename):
             block = f.read(65536)
 
     return sha256.hexdigest()
+
+
+def read_file(filename, mode="r"):
+    with open(filename, mode) as f:
+        content = f.read()
+    return content
 
 
 class ObjectID(object):

@@ -3,6 +3,7 @@
 import os
 import six
 import unittest
+from uuid import UUID
 import parted
 
 try:
@@ -12,7 +13,9 @@ except ImportError:
 
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
+from blivet.devicelibs.gpt import gpt_part_uuid_for_mountpoint
 from blivet.formats import get_format
+from blivet.flags import flags
 from blivet.size import Size
 from blivet.util import sparsetmpfile
 
@@ -204,3 +207,71 @@ class PartitionDeviceTestCase(unittest.TestCase):
             end_free = (extended_end - logical_end) * sector_size
             self.assertEqual(extended_device.min_size,
                              extended_device.align_target_size(extended_device.current_size - end_free))
+
+    @unittest.skipUnless(hasattr(parted.Partition, "type_uuid"),
+                         "requires part type UUID in pyparted")
+    def test_part_type_uuid(self):
+        with sparsetmpfile("part_type_uuid", Size("10 MiB")) as disk_file:
+            disk = DiskFile(disk_file)
+            disk.format = get_format("disklabel", device=disk.path, label_type="gpt")
+            grain_size = Size(disk.format.alignment.grainSize)
+            sector_size = Size(disk.format.parted_device.sectorSize)
+            start = int(grain_size)
+            end = start + int(Size("6 MiB") / sector_size)
+            uuid = UUID("98bae220-872f-4895-853a-00ca5cadab1e")
+            disk.format.add_partition(start, end, part_type_uuid=uuid)
+            partition = disk.format.parted_disk.getPartitionBySector(start)
+            self.assertNotEqual(partition, None)
+
+            self.assertEqual(partition.type_uuid, uuid.bytes)
+
+    @unittest.skipUnless(hasattr(parted.Partition, "type_uuid"),
+                         "requires part type UUID in pyparted")
+    def test_dev_part_type_uuid(self):
+        with sparsetmpfile("part_type_uuid", Size("10 MiB")) as disk_file:
+            disk = DiskFile(disk_file)
+            disk.format = get_format("disklabel", device=disk.path, label_type="gpt")
+            grain_size = Size(disk.format.alignment.grainSize)
+            sector_size = Size(disk.format.parted_device.sectorSize)
+            start = int(grain_size)
+            end = start + int(Size("6 MiB") / sector_size)
+            uuid1 = UUID("98bae220-872f-4895-853a-00ca5cadab1e")
+            uuid2 = UUID("a2cf8a75-c460-41cd-844c-00ca5cadab1e")
+
+            device = PartitionDevice("demo",
+                                     size=int(Size("6 MiB") / sector_size),
+                                     exists=False,
+                                     part_type_uuid=uuid2)
+
+            self.assertEqual(device.part_type_uuid, uuid2)
+            self.assertEqual(device.part_type_uuid_req, uuid2)
+
+            disk.format.add_partition(start, end, part_type_uuid=uuid1)
+            partition = disk.format.parted_disk.getPartitionBySector(start)
+            self.assertNotEqual(partition, None)
+
+            device.disk = disk
+            device.exists = True
+            device.parted_partition = partition
+
+            self.assertEqual(device.part_type_uuid, uuid1)
+            self.assertEqual(device.part_type_uuid_req, uuid2)
+
+    @unittest.skipUnless(hasattr(parted.Partition, "type_uuid"),
+                         "requires part type UUID in pyparted")
+    def test_dev_part_type_gpt_autodiscover(self):
+        with sparsetmpfile("part_type_uuid", Size("10 MiB")) as disk_file:
+            disk = DiskFile(disk_file)
+            disk.format = get_format("disklabel", device=disk.path, label_type="gpt")
+            sector_size = Size(disk.format.parted_device.sectorSize)
+            device = PartitionDevice("demo",
+                                     size=int(Size("6 MiB") / sector_size),
+                                     exists=False,
+                                     mountpoint="/home")
+            device.disk = disk
+
+            flags.gpt_discoverable_partitions = False
+            self.assertEqual(device.part_type_uuid, None)
+            flags.gpt_discoverable_partitions = True
+            self.assertEqual(device.part_type_uuid,
+                             gpt_part_uuid_for_mountpoint("/home"))

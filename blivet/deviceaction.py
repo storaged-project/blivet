@@ -26,12 +26,13 @@ from six import add_metaclass
 
 from . import util
 from . import udev
-from .errors import DependencyError
+from .errors import DependencyError, PartitioningError
 from .util import get_current_entropy
 from .devices import StorageDevice
 from .devices import PartitionDevice, LVMLogicalVolumeDevice
 from .formats import get_format, luks
 from parted import partitionFlag, PARTITION_LBA
+import parted
 from .i18n import _, N_
 from .callbacks import CreateFormatPreData, CreateFormatPostData
 from .callbacks import ResizeFormatPreData, ResizeFormatPostData
@@ -635,6 +636,17 @@ class ActionCreateFormat(DeviceAction):
 
             if self.format.parted_flag is not None:
                 self.device.set_flag(self.format.parted_flag)
+
+            # If an explicit part type UUID is requested against
+            # the partition, that needs to take priority over any
+            # UUID assignment that was done implicitly when the
+            # above unset_flag/set_flag methods were called, or
+            # when the parted_partition.system flag is set.
+            if self.device.part_type_uuid_req is not None:
+                if not hasattr(parted.Partition, 'type_uuid'):
+                    raise PartitioningError("parted too old to set partition type UUID")
+
+                self.device.parted_partition.type_uuid = self.device.part_type_uuid_req.bytes
 
             self.device.disk.format.commit_to_disk()
             udev.settle()
