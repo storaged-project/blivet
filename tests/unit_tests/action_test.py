@@ -5,7 +5,7 @@ try:
 except ImportError:
     from mock import Mock, patch
 
-from .storagetestcase import StorageTestCase
+from .blivettestcase import BlivetTestCase
 import blivet
 from blivet.formats import get_format
 from blivet.size import Size
@@ -90,7 +90,7 @@ def _patch_format_dependencies(fn):
     return fn_with_patch
 
 
-class DeviceActionTestCase(StorageTestCase):
+class DeviceActionTestCase(BlivetTestCase):
 
     """ DeviceActionTestSuite """
 
