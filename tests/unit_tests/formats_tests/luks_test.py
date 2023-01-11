@@ -53,7 +53,7 @@ class LUKSNodevTestCase(unittest.TestCase):
 
     def test_sector_size(self):
         fmt = LUKS()
-        self.assertEqual(fmt.luks_sector_size, 0)
+        self.assertEqual(fmt.luks_sector_size, 512)
 
         with self.assertRaises(ValueError):
             fmt = LUKS(luks_version="luks1", luks_sector_size=4096)

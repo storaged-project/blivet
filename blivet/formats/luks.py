@@ -166,9 +166,13 @@ class LUKS(DeviceFormat):
             if self.pbkdf_args.type == "pbkdf2" and self.pbkdf_args.max_memory_kb:
                 log.warning("Memory limit is not used for pbkdf2 and it will be ignored.")
 
-        self.luks_sector_size = kwargs.get("luks_sector_size") or 0
-        if self.luks_sector_size and self.luks_version != "luks2":
-            raise ValueError("Sector size argument is valid only for LUKS version 2.")
+        self.luks_sector_size = kwargs.get("luks_sector_size")
+        if self.luks_version == "luks2":
+            if self.luks_sector_size is None:
+                self.luks_sector_size = 512  # XXX we don't want cryptsetup choose automatically here so fallback to 512
+        else:
+            if self.luks_sector_size:
+                raise ValueError("Sector size argument is valid only for LUKS version 2.")
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
