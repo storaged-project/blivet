@@ -305,6 +305,9 @@ class LUKS(DeviceFormat):
                     luks_data.pbkdf_args = self.pbkdf_args
                     log.info("PBKDF arguments for LUKS2 not specified, using defaults with memory limit %s", mem_limit)
 
+        if not self.luks_sector_size:
+            self.luks_sector_size = crypto.get_optimal_luks_sector_size(self.device)
+
         if self.pbkdf_args:
             pbkdf = blockdev.CryptoLUKSPBKDF(type=self.pbkdf_args.type,
                                              hash=self.pbkdf_args.hash_fn,
