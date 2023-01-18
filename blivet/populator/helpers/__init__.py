@@ -9,7 +9,6 @@ from .boot import AppleBootFormatPopulator, EFIFormatPopulator, MacEFIFormatPopu
 from .disk import DiskDevicePopulator, iScsiDevicePopulator, FCoEDevicePopulator, MDBiosRaidDevicePopulator, DASDDevicePopulator, ZFCPDevicePopulator, NVDIMMNamespaceDevicePopulator, NVMeNamespaceDevicePopulator, NVMeFabricsNamespaceDevicePopulator
 from .disklabel import DiskLabelFormatPopulator
 from .dm import DMDevicePopulator
-from .dmraid import DMRaidFormatPopulator
 from .loop import LoopDevicePopulator
 from .luks import LUKSDevicePopulator, LUKSFormatPopulator, IntegrityDevicePopulator, IntegrityFormatPopulator
 from .lvm import LVMDevicePopulator, LVMFormatPopulator
