@@ -35,8 +35,9 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
             pool = b.new_stratis_pool(name="testpool", parents=[bd])
         self.assertEqual(pool.name, "testpool")
         self.assertEqual(pool.size, bd.size)
-        # for 2 GiB pool, metadata should take around 0.5 GiB
-        self.assertAlmostEqual(pool.free_space, Size("1.5 GiB"), delta=Size("10 MiB"))
+
+        with patch("blivet.devicelibs.stratis.pool_used", lambda _d, _e: Size("512 MiB")):
+            self.assertAlmostEqual(pool.free_space, Size("1.5 GiB"))
 
         with patch("blivet.devicetree.DeviceTree.names", []):
             fs = b.new_stratis_filesystem(name="testfs", parents=[pool], size=Size("1 GiB"))
