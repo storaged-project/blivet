@@ -41,7 +41,7 @@ log = logging.getLogger("blivet")
 
 # DMI information paths
 DMI_CHASSIS_VENDOR = "/sys/class/dmi/id/chassis_vendor"
-DMI_PRODUCT_ID = "/sys/class/dmi/id/product_id"
+DMI_PRODUCT_NAME = "/sys/class/dmi/id/product_name"
 
 
 def get_ppc_machine():
@@ -215,10 +215,10 @@ def is_t2mac():
     }
     if not is_x86():
         t2_mac = False
-    elif not os.path.isfile(DMI_PRODUCT_ID):
+    elif not os.path.isfile(DMI_PRODUCT_NAME):
         t2_mac = False
     else:
-        buf = read_file(DMI_PRODUCT_ID)
+        buf = read_file(DMI_PRODUCT_NAME).strip()
         t2_mac = (buf in APPLE_T2_PRODUCT_NAMES)
     return t2_mac
 
