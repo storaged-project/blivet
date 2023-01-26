@@ -2527,6 +2527,16 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         return deps
 
     @property
+    def unavailable_direct_dependencies(self):
+        deps = super(LVMLogicalVolumeBase, self).unavailable_dependencies
+        if self.is_vdo_pool:
+            deps.update(e for e in LVMVDOPoolMixin.type_external_dependencies() if not e.available)
+        if self.is_vdo_lv:
+            deps.update(e for e in LVMVDOLogicalVolumeMixin.type_external_dependencies() if not e.available)
+
+        return deps
+
+    @property
     @type_specific
     def vg(self):
         """This Logical Volume's Volume Group."""
