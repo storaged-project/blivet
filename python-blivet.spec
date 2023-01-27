@@ -69,6 +69,7 @@ Recommends: libblockdev-swap >= %{libblockdevver}
 
 %ifarch s390 s390x
 Recommends: libblockdev-s390 >= %{libblockdevver}
+Requires: s390utils-core
 %endif
 
 Requires: python3-bytesize >= %{libbytesizever}
