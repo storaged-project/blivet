@@ -244,7 +244,6 @@ class ZFCPDeviceFullPath(ZFCPDeviceBase):
 
         super().online_device()
 
-        portadd = "%s/%s/port_add" % (zfcpsysfs, self.devnum)
         portdir = "%s/%s/%s" % (zfcpsysfs, self.devnum, self.wwpn)
         unitadd = "%s/unit_add" % (portdir)
         unitdir = "%s/%s" % (portdir, self.fcplun)
@@ -256,31 +255,6 @@ class ZFCPDeviceFullPath(ZFCPDeviceBase):
         if has_auto_lun_scan(self.devnum):
             log.warning("zFCP device %s in NPIV mode brought online. All LUNs will be activated "
                         "automatically although WWPN and LUN have been provided.", self.devnum)
-
-        # create the sysfs directory for the WWPN/port
-        if not os.path.exists(portdir):
-            if os.path.exists(portadd):
-                # older zfcp sysfs interface
-                try:
-                    logged_write_line_to_file(portadd, self.wwpn)
-                    udev.settle()
-                except OSError as e:
-                    raise ValueError(_("Could not add WWPN %(wwpn)s to zFCP "
-                                       "device %(devnum)s (%(e)s).")
-                                     % {'wwpn': self.wwpn,
-                                         'devnum': self.devnum,
-                                         'e': e})
-            else:
-                # newer zfcp sysfs interface with auto port scan
-                raise ValueError(_("WWPN %(wwpn)s not found at zFCP device "
-                                   "%(devnum)s.") % {'wwpn': self.wwpn,
-                                                     'devnum': self.devnum})
-        else:
-            if os.path.exists(portadd):
-                # older zfcp sysfs interface
-                log.info("WWPN %(wwpn)s at zFCP device %(devnum)s already "
-                         "there.", {'wwpn': self.wwpn,
-                                    'devnum': self.devnum})
 
         # create the sysfs directory for the LUN/unit
         if not os.path.exists(unitdir):
@@ -327,10 +301,7 @@ class ZFCPDeviceFullPath(ZFCPDeviceBase):
     def offline_device(self):
         """Remove the zFCP device from the system."""
 
-        portadd = "%s/%s/port_add" % (zfcpsysfs, self.devnum)
-        portremove = "%s/%s/port_remove" % (zfcpsysfs, self.devnum)
         unitremove = "%s/%s/%s/unit_remove" % (zfcpsysfs, self.devnum, self.wwpn)
-        portdir = "%s/%s/%s" % (zfcpsysfs, self.devnum, self.wwpn)
         devdir = "%s/%s" % (zfcpsysfs, self.devnum)
 
         try:
@@ -351,42 +322,6 @@ class ZFCPDeviceFullPath(ZFCPDeviceBase):
                                "(%(e)s).")
                              % {'fcplun': self.fcplun, 'wwpn': self.wwpn,
                                  'devnum': self.devnum, 'e': e})
-
-        # remove the WWPN only if there are no other LUNs attached
-        if os.path.exists(portadd):
-            # only try to remove ports with older zfcp sysfs interface
-            for lun in os.listdir(portdir):
-                if lun.startswith("0x") and \
-                        os.path.isdir(os.path.join(portdir, lun)):
-                    log.info("Not removing WWPN %s at zFCP device %s since port still has other LUNs, e.g. %s.",
-                             self.wwpn, self.devnum, lun)
-                    return True
-
-            try:
-                logged_write_line_to_file(portremove, self.wwpn)
-            except OSError as e:
-                raise ValueError(_("Could not remove WWPN %(wwpn)s on zFCP "
-                                   "device %(devnum)s (%(e)s).")
-                                 % {'wwpn': self.wwpn,
-                                     'devnum': self.devnum, 'e': e})
-
-        # check if there are other WWPNs existing for the zFCP device number
-        if os.path.exists(portadd):
-            # older zfcp sysfs interface
-            for port in os.listdir(devdir):
-                if port.startswith("0x") and \
-                        os.path.isdir(os.path.join(devdir, port)):
-                    log.info("Not setting zFCP device %s offline since it still has other ports, e.g. %s.",
-                             self.devnum, port)
-                    return True
-        else:
-            # newer zfcp sysfs interface with auto port scan
-            luns = glob.glob("%s/0x????????????????/0x????????????????"
-                             % (devdir,))
-            if len(luns) != 0:
-                log.info("Not setting zFCP device %s offline since it still has other LUNs, e.g. %s.",
-                         self.devnum, luns[0])
-                return True
 
         return True
 
