@@ -559,9 +559,6 @@ class zFCP:
             f.write("%s\n" % (d,))
         f.close()
 
-        f = open(root + "/etc/modprobe.conf", "a")
-        f.write("alias scsi_hostadapter zfcp\n")
-        f.close()
 
 
 # Create ZFCP singleton
