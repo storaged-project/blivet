@@ -45,7 +45,6 @@ def logged_write_line_to_file(fn, value):
 
 zfcpsysfs = "/sys/bus/ccw/drivers/zfcp"
 scsidevsysfs = "/sys/bus/scsi/devices"
-zfcpconf = "/etc/zfcp.conf"
 
 
 def _is_lun_scan_allowed():
@@ -323,18 +322,22 @@ class zFCP:
 
     """ ZFCP utility class.
 
-        This class will automatically online to ZFCP drives configured in
-        /tmp/fcpconfig when the startup() method gets called. It can also be
-        used to manually configure ZFCP devices through the add_fcp() method.
+        This class is used to manually configure ZFCP devices through the
+        add_fcp() method, which is used by the anaconda GUI or by kickstart.
 
-        As this class needs to make sure that /tmp/fcpconfig configured
+        As this class needs to make sure that configured
         drives are only onlined once and as it keeps a global list of all ZFCP
         devices it is implemented as a Singleton.
+
+        In particular, this class does not create objects for any other method
+        that enables ZFCP devices such as rd.zfcp= or any device auto
+        configuration. These methods make zfcp-attached SCSI disk block devices
+        available, which ZFCPDiskDevice [devices/disk.py] can directly
+        discover.
     """
 
     def __init__(self):
         self.fcpdevs = set()
-        self.has_read_config = False
         self.down = True
 
     # So that users can write zfcp() to get the singleton instance
@@ -344,46 +347,6 @@ class zFCP:
     def __deepcopy__(self, memo_dict):
         # pylint: disable=unused-argument
         return self
-
-    def read_config(self):
-        try:
-            f = open(zfcpconf, "r")
-        except OSError:
-            log.info("no %s; not configuring zfcp", zfcpconf)
-            return
-
-        lines = [x.strip().lower() for x in f.readlines()]
-        f.close()
-
-        for line in lines:
-            if line.startswith("#") or line == '':
-                continue
-
-            fields = line.split()
-
-            # zFCP auto LUN scan available
-            if len(fields) == 1:
-                devnum = fields[0]
-                wwpn = None
-                fcplun = None
-            elif len(fields) == 3:
-                devnum = fields[0]
-                wwpn = fields[1]
-                fcplun = fields[2]
-            elif len(fields) == 5:
-                # support old syntax of:
-                # devno scsiid wwpn scsilun fcplun
-                devnum = fields[0]
-                wwpn = fields[2]
-                fcplun = fields[4]
-            else:
-                log.warning("Invalid line found in %s: %s", zfcpconf, line)
-                continue
-
-            try:
-                self.add_fcp(devnum, wwpn, fcplun)
-            except ValueError as e:
-                log.warning("%s", str(e))
 
     def add_fcp(self, devnum, wwpn=None, fcplun=None):
         if wwpn and fcplun:
@@ -410,11 +373,6 @@ class zFCP:
         if not self.down:
             return
         self.down = False
-        if not self.has_read_config:
-            self.read_config()
-            self.has_read_config = True
-            # read_config calls add_fcp which calls online_device already
-            return
 
         if len(self.fcpdevs) == 0:
             return
