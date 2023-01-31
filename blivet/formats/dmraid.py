@@ -21,7 +21,6 @@
 #
 
 from ..storage_log import log_method_call
-from ..flags import flags
 from ..errors import DMRaidMemberError
 from ..i18n import N_
 from . import DeviceFormat, register_device_format
@@ -35,53 +34,13 @@ class DMRaidMember(DeviceFormat):
     """ A dmraid member disk. """
     _type = "dmraidmember"
     _name = N_("dm-raid member device")
-    # XXX This looks like trouble.
-    #
-    #     Maybe a better approach is a RaidMember format with subclass
-    #     for MDRaidMember, letting all *_raid_member types fall through
-    #     to the generic RaidMember format, which is basically read-only.
-    #
-    #     One problem that presents is the possibility of someone passing
-    #     a dmraid member to the MDRaidArrayDevice constructor.
-    _udev_types = ["adaptec_raid_member", "ddf_raid_member",
-                   "hpt37x_raid_member", "hpt45x_raid_member",
-                   "isw_raid_member",
+
+    _udev_types = ["adaptec_raid_member", "hpt37x_raid_member", "hpt45x_raid_member",
                    "jmicron_raid_member", "lsi_mega_raid_member",
                    "nvidia_raid_member", "promise_fasttrack_raid_member",
                    "silicon_medley_raid_member", "via_raid_member"]
-    _supported = True                   # is supported
-    _packages = ["dmraid"]              # required packages
+    _supported = False                  # is supported
     _hidden = True                      # hide devices with this formatting?
-
-    def __init__(self, **kwargs):
-        """
-                :keyword device: path to the underlying device (required)
-                :type device: str
-                :keyword uuid: this format's UUID
-                :type uuid: str
-                :keyword exists: whether this is an existing format
-                :type exists: bool
-
-        """
-        log_method_call(self, **kwargs)
-        DeviceFormat.__init__(self, **kwargs)
-
-        # Initialize the attribute that will hold the block object.
-        self._raidmem = None
-
-    def __repr__(self):
-        s = DeviceFormat.__repr__(self)
-        s += ("  raidmem = %(raidmem)r" % {"raidmem": self.raidmem})
-        return s
-
-    def _get_raidmem(self):
-        return self._raidmem
-
-    def _set_raidmem(self, raidmem):
-        self._raidmem = raidmem
-
-    raidmem = property(lambda d: d._get_raidmem(),
-                       lambda d, r: d._set_raidmem(r))
 
     def create(self, **kwargs):
         log_method_call(self, device=self.device,
@@ -93,13 +52,5 @@ class DMRaidMember(DeviceFormat):
                         type=self.type, status=self.status)
         raise DMRaidMemberError("destruction of dmraid members is non-sense")
 
-
-if not flags.noiswmd:
-    DMRaidMember._udev_types.remove("isw_raid_member")
-
-# The anaconda cmdline has not been parsed yet when we're first imported,
-# so we can not use flags.dmraid here
-if not flags.dmraid:
-    DMRaidMember._udev_types = []
 
 register_device_format(DMRaidMember)
