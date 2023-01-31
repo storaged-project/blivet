@@ -46,7 +46,6 @@ class Flags(object):
         else:
             self.selinux = selinux.is_selinux_enabled()
 
-        self.dmraid = True
         self.ibft = True
         self.noiswmd = False
 
@@ -108,7 +107,6 @@ class Flags(object):
     def update_from_boot_cmdline(self):
         self.get_boot_cmdline()
         self.multipath = "nompath" not in self.boot_cmdline
-        self.dmraid = "nodmraid" not in self.boot_cmdline
         self.noiswmd = "noiswmd" in self.boot_cmdline
         self.gfs2 = "gfs2" in self.boot_cmdline
         self.jfs = "jfs" in self.boot_cmdline

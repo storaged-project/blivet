@@ -32,7 +32,7 @@ gi.require_version("BlockDev", "2.0")
 from gi.repository import BlockDev as blockdev
 
 from ..errors import DeviceError, DeviceTreeError, NoParentsError
-from ..devices import DMLinearDevice, DMRaidArrayDevice
+from ..devices import DMLinearDevice
 from ..devices import FileDevice, LoopDevice
 from ..devices import MDRaidArrayDevice
 from ..devices import MultipathDevice
@@ -219,7 +219,7 @@ class PopulatorMixin(object):
     def _update_exclusive_disks(self, device):
         # If we just added a multipath or fwraid disk that is in exclusive_disks
         # we have to make sure all of its members are in the list too.
-        mdclasses = (DMRaidArrayDevice, MDRaidArrayDevice, MultipathDevice)
+        mdclasses = (MDRaidArrayDevice, MultipathDevice)
         if device.is_disk and isinstance(device, mdclasses):
             if device.name in self.exclusive_disks:
                 for ancestor in device.ancestors:

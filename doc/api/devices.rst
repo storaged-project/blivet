@@ -93,8 +93,6 @@ devices
         * :attr:`~blivet.devices.md.MDRaidArrayDevice.spares`
         * :attr:`~blivet.devices.md.MDRaidArrayDevice.total_devices`
 
-    * :class:`~blivet.devices.md.MDBiosRaidArrayDevice` (see :ref:`inherited public API <MDRaidArrayDeviceAPI>`)
-
 * :mod:`~blivet.devices.nfs`
     * :class:`~blivet.devices.nfs.NFSDevice` (see :ref:`inherited public API <StorageDeviceAPI>`)
 
