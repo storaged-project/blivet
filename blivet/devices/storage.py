@@ -132,6 +132,9 @@ class StorageDevice(Device):
         self._model = model or ""
         self.bus = bus
 
+        self._logical_block_size = None
+        self._physical_block_size = None
+
         self._readonly = False
         self._protected = False
         self._controllable = True
@@ -196,15 +199,43 @@ class StorageDevice(Device):
     @property
     def sector_size(self):
         """ Logical sector (block) size of this device """
+        return self.logical_block_size
+
+    @property
+    def logical_block_size(self):
+        """ Logical sector (block) size of this device """
         if not self.exists:
             if self.parents:
-                return self.parents[0].sector_size
+                return self.parents[0].logical_block_size
             else:
                 return LINUX_SECTOR_SIZE
 
+        if self._logical_block_size:
+            return self._logical_block_size
+
         block_size = util.get_sysfs_attr(self.sysfs_path, "queue/logical_block_size")
         if block_size:
-            return int(block_size)
+            self._logical_block_size = int(block_size)
+            return self._logical_block_size
+        else:
+            return LINUX_SECTOR_SIZE
+
+    @property
+    def physical_block_size(self):
+        """ Physical sector (block) size of this device """
+        if not self.exists:
+            if self.parents:
+                return self.parents[0].physical_block_size
+            else:
+                return LINUX_SECTOR_SIZE
+
+        if self._physical_block_size:
+            return self._physical_block_size
+
+        block_size = util.get_sysfs_attr(self.sysfs_path, "queue/physical_block_size")
+        if block_size:
+            self._physical_block_size = int(block_size)
+            return self._physical_block_size
         else:
             return LINUX_SECTOR_SIZE
 
