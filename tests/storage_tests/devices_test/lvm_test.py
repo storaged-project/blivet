@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from ..storagetestcase import StorageTestCase
 
@@ -6,6 +7,8 @@ import blivet
 
 
 class LVMTestCase(StorageTestCase):
+
+    vgname = "blivetTestVG"
 
     def setUp(self):
         super().setUp()
@@ -30,6 +33,14 @@ class LVMTestCase(StorageTestCase):
 
         self.storage.do_it()
 
+        ret = os.system("vgs blivetTestVG >/dev/null 2>&1")
+        if ret == 0:
+            raise RuntimeError("blivetTestVG not removed by recursive remove")
+        else:
+            # XXX sometimes vgremove doesn't remove the /dev/<vgname> folder on Debian
+            if os.path.exists("/dev/%s" % self.vgname):
+                shutil.rmtree("/dev/%s" % self.vgname, ignore_errors=True)
+
         return super()._clean_up()
 
     def test_lvm_basic(self):
@@ -44,7 +55,7 @@ class LVMTestCase(StorageTestCase):
 
         blivet.partitioning.do_partitioning(self.storage)
 
-        vg = self.storage.new_vg(name="blivetTestVG", parents=[pv])
+        vg = self.storage.new_vg(name=self.vgname, parents=[pv])
         self.storage.create_device(vg)
 
         lv = self.storage.new_lv(fmt_type="ext4", size=blivet.size.Size("50 MiB"),
@@ -63,7 +74,7 @@ class LVMTestCase(StorageTestCase):
         self.assertIsNotNone(pv.format)
         self.assertEqual(pv.format.type, "lvmpv")
 
-        vg = self.storage.devicetree.get_device_by_name("blivetTestVG")
+        vg = self.storage.devicetree.get_device_by_name(self.vgname)
         self.assertIsNotNone(vg)
         self.assertIsInstance(vg, blivet.devices.LVMVolumeGroupDevice)
         self.assertIsNotNone(vg.format)
@@ -72,7 +83,7 @@ class LVMTestCase(StorageTestCase):
         self.assertEqual(len(vg.parents), 1)
         self.assertEqual(vg.parents[0], pv)
 
-        lv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestLV")
+        lv = self.storage.devicetree.get_device_by_name("%s-blivetTestLV" % self.vgname)
         self.assertIsNotNone(lv)
         self.assertIsInstance(lv, blivet.devices.LVMLogicalVolumeDevice)
         self.assertIsNotNone(lv.format)
@@ -93,7 +104,7 @@ class LVMTestCase(StorageTestCase):
 
         blivet.partitioning.do_partitioning(self.storage)
 
-        vg = self.storage.new_vg(name="blivetTestVG", parents=[pv])
+        vg = self.storage.new_vg(name=self.vgname, parents=[pv])
         self.storage.create_device(vg)
 
         pool = self.storage.new_lv(thin_pool=True, size=blivet.size.Size("50 MiB"),
@@ -111,18 +122,18 @@ class LVMTestCase(StorageTestCase):
         self.storage.do_it()
         self.storage.reset()
 
-        pool = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestPool")
+        pool = self.storage.devicetree.get_device_by_name("%s-blivetTestPool" % self.vgname)
         self.assertIsNotNone(pool)
         self.assertTrue(pool.is_thin_pool)
 
-        thinlv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestThinLV")
+        thinlv = self.storage.devicetree.get_device_by_name("%s-blivetTestThinLV" % self.vgname)
         self.assertIsNotNone(thinlv)
         self.assertTrue(thinlv.is_thin_lv)
         self.assertEqual(len(thinlv.parents), 1)
         self.assertEqual(thinlv.parents[0], pool)
         self.assertEqual(thinlv.pool, pool)
 
-        snap = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestThinLV_snapshot")
+        snap = self.storage.devicetree.get_device_by_name("%s-blivetTestThinLV_snapshot" % self.vgname)
         self.assertIsNotNone(snap)
         self.assertTrue(snap.is_snapshot_lv)
         self.assertEqual(snap.origin, thinlv)
@@ -146,7 +157,7 @@ class LVMTestCase(StorageTestCase):
 
         blivet.partitioning.do_partitioning(self.storage)
 
-        vg = self.storage.new_vg(name="blivetTestVG", parents=[pv1, pv2])
+        vg = self.storage.new_vg(name=self.vgname, parents=[pv1, pv2])
         self.storage.create_device(vg)
 
         raidlv = self.storage.new_lv(fmt_type="ext4", size=blivet.size.Size("50 MiB"),
@@ -157,7 +168,7 @@ class LVMTestCase(StorageTestCase):
         self.storage.do_it()
         self.storage.reset()
 
-        raidlv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestRAIDLV")
+        raidlv = self.storage.devicetree.get_device_by_name("%s-blivetTestRAIDLV" % self.vgname)
         self.assertIsNotNone(raidlv)
         self.assertTrue(raidlv.is_raid_lv)
         self.assertEqual(raidlv.raid_level, raid_level)
@@ -194,7 +205,7 @@ class LVMTestCase(StorageTestCase):
 
         blivet.partitioning.do_partitioning(self.storage)
 
-        vg = self.storage.new_vg(name="blivetTestVG", parents=[pv1, pv2])
+        vg = self.storage.new_vg(name=self.vgname, parents=[pv1, pv2])
         self.storage.create_device(vg)
 
         cache_spec = blivet.devices.lvm.LVMCacheRequest(size=blivet.size.Size("50 MiB"), pvs=[pv2])
@@ -206,7 +217,7 @@ class LVMTestCase(StorageTestCase):
         self.storage.do_it()
         self.storage.reset()
 
-        cachedlv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestCachedLV")
+        cachedlv = self.storage.devicetree.get_device_by_name("%s-blivetTestCachedLV" % self.vgname)
         self.assertIsNotNone(cachedlv)
         self.assertTrue(cachedlv.cached)
         self.assertIsNotNone(cachedlv.cache)
@@ -230,7 +241,7 @@ class LVMTestCase(StorageTestCase):
 
         blivet.partitioning.do_partitioning(self.storage)
 
-        vg = self.storage.new_vg(name="blivetTestVG", parents=[pv1, pv2])
+        vg = self.storage.new_vg(name=self.vgname, parents=[pv1, pv2])
         self.storage.create_device(vg)
 
         cachedlv = self.storage.new_lv(fmt_type="ext4", size=blivet.size.Size("50 MiB"),
@@ -245,16 +256,16 @@ class LVMTestCase(StorageTestCase):
         self.storage.do_it()
         self.storage.reset()
 
-        cachedlv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestCachedLV")
+        cachedlv = self.storage.devicetree.get_device_by_name("%s-blivetTestCachedLV" % self.vgname)
         self.assertIsNotNone(cachedlv)
-        cachepool = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestFastLV")
+        cachepool = self.storage.devicetree.get_device_by_name("%s-blivetTestFastLV" % self.vgname)
         self.assertIsNotNone(cachepool)
 
         # attach the cache pool to the LV
         cachedlv.attach_cache(cachepool)
 
         self.storage.reset()
-        cachedlv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestCachedLV")
+        cachedlv = self.storage.devicetree.get_device_by_name("%s-blivetTestCachedLV" % self.vgname)
         self.assertIsNotNone(cachedlv)
         self.assertTrue(cachedlv.cached)
         self.assertIsNotNone(cachedlv.cache)
@@ -263,11 +274,11 @@ class LVMTestCase(StorageTestCase):
         cachedlv.cache.detach()
 
         self.storage.reset()
-        cachedlv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestCachedLV")
+        cachedlv = self.storage.devicetree.get_device_by_name("%s-blivetTestCachedLV" % self.vgname)
         self.assertIsNotNone(cachedlv)
         self.assertFalse(cachedlv.cached)
         self.assertIsNone(cachedlv.cache)
-        cachepool = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestFastLV")
+        cachepool = self.storage.devicetree.get_device_by_name("%s-blivetTestFastLV" % self.vgname)
         self.assertIsNotNone(cachepool)
 
     def test_lvm_cache_create_and_attach(self):
@@ -290,7 +301,7 @@ class LVMTestCase(StorageTestCase):
 
         blivet.partitioning.do_partitioning(self.storage)
 
-        vg = self.storage.new_vg(name="blivetTestVG", parents=[pv1, pv2])
+        vg = self.storage.new_vg(name=self.vgname, parents=[pv1, pv2])
         self.storage.create_device(vg)
 
         cachedlv = self.storage.new_lv(fmt_type="ext4", size=blivet.size.Size("50 MiB"),
@@ -300,10 +311,10 @@ class LVMTestCase(StorageTestCase):
         self.storage.do_it()
         self.storage.reset()
 
-        cachedlv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestCachedLV")
+        cachedlv = self.storage.devicetree.get_device_by_name("%s-blivetTestCachedLV" % self.vgname)
         self.assertIsNotNone(cachedlv)
 
-        vg = self.storage.devicetree.get_device_by_name("blivetTestVG")
+        vg = self.storage.devicetree.get_device_by_name(self.vgname)
         pv2 = self.storage.devicetree.get_device_by_name(pv2.name)
 
         # create the cache pool and attach it to the LV
@@ -315,13 +326,13 @@ class LVMTestCase(StorageTestCase):
         self.storage.do_it()
         self.storage.reset()
 
-        cachedlv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestCachedLV")
+        cachedlv = self.storage.devicetree.get_device_by_name("%s-blivetTestCachedLV" % self.vgname)
         self.assertIsNotNone(cachedlv)
         self.assertTrue(cachedlv.cached)
         self.assertIsNotNone(cachedlv.cache)
 
         # the cachepool shouldn't be in the devicetree now
-        cachepool = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestFastLV")
+        cachepool = self.storage.devicetree.get_device_by_name("%s-blivetTestFastLV" % self.vgname)
         self.assertIsNone(cachepool)
 
     def test_lvm_pvs_add_remove(self):
@@ -335,7 +346,7 @@ class LVMTestCase(StorageTestCase):
 
         blivet.partitioning.do_partitioning(self.storage)
 
-        vg = self.storage.new_vg(name="blivetTestVG", parents=[pv1])
+        vg = self.storage.new_vg(name=self.vgname, parents=[pv1])
         self.storage.create_device(vg)
 
         lv = self.storage.new_lv(fmt_type="ext4", size=blivet.size.Size("50 MiB"),
@@ -359,7 +370,7 @@ class LVMTestCase(StorageTestCase):
         self.storage.reset()
 
         # add the PV to the existing VG
-        vg = self.storage.devicetree.get_device_by_name("blivetTestVG")
+        vg = self.storage.devicetree.get_device_by_name(self.vgname)
         pv2 = self.storage.devicetree.get_device_by_name(pv2.name)
 
         ac = blivet.deviceaction.ActionAddMember(vg, pv2)
@@ -369,7 +380,7 @@ class LVMTestCase(StorageTestCase):
         self.assertEqual(pv2.format.vg_name, vg.name)
 
         self.storage.reset()
-        vg = self.storage.devicetree.get_device_by_name("blivetTestVG")
+        vg = self.storage.devicetree.get_device_by_name(self.vgname)
         self.assertIsNotNone(vg)
         self.assertEqual(len(vg.pvs), 2)
 
@@ -383,7 +394,7 @@ class LVMTestCase(StorageTestCase):
         self.storage.reset()
 
         self.storage.reset()
-        vg = self.storage.devicetree.get_device_by_name("blivetTestVG")
+        vg = self.storage.devicetree.get_device_by_name(self.vgname)
         self.assertIsNotNone(vg)
         self.assertEqual(len(vg.pvs), 1)
         self.assertEqual(vg.pvs[0].name, pv2.name)
