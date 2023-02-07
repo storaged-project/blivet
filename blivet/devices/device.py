@@ -358,3 +358,12 @@ class Device(util.ObjectID):
             :rtype: set of availability.external_resource
         """
         return set(e for e in self.external_dependencies if not e.available)
+
+    @property
+    def unavailable_direct_dependencies(self):
+        """ Any unavailable external dependencies of this device.
+
+            :returns: A list of unavailable external dependencies.
+            :rtype: set of availability.external_resource
+        """
+        return set(e for e in self.type_external_dependencies() if not e.available)
