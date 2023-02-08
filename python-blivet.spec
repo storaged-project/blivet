@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.6.1
+Version: 3.7.0
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -192,6 +192,40 @@ configuration.
 %endif
 
 %changelog
+* Wed Feb 08 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.7.0-1
+- Remove unused BLOCKDEV_DM_RAID technology from tasks (vtrefny)
+- tests: Force remove LVM VG /dev/ entry not removed by vgremove (vtrefny)
+- Mark LUKS2 integrity devices as always controllable (vtrefny)
+- Ignore parent dependencies during action execute (vtrefny)
+- tests: Patch checking stratis pool metadata size (vtrefny)
+- Remove support for DMRAID devices (vtrefny)
+- Do not read DDF RAID UUID from udev (vtrefny)
+- Check physical and logical block size when creating a LUKS format (vtrefny)
+- Add separate properties for logical and physical block size (vtrefny)
+- Use DMI product_name for t2 mac detection. (83884198+sharpenedblade)
+- vmtests: add a --logs arg to capture blivet.log from failed tests (berrange)
+- examples: illustrate GPT GUID usage in partitioning example (berrange)
+- vmtests: add test for GPT part type UUID validation (berrange)
+- blivet: allow 'mountpoint' to be passed to PartitionDevice (berrange)
+- deviceaction: retain explicit part type UUID when formatting (berrange)
+- devices/partition: add ability to auto apply a GPT UUID (berrange)
+- gpt: add helper API for discoverable partition UUIDs (berrange)
+- devices/partition: allow passing partition type UUID (berrange)
+- formats/disklabel: allow passing partition type UUID (berrange)
+- Add a forced delay to udev settle in chroot environments (vlad.bespalov)
+- Update public API documentation (vtrefny)
+- tests/README: Clarify various test classes (vtrefny)
+- Rename unit_tests.storagetestcase to unit_tests.blivettestcase (vtrefny)
+- Add additional identifiers to NVMeNamespaceDevice (vtrefny)
+- Add transport and address to NVMeController info (vtrefny)
+- Make sure we close the streams when reading a file (vtrefny)
+- Style changes. (sharpenedblade)
+- Do not report mactel on T2 macs. (sharpenedblade)
+- Add function to check for T2 apple macs. (sharpenedblade)
+- Add a basic read-only support for UDF filesystem (vtrefny)
+- add loongarch support (mahailiang)
+- Add a basic support for NVMe and NVMe Fabrics devices (vtrefny)
+
 * Mon Nov 28 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.6.1-1
 - misc: Remove "warn: false" from Ansible "command" (vtrefny)
 - spec: Change license string to the SPDX format required by Fedora (vtrefny)

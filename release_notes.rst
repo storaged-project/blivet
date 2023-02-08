@@ -1,3 +1,31 @@
+3.7.0
+======
+* `NVMe and NVMe over Fabrics support`_
+* `Discoverable partition IDs support`_
+* `DMRAID support removed`_
+* `Removed`_
+
+NVMe and NVMe over Fabrics support
+-----------------------------------
+Basic support for NVMe and NVMe oF devices was added in this release. These
+devices will now be correctly identified as either `NVMeNamespaceDevice` or
+`NVMeFabricsNamespaceDevice`.
+
+Discoverable partition IDs support
+-----------------------------------
+Blivet now support discoverable partitions specification to set well known
+GPT partition GUIDs based on the selected mount point.
+
+DMRAID support removed
+-----------------------
+Support for DMRAID devices was removed in this release. BIOS RAID
+devices are now support by `mdadm`.
+
+Removed
+--------
+* `DMRaidArrayDevice`
+* `flags.noiswmd` and `flags.dmraid`
+
 3.6.0
 ======
 * `LVM writecache support`_
