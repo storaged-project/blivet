@@ -28,7 +28,6 @@ from gi.repository import BlockDev as blockdev
 from ..storage_log import log_method_call
 from parted import PARTITION_RAID
 from . import DeviceFormat, register_device_format
-from ..flags import flags
 from ..i18n import N_
 from ..tasks import availability
 
@@ -41,7 +40,7 @@ class MDRaidMember(DeviceFormat):
     """ An mdraid member disk. """
     _type = "mdmember"
     _name = N_("software RAID")
-    _udev_types = ["linux_raid_member"]
+    _udev_types = ["linux_raid_member", "ddf_raid_member", "isw_raid_member"]
     parted_flag = PARTITION_RAID
     _formattable = True                 # can be formatted
     _supported = True                   # is supported
@@ -111,13 +110,6 @@ class MDRaidMember(DeviceFormat):
     @container_uuid.setter
     def container_uuid(self, uuid):
         self.md_uuid = uuid
-
-
-# nodmraid -> Wether to use BIOS RAID or not
-# Note the anaconda cmdline has not been parsed yet when we're first imported,
-# so we can not use flags.dmraid here
-if not flags.noiswmd and flags.dmraid:
-    MDRaidMember._udev_types.append("isw_raid_member")
 
 
 register_device_format(MDRaidMember)

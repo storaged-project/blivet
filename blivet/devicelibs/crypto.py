@@ -29,7 +29,7 @@ from gi.repository import BlockDev
 
 from ..size import Size, ROUND_DOWN
 from ..tasks import availability
-from ..util import total_memory, available_memory
+from ..util import total_memory, available_memory, run_program_and_capture_output
 
 import logging
 log = logging.getLogger("blivet")
@@ -100,3 +100,35 @@ def calculate_integrity_metadata_size(device_size, algorithm=DEFAULT_INTEGRITY_A
     jsize = (jsize / SECTOR_SIZE + 1) * SECTOR_SIZE  # round up to sector
 
     return msize + jsize
+
+
+def get_optimal_luks_sector_size(device):
+    rc, out = run_program_and_capture_output(["blockdev", "--getss", device])
+    if rc != 0:
+        log.warning("Failed to get logical sector size for %s: %s", device, out)
+        return 0
+    try:
+        logical_block_size = int(out)
+    except ValueError:
+        log.warning("Failed to get logical sector size for %s from '%s'", device, out)
+        return 0
+
+    rc, out = run_program_and_capture_output(["blockdev", "--getpbsz", device])
+    if rc != 0:
+        log.warning("Failed to get physical sector size for %s: %s", device, out)
+        return 0
+    try:
+        physical_block_size = int(out)
+    except ValueError:
+        log.warning("Failed to get physical sector size for %s from '%s'", device, out)
+        return 0
+
+    if logical_block_size == physical_block_size:
+        # same logical and physical block size: let cryptsetup decide
+        return 0
+    else:
+        # XXX when logical and physical block size differ, we don't want to let cryptsetup
+        # decide because it will choose 4096 for disks with 4096 physical block size and
+        # 512 logical block size which will make it harder to combine these in a single
+        # LVM volume group if used as PVs
+        return SECTOR_SIZE

@@ -75,7 +75,7 @@ class PartitionDevicePopulator(DevicePopulator):
             # For partitions on disklabels parted cannot make sense of, go ahead
             # and instantiate a PartitionDevice so our view of the layout is
             # complete.
-            if not disk.partitionable or disk.format.type == "iso9660" or disk.format.hidden:
+            if not disk.partitionable or disk.format.type in ("iso9660", "udf") or disk.format.hidden:
                 log.debug("ignoring partition %s on %s", name, disk.format.type)
                 return
 

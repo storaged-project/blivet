@@ -26,6 +26,7 @@ import re
 import subprocess
 import logging
 import pyudev
+import time
 
 from . import util
 from .size import Size
@@ -41,6 +42,29 @@ log = logging.getLogger("blivet")
 
 ignored_device_names = []
 """ device name regexes to ignore; this should be empty by default """
+
+
+def running_in_chroot():
+    """ Mimic running_in_chroot() logic from systemd.
+        Simplifications:
+            - can't be running as PID 1, so skip the checks
+            - don't have statfs() call, so can't check for fake /proc
+
+        :returns: True if we detect a chroot environment, False otherwise
+        :rtype: bool
+    """
+    try:
+        # compare inode # for "/" in init with inode # for "/" here
+        # if inode numbers are different - we're in chroot
+        pid1_root_stat = os.stat("/proc/1/root", follow_symlinks=True)
+        my_root_stat = os.stat("/")
+        return pid1_root_stat.st_ino != my_root_stat.st_ino
+    except FileNotFoundError:
+        # "/proc/1/root" does not exist; default to not chroot
+        return False
+    except PermissionError:
+        # not superuser enough; default to not chroot
+        return False
 
 
 def device_to_dict(device):
@@ -93,7 +117,12 @@ def settle(quiet=False):
     # mdadm etc. This large timeout is needed when running on machines with
     # lots of disks, or with slow disks
     argv = ["udevadm", "settle", "--timeout=300"]
-    if quiet:
+    if running_in_chroot():
+        # Force delay if running in chroot (e.g. mock).
+        # 1s should be enough for chroot to settle.
+        # The delay must not be big, as settle() is called from many places.
+        time.sleep(1)
+    elif quiet:
         subprocess.call(argv, close_fds=True)
     else:
         util.run_program(argv)
@@ -886,8 +915,7 @@ def device_get_iscsi_nic(info):
     iface = None
     session = device_get_iscsi_session(info)
     if session:
-        iface = open("/sys/class/iscsi_session/%s/ifacename" %
-                     session).read().strip()
+        iface = util.read_file("/sys/class/iscsi_session/%s/ifacename" % session).strip()
     return iface
 
 
@@ -898,7 +926,7 @@ def device_get_iscsi_initiator(info):
         if host:
             initiator_file = "/sys/class/iscsi_host/%s/initiatorname" % host
             if os.access(initiator_file, os.R_OK):
-                initiator = open(initiator_file, "rb").read().strip()
+                initiator = util.read_file(initiator_file, "rb").strip()
                 initiator_name = initiator.decode("utf-8", errors="replace")
                 log.debug("found offload iscsi initiatorname %s in file %s",
                           initiator_name, initiator_file)
@@ -907,8 +935,8 @@ def device_get_iscsi_initiator(info):
     if initiator_name is None:
         session = device_get_iscsi_session(info)
         if session:
-            initiator = open("/sys/class/iscsi_session/%s/initiatorname" %
-                             session, "rb").read().strip()
+            initiator = util.read_file("/sys/class/iscsi_session/%s/initiatorname" %
+                                       session, "rb").strip()
             initiator_name = initiator.decode("utf-8", errors="replace")
             log.debug("found iscsi initiatorname %s", initiator_name)
     return initiator_name
@@ -1021,6 +1049,39 @@ def device_is_nvdimm_namespace(info):
     devname = info.get("DEVNAME", "")
     ninfo = blockdev.nvdimm_namespace_get_devname(devname)
     return ninfo is not None
+
+
+def device_is_nvme_namespace(info):
+    if info.get("DEVTYPE") != "disk":
+        return False
+
+    if not info.get("SYS_PATH"):
+        return False
+
+    device = pyudev.Devices.from_sys_path(global_udev, info.get("SYS_PATH"))
+    while device:
+        if device.subsystem and device.subsystem.startswith("nvme"):
+            return True
+        device = device.parent
+
+    return False
+
+
+def device_is_nvme_fabrics(info):
+    if not device_is_nvme_namespace(info):
+        return False
+
+    if not hasattr(blockdev.Plugin, "NVME") or not blockdev.is_plugin_available(blockdev.Plugin.NVME):  # pylint: disable=no-member
+        # nvme plugin is not available -- even if this is an nvme fabrics device we
+        # don't have tools to work with it, so we should pretend it's just a normal nvme
+        return False
+
+    controllers = blockdev.nvme_find_ctrls_for_ns(info.get("SYS_PATH", ""))
+    if not controllers:
+        return False
+
+    transport = util.get_sysfs_attr(controllers[0], "transport")
+    return transport in ("rdma", "fc", "tcp", "loop")
 
 
 def device_is_hidden(info):

@@ -263,6 +263,7 @@ class PartitionDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
             super(PartitionDeviceMethodsTestCase, self).test_create()
 
         with patch.object(self.device, "_wipe"):
+            self.device.parted_partition.type_uuid = bytes([0] * 16)
             self.device._create()
             self.assertTrue(self.device.disk.format.add_partition.called)
             self.assertTrue(self.device.disk.format.commit.called)

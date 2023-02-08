@@ -22,10 +22,13 @@
 
 import gi
 gi.require_version("BlockDev", "2.0")
+gi.require_version("GLib", "2.0")
 
 from gi.repository import BlockDev as blockdev
+from gi.repository import GLib
 
 import os
+from collections import namedtuple
 
 from .. import errors
 from .. import util
@@ -43,7 +46,6 @@ log = logging.getLogger("blivet")
 
 from .lib import Tags
 from .storage import StorageDevice
-from .container import ContainerDevice
 from .network import NetworkStorageDevice
 from .dm import DMDevice
 
@@ -214,92 +216,6 @@ class DiskFile(DiskDevice):
             size = Size(st.st_size)
 
         return size
-
-
-class DMRaidArrayDevice(DMDevice, ContainerDevice):
-
-    """ A dmraid (device-mapper RAID) device """
-    _type = "dm-raid array"
-    _packages = ["dmraid"]
-    _partitionable = True
-    _is_disk = True
-    _format_class_name = property(lambda s: "dmraidmember")
-    _format_uuid_attr = property(lambda s: None)
-    _external_dependencies = [availability.BLOCKDEV_DM_PLUGIN_RAID]
-
-    def __init__(self, name, fmt=None,
-                 size=None, parents=None, sysfs_path='', wwn=None):
-        """
-            :param name: the device name (generally a device node's basename)
-            :type name: str
-            :keyword size: the device's size
-            :type size: :class:`~.size.Size`
-            :keyword parents: a list of parent devices
-            :type parents: list of :class:`StorageDevice`
-            :keyword fmt: this device's formatting
-            :type fmt: :class:`~.formats.DeviceFormat` or a subclass of it
-            :keyword sysfs_path: sysfs device path
-            :type sysfs_path: str
-            :keyword str wwn: the device's WWN
-
-            DMRaidArrayDevices always exist. Blivet cannot create or destroy
-            them.
-        """
-        super(DMRaidArrayDevice, self).__init__(name, fmt=fmt, size=size,
-                                                parents=parents, exists=True,
-                                                sysfs_path=sysfs_path)
-        self.wwn = wwn or None
-        self.tags.add(Tags.local)
-
-    @property
-    def devices(self):
-        """ Return a list of this array's member device instances. """
-        return self.parents
-
-    def deactivate(self):
-        """ Deactivate the raid set. """
-        log_method_call(self, self.name, status=self.status)
-        # This call already checks if the set is not active.
-        blockdev.dm.deactivate_raid_set(self.name)
-
-    def activate(self):
-        """ Activate the raid set. """
-        log_method_call(self, self.name, status=self.status)
-        # This call already checks if the set is active.
-        blockdev.dm.activate_raid_set(self.name)
-        udev.settle()
-
-    def _setup(self, orig=False):
-        """ Open, or set up, a device. """
-        log_method_call(self, self.name, orig=orig, status=self.status,
-                        controllable=self.controllable)
-        self.activate()
-
-    def teardown(self, recursive=None):
-        """ Close, or tear down, a device. """
-        log_method_call(self, self.name, status=self.status,
-                        controllable=self.controllable)
-        if not self._pre_teardown(recursive=recursive):
-            return
-
-        log.debug("not tearing down dmraid device %s", self.name)
-
-    def _add(self, member):
-        raise NotImplementedError()
-
-    def _remove(self, member):
-        raise NotImplementedError()
-
-    @property
-    def description(self):
-        return "BIOS RAID set (%s)" % blockdev.dm.get_raid_set_type(self.name)
-
-    @property
-    def model(self):
-        return self.description
-
-    def dracut_setup_args(self):
-        return set(["rd.dm.uuid=%s" % self.name])
 
 
 class MultipathDevice(DMDevice):
@@ -725,3 +641,108 @@ class NVDIMMNamespaceDevice(DiskDevice):
     @property
     def sector_size(self):
         return self._sector_size
+
+
+NVMeController = namedtuple("NVMeController", ["name", "serial", "nvme_ver", "id", "subsysnqn",
+                                               "transport", "transport_address"])
+
+
+class NVMeNamespaceDevice(DiskDevice):
+
+    """ NVMe namespace """
+    _type = "nvme"
+    _packages = ["nvme-cli"]
+
+    def __init__(self, device, **kwargs):
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+            :keyword nsid: namespace ID
+            :type nsid: int
+        """
+        self.nsid = kwargs.pop("nsid", 0)
+        self.eui64 = kwargs.pop("eui64", "")
+        self.nguid = kwargs.pop("nguid", "")
+
+        DiskDevice.__init__(self, device, **kwargs)
+
+        self._clear_local_tags()
+        self.tags.add(Tags.local)
+        self.tags.add(Tags.nvme)
+
+        self._controllers = None
+
+    @property
+    def controllers(self):
+        if self._controllers is not None:
+            return self._controllers
+
+        self._controllers = []
+        if not hasattr(blockdev.Plugin, "NVME"):
+            # the nvme plugin is not generally available
+            log.debug("Failed to get controllers for %s: libblockdev NVME plugin is not available", self.name)
+            return self._controllers
+
+        try:
+            controllers = blockdev.nvme_find_ctrls_for_ns(self.sysfs_path)
+        except GLib.GError as err:
+            log.debug("Failed to get controllers for %s: %s", self.name, str(err))
+            return self._controllers
+
+        for controller in controllers:
+            try:
+                cpath = util.get_path_by_sysfs_path(controller, "char")
+            except RuntimeError as err:
+                log.debug("Failed to find controller %s: %s", controller, str(err))
+                continue
+            try:
+                cinfo = blockdev.nvme_get_controller_info(cpath)
+            except GLib.GError as err:
+                log.debug("Failed to get controller info for %s: %s", cpath, str(err))
+                continue
+            ctrans = util.get_sysfs_attr(controller, "transport")
+            ctaddr = util.get_sysfs_attr(controller, "address")
+            self._controllers.append(NVMeController(name=os.path.basename(cpath),
+                                                    serial=cinfo.serial_number,
+                                                    nvme_ver=cinfo.nvme_ver,
+                                                    id=cinfo.ctrl_id,
+                                                    subsysnqn=cinfo.subsysnqn,
+                                                    transport=ctrans,
+                                                    transport_address=ctaddr))
+
+        return self._controllers
+
+
+class NVMeFabricsNamespaceDevice(NVMeNamespaceDevice, NetworkStorageDevice):
+
+    """ NVMe fabrics namespace """
+    _type = "nvme-fabrics"
+    _packages = ["nvme-cli"]
+
+    def __init__(self, device, **kwargs):
+        """
+            :param name: the device name (generally a device node's basename)
+            :type name: str
+            :keyword exists: does this device exist?
+            :type exists: bool
+            :keyword size: the device's size
+            :type size: :class:`~.size.Size`
+            :keyword parents: a list of parent devices
+            :type parents: list of :class:`StorageDevice`
+            :keyword format: this device's formatting
+            :type format: :class:`~.formats.DeviceFormat` or a subclass of it
+        """
+        NVMeNamespaceDevice.__init__(self, device, **kwargs)
+        NetworkStorageDevice.__init__(self)
+
+        self._clear_local_tags()
+        self.tags.add(Tags.remote)
+        self.tags.add(Tags.nvme)

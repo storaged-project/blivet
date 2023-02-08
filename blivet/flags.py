@@ -46,7 +46,6 @@ class Flags(object):
         else:
             self.selinux = selinux.is_selinux_enabled()
 
-        self.dmraid = True
         self.ibft = True
         self.noiswmd = False
 
@@ -91,6 +90,11 @@ class Flags(object):
 
         self.debug_threads = False
 
+        # Assign GPT partition type UUIDs to allow partition
+        # auto-discovery according to:
+        # https://uapi-group.org/specifications/specs/discoverable_partitions_specification/
+        self.gpt_discoverable_partitions = False
+
     def get_boot_cmdline(self):
         with open("/proc/cmdline") as f:
             buf = f.read().strip()
@@ -103,7 +107,6 @@ class Flags(object):
     def update_from_boot_cmdline(self):
         self.get_boot_cmdline()
         self.multipath = "nompath" not in self.boot_cmdline
-        self.dmraid = "nodmraid" not in self.boot_cmdline
         self.noiswmd = "noiswmd" in self.boot_cmdline
         self.gfs2 = "gfs2" in self.boot_cmdline
         self.jfs = "jfs" in self.boot_cmdline

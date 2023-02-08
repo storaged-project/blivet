@@ -32,6 +32,7 @@ class Tags(str, Enum):
     """Tags that describe various classes of disk."""
     local = 'local'
     nvdimm = 'nvdimm'
+    nvme = 'nvme'
     remote = 'remote'
     removable = 'removable'
     ssd = 'ssd'

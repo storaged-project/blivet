@@ -391,11 +391,6 @@ BLOCKDEV_DM = BlockDevTechInfo(plugin_name="dm",
                                technologies={blockdev.DMTech.MAP: BLOCKDEV_DM_ALL_MODES})
 BLOCKDEV_DM_TECH = BlockDevMethod(BLOCKDEV_DM)
 
-BLOCKDEV_DM_RAID = BlockDevTechInfo(plugin_name="dm",
-                                    check_fn=blockdev.dm_is_tech_avail,
-                                    technologies={blockdev.DMTech.RAID: BLOCKDEV_DM_ALL_MODES})
-BLOCKDEV_DM_TECH_RAID = BlockDevMethod(BLOCKDEV_DM_RAID)
-
 # libblockdev loop plugin required technologies and modes
 BLOCKDEV_LOOP_ALL_MODES = (blockdev.LoopTechMode.CREATE |
                            blockdev.LoopTechMode.CREATE |
@@ -472,7 +467,6 @@ BLOCKDEV_CRYPTO_PLUGIN = blockdev_plugin("libblockdev crypto plugin", BLOCKDEV_C
 BLOCKDEV_CRYPTO_PLUGIN_INTEGRITY = blockdev_plugin("libblockdev crypto plugin (integrity technology)",
                                                    BLOCKDEV_CRYPTO_TECH_INTEGRITY)
 BLOCKDEV_DM_PLUGIN = blockdev_plugin("libblockdev dm plugin", BLOCKDEV_DM_TECH)
-BLOCKDEV_DM_PLUGIN_RAID = blockdev_plugin("libblockdev dm plugin (raid technology)", BLOCKDEV_DM_TECH_RAID)
 BLOCKDEV_LOOP_PLUGIN = blockdev_plugin("libblockdev loop plugin", BLOCKDEV_LOOP_TECH)
 BLOCKDEV_LVM_PLUGIN = blockdev_plugin("libblockdev lvm plugin", BLOCKDEV_LVM_TECH)
 BLOCKDEV_LVM_PLUGIN_VDO = blockdev_plugin("libblockdev lvm plugin (vdo technology)", BLOCKDEV_LVM_TECH_VDO)

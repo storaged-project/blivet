@@ -30,6 +30,8 @@ devices
 * :mod:`~blivet.devices.luks`
     * :class:`~blivet.devices.luks.LUKSDevice` (see :ref:`inherited public API <StorageDeviceAPI>`)
         * :attr:`~blivet.devices.dm.DMDevice.map_name`
+    * :class:`~blivet.devices.luks.IntegrityDevice` (see :ref:`inherited public API <StorageDeviceAPI>`)
+        * :attr:`~blivet.devices.dm.DMDevice.map_name`
 
 * :mod:`~blivet.devices.lvm`
     * :class:`~blivet.devices.lvm.LVMCache`
@@ -90,8 +92,6 @@ devices
         * :attr:`~blivet.devices.md.MDRaidArrayDevice.members`
         * :attr:`~blivet.devices.md.MDRaidArrayDevice.spares`
         * :attr:`~blivet.devices.md.MDRaidArrayDevice.total_devices`
-
-    * :class:`~blivet.devices.md.MDBiosRaidArrayDevice` (see :ref:`inherited public API <MDRaidArrayDeviceAPI>`)
 
 * :mod:`~blivet.devices.nfs`
     * :class:`~blivet.devices.nfs.NFSDevice` (see :ref:`inherited public API <StorageDeviceAPI>`)

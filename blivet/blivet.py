@@ -487,7 +487,7 @@ class Blivet(object):
         """
         if 'fmt_type' in kwargs:
             kwargs["fmt"] = get_format(kwargs.pop("fmt_type"),
-                                       mountpoint=kwargs.pop("mountpoint",
+                                       mountpoint=kwargs.get("mountpoint",
                                                              None),
                                        **kwargs.pop("fmt_args", {}))
 

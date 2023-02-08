@@ -93,8 +93,6 @@ class MockingDeviceDependenciesTestCase1(unittest.TestCase):
         availability.BLOCKDEV_MDRAID_PLUGIN._method = availability.UnavailableMethod
         self.assertIn(availability.BLOCKDEV_MDRAID_PLUGIN, self.luks.unavailable_dependencies)
         with self.assertRaises(DependencyError):
-            ActionCreateDevice(self.luks)
-        with self.assertRaises(DependencyError):
             ActionDestroyDevice(self.dev)
 
     def _clean_up(self):

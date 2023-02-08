@@ -5,7 +5,7 @@ try:
 except ImportError:
     from mock import Mock, patch
 
-from .storagetestcase import StorageTestCase
+from .blivettestcase import BlivetTestCase
 import blivet
 from blivet.formats import get_format
 from blivet.size import Size
@@ -90,7 +90,7 @@ def _patch_format_dependencies(fn):
     return fn_with_patch
 
 
-class DeviceActionTestCase(StorageTestCase):
+class DeviceActionTestCase(BlivetTestCase):
 
     """ DeviceActionTestSuite """
 
@@ -1395,7 +1395,7 @@ class ConfigurationActionsTest(unittest.TestCase):
     def test_device_configuration(self):
 
         mock_device = Mock(spec=StorageDevice)
-        mock_device.configure_mock(unavailable_dependencies=[])
+        mock_device.configure_mock(unavailable_direct_dependencies=[])
         mock_device.configure_mock(config_actions_map={"conf1": "do_conf1", "conf2": "do_conf2", "conf3": None})
         attrs = {"conf1": "old_value", "do_conf1": Mock(return_value=None), "conf2": "old_value", "do_conf2": None, "conf3": "old_value"}
         mock_device.configure_mock(**attrs)

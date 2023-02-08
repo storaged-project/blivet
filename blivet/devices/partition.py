@@ -22,6 +22,7 @@
 import os
 import parted
 import _ped
+from uuid import UUID
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -35,6 +36,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
 from ..formats import DeviceFormat, get_format
+from ..devicelibs.gpt import gpt_part_uuid_for_mountpoint
 from ..size import Size, MiB, ROUND_DOWN
 
 import logging
@@ -70,7 +72,8 @@ class PartitionDevice(StorageDevice):
                  size=None, grow=False, maxsize=None, start=None, end=None,
                  major=None, minor=None, bootable=None,
                  sysfs_path='', parents=None, exists=False,
-                 part_type=None, primary=False, weight=None, disk_tags=None):
+                 part_type=None, primary=False, weight=None, disk_tags=None,
+                 part_type_uuid=None, mountpoint=None):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -112,6 +115,10 @@ class PartitionDevice(StorageDevice):
             :type weight: int or NoneType
             :keyword disk_tags: (str) tags defining candidate disk set
             :type disk_tags: iterable
+            :keyword part_type_uuid: GPT partition type UUID or None
+            :type part_type_uuid: uuid.UUID or NoneType
+            :keyword mountpoint: where the partition's format will be mounted
+            :type mountpoint: str or NoneType
 
             .. note::
 
@@ -142,6 +149,7 @@ class PartitionDevice(StorageDevice):
         self.req_start_sector = None
         self.req_end_sector = None
         self.req_name = None
+        self.req_part_type_uuid = None
 
         self._bootable = False
 
@@ -150,6 +158,8 @@ class PartitionDevice(StorageDevice):
         self._part_type = None
         self._parted_partition = None
         self._orig_path = None
+        self._part_type_uuid = None
+        self._mountpoint = mountpoint
 
         if not exists and size is None:
             if start is not None and end is not None:
@@ -221,6 +231,8 @@ class PartitionDevice(StorageDevice):
             self.req_start_sector = start
             self.req_end_sector = end
 
+            self.req_part_type_uuid = part_type_uuid
+
         # update current_size again now when we have parted_partition and
         # information about part_type
         if self.exists and self.status:
@@ -246,7 +258,8 @@ class PartitionDevice(StorageDevice):
                    "start": self.parted_partition.geometry.start,
                    "end": self.parted_partition.geometry.end,
                    "flags": self.parted_partition.getFlagsAsString()})
-
+            if hasattr(parted.Partition, "type_uuid"):
+                s += " type_uuid = %s" % self.parted_partition.type_uuid
         return s
 
     @property
@@ -263,6 +276,8 @@ class PartitionDevice(StorageDevice):
                       "start": self.parted_partition.geometry.start,
                       "end": self.parted_partition.geometry.end,
                       "flags": self.parted_partition.getFlagsAsString()})
+            if hasattr(parted.Partition, "type_uuid"):
+                d.update({"type_uuid": self.parted_partition.type_uuid})
         return d
 
     def align_target_size(self, newsize):
@@ -327,6 +342,37 @@ class PartitionDevice(StorageDevice):
             ptype = self.req_part_type
 
         return ptype
+
+    @property
+    def part_type_uuid_req(self):
+        if self.req_part_type_uuid is not None:
+            return self.req_part_type_uuid
+
+        discoverable = (
+            flags.gpt_discoverable_partitions and
+            self.disk.format.label_type == "gpt" and
+            self._mountpoint is not None and
+            hasattr(parted.Partition, "type_uuid"))
+
+        if discoverable:
+            parttype = gpt_part_uuid_for_mountpoint(self._mountpoint)
+            log.debug("Discovered partition type UUID %s for mount '%s'",
+                      parttype, self._mountpoint)
+            return parttype
+        return None
+
+    @property
+    def part_type_uuid(self):
+        """ Get the partition's type (as a UUID object). """
+        if not self.exists:
+            return self.part_type_uuid_req
+        else:
+            if hasattr(parted.Partition, "type_uuid"):
+                try:
+                    return UUID(bytes=self.parted_partition.type_uuid)
+                except AttributeError:
+                    pass
+            return self._part_type_uuid
 
     @property
     def is_extended(self):
@@ -592,6 +638,8 @@ class PartitionDevice(StorageDevice):
         self.target_size = self._size
 
         self._part_type = self.parted_partition.type
+        if hasattr(parted.Partition, "type_uuid"):
+            self._part_type_uuid = self.parted_partition.type_uuid
 
         self._bootable = self.get_flag(parted.PARTITION_BOOT)
 
@@ -637,7 +685,8 @@ class PartitionDevice(StorageDevice):
         log_method_call(self, self.name, status=self.status)
         self.disk.format.add_partition(self.parted_partition.geometry.start,
                                        self.parted_partition.geometry.end,
-                                       self.parted_partition.type)
+                                       self.parted_partition.type,
+                                       self.part_type_uuid)
 
         self._wipe()
         try:

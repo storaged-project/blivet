@@ -1338,6 +1338,18 @@ class Iso9660FS(FS):
 register_device_format(Iso9660FS)
 
 
+class UDFFS(FS):
+
+    """ UDF filesystem. """
+    _type = "udf"
+    _modules = ["udf"]
+    _supported = True
+    _mount_class = fsmount.UDFFSMount
+
+
+register_device_format(UDFFS)
+
+
 class NoDevFS(FS):
 
     """ nodev filesystem base class """

@@ -34,12 +34,14 @@ from __future__ import absolute_import
 import os
 
 from .storage_log import log_exception_info
+from .util import read_file
 
 import logging
 log = logging.getLogger("blivet")
 
 # DMI information paths
 DMI_CHASSIS_VENDOR = "/sys/class/dmi/id/chassis_vendor"
+DMI_PRODUCT_NAME = "/sys/class/dmi/id/product_name"
 
 
 def get_ppc_machine():
@@ -198,6 +200,29 @@ def is_cell():
     return False
 
 
+def is_t2mac():
+    """
+    :return: True if the hardware is an Intel-based Apple Mac with the T2 security chip, False otherwise.
+    :rtype boolean
+
+    """
+    APPLE_T2_PRODUCT_NAMES = {
+        "iMac20,2", "iMac20,1", "iMacPro1,1",
+        "MacPro7,1", "Macmini8,1", "MacBookAir9,1", "MacBookAir8,2",
+        "MacBookAir8,1", "MacBookPro16,4", "MacBookPro16,3", "MacBookPro16,2",
+        "MacBookPro16,1", "MacBookPro15,4", "MacBookPro15,3", "MacBookPro15,2",
+        "MacBookPro15,1",
+    }
+    if not is_x86():
+        t2_mac = False
+    elif not os.path.isfile(DMI_PRODUCT_NAME):
+        t2_mac = False
+    else:
+        buf = read_file(DMI_PRODUCT_NAME).strip()
+        t2_mac = (buf in APPLE_T2_PRODUCT_NAMES)
+    return t2_mac
+
+
 def is_mactel():
     """
     :return: True if the hardware is an Intel-based Apple Mac, False otherwise.
@@ -208,9 +233,11 @@ def is_mactel():
         mactel = False
     elif not os.path.isfile(DMI_CHASSIS_VENDOR):
         mactel = False
+    elif is_t2mac():
+        mactel = False
     else:
         try:
-            buf = open(DMI_CHASSIS_VENDOR).read()
+            buf = read_file(DMI_CHASSIS_VENDOR)
             mactel = ("apple" in buf.lower())
         except UnicodeDecodeError:
             mactel = False
@@ -322,6 +349,29 @@ def is_arm():
     return os.uname()[4].startswith('arm')
 
 
+def is_loongarch(bits=None):
+    """
+    :return: True if the hardware supports loongarch, False otherwise.
+    :rtype: boolean
+    :param bits: The number of bits used to define a memory address.
+    :type bits: int
+
+    """
+    arch = os.uname()[4]
+
+    if bits is None:
+        if arch in ('loongarch32', 'loongarch64'):
+            return True
+    elif bits == 32:
+        if arch == 'loongarch32':
+            return True
+    elif bits == 64:
+        if arch == 'loongarch64':
+            return True
+
+    return False
+
+
 def is_pmac():
     return is_ppc() and get_ppc_machine() == "PMac" and get_ppc_mac_gen() == "NewWorld"
 
@@ -355,6 +405,10 @@ def get_arch():
         return 'alpha'
     elif is_arm():
         return 'arm'
+    elif is_loongarch(bits=32):
+        return 'loongarch32'
+    elif is_loongarch(bits=64):
+        return 'loongarch64'
     else:
         return os.uname()[4]
 

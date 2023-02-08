@@ -181,6 +181,10 @@ class Iso9660FS(fstesting.FSAsRoot):
     _fs_class = fs.Iso9660FS
 
 
+class UDFFS(fstesting.FSAsRoot):
+    _fs_class = fs.UDFFS
+
+
 @unittest.skip("Too strange to test using this framework.")
 class NoDevFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.NoDevFS
