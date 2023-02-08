@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>blivet.formats package &#8212; Blivet 3.6.1 documentation</title>
+    <title>blivet.formats package &#8212; Blivet 3.7.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="blivet.events.html" title="blivet.events package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.7.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.formats package</a></li> 
       </ul>
@@ -110,7 +110,7 @@
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.formats.disklabel.DiskLabel.add_partition">
-<span class="sig-name descname"><span class="pre">add_partition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.disklabel.DiskLabel.add_partition" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_partition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_type_uuid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.disklabel.DiskLabel.add_partition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a partition to the disklabel.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -118,7 +118,12 @@
 <li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – start sector</p></li>
 <li><p><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – end sector</p></li>
 <li><p><strong>ptype</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em> (</em><em>parted partition type constant</em><em>) or </em><em>NoneType</em>) – partition type or None</p></li>
+<li><p><strong>part_type_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.11)"><em>uuid.UUID</em></a><em> or </em><em>NoneType</em>) – partition type UUID or None</p></li>
 </ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>:raises <a class="reference internal" href="blivet.html#blivet.errors.PartitioningError" title="blivet.errors.PartitioningError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PartitioningError</span></code></a>: if parted is too old to</dt><dd><p>support partition type UUIDs</p>
 </dd>
 </dl>
 <p>Partition type will default to either PARTITION_NORMAL or
@@ -387,12 +392,23 @@ returns the minimal device alignment.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – path to the underlying device (required)</p></li>
-<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – this format’s UUID</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether this is an existing format</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – The path to the device node.</p></li>
+<li><p><strong>uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the formatting’s UUID.</p></li>
+<li><p><strong>exists</strong> – Whether the formatting exists. (default: False)</p></li>
 </ul>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>ValueError</p>
+</dd>
 </dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The ‘device’ kwarg is required for existing formats. For non-
+existent formats, it is only necessary that the <code class="xref py py-attr docutils literal notranslate"><span class="pre">device</span></code>
+attribute be set before the <a class="reference internal" href="#blivet.formats.dmraid.DMRaidMember.create" title="blivet.formats.dmraid.DMRaidMember.create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create()</span></code></a> method runs. Note
+that you can specify the device at the last moment by specifying
+it via the ‘device’ kwarg to the <a class="reference internal" href="#blivet.formats.dmraid.DMRaidMember.create" title="blivet.formats.dmraid.DMRaidMember.create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create()</span></code></a> method.</p>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.formats.dmraid.DMRaidMember.create">
 <span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.dmraid.DMRaidMember.create" title="Permalink to this definition">¶</a></dt>
@@ -422,12 +438,6 @@ returns the minimal device alignment.</p>
 <dd class="field-even"><p>None.</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="blivet.formats.dmraid.DMRaidMember.raidmem">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">raidmem</span></span><a class="headerlink" href="#blivet.formats.dmraid.DMRaidMember.raidmem" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return an attribute of instance, which is of type owner.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1828,6 +1838,35 @@ mountpoint is unmounted.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="blivet.formats.fs.UDFFS">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">UDFFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.UDFFS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
+<p>UDF filesystem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device</strong> – path to the block device node (required for
+existing filesystems)</p></li>
+<li><p><strong>mountpoint</strong> – the filesystem’s planned mountpoint</p></li>
+<li><p><strong>label</strong> – the filesystem label</p></li>
+<li><p><strong>uuid</strong> – the filesystem UUID</p></li>
+<li><p><strong>mountopts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – mount options for the filesystem</p></li>
+<li><p><strong>size</strong> – the filesystem’s size in MiB</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – indicates whether this is an existing filesystem</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The ‘device’ kwarg is required for existing formats. For non-
+existent formats, it is only necessary that the <code class="xref py py-attr docutils literal notranslate"><span class="pre">device</span></code>
+attribute be set before the <code class="xref py py-meth docutils literal notranslate"><span class="pre">create()</span></code> method runs. Note
+that you can specify the device at the last moment by specifying
+it via the ‘device’ kwarg to the <code class="xref py py-meth docutils literal notranslate"><span class="pre">create()</span></code> method.</p>
+</div>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.USBFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">USBFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.USBFS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.NoDevFS" title="blivet.formats.fs.NoDevFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoDevFS</span></code></a></p>
@@ -2993,13 +3032,13 @@ for an exhaustive list of the arguments that can be passed.</p>
         <li class="right" >
           <a href="blivet.events.html" title="blivet.events package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.7.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.formats package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2022, Red Hat, Inc..
+        &#169; Copyright 2013-2023, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>

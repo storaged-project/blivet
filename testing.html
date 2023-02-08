@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Testing Blivet &#8212; Blivet 3.6.1 documentation</title>
+    <title>Testing Blivet &#8212; Blivet 3.7.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="dbus.html" title="DBus Interface"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.7.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Testing Blivet</a></li> 
       </ul>
     </div>  
@@ -100,12 +100,13 @@ inherit from them.</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://docs.python.org/3/library/unittest.html#unittest.TestCase" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code></a> - the standard unit test class in Python.
 Used for tests which don’t touch disk space;</p></li>
-<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">StorageTestCase</span></code> - intended as a base class for
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">BlivetTestCase</span></code> - intended as a base class for
 higher-level tests. Most of what it does is stub out operations that touch
 disks. Currently it is only used in
 <code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceActionTestCase</span></code>;</p></li>
-<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">LoopBackedTestCase</span></code> and
-<code class="xref py py-class docutils literal notranslate"><span class="pre">ImageBackedTestCase</span></code> - both classes
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">LoopBackedTestCase</span></code>,
+<code class="xref py py-class docutils literal notranslate"><span class="pre">ImageBackedTestCase</span></code> and
+<code class="xref py py-class docutils literal notranslate"><span class="pre">StorageTestCase</span></code> - all three classes
 represent actual storage space.
 <code class="xref py py-class docutils literal notranslate"><span class="pre">ImageBackedTestCase</span></code> uses the same stacks
 as anaconda disk image installations. These mimic normal disks more closely
@@ -113,7 +114,9 @@ than using loop devices directly. Usually
 <code class="xref py py-class docutils literal notranslate"><span class="pre">LoopBackedTestCase</span></code> is used for stacks of
 limited depth (eg: md array with two loop members) and
 <code class="xref py py-class docutils literal notranslate"><span class="pre">ImageBackedTestCase</span></code> for stacks of greater
-or arbitrary depth.</p></li>
+or arbitrary depth.
+<code class="xref py py-class docutils literal notranslate"><span class="pre">StorageTestCase</span></code> uses <cite>targetcli</cite> to create
+virtual SCSI drives for full stack tests on “real” hardware.</p></li>
 </ul>
 <p>In order to get a high level view of how test classes inherit from each other
 you can generate an inheritance diagram:</p>
@@ -186,12 +189,12 @@ you can generate an inheritance diagram:</p>
         <li class="right" >
           <a href="dbus.html" title="DBus Interface"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.7.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Testing Blivet</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2022, Red Hat, Inc..
+        &#169; Copyright 2013-2023, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>

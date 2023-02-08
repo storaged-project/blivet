@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>blivet.devices package &#8212; Blivet 3.6.1 documentation</title>
+    <title>blivet.devices package &#8212; Blivet 3.7.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="blivet.devicelibs.html" title="blivet.devicelibs package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.7.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devices package</a></li> 
       </ul>
@@ -785,6 +785,20 @@ parents.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.device.Device.unavailable_direct_dependencies">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unavailable_direct_dependencies</span></span><a class="headerlink" href="#blivet.devices.device.Device.unavailable_direct_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Any unavailable external dependencies of this device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of unavailable external dependencies.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>set of availability.external_resource</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.devices.device.Device.unavailable_type_dependencies">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unavailable_type_dependencies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.device.Device.unavailable_type_dependencies" title="Permalink to this definition">¶</a></dt>
@@ -838,68 +852,6 @@ parents.</p>
 <dt class="sig sig-object py" id="blivet.devices.disk.DASDDevice.get_opts">
 <span class="sig-name descname"><span class="pre">get_opts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.DASDDevice.get_opts" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="blivet.devices.disk.DMRaidArrayDevice">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">DMRaidArrayDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.DMRaidArrayDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.dm.DMDevice" title="blivet.devices.dm.DMDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.container.ContainerDevice" title="blivet.devices.container.ContainerDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContainerDevice</span></code></a></p>
-<p>A dmraid (device-mapper RAID) device</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
-<li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
-<li><p><strong>fmt</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>sysfs_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – sysfs device path</p></li>
-<li><p><strong>wwn</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device’s WWN</p></li>
-</ul>
-</dd>
-</dl>
-<p>DMRaidArrayDevices always exist. Blivet cannot create or destroy
-them.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="blivet.devices.disk.DMRaidArrayDevice.activate">
-<span class="sig-name descname"><span class="pre">activate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.DMRaidArrayDevice.activate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Activate the raid set.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="blivet.devices.disk.DMRaidArrayDevice.deactivate">
-<span class="sig-name descname"><span class="pre">deactivate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.DMRaidArrayDevice.deactivate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Deactivate the raid set.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="blivet.devices.disk.DMRaidArrayDevice.description">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#blivet.devices.disk.DMRaidArrayDevice.description" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return an attribute of instance, which is of type owner.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="blivet.devices.disk.DMRaidArrayDevice.devices">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">devices</span></span><a class="headerlink" href="#blivet.devices.disk.DMRaidArrayDevice.devices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of this array’s member device instances.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="blivet.devices.disk.DMRaidArrayDevice.dracut_setup_args">
-<span class="sig-name descname"><span class="pre">dracut_setup_args</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.DMRaidArrayDevice.dracut_setup_args" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="blivet.devices.disk.DMRaidArrayDevice.model">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#blivet.devices.disk.DMRaidArrayDevice.model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return an attribute of instance, which is of type owner.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="blivet.devices.disk.DMRaidArrayDevice.teardown">
-<span class="sig-name descname"><span class="pre">teardown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.DMRaidArrayDevice.teardown" title="Permalink to this definition">¶</a></dt>
-<dd><p>Close, or tear down, a device.</p>
-</dd></dl>
 
 </dd></dl>
 
@@ -1103,6 +1055,98 @@ them.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.disk.NVDIMMNamespaceDevice.sector_size">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sector_size</span></span><a class="headerlink" href="#blivet.devices.disk.NVDIMMNamespaceDevice.sector_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blivet.devices.disk.NVMeController">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">NVMeController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nvme_ver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsysnqn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport_address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.NVMeController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<p>Create new instance of NVMeController(name, serial, nvme_ver, id, subsysnqn, transport, transport_address)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.devices.disk.NVMeController.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#blivet.devices.disk.NVMeController.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.devices.disk.NVMeController.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#blivet.devices.disk.NVMeController.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.devices.disk.NVMeController.nvme_ver">
+<span class="sig-name descname"><span class="pre">nvme_ver</span></span><a class="headerlink" href="#blivet.devices.disk.NVMeController.nvme_ver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.devices.disk.NVMeController.serial">
+<span class="sig-name descname"><span class="pre">serial</span></span><a class="headerlink" href="#blivet.devices.disk.NVMeController.serial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.devices.disk.NVMeController.subsysnqn">
+<span class="sig-name descname"><span class="pre">subsysnqn</span></span><a class="headerlink" href="#blivet.devices.disk.NVMeController.subsysnqn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.devices.disk.NVMeController.transport">
+<span class="sig-name descname"><span class="pre">transport</span></span><a class="headerlink" href="#blivet.devices.disk.NVMeController.transport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 5</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.devices.disk.NVMeController.transport_address">
+<span class="sig-name descname"><span class="pre">transport_address</span></span><a class="headerlink" href="#blivet.devices.disk.NVMeController.transport_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 6</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blivet.devices.disk.NVMeFabricsNamespaceDevice">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">NVMeFabricsNamespaceDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.NVMeFabricsNamespaceDevice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.NVMeNamespaceDevice" title="blivet.devices.disk.NVMeNamespaceDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">NVMeNamespaceDevice</span></code></a>, <a class="reference internal" href="#blivet.devices.network.NetworkStorageDevice" title="blivet.devices.network.NetworkStorageDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkStorageDevice</span></code></a></p>
+<p>NVMe fabrics namespace</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
+<li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
+<li><p><strong>format</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blivet.devices.disk.NVMeNamespaceDevice">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">NVMeNamespaceDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.NVMeNamespaceDevice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskDevice</span></code></a></p>
+<p>NVMe namespace</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
+<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – does this device exist?</p></li>
+<li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
+<li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
+<li><p><strong>format</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
+<li><p><strong>nsid</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – namespace ID</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.disk.NVMeNamespaceDevice.controllers">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">controllers</span></span><a class="headerlink" href="#blivet.devices.disk.NVMeNamespaceDevice.controllers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an attribute of instance, which is of type owner.</p>
 </dd></dl>
 
@@ -1497,6 +1541,11 @@ functions themselves should not modify the <a class="reference internal" href="#
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.devices.lib.Tags.nvme">
+<span class="sig-name descname"><span class="pre">nvme</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'nvme'</span></em><a class="headerlink" href="#blivet.devices.lib.Tags.nvme" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.devices.lib.Tags.remote">
 <span class="sig-name descname"><span class="pre">remote</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'remote'</span></em><a class="headerlink" href="#blivet.devices.lib.Tags.remote" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1649,6 +1698,12 @@ functions themselves should not modify the <a class="reference internal" href="#
 </ul>
 </dd>
 </dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.luks.IntegrityDevice.controllable">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">controllable</span></span><a class="headerlink" href="#blivet.devices.luks.IntegrityDevice.controllable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.luks.IntegrityDevice.metadata_size">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">metadata_size</span></span><a class="headerlink" href="#blivet.devices.luks.IntegrityDevice.metadata_size" title="Permalink to this definition">¶</a></dt>
@@ -2711,6 +2766,12 @@ enforced by ActionResizeDevice.__init__ are assumed to hold.</p>
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeDevice.type_specific">
 <span class="sig-name descname"><span class="pre">type_specific</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.type_specific" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeDevice.unavailable_direct_dependencies">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unavailable_direct_dependencies</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.unavailable_direct_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeDevice.vg">
@@ -4124,6 +4185,8 @@ will set according to the partition’s format.</p>
 <li><p><strong>bootable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – whether the partition is bootable</p></li>
 <li><p><strong>weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em> or </em><em>NoneType</em>) – an initial sorting weight to assign</p></li>
 <li><p><strong>disk_tags</strong> (<em>iterable</em>) – (str) tags defining candidate disk set</p></li>
+<li><p><strong>part_type_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.11)"><em>uuid.UUID</em></a><em> or </em><em>NoneType</em>) – GPT partition type UUID or None</p></li>
+<li><p><strong>mountpoint</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em> or </em><em>NoneType</em>) – where the partition’s format will be mounted</p></li>
 </ul>
 </dd>
 </dl>
@@ -4289,6 +4352,18 @@ format used.</p>
 <dt class="sig sig-object py" id="blivet.devices.partition.PartitionDevice.part_type">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">part_type</span></span><a class="headerlink" href="#blivet.devices.partition.PartitionDevice.part_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the partition’s type (as parted constant).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.partition.PartitionDevice.part_type_uuid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">part_type_uuid</span></span><a class="headerlink" href="#blivet.devices.partition.PartitionDevice.part_type_uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the partition’s type (as a UUID object).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.partition.PartitionDevice.part_type_uuid_req">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">part_type_uuid_req</span></span><a class="headerlink" href="#blivet.devices.partition.PartitionDevice.part_type_uuid_req" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -4610,6 +4685,12 @@ currently unavailable.</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.storage.StorageDevice.logical_block_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">logical_block_size</span></span><a class="headerlink" href="#blivet.devices.storage.StorageDevice.logical_block_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logical sector (block) size of this device</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.storage.StorageDevice.max_size">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_size</span></span><a class="headerlink" href="#blivet.devices.storage.StorageDevice.max_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum size this device can be.</p>
@@ -4655,6 +4736,12 @@ currently unavailable.</p>
 <dt class="sig sig-object py" id="blivet.devices.storage.StorageDevice.path">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#blivet.devices.storage.StorageDevice.path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Device node representing this device.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.storage.StorageDevice.physical_block_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">physical_block_size</span></span><a class="headerlink" href="#blivet.devices.storage.StorageDevice.physical_block_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Physical sector (block) size of this device</p>
 </dd></dl>
 
 <dl class="py method">
@@ -5052,13 +5139,13 @@ override the default value of modparent in new code.</p>
         <li class="right" >
           <a href="blivet.devicelibs.html" title="blivet.devicelibs package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.7.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devices package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2022, Red Hat, Inc..
+        &#169; Copyright 2013-2023, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>

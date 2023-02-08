@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>blivet &#8212; Blivet 3.6.1 documentation</title>
+    <title>blivet &#8212; Blivet 3.7.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../api.html" title="Public API"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.7.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../api.html" accesskey="U">Public API</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet</a></li> 
       </ul>
@@ -133,6 +133,8 @@
 <dt><a class="reference internal" href="../blivet/blivet.html#module-blivet.deviceaction" title="blivet.deviceaction"><code class="xref py py-mod docutils literal notranslate"><span class="pre">blivet.deviceaction</span></code></a></dt><dd><ul>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.deviceaction.ActionAddMember" title="blivet.deviceaction.ActionAddMember"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionAddMember</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.deviceaction.ActionRemoveMember" title="blivet.deviceaction.ActionRemoveMember"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionRemoveMember</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.html#blivet.deviceaction.ActionConfigureDevice" title="blivet.deviceaction.ActionConfigureDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionConfigureDevice</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.html#blivet.deviceaction.ActionConfigureFormat" title="blivet.deviceaction.ActionConfigureFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionConfigureFormat</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.deviceaction.ActionCreateDevice" title="blivet.deviceaction.ActionCreateDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionCreateDevice</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.deviceaction.ActionCreateFormat" title="blivet.deviceaction.ActionCreateFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionCreateFormat</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.deviceaction.ActionDestroyDevice" title="blivet.deviceaction.ActionDestroyDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionDestroyDevice</span></code></a></p></li>
@@ -237,10 +239,12 @@
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.DiskLabelScanError" title="blivet.errors.DiskLabelScanError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskLabelScanError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.DMError" title="blivet.errors.DMError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.DMRaidMemberError" title="blivet.errors.DMRaidMemberError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMRaidMemberError</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.DuplicateUUIDError" title="blivet.errors.DuplicateUUIDError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DuplicateUUIDError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.DuplicateVGError" title="blivet.errors.DuplicateVGError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DuplicateVGError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.EventHandlingError" title="blivet.errors.EventHandlingError"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventHandlingError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.EventManagerError" title="blivet.errors.EventManagerError"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventManagerError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.EventParamError" title="blivet.errors.EventParamError"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventParamError</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.FCoEError" title="blivet.errors.FCoEError"><code class="xref py py-class docutils literal notranslate"><span class="pre">FCoEError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.FormatCreateError" title="blivet.errors.FormatCreateError"><code class="xref py py-class docutils literal notranslate"><span class="pre">FormatCreateError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.FormatDestroyError" title="blivet.errors.FormatDestroyError"><code class="xref py py-class docutils literal notranslate"><span class="pre">FormatDestroyError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.FormatResizeError" title="blivet.errors.FormatResizeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">FormatResizeError</span></code></a></p></li>
@@ -251,13 +255,18 @@
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.FSResizeError" title="blivet.errors.FSResizeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">FSResizeError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.FSTabTypeMismatchError" title="blivet.errors.FSTabTypeMismatchError"><code class="xref py py-class docutils literal notranslate"><span class="pre">FSTabTypeMismatchError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.FSWriteLabelError" title="blivet.errors.FSWriteLabelError"><code class="xref py py-class docutils literal notranslate"><span class="pre">FSWriteLabelError</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.InconsistentPVSectorSize" title="blivet.errors.InconsistentPVSectorSize"><code class="xref py py-class docutils literal notranslate"><span class="pre">InconsistentPVSectorSize</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.IntegrityError" title="blivet.errors.IntegrityError"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntegrityError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.InvalidDiskLabelError" title="blivet.errors.InvalidDiskLabelError"><code class="xref py py-class docutils literal notranslate"><span class="pre">InvalidDiskLabelError</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.InvalidMultideviceSelection" title="blivet.errors.InvalidMultideviceSelection"><code class="xref py py-class docutils literal notranslate"><span class="pre">InvalidMultideviceSelection</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.ISCSIError" title="blivet.errors.ISCSIError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ISCSIError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.LUKSError" title="blivet.errors.LUKSError"><code class="xref py py-class docutils literal notranslate"><span class="pre">LUKSError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.MDMemberError" title="blivet.errors.MDMemberError"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDMemberError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.MPathError" title="blivet.errors.MPathError"><code class="xref py py-class docutils literal notranslate"><span class="pre">MPathError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.MultipathMemberError" title="blivet.errors.MultipathMemberError"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipathMemberError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.NotEnoughFreeSpaceError" title="blivet.errors.NotEnoughFreeSpaceError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NotEnoughFreeSpaceError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.NoDisksError" title="blivet.errors.NoDisksError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoDisksError</span></code></a></p></li>
+<li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.NVMeError" title="blivet.errors.NVMeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NVMeError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.PhysicalVolumeError" title="blivet.errors.PhysicalVolumeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhysicalVolumeError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.PartitioningError" title="blivet.errors.PartitioningError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PartitioningError</span></code></a></p></li>
 <li><p><a class="reference internal" href="../blivet/blivet.html#blivet.errors.RaidError" title="blivet.errors.RaidError"><code class="xref py py-class docutils literal notranslate"><span class="pre">RaidError</span></code></a></p></li>
@@ -447,13 +456,13 @@
         <li class="right" >
           <a href="../api.html" title="Public API"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.7.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../api.html" >Public API</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2022, Red Hat, Inc..
+        &#169; Copyright 2013-2023, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>

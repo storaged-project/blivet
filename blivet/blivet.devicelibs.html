@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>blivet.devicelibs package &#8212; Blivet 3.6.1 documentation</title>
+    <title>blivet.devicelibs package &#8212; Blivet 3.7.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="blivet.dbus.html" title="blivet.dbus package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.7.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devicelibs package</a></li> 
       </ul>
@@ -75,6 +75,11 @@ The calculation is based on currenly available (free) memory.
 This value will be used for the ‘max_memory_kb’ option for the
 ‘argon2’ key derivation function.</p>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.get_optimal_luks_sector_size">
+<span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.crypto.</span></span><span class="sig-name descname"><span class="pre">get_optimal_luks_sector_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.crypto.get_optimal_luks_sector_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </section>
 <section id="module-blivet.devicelibs.disk">
@@ -378,6 +383,59 @@ a sysfs path, check that the path really exists, then read the device
 name (e.g ‘sda’) from there. Should this fail we try to match contents
 of ‘mbr_signature’ to a real MBR signature found on the existing block
 devices.</p>
+</dd></dl>
+
+</section>
+<section id="module-blivet.devicelibs.gpt">
+<span id="blivet-devicelibs-gpt-module"></span><h2>blivet.devicelibs.gpt module<a class="headerlink" href="#module-blivet.devicelibs.gpt" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="blivet.devicelibs.gpt.gpt_part_uuid_for_mountpoint">
+<span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.gpt.</span></span><span class="sig-name descname"><span class="pre">gpt_part_uuid_for_mountpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.gpt.gpt_part_uuid_for_mountpoint" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the absolute path at which a filesystem is to be mounted</p></li>
+<li><p><strong>arch</strong> – the architecture of the target install, None to use host arch</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the GPT partition type UUID or None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a></p>
+</dd>
+</dl>
+<p>Given an absolute path at which a filesystem is to be mounted,
+determine if there is a well known GPT partition type UUID
+associated to allow the partition to be automatically mounted.</p>
+<p>The architecture must be canonicalized in accordance with the
+blivet.arch logic. Usually it can be omitted, to request use
+of the host architecture detected by blivet.arch.get_arch.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blivet.devicelibs.gpt.gpt_part_uuid_for_volume">
+<span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.gpt.</span></span><span class="sig-name descname"><span class="pre">gpt_part_uuid_for_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.gpt.gpt_part_uuid_for_volume" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the volume type as a GPT_VOL constant</p></li>
+<li><p><strong>arch</strong> – the architecture of the target install, None to use host arch</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the GPT partition type UUID or None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a></p>
+</dd>
+</dl>
+<p>Given a volume type defined by one of the GPT_VOL constants,
+determine if there is a well known GPT partition type UUID
+associated to allow the partition to be automatically mounted.</p>
+<p>The architecture must be canonicalized in accordance with the
+blivet.arch logic. Usually it can be omitted, to request use
+of the host architecture detected by blivet.arch.get_arch.</p>
 </dd></dl>
 
 </section>
@@ -1099,6 +1157,7 @@ RAID level, including the RAID object itself.</p>
 <li><a class="reference internal" href="#module-blivet.devicelibs.crypto">blivet.devicelibs.crypto module</a></li>
 <li><a class="reference internal" href="#module-blivet.devicelibs.disk">blivet.devicelibs.disk module</a></li>
 <li><a class="reference internal" href="#module-blivet.devicelibs.edd">blivet.devicelibs.edd module</a></li>
+<li><a class="reference internal" href="#module-blivet.devicelibs.gpt">blivet.devicelibs.gpt module</a></li>
 <li><a class="reference internal" href="#module-blivet.devicelibs.lvm">blivet.devicelibs.lvm module</a></li>
 <li><a class="reference internal" href="#module-blivet.devicelibs.mdraid">blivet.devicelibs.mdraid module</a></li>
 <li><a class="reference internal" href="#module-blivet.devicelibs.raid">blivet.devicelibs.raid module</a></li>
@@ -1155,13 +1214,13 @@ RAID level, including the RAID object itself.</p>
         <li class="right" >
           <a href="blivet.dbus.html" title="blivet.dbus package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.6.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.7.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devicelibs package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2022, Red Hat, Inc..
+        &#169; Copyright 2013-2023, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
