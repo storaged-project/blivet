@@ -22,7 +22,7 @@ all:
 
 po-pull:
 	git submodule update --init po
-	git submodule update --remote --merge po
+	git submodule update --remote --checkout po
 
 potfile:
 	make -C po $(PKGNAME).pot
