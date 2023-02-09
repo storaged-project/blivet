@@ -2,7 +2,7 @@ PYTHON?=python3
 PKG_INSTALL?=dnf
 
 L10N_REPOSITORY=git@github.com:storaged-project/blivet-weblate.git
-L10N_BRANCH=master
+L10N_BRANCH=rhel8-branch
 
 PKGNAME=blivet
 SPECFILE=python-blivet.spec
@@ -22,7 +22,7 @@ all:
 
 po-pull:
 	git submodule update --init po
-	git submodule update --remote --merge po
+	git submodule update --remote --checkout po
 
 potfile:
 	make -C po $(PKGNAME).pot
