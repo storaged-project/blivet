@@ -259,6 +259,10 @@ class ActionList(object):
         # match the parted disks we just updated
         for partition in (d for d in devices if isinstance(d, PartitionDevice)):
             pdisk = partition.disk.format.parted_disk
+            if not pdisk:
+                log.warning("parted_disk not found for partition %s", partition.path)
+                partition.parted_partition = None
+                continue
             partition.parted_partition = pdisk.getPartitionByPath(partition.path)
 
     @with_flag("processing")
