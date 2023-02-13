@@ -18,6 +18,13 @@ Contents:
    blivet/blivet
    tests/tests
 
+Technologies:
+
+.. toctree::
+   :maxdepth: 1
+
+   lvmvdo
+
 Indices and tables
 ==================
 
