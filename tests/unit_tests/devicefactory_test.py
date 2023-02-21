@@ -57,7 +57,10 @@ class DeviceFactoryTestCase(unittest.TestCase):
 
     _disk_size = Size("2 GiB")
 
-    def setUp(self):
+    @patch("blivet.formats.fs.Ext4FS.supported", return_value=True)
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    def setUp(self, *args):  # pylint: disable=unused-argument,arguments-differ
         if self.device_type is None:
             raise unittest.SkipTest("abstract base class")
 
@@ -122,7 +125,10 @@ class DeviceFactoryTestCase(unittest.TestCase):
 
         self.assertTrue(set(device.disks).issubset(kwargs["disks"]))
 
-    def test_device_factory(self):
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    @patch("blivet.devices.dm.DMDevice.type_external_dependencies", return_value=set())
+    def test_device_factory(self, *args):  # pylint: disable=unused-argument
         device_type = self.device_type
         kwargs = {"disks": self.b.disks,
                   "size": Size("400 MiB"),
@@ -210,6 +216,8 @@ class DeviceFactoryTestCase(unittest.TestCase):
         return Size("1 MiB")
 
     @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
     def test_get_free_disk_space(self, *args):  # pylint: disable=unused-argument
         # get_free_disk_space should return the total free space on disks
         kwargs = self._get_test_factory_args()
@@ -238,6 +246,8 @@ class DeviceFactoryTestCase(unittest.TestCase):
                                delta=self._get_size_delta(devices=[device]))
 
     @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
     def test_normalize_size(self, *args):  # pylint: disable=unused-argument
         # _normalize_size should adjust target size to within the format limits
         fstype = "ext2"
@@ -286,11 +296,16 @@ class DeviceFactoryTestCase(unittest.TestCase):
                                sum(d.size for d in self.b.disks),
                                delta=self._get_size_delta(devices=[device]))
 
-    def test_default_factory_type(self):
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    def test_default_factory_type(self, *args):  # pylint: disable=unused-argument
         factory = devicefactory.get_device_factory(self.b)
         self.assertIsInstance(factory, devicefactory.LVMFactory)
 
     @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    @patch("blivet.formats.swap.SwapSpace.formattable", return_value=True)
     def test_factory_defaults(self, *args):  # pylint: disable=unused-argument
         ctor_kwargs = self._get_test_factory_args()
         factory = devicefactory.get_device_factory(self.b, self.device_type, **ctor_kwargs)
@@ -322,7 +337,9 @@ class PartitionFactoryTestCase(DeviceFactoryTestCase):
     device_type = devicefactory.DEVICE_TYPE_PARTITION
     factory_class = devicefactory.PartitionFactory
 
-    def test_bug1178884(self):
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    def test_bug1178884(self, *args):  # pylint: disable=unused-argument
         # Test a change of format and size where old size is too large for the
         # new format but not for the old one.
         device_type = self.device_type
@@ -384,6 +401,12 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
     @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
     @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    @patch("blivet.formats.mdraid.MDRaidMember.formattable", return_value=True)
+    @patch("blivet.formats.mdraid.MDRaidMember.destroyable", return_value=True)
+    @patch("blivet.devices.md.MDRaidArrayDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.dm.DMDevice.type_external_dependencies", return_value=set())
     def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         super(LVMFactoryTestCase, self).test_device_factory()
 
@@ -563,6 +586,8 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
     @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
     @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
     def test_lv_unique_name(self, *args):  # pylint: disable=unused-argument,arguments-differ
         device_type = self.device_type
         kwargs = {"disks": self.b.disks,
@@ -661,6 +686,8 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
     @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
     @patch("blivet.devices.lvm.LVMVDOPoolMixin.type_external_dependencies", return_value=set())
     @patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
     def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         device_type = self.device_type
         kwargs = {"disks": self.b.disks,
@@ -760,12 +787,19 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
         super(LVMVDOFactoryTestCase, self).test_lv_unique_name()
 
 
+@patch("blivet.formats.mdraid.MDRaidMember.formattable", return_value=True)
+@patch("blivet.formats.mdraid.MDRaidMember.destroyable", return_value=True)
+@patch("blivet.devices.md.MDRaidArrayDevice.type_external_dependencies", return_value=set())
 class MDFactoryTestCase(DeviceFactoryTestCase):
     device_type = devicefactory.DEVICE_TYPE_MD
     device_class = MDRaidArrayDevice
     factory_class = devicefactory.MDFactory
 
     @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    @patch("blivet.formats.swap.SwapSpace.formattable", return_value=True)
+    @patch("blivet.devices.dm.DMDevice.type_external_dependencies", return_value=set())
     def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         # RAID0 across two disks
         device_type = self.device_type
@@ -948,6 +982,8 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
     @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.stratis.StratisPoolDevice.type_external_dependencies", return_value=set())
     @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
     def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
         device_type = self.device_type
         kwargs = {"disks": self.b.disks,
