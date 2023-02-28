@@ -496,7 +496,12 @@ class ZFCPDiskDevice(DiskDevice):
         from ..zfcp import has_auto_lun_scan
 
         # zFCP auto LUN scan needs only the device ID
-        if has_auto_lun_scan(self.hba_id):
+        # If the user explicitly over-specified with a full path configuration
+        # respect this choice and emit a full path specification nonetheless.
+        errorlevel = util.run_program(["lszdev", "zfcp-lun", "--configured",
+                                       "%s:%s:%s" % (self.hba_id, self.wwpn,
+                                                     self.fcp_lun)])
+        if has_auto_lun_scan(self.hba_id) and errorlevel != 0:
             dracut_args = set(["rd.zfcp=%s" % self.hba_id])
         else:
             dracut_args = set(["rd.zfcp=%s,%s,%s" % (self.hba_id, self.wwpn, self.fcp_lun,)])
