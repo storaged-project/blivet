@@ -384,9 +384,6 @@ class ZFCPDeviceFullPath(ZFCPDeviceBase):
                          self.devnum, luns[0])
                 return True
 
-        # no other WWPNs/LUNs exists for this device number, it's safe to bring it offline
-        self._set_zfcp_device_offline()
-
         return True
 
 
