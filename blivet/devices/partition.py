@@ -36,6 +36,7 @@ from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
 from ..formats import DeviceFormat, get_format
+from ..formats.lvmpv import LVMPhysicalVolume
 from ..devicelibs.gpt import gpt_part_uuid_for_mountpoint
 from ..size import Size, MiB, ROUND_DOWN
 
@@ -1038,7 +1039,10 @@ class PartitionDevice(StorageDevice):
                 data.disk = self.disk.name
             data.prim_only = self.req_primary
         else:
-            data.on_part = self.name                     # by-id
+            if self.format and isinstance(self.format, LVMPhysicalVolume) and self.format.uuid:
+                data.onPart = "disk/by-id/lvm-pv-uuid-" + self.format.uuid
+            else:
+                data.onPart = self.name
 
             if data.resize:
                 # on s390x in particular, fractional sizes are reported, which
