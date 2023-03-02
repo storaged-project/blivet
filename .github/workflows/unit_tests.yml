@@ -1,0 +1,28 @@
+name: Unit tests
+
+on:
+  pull_request:
+    branches:
+     - 3.*-devel
+     - master
+  push:
+    branches:
+     - 3.*-devel
+     - master
+  schedule:
+    - cron: 0 0 * * 0
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run:   |
+         sudo apt-get -qq update
+         sudo apt-get -y -qq install make ansible
+         sudo make install-requires
+    - name: Run tests
+      run: make unit-test

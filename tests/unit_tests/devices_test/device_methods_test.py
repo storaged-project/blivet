@@ -392,6 +392,8 @@ class MDRaidArrayDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
         self.patchers["md"] = patch("blivet.devices.md.blockdev.md")
         self.patchers["is_disk"] = patch.object(self.device_class, "is_disk",
                                                 new=PropertyMock(return_value=False))
+        self.patchers["controllable"] = patch.object(self.device_class, "controllable",
+                                                     new=PropertyMock(return_value=True))
         self.patchers["pvs_info"] = patch("blivet.devices.md.pvs_info")
         self.patchers["lvm"] = patch("blivet.devices.md.blockdev.lvm")
 

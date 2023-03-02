@@ -83,6 +83,8 @@ class MockingDeviceDependenciesTestCase1(unittest.TestCase):
         # dev is not among its unavailable dependencies
         availability.BLOCKDEV_MDRAID_PLUGIN._method = availability.AvailableMethod
         availability.MKFS_HFSPLUS_APP._method = availability.AvailableMethod  # macefi
+        availability.BLOCKDEV_CRYPTO_PLUGIN._method = availability.AvailableMethod  # luks
+        availability.KPARTX_APP._method = availability.AvailableMethod  # luks
         self.assertNotIn(availability.BLOCKDEV_MDRAID_PLUGIN, self.luks.unavailable_dependencies)
         self.assertIsNotNone(ActionCreateDevice(self.luks))
         self.assertIsNotNone(ActionDestroyDevice(self.luks))
