@@ -1033,12 +1033,14 @@ class PartitionDevice(StorageDevice):
             if self.req_grow:
                 data.maxSizeMB = self.req_max_size.convert_to(MiB)
 
-            # data.disk = self.disk.name                      # by-id
             if self.req_disks and len(self.req_disks) == 1:
                 data.disk = self.disk.name
             data.primOnly = self.req_primary
         else:
-            data.onPart = self.name                     # by-id
+            if self.format and self.format.uuid:
+                data.onPart = "UUID=" + self.format.uuid
+            else:
+                data.onPart = self.name
 
             if data.resize:
                 # on s390x in particular, fractional sizes are reported, which
