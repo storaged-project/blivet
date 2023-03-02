@@ -1,4 +1,4 @@
-PYTHON?=python3
+PYTHON=python3
 PKG_INSTALL?=dnf
 
 L10N_REPOSITORY=git@github.com:storaged-project/blivet-weblate.git

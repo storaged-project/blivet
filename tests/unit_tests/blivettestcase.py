@@ -1,9 +1,9 @@
 
 import unittest
 try:
-    from unittest.mock import Mock
+    from unittest.mock import Mock, patch
 except ImportError:
-    from mock import Mock
+    from mock import Mock, patch
 
 import parted
 
@@ -26,7 +26,9 @@ class BlivetTestCase(unittest.TestCase):
 
     """
 
-    def setUp(self):
+    @patch("blivet.formats.fs.Ext4FS.supported", return_value=True)
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    def setUp(self, *args):  # pylint: disable=unused-argument,arguments-differ
         self.storage = blivet.Blivet()
 
         # device status

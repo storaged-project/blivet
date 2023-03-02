@@ -363,7 +363,8 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertEqual(pv.format.free, Size("264 MiB"))
         self.assertEqual(pv2.format.free, Size("256 MiB"))
 
-    def test_target_size(self):
+    @patch("blivet.formats.fs.Ext4FS.resizable", return_value=True)
+    def test_target_size(self, *args):  # pylint: disable=unused-argument
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("1 GiB"))
         vg = LVMVolumeGroupDevice("testvg", parents=[pv])
@@ -651,11 +652,19 @@ class TypeSpecificCallsTest(unittest.TestCase):
         self.assertEqual(c.greeting, "Set by A: Welcome")
 
 
+class BlivetLVMUnitTest(unittest.TestCase):
+
+    @patch("blivet.formats.fs.Ext4FS.supported", return_value=True)
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    def setUp(self, *args):  # pylint: disable=unused-argument,arguments-differ
+        self.b = blivet.Blivet()
+
+
 @patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
 @patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
-class BlivetNewLVMDeviceTest(unittest.TestCase):
+@patch("blivet.devices.dm.DMDevice._external_dependencies", new=[])
+class BlivetNewLVMDeviceTest(BlivetLVMUnitTest):
     def test_new_lv_from_lvs(self):
-        b = blivet.Blivet()
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("1 GiB"), exists=True)
         vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
@@ -663,29 +672,29 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
         lv2 = LVMLogicalVolumeDevice("metadata_lv", parents=[vg], size=Size("50 MiB"), exists=True)
 
         for dev in (pv, vg, lv1, lv2):
-            b.devicetree._add_device(dev)
+            self.b.devicetree._add_device(dev)
 
         # check that all the above devices are in the expected places
-        self.assertEqual(set(b.devices), {pv, vg, lv1, lv2})
-        self.assertEqual(set(b.vgs), {vg})
-        self.assertEqual(set(b.lvs), {lv1, lv2})
-        self.assertEqual(set(b.vgs[0].lvs), {lv1, lv2})
+        self.assertEqual(set(self.b.devices), {pv, vg, lv1, lv2})
+        self.assertEqual(set(self.b.vgs), {vg})
+        self.assertEqual(set(self.b.lvs), {lv1, lv2})
+        self.assertEqual(set(self.b.vgs[0].lvs), {lv1, lv2})
 
         self.assertEqual(vg.size, Size("1020 MiB"))
         self.assertEqual(lv1.size, Size("500 MiB"))
         self.assertEqual(lv2.size, Size("50 MiB"))
 
         # combine the two LVs into a thin pool (the LVs should become its internal LVs)
-        pool = b.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
+        pool = self.b.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
 
         # add the pool LV into the devicetree
-        b.devicetree._add_device(pool)
+        self.b.devicetree._add_device(pool)
 
-        self.assertEqual(set(b.devices), {pv, vg, pool})
-        self.assertEqual(set(b.vgs), {vg})
-        self.assertEqual(set(b.lvs), {pool})
-        self.assertEqual(set(b.vgs[0].lvs), {pool})
-        self.assertEqual(set(b.vgs[0].lvs[0]._internal_lvs), {lv1, lv2})
+        self.assertEqual(set(self.b.devices), {pv, vg, pool})
+        self.assertEqual(set(self.b.vgs), {vg})
+        self.assertEqual(set(self.b.lvs), {pool})
+        self.assertEqual(set(self.b.vgs[0].lvs), {pool})
+        self.assertEqual(set(self.b.vgs[0].lvs[0]._internal_lvs), {lv1, lv2})
 
         self.assertTrue(lv1.is_internal_lv)
         self.assertEqual(lv1.int_lv_type, LVMInternalLVtype.data)
@@ -706,7 +715,6 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
 
     def test_new_lv_from_non_existing_lvs(self):
         # same test as above, just with non-existing LVs used to create the new one
-        b = blivet.Blivet()
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("1 GiB"), exists=True)
         vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
@@ -714,29 +722,29 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
         lv2 = LVMLogicalVolumeDevice("metadata_lv", parents=[vg], size=Size("50 MiB"), exists=False)
 
         for dev in (pv, vg, lv1, lv2):
-            b.devicetree._add_device(dev)
+            self.b.devicetree._add_device(dev)
 
         # check that all the above devices are in the expected places
-        self.assertEqual(set(b.devices), {pv, vg, lv1, lv2})
-        self.assertEqual(set(b.vgs), {vg})
-        self.assertEqual(set(b.lvs), {lv1, lv2})
-        self.assertEqual(set(b.vgs[0].lvs), {lv1, lv2})
+        self.assertEqual(set(self.b.devices), {pv, vg, lv1, lv2})
+        self.assertEqual(set(self.b.vgs), {vg})
+        self.assertEqual(set(self.b.lvs), {lv1, lv2})
+        self.assertEqual(set(self.b.vgs[0].lvs), {lv1, lv2})
 
         self.assertEqual(vg.size, Size("1020 MiB"))
         self.assertEqual(lv1.size, Size("500 MiB"))
         self.assertEqual(lv2.size, Size("50 MiB"))
 
         # combine the two LVs into a thin pool (the LVs should become its internal LVs)
-        pool = b.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
+        pool = self.b.new_lv_from_lvs(vg, name="pool", seg_type="thin-pool", from_lvs=(lv1, lv2))
 
         # add the pool LV into the devicetree
-        b.devicetree._add_device(pool)
+        self.b.devicetree._add_device(pool)
 
-        self.assertEqual(set(b.devices), {pv, vg, pool})
-        self.assertEqual(set(b.vgs), {vg})
-        self.assertEqual(set(b.lvs), {pool})
-        self.assertEqual(set(b.vgs[0].lvs), {pool})
-        self.assertEqual(set(b.vgs[0].lvs[0]._internal_lvs), {lv1, lv2})
+        self.assertEqual(set(self.b.devices), {pv, vg, pool})
+        self.assertEqual(set(self.b.vgs), {vg})
+        self.assertEqual(set(self.b.lvs), {pool})
+        self.assertEqual(set(self.b.vgs[0].lvs), {pool})
+        self.assertEqual(set(self.b.vgs[0].lvs[0]._internal_lvs), {lv1, lv2})
 
         self.assertTrue(lv1.is_internal_lv)
         self.assertEqual(lv1.int_lv_type, LVMInternalLVtype.data)
@@ -775,74 +783,73 @@ class BlivetNewLVMDeviceTest(unittest.TestCase):
 @patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies", new=[])
 @patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
 @patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
-class BlivetNewLVMVDODeviceTest(unittest.TestCase):
+@patch("blivet.devices.dm.DMDevice._external_dependencies", new=[])
+class BlivetNewLVMVDODeviceTest(BlivetLVMUnitTest):
 
     def test_new_vdo_pool(self):
-        b = blivet.Blivet()
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("10 GiB"), exists=True)
         vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
 
         for dev in (pv, vg):
-            b.devicetree._add_device(dev)
+            self.b.devicetree._add_device(dev)
 
         # check that all the above devices are in the expected places
-        self.assertEqual(set(b.devices), {pv, vg})
-        self.assertEqual(set(b.vgs), {vg})
+        self.assertEqual(set(self.b.devices), {pv, vg})
+        self.assertEqual(set(self.b.vgs), {vg})
 
         self.assertEqual(vg.size, Size("10236 MiB"))
 
         with patch("blivet.devices.lvm.blockdev.lvm"):
             with self.assertRaises(ValueError):
-                vdopool = b.new_lv(name="vdopool", vdo_pool=True,
-                                   parents=[vg], compression=True,
-                                   deduplication=True,
-                                   size=blivet.size.Size("1 GiB"))
+                vdopool = self.b.new_lv(name="vdopool", vdo_pool=True,
+                                        parents=[vg], compression=True,
+                                        deduplication=True,
+                                        size=blivet.size.Size("1 GiB"))
 
-            vdopool = b.new_lv(name="vdopool", vdo_pool=True,
-                               parents=[vg], compression=True,
-                               deduplication=True,
-                               size=blivet.size.Size("8 GiB"))
+            vdopool = self.b.new_lv(name="vdopool", vdo_pool=True,
+                                    parents=[vg], compression=True,
+                                    deduplication=True,
+                                    size=blivet.size.Size("8 GiB"))
 
-            vdolv = b.new_lv(name="vdolv", vdo_lv=True,
-                             parents=[vdopool],
-                             size=blivet.size.Size("40 GiB"))
+            vdolv = self.b.new_lv(name="vdolv", vdo_lv=True,
+                                  parents=[vdopool],
+                                  size=blivet.size.Size("40 GiB"))
 
-        b.create_device(vdopool)
-        b.create_device(vdolv)
+        self.b.create_device(vdopool)
+        self.b.create_device(vdolv)
 
         self.assertEqual(vdopool.children[0], vdolv)
         self.assertEqual(vdolv.parents[0], vdopool)
         self.assertListEqual(vg.lvs, [vdopool, vdolv])
 
 
-class BlivetLVMVDODependenciesTest(unittest.TestCase):
+class BlivetLVMVDODependenciesTest(BlivetLVMUnitTest):
     def test_vdo_dependencies(self):
         blivet.tasks.availability.CACHE_AVAILABILITY = False
 
-        b = blivet.Blivet()
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("10 GiB"), exists=True)
         vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
 
         for dev in (pv, vg):
-            b.devicetree._add_device(dev)
+            self.b.devicetree._add_device(dev)
 
         # check that all the above devices are in the expected places
-        self.assertEqual(set(b.devices), {pv, vg})
-        self.assertEqual(set(b.vgs), {vg})
+        self.assertEqual(set(self.b.devices), {pv, vg})
+        self.assertEqual(set(self.b.vgs), {vg})
 
         self.assertEqual(vg.size, Size("10236 MiB"))
 
         with patch("blivet.blivet.Blivet.names", new=[]):
-            vdopool = b.new_lv(name="vdopool", vdo_pool=True,
-                               parents=[vg], compression=True,
-                               deduplication=True,
-                               size=blivet.size.Size("8 GiB"))
+            vdopool = self.b.new_lv(name="vdopool", vdo_pool=True,
+                                    parents=[vg], compression=True,
+                                    deduplication=True,
+                                    size=blivet.size.Size("8 GiB"))
 
-            vdolv = b.new_lv(name="vdolv", vdo_lv=True,
-                             parents=[vdopool],
-                             size=blivet.size.Size("40 GiB"))
+            vdolv = self.b.new_lv(name="vdolv", vdo_lv=True,
+                                  parents=[vdopool],
+                                  size=blivet.size.Size("40 GiB"))
 
         # Dependencies check: for VDO types these should be combination of "normal"
         # LVM dependencies (LVM libblockdev plugin + kpartx and DM plugin from DMDevice)
@@ -866,9 +873,9 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
 
         with patch("blivet.blivet.Blivet.names", new=[]):
             # just to be sure LVM VDO specific code didn't break "normal" LVs
-            normallv = b.new_lv(name="lvol0",
-                                parents=[vg],
-                                size=blivet.size.Size("1 GiB"))
+            normallv = self.b.new_lv(name="lvol0",
+                                     parents=[vg],
+                                     size=blivet.size.Size("1 GiB"))
 
         normalvl_deps = [d.name for d in normallv.external_dependencies]
         six.assertCountEqual(self, normalvl_deps, ["kpartx",
@@ -899,31 +906,35 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
                                      ["VDO unavailability test"] + lvm_type_deps)
 
                 normallv_deps = [d.name for d in normallv.unavailable_dependencies]
-                self.assertEqual(normallv_deps, lvm_type_deps)
+                six.assertCountEqual(self, normallv_deps, lvm_type_deps)
 
                 with self.assertRaises(errors.DependencyError):
-                    b.create_device(vdopool)
-                    b.create_device(vdolv)
+                    self.b.create_device(vdopool)
+                    self.b.create_device(vdolv)
 
                 with patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[]):
                     with patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[]):
-                        b.create_device(normallv)
+                        with patch("blivet.devices.dm.DMDevice._external_dependencies", new=[]):
+                            self.b.create_device(normallv)
 
         with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies", new=[]):
             with patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies", new=[]):
                 with patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[]):
                     with patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[]):
-                        b.create_device(vdopool)
-                        b.create_device(vdolv)
+                        with patch("blivet.devices.dm.DMDevice._external_dependencies", new=[]):
+                            self.b.create_device(vdopool)
+                            self.b.create_device(vdolv)
 
         with patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[]):
             with patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[]):
-                # LVM VDO specific dependencies shouldn't be needed for removing, "normal" LVM is enough
-                b.destroy_device(vdolv)
-                b.destroy_device(vdopool)
+                with patch("blivet.devices.dm.DMDevice._external_dependencies", new=[]):
+                    # LVM VDO specific dependencies shouldn't be needed for removing, "normal" LVM and DM is enough
+                    self.b.destroy_device(vdolv)
+                    self.b.destroy_device(vdopool)
 
     @patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
     @patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
+    @patch("blivet.devices.dm.DMDevice._external_dependencies", new=[])
     def test_vdo_dependencies_devicefactory(self):
         with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies",
                    new=[blivet.tasks.availability.unavailable_resource("VDO unavailability test")]):
@@ -940,28 +951,28 @@ class BlivetLVMVDODependenciesTest(unittest.TestCase):
 
 @patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
 @patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
-class BlivetNewLVMCachePoolDeviceTest(unittest.TestCase):
+@patch("blivet.devices.dm.DMDevice._external_dependencies", new=[])
+class BlivetNewLVMCachePoolDeviceTest(BlivetLVMUnitTest):
 
     def test_new_cache_pool(self):
-        b = blivet.Blivet()
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("10 GiB"), exists=True)
         vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
 
         for dev in (pv, vg):
-            b.devicetree._add_device(dev)
+            self.b.devicetree._add_device(dev)
 
         # check that all the above devices are in the expected places
-        self.assertEqual(set(b.devices), {pv, vg})
-        self.assertEqual(set(b.vgs), {vg})
+        self.assertEqual(set(self.b.devices), {pv, vg})
+        self.assertEqual(set(self.b.vgs), {vg})
 
         self.assertEqual(vg.size, Size("10236 MiB"))
 
         with patch("blivet.devices.lvm.blockdev.lvm"):
-            cachepool = b.new_lv(name="cachepool", cache_pool=True,
-                                 parents=[vg], pvs=[pv])
+            cachepool = self.b.new_lv(name="cachepool", cache_pool=True,
+                                      parents=[vg], pvs=[pv])
 
-        b.create_device(cachepool)
+        self.b.create_device(cachepool)
 
         self.assertEqual(cachepool.type, "lvmcachepool")
 
@@ -970,69 +981,67 @@ class BlivetNewLVMCachePoolDeviceTest(unittest.TestCase):
 @patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin._external_dependencies", new=[])
 @patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
 @patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
-class BlivetLVMConfigureActionsTest(unittest.TestCase):
+@patch("blivet.devices.dm.DMDevice._external_dependencies", new=[])
+class BlivetLVMConfigureActionsTest(BlivetLVMUnitTest):
 
     def test_vg_rename(self):
-        b = blivet.Blivet()
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("10 GiB"), exists=True)
         vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
         lv = LVMLogicalVolumeDevice("testlv", parents=[vg], exists=True)
 
         for dev in (pv, vg, lv):
-            b.devicetree._add_device(dev)
+            self.b.devicetree._add_device(dev)
 
         ac = blivet.deviceaction.ActionConfigureDevice(device=vg, attr="name", new_value="newname")
-        b.devicetree.actions.add(ac)
+        self.b.devicetree.actions.add(ac)
         self.assertEqual(vg.name, "newname")
         self.assertEqual(lv.name, "newname-%s" % lv.lvname)
         with patch("blivet.devices.lvm.blockdev.lvm"):
-            self.assertIn(vg.name, b.devicetree.names)
-            self.assertIn(lv.name, b.devicetree.names)
+            self.assertIn(vg.name, self.b.devicetree.names)
+            self.assertIn(lv.name, self.b.devicetree.names)
 
         # try to remove the action and make sure the name is changed back
-        b.devicetree.actions.remove(ac)
+        self.b.devicetree.actions.remove(ac)
         self.assertEqual(vg.name, "testvg")
         self.assertEqual(lv.name, "testvg-%s" % lv.lvname)
 
         # re-add the action and make the change
-        b.devicetree.actions.add(ac)
+        self.b.devicetree.actions.add(ac)
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
-            b.do_it()
+            self.b.do_it()
             lvm.vgrename.assert_called_with("testvg", "newname")
 
         self.assertEqual(pv.format.vg_name, "newname")
 
     def test_lv_rename(self):
-        b = blivet.Blivet()
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("10 GiB"), exists=True)
         vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
         lv = LVMLogicalVolumeDevice("testlv", parents=[vg], exists=True)
 
         for dev in (pv, vg, lv):
-            b.devicetree._add_device(dev)
+            self.b.devicetree._add_device(dev)
 
         ac = blivet.deviceaction.ActionConfigureDevice(device=lv, attr="name", new_value="newname")
-        b.devicetree.actions.add(ac)
+        self.b.devicetree.actions.add(ac)
         self.assertEqual(lv.name, "%s-newname" % vg.name)
         self.assertEqual(lv.lvname, "newname")
         with patch("blivet.devices.lvm.blockdev.lvm"):
-            self.assertIn(lv.name, b.devicetree.names)
+            self.assertIn(lv.name, self.b.devicetree.names)
 
         # try to remove the action and make sure the name is changed back
-        b.devicetree.actions.remove(ac)
+        self.b.devicetree.actions.remove(ac)
         self.assertEqual(lv.name, "%s-testlv" % vg.name)
         self.assertEqual(lv.lvname, "testlv")
 
         # re-add the action and make the change
-        b.devicetree.actions.add(ac)
+        self.b.devicetree.actions.add(ac)
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
-            b.do_it()
+            self.b.do_it()
             lvm.lvrename.assert_called_with(vg.name, "testlv", "newname")
 
     def test_vdo_compression_deduplication_change(self):
-        b = blivet.Blivet()
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("10 GiB"), exists=True)
         vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
@@ -1041,70 +1050,70 @@ class BlivetLVMConfigureActionsTest(unittest.TestCase):
         vdolv = LVMLogicalVolumeDevice("testvdolv", seg_type="vdo", parents=[vdopool], exists=True)
 
         for dev in (pv, vg, vdopool, vdolv):
-            b.devicetree._add_device(dev)
+            self.b.devicetree._add_device(dev)
 
         # compression/deduplication must be set on the pool, not the volume
         with self.assertRaises(ValueError):
             ac = blivet.deviceaction.ActionConfigureDevice(device=vdolv, attr="compression", new_value=True)
-            b.devicetree.actions.add(ac)
+            self.b.devicetree.actions.add(ac)
         with self.assertRaises(ValueError):
             ac = blivet.deviceaction.ActionConfigureDevice(device=vdolv, attr="deduplication", new_value=True)
-            b.devicetree.actions.add(ac)
+            self.b.devicetree.actions.add(ac)
 
         # compression/deduplication already enabled
         with self.assertRaisesRegex(ValueError, "compression is already enabled"):
             ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="compression", new_value=True)
-            b.devicetree.actions.add(ac)
+            self.b.devicetree.actions.add(ac)
         with self.assertRaisesRegex(ValueError, "deduplication is already enabled"):
             ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="deduplication", new_value=True)
-            b.devicetree.actions.add(ac)
+            self.b.devicetree.actions.add(ac)
 
         # disable compression
         ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="compression", new_value=False)
-        b.devicetree.actions.add(ac)
+        self.b.devicetree.actions.add(ac)
         self.assertFalse(vdopool.compression)
 
         # cancel the action, compression should be enabled
-        b.devicetree.actions.remove(ac)
+        self.b.devicetree.actions.remove(ac)
         self.assertTrue(vdopool.compression)
 
         # re-add the action and make the change
-        b.devicetree.actions.add(ac)
+        self.b.devicetree.actions.add(ac)
         self.assertFalse(vdopool.compression)
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
-            b.do_it()
+            self.b.do_it()
             lvm.vdo_disable_compression.assert_called_with(vg.name, vdopool.lvname)
 
         # enable compression back
         ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="compression", new_value=True)
-        b.devicetree.actions.add(ac)
+        self.b.devicetree.actions.add(ac)
         self.assertTrue(vdopool.compression)
 
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
-            b.do_it()
+            self.b.do_it()
             lvm.vdo_enable_compression.assert_called_with(vg.name, vdopool.lvname)
 
         # disable deduplication
         ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="deduplication", new_value=False)
-        b.devicetree.actions.add(ac)
+        self.b.devicetree.actions.add(ac)
         self.assertFalse(vdopool.deduplication)
 
         # cancel the action, deduplication should be enabled
-        b.devicetree.actions.remove(ac)
+        self.b.devicetree.actions.remove(ac)
         self.assertTrue(vdopool.deduplication)
 
         # re-add the action and make the change
-        b.devicetree.actions.add(ac)
+        self.b.devicetree.actions.add(ac)
         self.assertFalse(vdopool.deduplication)
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
-            b.do_it()
+            self.b.do_it()
             lvm.vdo_disable_deduplication.assert_called_with(vg.name, vdopool.lvname)
 
         # enable deduplication back
         ac = blivet.deviceaction.ActionConfigureDevice(device=vdopool, attr="deduplication", new_value=True)
-        b.devicetree.actions.add(ac)
+        self.b.devicetree.actions.add(ac)
         self.assertTrue(vdopool.deduplication)
 
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
-            b.do_it()
+            self.b.do_it()
             lvm.vdo_enable_deduplication.assert_called_with(vg.name, vdopool.lvname)
