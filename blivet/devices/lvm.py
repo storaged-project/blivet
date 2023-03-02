@@ -1161,7 +1161,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
 
             if self.req_grow:
                 # base size could be literal or percentage
-                data.max_size_mb = self.req_max_size.convert_to(MiB)
+                data.maxSizeMB = self.req_max_size.convert_to(MiB)
         elif data.resize:
             data.size = self.target_size.convert_to(MiB)
 
