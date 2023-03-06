@@ -55,6 +55,7 @@
         - python3-libvirt
         - python3-paramiko
         - targetcli
+        - iscsi-initiator-utils
     when: ansible_distribution == 'Fedora'
 
 ####### CentOS 8/9
@@ -108,6 +109,7 @@
         - python3-libvirt
         - python3-pip
         - targetcli
+        - iscsi-initiator-utils
     when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
 
   - name: Install paramiko using pip (not available in EPEL yet) (CentOS 9)
@@ -162,6 +164,7 @@
         - python3-libvirt
         - python3-pip
         - targetcli-fb
+        - open-iscsi
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
   - name: Install pocketlint using pip (Debian/Ubuntu)
