@@ -498,8 +498,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
     def populate_ksdata(self, data):
         super(BTRFSVolumeDevice, self).populate_ksdata(data)
-        data.data_level = self.data_level.name if self.data_level else None
-        data.metadata_level = self.metadata_level.name if self.metadata_level else None
+        data.dataLevel = self.data_level.name if self.data_level else None
+        data.metaDataLevel = self.metadata_level.name if self.metadata_level else None
         data.devices = ["btrfs.%d" % p.id for p in self.parents]
         data.preexist = self.exists
 
