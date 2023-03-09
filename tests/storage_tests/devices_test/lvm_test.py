@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 from ..storagetestcase import StorageTestCase
 
@@ -127,7 +128,7 @@ class LVMTestCase(StorageTestCase):
         self.assertTrue(snap.is_snapshot_lv)
         self.assertEqual(snap.origin, thinlv)
 
-    def _test_lvm_raid(self, seg_type, raid_level):
+    def _test_lvm_raid(self, seg_type, raid_level, stripe_size=0):
         disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
         self.assertIsNotNone(disk1)
         self.storage.initialize_disk(disk1)
@@ -151,7 +152,7 @@ class LVMTestCase(StorageTestCase):
 
         raidlv = self.storage.new_lv(fmt_type="ext4", size=blivet.size.Size("50 MiB"),
                                      parents=[vg], name="blivetTestRAIDLV",
-                                     seg_type=seg_type, pvs=[pv1, pv2])
+                                     seg_type=seg_type, pvs=[pv1, pv2], stripe_size=stripe_size)
         self.storage.create_device(raidlv)
 
         self.storage.do_it()
@@ -163,8 +164,15 @@ class LVMTestCase(StorageTestCase):
         self.assertEqual(raidlv.raid_level, raid_level)
         self.assertEqual(raidlv.seg_type, seg_type)
 
+        if stripe_size:
+            out = subprocess.check_output(["lvs", "-o", "stripe_size", "--noheadings", "--nosuffix", "--units=b", raidlv.vg.name + "/" + raidlv.lvname])
+            self.assertEqual(out.decode().strip(), str(int(stripe_size.convert_to())))
+
     def test_lvm_raid_raid0(self):
         self._test_lvm_raid("raid0", blivet.devicelibs.raid.RAID0)
+
+    def test_lvm_raid_raid0_stripe_size(self):
+        self._test_lvm_raid("raid0", blivet.devicelibs.raid.RAID0, stripe_size=blivet.size.Size("1 MiB"))
 
     def test_lvm_raid_striped(self):
         self._test_lvm_raid("striped", blivet.devicelibs.raid.Striped)

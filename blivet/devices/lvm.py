@@ -659,7 +659,8 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
 
     def __init__(self, name, parents=None, size=None, uuid=None, seg_type=None,
                  fmt=None, exists=False, sysfs_path='', grow=None, maxsize=None,
-                 percent=None, cache_request=None, pvs=None, from_lvs=None):
+                 percent=None, cache_request=None, pvs=None, from_lvs=None,
+                 stripe_size=0):
 
         if not exists:
             if seg_type not in [None, "linear", "thin", "thin-pool", "cache", "vdo-pool", "vdo", "cache-pool"] + lvm.raid_seg_types:
@@ -755,6 +756,15 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             raise ValueError(msg)
         if self._pv_specs:
             self._assign_pv_space()
+
+        self._stripe_size = stripe_size
+        if not self.exists and self._stripe_size:
+            if self.seg_type not in lvm.raid_seg_types:
+                raise errors.DeviceError("Stripe size can be specified only for RAID volumes")
+            if self.seg_type in ("raid1", "RAID1", "1", 1, "mirror"):
+                raise errors.DeviceError("Specifying stripe size is not allowed for RAID1 or mirror")
+            if self.cache:
+                raise errors.DeviceError("Creating cached LVs with custom stripe size is not supported")
 
     def _assign_pv_space(self):
         if not self.is_raid_lv:
@@ -2295,7 +2305,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
                  parent_lv=None, int_type=None, origin=None, vorigin=False,
                  metadata_size=None, chunk_size=None, profile=None, from_lvs=None,
                  compression=False, deduplication=False, index_memory=0,
-                 write_policy=None, cache_mode=None, attach_to=None):
+                 write_policy=None, cache_mode=None, attach_to=None, stripe_size=0):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -2375,6 +2385,11 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
                                 be attached to when created
             :type attach_to: :class:`LVMLogicalVolumeDevice`
 
+            For RAID LVs only:
+
+            :keyword stripe_size: size of the RAID stripe
+            :type stripe_size: :class:`~.size.Size`
+
         """
 
         if isinstance(parents, (list, ParentList)):
@@ -2395,7 +2410,8 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         LVMCachePoolMixin.__init__(self, metadata_size, cache_mode, attach_to)
         LVMLogicalVolumeBase.__init__(self, name, parents, size, uuid, seg_type,
                                       fmt, exists, sysfs_path, grow, maxsize,
-                                      percent, cache_request, pvs, from_lvs)
+                                      percent, cache_request, pvs, from_lvs,
+                                      stripe_size)
         LVMVDOPoolMixin.__init__(self, compression, deduplication, index_memory,
                                  write_policy)
         LVMVDOLogicalVolumeMixin.__init__(self)
@@ -2651,8 +2667,12 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             pvs = [spec.pv.path for spec in self._pv_specs]
             pvs = pvs or None
 
+            extra = dict()
+            if self._stripe_size:
+                extra["stripesize"] = str(int(self._stripe_size.convert_to("KiB")))
+
             blockdev.lvm.lvcreate(self.vg.name, self._name, self.size,
-                                  type=self.seg_type, pv_list=pvs)
+                                  type=self.seg_type, pv_list=pvs, **extra)
         else:
             fast_pvs = [pv.path for pv in self.cache.fast_pvs]
 
