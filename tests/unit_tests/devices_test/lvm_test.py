@@ -363,6 +363,33 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertEqual(pv.format.free, Size("264 MiB"))
         self.assertEqual(pv2.format.free, Size("256 MiB"))
 
+    def test_lvm_logical_volume_raid_stripe_size(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1025 MiB"))
+        pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
+                            size=Size("513 MiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
+
+        with self.assertRaises(blivet.errors.DeviceError):
+            # non-raid LV
+            lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("1 GiB"),
+                                        fmt=blivet.formats.get_format("xfs"),
+                                        exists=False, stripe_size=Size("1 MiB"))
+
+        with self.assertRaises(blivet.errors.DeviceError):
+            # raid1 LV
+            lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("1 GiB"),
+                                        fmt=blivet.formats.get_format("xfs"),
+                                        exists=False, seg_type="raid1", pvs=[pv, pv2],
+                                        stripe_size=Size("1 MiB"))
+
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], size=Size("1 GiB"),
+                                    fmt=blivet.formats.get_format("xfs"),
+                                    exists=False, seg_type="raid0", pvs=[pv, pv2],
+                                    stripe_size=Size("1 MiB"))
+
+        self.assertEqual(lv._stripe_size, Size("1 MiB"))
+
     @patch("blivet.formats.fs.Ext4FS.resizable", return_value=True)
     def test_target_size(self, *args):  # pylint: disable=unused-argument
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
