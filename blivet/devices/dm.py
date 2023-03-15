@@ -98,11 +98,6 @@ class DMDevice(StorageDevice):
         return d
 
     @property
-    def fstab_spec(self):
-        """ Return the device specifier for use in /etc/fstab. """
-        return self.path
-
-    @property
     def map_name(self):
         """ This device's device-mapper map name """
         return self.name
