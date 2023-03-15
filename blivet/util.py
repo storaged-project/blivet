@@ -282,7 +282,7 @@ def get_mount_device(mountpoint):
     mountpoint = os.path.realpath(mountpoint)  # eliminate symlinks
     mount_device = None
     with open("/proc/mounts") as mounts:
-        for mnt in mounts.readline():
+        for mnt in mounts.readlines():
             try:
                 (device, path, _rest) = mnt.split(None, 2)
             except ValueError:
