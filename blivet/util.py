@@ -282,7 +282,7 @@ def get_mount_device(mountpoint):
     mountpoint = os.path.realpath(mountpoint)  # eliminate symlinks
     mount_device = None
     with open("/proc/mounts") as mounts:
-        for mnt in mounts.readline():
+        for mnt in mounts.readlines():
             try:
                 (device, path, _rest) = mnt.split(None, 2)
             except ValueError:
@@ -1160,7 +1160,7 @@ def detect_virt():
     except (safe_dbus.DBusCallError, safe_dbus.DBusPropertyError):
         return False
     else:
-        return vm[0] in ('qemu', 'kvm', 'xen')
+        return vm[0] in ('qemu', 'kvm', 'xen', 'microsoft')
 
 
 def natural_sort_key(device):

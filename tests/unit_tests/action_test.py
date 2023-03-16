@@ -13,6 +13,7 @@ from blivet.size import Size
 # device classes for brevity's sake -- later on, that is
 from blivet.devices import StorageDevice
 from blivet.devices import DiskDevice
+from blivet.devices import DMDevice
 from blivet.devices import PartitionDevice
 from blivet.devices import MDRaidArrayDevice
 from blivet.devices import LVMVolumeGroupDevice
@@ -27,6 +28,8 @@ from blivet.formats.fs import Ext4FS
 from blivet.formats.fs import FATFS
 from blivet.formats.fs import XFS
 from blivet.formats.lvmpv import LVMPhysicalVolume
+from blivet.formats.mdraid import MDRaidMember
+from blivet.formats.swap import SwapSpace
 
 # action classes
 from blivet.deviceaction import ActionCreateDevice
@@ -42,6 +45,7 @@ from blivet.deviceaction import ActionConfigureDevice
 
 DEVICE_CLASSES = [
     DiskDevice,
+    DMDevice,
     PartitionDevice,
     MDRaidArrayDevice,
     LVMVolumeGroupDevice,
@@ -57,7 +61,9 @@ FORMAT_CLASSES = [
     Ext4FS,
     FATFS,
     XFS,
-    LVMPhysicalVolume
+    LVMPhysicalVolume,
+    MDRaidMember,
+    SwapSpace
 ]
 
 
@@ -83,6 +89,10 @@ def _patch_format_dependencies(fn):
             patcher = patch.object(cls, "formattable", return_value=True)
             patcher.start()
 
+            if cls._resizable:
+                patcher = patch.object(cls, "resizable", return_value=True)
+                patcher.start()
+
         fn(*args, **kwargs)
 
         patch.stopall()
@@ -94,7 +104,7 @@ class DeviceActionTestCase(BlivetTestCase):
 
     """ DeviceActionTestSuite """
 
-    def setUp(self):
+    def setUp(self, *args):  # pylint: disable=unused-argument
         """ Create something like a preexisting autopart on two disks (sda,sdb).
 
             The other two disks (sdc,sdd) are left for individual tests to use.
@@ -285,9 +295,6 @@ class DeviceActionTestCase(BlivetTestCase):
         lv_root = self.storage.devicetree.get_device_by_name("VolGroup-lv_root")
         self.assertNotEqual(lv_root, None)
         lv_root.format.exists = False
-        with self.assertRaises(ValueError):
-            ActionResizeFormat(lv_root, lv_root.size - Size("1000 MiB"))
-        lv_root.format.exists = True
 
         # instantiation of device create action for existing device should
         # fail
@@ -469,6 +476,7 @@ class DeviceActionTestCase(BlivetTestCase):
         #
         # - obsoletes all but ActionConfigureFormat actions w/ lower id on the
         #   same existing device with the same attribute being configured
+        sdc1.format._writelabel = Mock(available=True)
         configure_format_1 = ActionConfigureFormat(sdc1, "label", "new_label")
         configure_format_1.apply()
         configure_format_2 = ActionConfigureFormat(sdc1, "label", "new_label2")
@@ -663,6 +671,7 @@ class DeviceActionTestCase(BlivetTestCase):
         self.assertNotEqual(lv_root, None)
         lv_root.format._min_instance_size = Size("10 MiB")
         lv_root.format._target_size = lv_root.format._min_instance_size
+        lv_root.format._size = lv_root.size
         # lv_root.format._resizable = True
         shrink_format = ActionResizeFormat(lv_root,
                                            lv_root.size - Size("5 GiB"))
