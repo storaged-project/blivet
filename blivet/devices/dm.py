@@ -121,7 +121,12 @@ class DMDevice(StorageDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created")
 
-        return blockdev.dm.node_from_name(self.name)
+        try:
+            node = blockdev.dm.node_from_name(self.name)
+        except blockdev.DMError as e:
+            raise errors.DMError(e)
+        else:
+            return node
 
     def setup_partitions(self):
         log_method_call(self, name=self.name)
@@ -139,7 +144,10 @@ class DMDevice(StorageDevice):
         for dev in os.listdir("/dev/mapper/"):
             prefix = self.name + "p"
             if dev.startswith(prefix) and dev[len(prefix):].isdigit():
-                blockdev.dm.remove(dev)
+                try:
+                    blockdev.dm.remove(dev)
+                except blockdev.DMError as e:
+                    raise errors.DMError(e)
 
     def _set_name(self, value):
         """ Set the device's map name. """
@@ -185,8 +193,11 @@ class DMLinearDevice(DMDevice):
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
         parent_length = self.parents[0].current_size / LINUX_SECTOR_SIZE
-        blockdev.dm.create_linear(self.name, self.parents[0].path, parent_length,
-                                  self.dm_uuid)
+        try:
+            blockdev.dm.create_linear(self.name, self.parents[0].path, parent_length,
+                                      self.dm_uuid)
+        except blockdev.DMError as e:
+            raise errors.DMError(e)
 
     def _post_setup(self):
         StorageDevice._post_setup(self)
@@ -196,7 +207,12 @@ class DMLinearDevice(DMDevice):
     def _teardown(self, recursive=False):
         self.teardown_partitions()
         udev.settle()
-        blockdev.dm.remove(self.name)
+
+        try:
+            blockdev.dm.remove(self.name)
+        except blockdev.DMError as e:
+            raise errors.DMError(e)
+
         udev.settle()
 
     def deactivate(self, recursive=False):

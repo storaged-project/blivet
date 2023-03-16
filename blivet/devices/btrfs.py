@@ -455,10 +455,13 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             md_level = str(self.metadata_level)
         else:
             md_level = None
-        blockdev.btrfs.create_volume([d.path for d in self.parents],
-                                     label=self.format.label,
-                                     data_level=data_level,
-                                     md_level=md_level)
+        try:
+            blockdev.btrfs.create_volume([d.path for d in self.parents],
+                                         label=self.format.label,
+                                         data_level=data_level,
+                                         md_level=md_level)
+        except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as err:
+            raise errors.BTRFSError(err)
 
     def _post_create(self):
         super(BTRFSVolumeDevice, self)._post_create()
@@ -489,12 +492,18 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         log_method_call(self, self.name, status=self.status)
 
         with self._do_temp_mount() as mountpoint:
-            blockdev.btrfs.remove_device(mountpoint, member.path)
+            try:
+                blockdev.btrfs.remove_device(mountpoint, member.path)
+            except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as err:
+                raise errors.BTRFSError(err)
 
     def _add(self, member):
 
         with self._do_temp_mount() as mountpoint:
-            blockdev.btrfs.add_device(mountpoint, member.path)
+            try:
+                blockdev.btrfs.add_device(mountpoint, member.path)
+            except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as err:
+                raise errors.BTRFSError(err)
 
     def populate_ksdata(self, data):
         super(BTRFSVolumeDevice, self).populate_ksdata(data)
@@ -590,7 +599,10 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
         log_method_call(self, self.name, status=self.status)
 
         with self.volume._do_temp_mount() as mountpoint:
-            blockdev.btrfs.create_subvolume(mountpoint, self.name)
+            try:
+                blockdev.btrfs.create_subvolume(mountpoint, self.name)
+            except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as err:
+                raise errors.BTRFSError(err)
 
     def _post_create(self):
         super(BTRFSSubVolumeDevice, self)._post_create()
@@ -604,7 +616,10 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
                 # btrfs does not allow removal of the default subvolume
                 self.volume._set_default_subvolume_id(self.volume.vol_id)
 
-            blockdev.btrfs.delete_subvolume(mountpoint, self.name)
+            try:
+                blockdev.btrfs.delete_subvolume(mountpoint, self.name)
+            except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as err:
+                raise errors.BTRFSError(err)
 
     def remove_hook(self, modparent=True):
         if modparent:
@@ -694,7 +709,10 @@ class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
 
             dest_path = "%s/%s" % (mountpoint, self.name)
 
-            blockdev.btrfs.create_snapshot(source_path, dest_path, ro=self.read_only)
+            try:
+                blockdev.btrfs.create_snapshot(source_path, dest_path, ro=self.read_only)
+            except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as err:
+                raise errors.BTRFSError(err)
 
     def depends_on(self, dep):
         return (dep == self.source or
