@@ -19,7 +19,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.7.0
+Version: 3.7.1
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -192,6 +192,17 @@ configuration.
 %endif
 
 %changelog
+* Thu Mar 16 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.7.1-1
+- Fix the get_mount_device function (vponcova)
+- Prefer using UUID for the kickstart --onpart argument (vtrefny)
+- Fix setting kickstart data (vtrefny)
+- pylint: Remove the "EXCEPTIONS" section from pylintrc (vtrefny)
+- Add "microsoft" to list of recognized VM environments (vtrefny)
+- ci: Add action to run unit tests in GH actions (vtrefny)
+- tests: Make sure that unit tests can run without root privileges (vtrefny)
+- doc: Link to the LVM VDO documentation from the index page (vtrefny)
+- Ignore missing parted disk in ActionList._post_process (#2102960) (vtrefny)
+
 * Wed Feb 08 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.7.0-1
 - Remove unused BLOCKDEV_DM_RAID technology from tasks (vtrefny)
 - tests: Force remove LVM VG /dev/ entry not removed by vgremove (vtrefny)
