@@ -212,14 +212,23 @@ class iSCSI(object):
     @initiator.setter
     @storaged_iscsi_required(critical=True, eval_mode=util.EvalMode.onetime)
     def initiator(self, val):
-        if self.initiator_set and val != self._initiator:
-            raise ValueError(_("Unable to change iSCSI initiator name once set"))
         if len(val) == 0:
             raise ValueError(_("Must provide an iSCSI initiator name"))
+
+        active = self._get_active_sessions()
+        if active:
+            raise errors.ISCSIError(_("Cannot change initiator name with an active session"))
 
         log.info("Setting up iSCSI initiator name %s", self.initiator)
         args = GLib.Variant("(sa{sv})", (val, None))
         self._call_initiator_method("SetInitiatorName", args)
+
+        if self.initiator_set and val != self._initiator:
+            log.info("Restarting iscsid after initiator name change")
+            rc = util.run_program(["systemctl", "restart", "iscsid"])
+            if rc != 0:
+                raise errors.ISCSIError(_("Failed to restart iscsid after initiator name change"))
+
         self._initiator = val
 
     def active_nodes(self, target=None):
