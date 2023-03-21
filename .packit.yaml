@@ -24,6 +24,13 @@ jobs:
     - fedora-all
   trigger: pull_request
 
+- job: copr_build
+  trigger: commit
+  owner: "@storage"
+  project: blivet-daily
+  branch: 3.8-devel
+  preserve_project: true
+
 srpm_build_deps:
  - git
  - make
