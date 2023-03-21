@@ -274,7 +274,11 @@ class LUKS(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         log.debug("unmapping %s", self.map_name)
-        blockdev.crypto.luks_close(self.map_name)
+
+        try:
+            blockdev.crypto.luks_close(self.map_name)
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
 
         udev.settle()
 
@@ -322,18 +326,26 @@ class LUKS(DeviceFormat):
             else:
                 extra = None
 
-        blockdev.crypto.luks_format(self.device,
-                                    passphrase=self.__passphrase,
-                                    key_file=self._key_file,
-                                    cipher=self.cipher,
-                                    key_size=self.key_size,
-                                    min_entropy=self.min_luks_entropy,
-                                    luks_version=crypto.LUKS_VERSIONS[self.luks_version],
-                                    extra=extra)
+        try:
+            blockdev.crypto.luks_format(self.device,
+                                        passphrase=self.__passphrase,
+                                        key_file=self._key_file,
+                                        cipher=self.cipher,
+                                        key_size=self.key_size,
+                                        min_entropy=self.min_luks_entropy,
+                                        luks_version=crypto.LUKS_VERSIONS[self.luks_version],
+                                        extra=extra)
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
 
     def _post_create(self, **kwargs):
         super(LUKS, self)._post_create(**kwargs)
-        self.uuid = blockdev.crypto.luks_uuid(self.device)
+
+        try:
+            self.uuid = blockdev.crypto.luks_uuid(self.device)
+        except blockdev.CryptoError as e:
+            raise LUKSError("Failed to get UUID for the newly created LUKS device %s: %s" % (self.device, str(e)))
+
         if not self.map_name:
             self.map_name = "luks-%s" % self.uuid
 
@@ -357,10 +369,13 @@ class LUKS(DeviceFormat):
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        blockdev.crypto.luks_add_key(self.device,
-                                     pass_=self.__passphrase,
-                                     key_file=self._key_file,
-                                     npass=passphrase)
+        try:
+            blockdev.crypto.luks_add_key(self.device,
+                                         pass_=self.__passphrase,
+                                         key_file=self._key_file,
+                                         npass=passphrase)
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
 
     def remove_passphrase(self):
         """
@@ -374,14 +389,22 @@ class LUKS(DeviceFormat):
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        blockdev.crypto.luks_remove_key(self.device,
-                                        pass_=self.__passphrase,
-                                        key_file=self._key_file)
+        try:
+            blockdev.crypto.luks_remove_key(self.device,
+                                            pass_=self.__passphrase,
+                                            key_file=self._key_file)
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
 
     def escrow(self, directory, backup_passphrase):
         log.debug("escrow: escrow_volume start for %s", self.device)
-        blockdev.crypto.escrow_device(self.device, self.__passphrase, self.escrow_cert,
-                                      directory, backup_passphrase)
+
+        try:
+            blockdev.crypto.escrow_device(self.device, self.__passphrase, self.escrow_cert,
+                                          directory, backup_passphrase)
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
+
         log.debug("escrow: escrow_volume done for %s", repr(self.device))
 
     def populate_ksdata(self, data):
@@ -479,9 +502,12 @@ class Integrity(DeviceFormat):
         else:
             extra = None
 
-        blockdev.crypto.integrity_format(self.device,
-                                         self.algorithm,
-                                         extra=extra)
+        try:
+            blockdev.crypto.integrity_format(self.device,
+                                             self.algorithm,
+                                             extra=extra)
+        except blockdev.CryptoError as e:
+            raise IntegrityError(e)
 
     def _teardown(self, **kwargs):
         """ Close, or tear down, the format. """
@@ -491,7 +517,10 @@ class Integrity(DeviceFormat):
 
         # it's safe to use luks_close here, it uses crypt_deactivate which works
         # for all devices supported by cryptsetup
-        blockdev.crypto.luks_close(self.map_name)
+        try:
+            blockdev.crypto.luks_close(self.map_name)
+        except blockdev.CryptoError as e:
+            raise IntegrityError(e)
 
         udev.settle()
 

@@ -194,6 +194,17 @@ class StratisError(StorageError):
     pass
 
 
+class LoopError(StorageError):
+    pass
+
+
+class MDRaidError(StorageError):
+    pass
+
+
+class LVMError(StorageError):
+    pass
+
 # DeviceTree
 
 

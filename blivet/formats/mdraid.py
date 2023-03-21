@@ -28,6 +28,7 @@ from gi.repository import BlockDev as blockdev
 from ..storage_log import log_method_call
 from parted import PARTITION_RAID
 from . import DeviceFormat, register_device_format
+from ..errors import MDMemberError
 from ..i18n import N_
 from ..tasks import availability
 
@@ -88,7 +89,10 @@ class MDRaidMember(DeviceFormat):
         return super(MDRaidMember, self).supported and self._plugin.available
 
     def _destroy(self, **kwargs):
-        blockdev.md.destroy(self.device)
+        try:
+            blockdev.md.destroy(self.device)
+        except blockdev.MDRaidError as e:
+            raise MDMemberError(e)
 
     @property
     def destroyable(self):

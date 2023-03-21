@@ -150,10 +150,16 @@ class LVMPhysicalVolume(DeviceFormat):
             with lvm.empty_lvm_devices():
                 # with lvmdbusd we need to call the pvcreate without --devices otherwise lvmdbusd
                 # wouldn't be able to find the newly created pv and the call would fail
-                blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
+                try:
+                    blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
+                except blockdev.LVMError as e:
+                    raise PhysicalVolumeError(e)
                 self.lvmdevices_add()
         else:
-            blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
+            try:
+                blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
+            except blockdev.LVMError as e:
+                raise PhysicalVolumeError(e)
 
     def _destroy(self, **kwargs):
         log_method_call(self, device=self.device,
