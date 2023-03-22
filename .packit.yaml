@@ -1,16 +1,38 @@
 actions:
+  post-upstream-clone:
+    # we need to set email and username for the merge commit
+    - 'git config user.email "blivet-ci@example.com"'
+    - 'git config user.name "Blivet CI"'
+    # merge the release branch to get correct version in spec
+    - 'git merge --ff origin/3.8-release'
   get-current-version:
     - "python3 ./setup.py --version"
   create-archive:
     - "make local"
     - 'bash -c "ls *.tar*"'
+  fix-spec-file:
+    # define the Source variables
+    - bash -c "sed -i python-blivet.spec -e \"s/http.*%{realname}-%{realversion}.tar.gz/blivet-${PACKIT_PROJECT_VERSION}.tar.gz/\""
+    - bash -c "sed -i python-blivet.spec -e \"s/http.*%{realname}-%{realversion}-tests.tar.gz/blivet-${PACKIT_PROJECT_VERSION}-tests.tar.gz/\""
+    # fill in Release as if packit would have done it
+    - bash -c "sed -i python-blivet.spec -e \"s/Release:.*/Release:\ ${PACKIT_RPMSPEC_RELEASE}%{?dist}/\""
+
 jobs:
 - job: copr_build
   metadata:
     targets:
     - fedora-all
   trigger: pull_request
+
+- job: copr_build
+  trigger: commit
+  owner: "@storage"
+  project: blivet-daily
+  branch: 3.8-devel
+  preserve_project: true
+
 srpm_build_deps:
+ - git
  - make
  - systemd
  - gettext
