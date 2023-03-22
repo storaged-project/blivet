@@ -1,5 +1,4 @@
 PYTHON=python3
-PKG_INSTALL?=dnf
 
 L10N_REPOSITORY=git@github.com:storaged-project/blivet-weblate.git
 L10N_BRANCH=master
@@ -7,15 +6,10 @@ L10N_BRANCH=master
 PKGNAME=blivet
 SPECFILE=python-blivet.spec
 VERSION=$(shell $(PYTHON) setup.py --version)
-RPMVERSION=$(shell rpmspec -q --queryformat "%{version}\n" $(SPECFILE) | head -1)
-RPMRELEASE=$(shell rpmspec --undefine '%dist' -q --queryformat "%{release}\n" $(SPECFILE) | head -1)
-RC_RELEASE ?= $(shell date -u +0.1.%Y%m%d%H%M%S)
-RELEASE_TAG=$(PKGNAME)-$(RPMVERSION)-$(RPMRELEASE)
 VERSION_TAG=$(PKGNAME)-$(VERSION)
 
 COVERAGE=$(PYTHON) -m coverage
 
-MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
 
 all:
 	$(MAKE) -C po
@@ -124,17 +118,9 @@ ChangeLog:
 	(GIT_DIR=.git git log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
 
 tag:
-	@if test $(VERSION) != $(RPMVERSION) ; then \
-	  tags='$(VERSION_TAG) $(RELEASE_TAG)' ; \
-	elif test $(RPMRELEASE) = "1" ; then \
-	  tags='$(VERSION_TAG) $(RELEASE_TAG)' ; \
-	else \
-	  tags='$(RELEASE_TAG)' ; \
-	fi ; \
-	for tag in $$tags ; do \
-	  git tag -a -s -m "Tag as $$tag" -f $$tag ; \
-	  echo "Tagged as $$tag" ; \
-	done
+	tag='$(VERSION_TAG)' ; \
+	git tag -a -s -m "Tag as $$tag" -f $$tag && \
+	echo "Tagged as $$tag"
 
 release: tag archive
 
@@ -160,10 +146,6 @@ local: po-pull
 	git ls-files tests/ | tar -T- -czf $(PKGNAME)-$(VERSION)-tests.tar.gz
 	@echo "The test archive is in $(PKGNAME)-$(VERSION)-tests.tar.gz"
 
-rpmlog:
-	@git log --pretty="format:- %s (%ae)" $(RELEASE_TAG).. |sed -e 's/@.*)/)/'
-	@echo
-
 bumpver: po-pull
 	@opts="-n $(PKGNAME) -v $(VERSION) -r $(RPMRELEASE)" ; \
 	if [ ! -z "$(IGNORE)" ]; then \
@@ -179,38 +161,6 @@ bumpver: po-pull
 		opts="$${opts} -d" ; \
 	fi ; \
 	( scripts/makebumpver $${opts} ) || exit 1 ; \
-
-scratch-bumpver:
-	@opts="-n $(PKGNAME) -v $(RPMVERSION) -r $(RPMRELEASE) --newrelease $(RC_RELEASE)" ; \
-	if [ ! -z "$(IGNORE)" ]; then \
-		opts="$${opts} -i $(IGNORE)" ; \
-	fi ; \
-	if [ ! -z "$(MAP)" ]; then \
-		opts="$${opts} -m $(MAP)" ; \
-	fi ; \
-	if [ ! -z "$(SKIP_ACKS)" ]; then \
-		opts="$${opts} -s" ; \
-	fi ; \
-	if [ ! -z "$(BZDEBUG)" ]; then \
-		opts="$${opts} -d" ; \
-	fi ; \
-	( scripts/makebumpver $${opts} ) || exit 1 ; \
-
-scratch:
-	@rm -f ChangeLog
-	@make ChangeLog
-	@rm -rf $(PKGNAME)-$(VERSION).tar.gz
-	@rm -rf /tmp/$(PKGNAME)-$(VERSION) /tmp/$(PKGNAME)
-	@dir=$$PWD; cp -a $$dir /tmp/$(PKGNAME)-$(VERSION)
-	@cd /tmp/$(PKGNAME)-$(VERSION) ; $(PYTHON) setup.py -q sdist
-	@cp /tmp/$(PKGNAME)-$(VERSION)/dist/$(PKGNAME)-$(VERSION).tar.gz .
-	@rm -rf /tmp/$(PKGNAME)-$(VERSION)
-	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
-
-rc-release: scratch-bumpver scratch
-	mock -r $(MOCKCHROOT) --scrub all || exit 1
-	mock -r $(MOCKCHROOT) --buildsrpm  --spec ./$(SPECFILE) --sources . --resultdir $(PWD) || exit 1
-	mock -r $(MOCKCHROOT) --rebuild *src.rpm --resultdir $(PWD)  || exit 1
 
 srpm: local
 	rpmbuild -bs --nodeps $(SPECFILE) --define "_sourcedir `pwd`"
