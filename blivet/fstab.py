@@ -1,9 +1,26 @@
+# fstab.py
+# Fstab management.
+#
+# Copyright (C) 2023  Red Hat, Inc.
+#
+# This copyrighted material is made available to anyone wishing to use,
+# modify, copy, or redistribute it subject to the terms and conditions of
+# the GNU Lesser General Public License v.2, or (at your option) any later
+# version. This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY expressed or implied, including the implied
+# warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+# the GNU Lesser General Public License for more details.  You should have
+# received a copy of the GNU Lesser General Public License along with this
+# program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.  Any Red Hat trademarks
+# that are incorporated in the source code or documentation are not subject
+# to the GNU Lesser General Public License and may only be used or
+# replicated with the express permission of Red Hat, Inc.
+#
+# Red Hat Author(s): Jan Pokorny <japokorn@redhat.com>
+#
+
 import os
-
-import gi
-
-gi.require_version("BlockDev", "2.0")
-from gi.repository import BlockDev as blockdev
 
 from libmount import Table, Fs, MNT_ITER_FORWARD
 from libmount import Error as LibmountException
@@ -12,19 +29,250 @@ import logging
 log = logging.getLogger("blivet")
 
 
-def parser_errcb(tb, fname, line):  # pylint: disable=unused-argument
-    print("{:s}:{:d}: parse error".format(fname, line))
-    return 1
+class FSTabEntry(object):
+    """ One processed line of fstab
+    """
+
+    def __init__(self, spec=None, file=None, vfstype=None, mntops=None,
+                 freq=None, passno=None, comment=None, *, entry=None):
+
+        # Note: "*" in arguments means that every following parameter can be used
+        # only with its key (e.g. "FSTabEntry(entry=Fs())")
+
+        if entry is None:
+            self._entry = Fs()
+        else:
+            self._entry = entry
+
+        if spec is not None:
+            self.spec = spec
+        if file is not None:
+            self.file = file
+        if vfstype is not None:
+            self.vfstype = vfstype
+        if mntops is not None:
+            self.mntops = mntops
+        if freq is not None:
+            self.freq = freq
+        if passno is not None:
+            self.passno = passno
+        if comment is not None:
+            self.comment = comment
+
+        self._none_to_empty()
+
+    def __repr__(self):
+        _comment = ""
+        if self._entry.comment not in ("", None):
+            _comment = "%s\n" % self._entry.comment
+        _line = "%s\t%s\t%s\t%s\t%s\t%s\t" % (self._entry.source, self._entry.target, self._entry.fstype,
+                                              self._entry.options, self._entry.freq, self._entry.passno)
+        return _comment + _line
+
+    def __eq__(self, other):
+        if not isinstance(other, FSTabEntry):
+            return False
+
+        if self._entry.source != other._entry.source:
+            return False
+
+        if self._entry.target != other._entry.target:
+            return False
+
+        if self._entry.fstype != other._entry.fstype:
+            return False
+
+        if self._entry.options != other._entry.options:
+            return False
+
+        if self._entry.freq != other._entry.freq:
+            return False
+
+        if self._entry.passno != other._entry.passno:
+            return False
+
+        return True
+
+    def _none_to_empty(self):
+        """ Workaround function that internally replaces all None values with empty strings.
+            Reason: While libmount.Fs() initializes with parameters set to None, it does not
+            allow to store None as a valid value, blocking all value resets.
+        """
+
+        affected_params = [self._entry.source,
+                           self._entry.target,
+                           self._entry.fstype,
+                           self._entry.options,
+                           self._entry.comment]
+
+        for param in affected_params:
+            if param is None:
+                param = ""
+
+    @property
+    def entry(self):
+        return self._entry
+
+    @entry.setter
+    def entry(self, value):
+        """ Setter for the whole internal entry value
+
+            :param value: fstab entry
+            :type value: :class: `libmount.Fs`
+        """
+        self._entry = value
+
+    @property
+    def spec(self):
+        return self._entry.source if self._entry.source != "" else None
+
+    @spec.setter
+    def spec(self, value):
+        self._entry.source = value if value is not None else ""
+
+    @property
+    def file(self):
+        return self._entry.target if self._entry.target != "" else None
+
+    @file.setter
+    def file(self, value):
+        self._entry.target = value if value is not None else ""
+
+    @property
+    def vfstype(self):
+        return self._entry.fstype if self._entry.fstype != "" else None
+
+    @vfstype.setter
+    def vfstype(self, value):
+        self._entry.fstype = value if value is not None else ""
+
+    @property
+    def mntops(self):
+        """ Return mount options
+
+            :returns: list of mount options or None when not set
+            :rtype: list of str
+        """
+
+        if self._entry.options == "":
+            return None
+
+        return self._entry.options.split(',')
+
+    def get_raw_mntops(self):
+        """ Return mount options
+
+            :returns: comma separated string of mount options or None when not set
+            :rtype: str
+        """
+
+        return self._entry.options if self._entry.options != "" else None
+
+    @mntops.setter
+    def mntops(self, values):
+        """ Set new mount options from the list of strings
+
+            :param values: mount options (see man fstab(5) fs_mntops)
+            :type values: list of str
+        """
+
+        # libmount.Fs() internally stores options as a comma separated string
+        if values is None:
+            self._entry.options = ""
+        else:
+            self._entry.options = ','.join([x for x in values if x != ""])
+
+    def mntops_add(self, values):
+        """ Append new mount options to already existing ones
+
+            :param values: mount options (see man fstab(5) fs_mntops)
+            :type values: list of str
+        """
+
+        self._entry.append_options(','.join([x for x in values if x != ""]))
+
+    @property
+    def freq(self):
+        return self._entry.freq
+
+    @freq.setter
+    def freq(self, value):
+        self._entry.freq = value
+
+    @property
+    def passno(self):
+        return self._entry.passno
+
+    @passno.setter
+    def passno(self, value):
+        self._entry.passno = value
+
+    @property
+    def comment(self):
+        return self._entry.comment if self._entry.comment != "" else None
+
+    @comment.setter
+    def comment(self, value):
+        if value is None:
+            self._entry.comment = ""
+            return
+        self._entry.comment = value
+
+    def is_valid(self):
+        """ Verify that this instance has enough data for valid fstab entry
+
+            :returns: False if any of the listed values is not set; otherwise True
+            :rtype: bool
+        """
+        items = [self.spec, self.file, self.vfstype, self.mntops, self.freq, self.passno]
+
+        # (Property getters replace empty strings with None)
+        return not any(x is None for x in items)
 
 
-class FSTabManager():
-    # Read, write and modify fstab file
-    # This class is meant to work even without blivet.
-    # However some of its methods require blivet and will not function without
-    # it. These methods will import what they need when they are run.
+class FSTabManagerIterator(object):
+    """ Iterator class for FSTabManager
+        Iteration over libmount Table entries is weird - only one iterator can run at a time.
+        This class purpose is to mitigate that.
+    """
+
+    def __init__(self, fstab):
+        # To avoid messing up the libmount Table iterator which is singleton,
+        # set up independent entry list
+        entry = fstab._table.next_fs()
+        self.entries = []
+        while entry:
+            self.entries.append(entry)
+            entry = fstab._table.next_fs()
+        self.cur_index = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.cur_index < len(self.entries):
+            self.cur_index += 1
+            return FSTabEntry(entry=self.entries[self.cur_index - 1])
+        raise StopIteration
+
+
+class FSTabManager(object):
+    """ Read, write and modify fstab file.
+        This class is meant to work even without blivet.
+        However some of its methods require blivet and will not function without it.
+    """
 
     def __init__(self, src_file=None, dest_file=None):
+        """ Initialize internal table; load the file if specified
+
+            :keyword src_file: Path to fstab file which will be read
+            :type src_file: str
+            :keyword dest_file: Path to file which will be overwritten with results
+            :type src_file: str
+        """
+
         self._table = Table()   # Space for parsed fstab contents
+        self._table.enable_comments(True)
 
         self.src_file = src_file
         self.dest_file = dest_file
@@ -37,81 +285,97 @@ class FSTabManager():
         clone._table = Table()
         clone._table.enable_comments(True)
 
+        # Two special variables for the first and last comment. When assigning None to them, libmount fails.
+        # Notice that we are copying the value from the instance of the same type.
+        if self._table.intro_comment is not None:
+            clone._table.intro_comment = self._table.intro_comment
+        if self._table.trailing_comment is not None:
+            clone._table.trailing_comment = self._table.trailing_comment
+
         entry = self._table.next_fs()
-        entries = [entry]
+        entries = []
         while entry:
             entries.append(entry)
             entry = self._table.next_fs()
 
-        # Libmount does not allow to simply use clone._table.add_fs(entry), so...
         for entry in entries:
-            new_entry = Fs()
-            new_entry.source = entry.source
-            new_entry.target = entry.target
-            new_entry.fstype = entry.fstype
-            new_entry.append_options(entry.options)
-            new_entry.freq = entry.freq
-            new_entry.passno = entry.passno
-            if entry.comment is not None:
-                new_entry.comment = entry.comment
+            new_entry = self._copy_fs_entry(entry)
             clone._table.add_fs(new_entry)
 
         return clone
 
-    def _get_containing_device(self, path, devicetree):
-        # Return the device that a path resides on
-        if not os.path.exists(path):
-            return None
+    def __repr__(self):
+        entry = self._table.next_fs()
+        entries_str = ""
+        while entry:
+            entries_str += repr(FSTabEntry(entry=entry)) + '\n'
+            entry = self._table.next_fs()
+        return entries_str
 
-        st = os.stat(path)
-        major = os.major(st.st_dev)
-        minor = os.minor(st.st_dev)
-        link = "/sys/dev/block/%s:%s" % (major, minor)
-        if not os.path.exists(link):
-            return None
+    def __iter__(self):
+        return FSTabManagerIterator(self)
 
-        try:
-            device_name = os.path.basename(os.readlink(link))
-        except Exception:  # pylint: disable=broad-except
-            log.error("failed to find device name for path %s", path)
-            return None
+    def _copy_fs_entry(self, entry):
+        """ Create copy of libmount.Fs()
+        """
+        # Nope, it has to be done like this. Oh well...
+        new_entry = Fs()
+        new_entry.source = entry.source
+        new_entry.target = entry.target
+        new_entry.fstype = entry.fstype
+        new_entry.append_options(entry.options)
+        new_entry.freq = entry.freq
+        new_entry.passno = entry.passno
+        if entry.comment is not None:
+            new_entry.comment = entry.comment
+        return new_entry
 
-        if device_name.startswith("dm-"):
-            # have I told you lately that I love you, device-mapper?
-            # (code and comment copied from anaconda, kept for entertaining purposes)
-            device_name = blockdev.dm.name_from_node(device_name)
+    def _parser_errcb(self, tb, fname, line):  # pylint: disable=unused-argument
+        """ Libmount interface error reporting function
+        """
+        log.error("Fstab parse error '%s:%s'", fname, line)
+        return 1
 
-        return devicetree.get_device_by_name(device_name)
+    def entry_from_device(self, device):
+        """ Generate FSTabEntry object based on given blivet Device
 
-    def _from_device(self, device):
-        # Return the list of fstab options obtained from device
-        # *(result) of this method is meant to be used as a parameter in other methods
+            :keyword device: device to process
+            :type device: :class: `blivet.devices.StorageDevice`
+            :returns: fstab entry object based on device
+            :rtype: :class: `FSTabEntry`
+        """
 
-        spec = getattr(device, 'fstab_spec', None)
+        entry = FSTabEntry()
 
-        file = None
+        if device.format.uuid:
+            entry.spec = "UUID=%s" % device.format.uuid
+        else:
+            entry.spec = getattr(device, "fstab_spec", None)
+
+        entry.file = None
         if device.format.mountable:
-            file = device.format.mountpoint
-        if device.format.type == 'swap':
-            file = 'swap'
+            entry.file = device.format.mountpoint
+        if device.format.type == "swap":
+            entry.file = "swap"
 
-        vfstype = device.format.type
-        mntops = None
+        entry.vfstype = device.format.type
 
-        return spec, file, vfstype, mntops
+        return entry
 
-    def _from_entry(self, entry):
-        return entry.source, entry.target, entry.fstype, ','.join(entry.options)
+    def read(self, src_file=""):
+        """ Read the fstab file from path stored in self.src_file. Setting src_file parameter overrides
+            it with new value.
 
-    def read(self, src_file=''):
-        # Read fstab file
+            :keyword src_file: When set, reads fstab from path specified in it
+            :type src_file: str
+        """
 
         # Reset table
         self._table = Table()
         self._table.enable_comments(True)
 
         # resolve which file to read
-        if src_file == '':
+        if src_file == "":
             if self.src_file is None:
                 # No parameter given, no internal value
                 return
@@ -120,245 +384,327 @@ class FSTabManager():
         else:
             self.src_file = src_file
 
-        self._table.errcb = parser_errcb
-        self._table.parse_fstab(self.src_file)
+        self._table.errcb = self._parser_errcb
+        try:
+            self._table.parse_fstab(self.src_file)
+        except Exception as e:  # pylint: disable=broad-except
+            # libmount throws general Exception. Okay...
+            if str(e) == "No such file or directory":
+                log.warning("Fstab file '%s' does not exist", self.src_file)
+            else:
+                raise
 
-    def find_device_by_specs(self, blivet, spec, file_dummy=None, vfstype_dummy=None, mntops=""):  # pylint: disable=unused-argument
-        # Parse an fstab entry for a device, return the corresponding device,
-        # return None if not found
-        # dummy arguments allow using result of _from_device/_from_entry as a parameter of this method
-        return blivet.devicetree.resolve_device(spec, options=mntops)
+    def find_device(self, blivet, spec=None, mntops=None, blkid_tab=None, crypt_tab=None, *, entry=None):
+        """ Find a blivet device, based on spec or entry. Mount options can be used to refine the search.
+            If both entry and spec/mntops are given, spec/mntops are prioritized over entry values.
 
-    def find_device_by_entry(self, blivet, entry):
-        args = self._from_entry(entry)
-        return self.find_device_by_specs(blivet, *args)
+            :param blivet: Blivet instance with populated devicetree
+            :type blivet: :class: `Blivet`
+            :keyword spec: searched device specs (see man fstab(5) fs_spec)
+            :type spec: str
+            :keyword mntops: list of mount option strings (see man fstab(5) fs_mntops)
+            :type mnops: list
+            :keyword blkid_tab: Blkidtab object
+            :type blkid_tab: :class: `BlkidTab`
+            :keyword crypt_tab: Crypttab object
+            :type crypt_tab: :class: `CryptTab`
+            :keyword entry: fstab entry with its spec (and mntops) filled as an alternative input type
+            :type: :class: `FSTabEntry`
+            :returns: found device or None
+            :rtype: :class: `~.devices.StorageDevice` or None
+        """
 
-    def get_device_by_specs(self, blivet, spec, file, vfstype, mntops):
-        # Parse an fstab entry for a device, return the corresponding device,
-        # create new one if it does not exist
+        _spec = spec or (entry.spec if entry is not None else None)
+        _mntops = mntops or (entry.mntops if entry is not None else None)
+        _mntops_str = ",".join(_mntops) if mntops is not None else None
+
+        return blivet.devicetree.resolve_device(_spec, options=_mntops_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
+
+    def get_device(self, blivet, spec=None, file=None, vfstype=None,
+                   mntops=None, blkid_tab=None, crypt_tab=None, *, entry=None):
+        """ Parse an fstab entry for a device and return the corresponding device from the devicetree.
+            If not found, try to create a new device based on given values.
+            Raises UnrecognizedFSTabError in case of invalid or incomplete data.
+
+            :param blivet: Blivet instance with populated devicetree
+            :type blivet: :class: `Blivet`
+            :keyword spec: searched device specs (see man fstab(5) fs_spec)
+            :type spec: str
+            :keyword mntops: list of mount option strings (see man fstab(5) fs_mntops)
+            :type mnops: list
+            :keyword blkid_tab: Blkidtab object
+            :type blkid_tab: :class: `BlkidTab`
+            :keyword crypt_tab: Crypttab object
+            :type crypt_tab: :class: `CryptTab`
+            :keyword entry: fstab entry with its values filled as an alternative input type
+            :type: :class: `FSTabEntry`
+            :returns: found device
+            :rtype: :class: `~.devices.StorageDevice`
+        """
 
         from blivet.formats import get_format
-        from blivet.devices import DirectoryDevice, NFSDevice, FileDevice, NoDevice
-        from blivet.formats import get_device_format_class
+        from blivet.devices import DirectoryDevice, FileDevice
+        from blivet.errors import UnrecognizedFSTabEntryError
 
-        # no sense in doing any legwork for a noauto entry
-        if "noauto" in mntops.split(","):
-            raise ValueError("Unrecognized fstab entry value 'noauto'")
+        _spec = spec or (entry.spec if entry is not None else None)
+        _mntops = mntops or (entry.mntops if entry is not None else None)
+        _mntops_str = ",".join(_mntops) if mntops is not None else None
 
         # find device in the tree
-        device = blivet.devicetree.resolve_device(spec, options=mntops)
-
-        if device:
-            # fall through to the bottom of this block
-            pass
-        elif ":" in spec and vfstype.startswith("nfs"):
-            # NFS -- preserve but otherwise ignore
-            device = NFSDevice(spec,
-                               fmt=get_format(vfstype,
-                                              exists=True,
-                                              device=spec))
-        elif spec.startswith("/") and vfstype == "swap":
-            # swap file
-            device = FileDevice(spec,
-                                parents=self._get_containing_device(spec, blivet.devicetree),
-                                fmt=get_format(vfstype,
-                                               device=spec,
-                                               exists=True),
-                                exists=True)
-        elif vfstype == "bind" or "bind" in mntops:
-            # bind mount... set vfstype so later comparison won't
-            # turn up false positives
-            vfstype = "bind"
-
-            # This is probably not going to do anything useful, so we'll
-            # make sure to try again from FSSet.mount_filesystems. The bind
-            # mount targets should be accessible by the time we try to do
-            # the bind mount from there.
-            parents = self._get_containing_device(spec, blivet.devicetree)
-            device = DirectoryDevice(spec, parents=parents, exists=True)
-            device.format = get_format("bind",
-                                       device=device.path,
-                                       exists=True)
-        elif file in ("/proc", "/sys", "/dev/shm", "/dev/pts",
-                      "/sys/fs/selinux", "/proc/bus/usb", "/sys/firmware/efi/efivars"):
-            # drop these now -- we'll recreate later
-            return None
-        else:
-            # nodev filesystem -- preserve or drop completely?
-            fmt = get_format(vfstype)
-            fmt_class = get_device_format_class("nodev")
-            if spec == "none" or \
-               (fmt_class and isinstance(fmt, fmt_class)):
-                device = NoDevice(fmt=fmt)
+        device = blivet.devicetree.resolve_device(_spec, options=_mntops_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
 
         if device is None:
-            log.error("failed to resolve %s (%s) from fstab", spec,
-                      vfstype)
-            raise ValueError()
+            if vfstype == "swap":
+                # swap file
+                device = FileDevice(_spec,
+                                    parents=blivet.devicetree.resolve_device(_spec),
+                                    fmt=get_format(vfstype, device=_spec, exists=True),
+                                    exists=True)
+            elif vfstype == "bind" or (_mntops is not None and "bind" in _mntops):
+                # bind mount... set vfstype so later comparison won't
+                # turn up false positives
+                vfstype = "bind"
 
-        device.setup()
+                parents = blivet.devicetree.resolve_device(_spec)
+                device = DirectoryDevice(_spec, parents=parents, exists=True)
+                device.format = get_format("bind", device=device.path, exists=True)
+
+        if device is None:
+            raise UnrecognizedFSTabEntryError("Could not resolve entry %s %s" % (_spec, vfstype))
+
         fmt = get_format(vfstype, device=device.path, exists=True)
         if vfstype != "auto" and None in (device.format.type, fmt.type):
-            log.info("Unrecognized filesystem type for %s (%s)",
-                     device.name, vfstype)
-            device.teardown()
-            raise ValueError()
-
-        # make sure, if we're using a device from the tree, that
-        # the device's format we found matches what's in the fstab
-        ftype = getattr(fmt, "mount_type", fmt.type)
-        dtype = getattr(device.format, "mount_type", device.format.type)
-        if hasattr(fmt, "test_mount") and vfstype != "auto" and ftype != dtype:
-            log.info("fstab says %s at %s is %s", dtype, file, ftype)
-            if fmt.test_mount():     # pylint: disable=no-member
-                device.format = fmt
-            else:
-                device.teardown()
-                log.info("There is an entry in your fstab file that contains "
-                         "unrecognized file system type. The file says that "
-                         "%s at %s is %s.", dtype, file, ftype)
-                return None
+            raise UnrecognizedFSTabEntryError("Unrecognized filesystem type for %s: '%s'" % (_spec, vfstype))
 
         if hasattr(device.format, "mountpoint"):
             device.format.mountpoint = file
 
-        device.format.options = mntops
+        device.format.options = _mntops
 
         return device
 
-    def get_device_by_entry(self, blivet, entry):
-        args = self._from_entry(entry)
-        return self.get_device_by_specs(blivet, *args)
+    def add_entry(self, spec=None, file=None, vfstype=None, mntops=None,
+                  freq=None, passno=None, comment=None, *, entry=None):
+        """ Add a new entry into the table
+            If both entry and other values are given, these values are prioritized over entry values.
+            If mntops/freq/passno is not set uses their respective default values.
 
-    def add_entry_by_specs(self, spec, file, vfstype, mntops, freq=None, passno=None, comment=None):
-        # Add new entry into the table
+            :keyword spec: device specs (see man fstab(5) fs_spec)
+            :type spec: str
+            :keyword file: device mount path (see man fstab(5) fs_file)
+            :type file: str
+            :keyword vfstype: device file system type (see man fstab(5) fs_vfstype)
+            :type vfstype: str
+            :keyword mntops: list of mount option strings (see man fstab(5) fs_mntops)
+            :type mnops: list
+            :keyword freq: whether to dump the filesystem (see man fstab(5) fs_freq)
+            :type freq: int
+            :keyword passno: fsck order or disable fsck if 0 (see man fstab(5) fs_passno)
+            :type passno: int
+            :keyword comment: multiline comment added to fstab before entry; each line will be prefixed with "# "
+            :type comment: str
+            :keyword entry: fstab entry as an alternative input type
+            :type: :class: `FSTabEntry`
+        """
 
         # Default mount options
         if mntops is None:
-            mntops = 'defaults'
+            mntops = ['defaults']
 
-        # Whether the fs should be dumped by dump(8), defaults to 0
-        if freq is None:
-            freq = 0
+        # Use existing FSTabEntry or create a new one
+        _entry = entry or FSTabEntry()
 
-        # Order of fsck run at boot time. '/' should have 1, other 2, defaults to 0
-        if passno is None:
-            if file is None:
-                file = ''
-            if file == '/':
-                passno = 1
-            elif file.startswith('/boot'):
-                passno = 2
+        if spec is not None:
+            _entry.spec = spec
+
+        if file is not None:
+            _entry.file = file
+
+        if vfstype is not None:
+            _entry.vfstype = vfstype
+
+        if mntops is not None:
+            _entry.mntops = mntops
+        elif _entry.mntops is None:
+            _entry.mntops = ['defaults']
+
+        if freq is not None:
+            # Whether the fs should be dumped by dump(8) (default: 0, i.e. no)
+            _entry.freq = freq
+        elif _entry.freq is None:
+            _entry.freq = 0
+
+        if passno is not None:
+            _entry.passno = freq
+        elif _entry.passno is None:
+            # 'passno' represents order of fsck run at the boot time (default: 0, i.e. disabled).
+            # '/' should have 1, other checked should have 2
+            if _entry.file == '/':
+                _entry.passno = 1
+            elif _entry.file.startswith('/boot'):
+                _entry.passno = 2
             else:
-                passno = 0
-
-        entry = Fs()
-
-        entry.source = spec
-        entry.target = file
-        entry.fstype = vfstype
-        entry.append_options(mntops)
-        entry.freq = freq
-        entry.passno = passno
+                _entry.passno = 0
 
         if comment is not None:
-            # add '# ' at the start of any comment line and newline to the end of comment
+            # Add '# ' at the start of any comment line and newline to the end of comment.
+            # Has to be done here since libmount won't do it.
             modif_comment = '# ' + comment.replace('\n', '\n# ') + '\n'
-            entry.comment = modif_comment
+            _entry.comment = modif_comment
 
-        self._table.add_fs(entry)
+        self._table.add_fs(_entry.entry)
 
-    def add_entry_by_device(self, device):
-        args = self._from_device(device)
-        return self.add_entry_by_specs(*args)
+    def remove_entry(self, spec=None, file=None, *, entry=None):
+        """ Find and remove entry from fstab based on spec/file.
+            If both entry and spec/file are given, spec/file are prioritized over entry values.
 
-    def remove_entry_by_specs(self, spec, file, vfstype=None, mntops=""):
-        fs = self.find_entry_by_specs(spec, file, vfstype, mntops)
+            :keyword spec: device specs (see man fstab(5) fs_spec)
+            :type spec: str
+            :keyword file: device mount path (see man fstab(5) fs_file)
+            :type file: str
+            :keyword entry: fstab entry as an alternative input type
+            :type: :class: `FSTabEntry`
+        """
+
+        fs = self.find_entry(spec, file, entry=entry)
         if fs:
-            self._table.remove_fs(fs)
-
-    def remove_entry_by_device(self, device):
-        args = self._from_device(device)
-        return self.remove_entry_by_specs(*args)
+            self._table.remove_fs(fs.entry)
 
     def write(self, dest_file=None):
-        # Commit the self._table into the file.
+        """ Commit the self._table into the self._dest_file. Setting dest_file parameter overrides
+            writing path with its value.
+
+            :keyword dest_file: When set, writes fstab to the path specified in it
+            :type dest_file: str
+        """
+
         if dest_file is None:
             dest_file = self.dest_file
         if dest_file is None:
             log.info("Fstab path for writing was not specified")
             return
 
+        # Output sanity check to prevent saving an incomplete file entries
+        # since libmount happily inserts incomplete lines into the fstab.
+        # Invalid lines should be skipped, but the whole table is written at once.
+        # Also the incomplete lines need to be preserved in the object.
+        # Conclusion: Create the second table, prune invalid/incomplete lines and write it.
+
+        clean_table = Table()
+        clean_table.enable_comments(True)
+
+        # Two special variables for the first and last comment. When assigning None libmount fails.
+        # Notice that we are copying the value from the same type instance.
+        if self._table.intro_comment is not None:
+            clean_table.intro_comment = self._table.intro_comment
+        if self._table.trailing_comment is not None:
+            clean_table.trailing_comment = self._table.trailing_comment
+
+        entry = self._table.next_fs()
+        while entry:
+            if FSTabEntry(entry=entry).is_valid():
+                new_entry = self._copy_fs_entry(entry)
+                clean_table.add_fs(new_entry)
+            else:
+                log.warning("Fstab entry: '%s' is not complete, it will not be written into the file", entry)
+            entry = self._table.next_fs()
+
         if os.path.exists(dest_file):
-            self._table.replace_file(dest_file)
+            clean_table.replace_file(dest_file)
         else:
-            # write will fail if underlying directories do not exist
-            self._table.write_file(dest_file)
-
-    def find_entry_by_specs(self, spec, file, vfstype_dummy=None, mntops_dummy=None):  # pylint: disable=unused-argument
-        # Return line of self._table with given spec or file
-        # dummy arguments allow using result of _from_device/_from_entry as a parameter of this method
-
-        entry = None
-
-        if spec is not None and file is not None:
             try:
-                entry = self._table.find_pair(spec, file, MNT_ITER_FORWARD)
-            except LibmountException:
-                entry = None
+                clean_table.write_file(dest_file)
+            except Exception as e:  # pylint: disable=broad-except
+                # libmount throws general Exception if underlying directories do not exist. Okay...
+                if str(e) == "No such file or directory":
+                    log.info("Underlying directory of fstab '%s' does not exist. creating...", dest_file)
+                    os.makedirs(os.path.split(dest_file)[0])
+                else:
+                    raise
 
-        if spec is not None:
+    def find_entry(self, spec=None, file=None, *, entry=None):
+        """ Return the line of loaded fstab with given spec and/or file.
+            If both entry and spec/file are given, spec/file are prioritized over entry values.
+
+            :keyword spec: searched device specs (see man fstab(5) fs_spec)
+            :type spec: str
+            :keyword file: device mount path (see man fstab(5) fs_file)
+            :type file: str
+            :keyword entry: fstab entry as an alternative input type
+            :type: :class: `FSTabEntry`
+            :returns: found fstab entry object
+            :rtype: :class: `FSTabEntry` or None
+        """
+
+        _spec = spec or (entry.spec if entry is not None else None)
+        _file = file or (entry.file if entry is not None else None)
+
+        found_entry = None
+
+        if _spec is not None and _file is not None:
             try:
-                entry = self._table.find_source(spec, MNT_ITER_FORWARD)
+                found_entry = self._table.find_pair(_spec, _file, MNT_ITER_FORWARD)
             except LibmountException:
-                entry = None
+                return None
+            return FSTabEntry(entry=found_entry)
+
+        if _spec is not None:
+            try:
+                found_entry = self._table.find_source(_spec, MNT_ITER_FORWARD)
+            except LibmountException:
+                return None
+            return FSTabEntry(entry=found_entry)
 
         if file is not None:
             try:
-                entry = self._table.find_target(file, MNT_ITER_FORWARD)
+                found_entry = self._table.find_target(file, MNT_ITER_FORWARD)
             except LibmountException:
-                entry = None
-        return entry
+                return None
+            return FSTabEntry(entry=found_entry)
 
-    def find_entry_by_device(self, device):
-        args = self._from_device(device)
-        return self.find_entry_by_specs(*args)
+        return None
 
-    def update(self, devices):
-        # Update self._table entries based on 'devices' list
-        #  - keep unaffected devices entries unchanged
-        #  - remove entries no longer tied to any device
-        #  - add new entries for devices not present in self._table
+    def update(self, action, bae_entry):
+        """ Update fstab based on action type and device. Does not commit changes to a file.
 
-        # remove entries not tied to any device
-        fstab_entries = []
-        entry = self._table.next_fs()
-        while entry:
-            fstab_entries.append(entry)
-            entry = self._table.next_fs()
+            :param action: just executed blivet action
+            :type action: :class: `~.deviceaction.DeviceAction`
+            :param bae_entry: fstab entry based on action.device before action.execute was called
+            :type bae_entry: :class: `FSTabEntry` or None
+        """
 
-        for device in devices:
-            args = self._from_device(device)
-            entry = self.find_entry_by_specs(*args)
+        if not action._applied:
+            return
 
-            # remove from the list if found
-            try:
-                fstab_entries.remove(entry)
-            except ValueError:
-                pass
+        if action.is_destroy and bae_entry is not None:
+            # remove destroyed device from the fstab
+            self.remove_entry(entry=bae_entry)
+            return
 
-        # All entries left in the fstab_entries do not have their counterpart
-        # in devices and are to be removed from self._table
-        for entry in fstab_entries:
-            self._table.remove_fs(entry)
+        if action.is_create and action.is_device and action.device.type == "luks/dm-crypt":
+            # when creating luks format, two actions are made. Device creation
+            # does not have UUID assigned yet, so we skip that one
+            return
 
-        # add new entries based on devices not in the table
-        for device in devices:
-            # if mountable the device should be in the fstab
-            if device.format.mountable:
-                args = self._from_device(device)
-                found = self.find_entry_by_specs(*args)
-                if found is None:
-                    self.add_entry_by_specs(*args)
-                elif found.target != device.format.mountpoint:
-                    self.add_entry_by_specs(args[0], device.format.mountpoint, args[2], args[3])
+        if action.is_create and action.device.format.mountable:
+            # add the device to the fstab
+            # make sure it is not already present there
+            entry = self.entry_from_device(action.device)
+            found = self.find_entry(entry=entry)
+            if found is None and action.device.format.mountpoint is not None:
+                # device is not present in fstab and has a defined mountpoint => add it
+                self.add_entry(entry=entry)
+            elif found and found.file != action.device.format.mountpoint and action.device.format.mountpoint is not None:
+                # device already exists in fstab but with a different mountpoint => add it
+                self.add_entry(file=action.device.format.mountpoint, entry=found)
+            return
+
+        if action.is_configure and action.is_format and bae_entry is not None:
+            # Handle change of the mountpoint:
+            # Change its value if it is defined, remove the fstab entry if it is None
+            entry = self.entry_from_device(action.device)
+            if action.device.format.mountpoint is not None and bae_entry.file != action.device.format.mountpoint:
+                self.remove_entry(entry=bae_entry)
+                self.add_entry(file=action.device.format.mountpoint, entry=bae_entry)
+            elif action.device.format.mountpoint is None:
+                self.remove_entry(entry=bae_entry)

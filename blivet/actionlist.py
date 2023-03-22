@@ -286,6 +286,12 @@ class ActionList(object):
             if dry_run:
                 continue
 
+            # get (b)efore (a)ction.(e)xecute fstab entry
+            # (device may not exist afterwards)
+            if fstab is not None:
+                entry = fstab.entry_from_device(action.device)
+                bae_entry = fstab.find_entry(entry=entry)
+
             with blivet_lock:
 
                 try:
@@ -314,11 +320,11 @@ class ActionList(object):
                         device.update_name()
                         device.format.device = device.path
 
-                if fstab is not None:
-                    fstab.update(devices)
-                    fstab.write()
-
                 self._completed_actions.append(self._actions.pop(0))
                 _callbacks.action_executed(action=action)
+
+                if fstab is not None:
+                    fstab.update(action, bae_entry)
+                    fstab.write()
 
         self._post_process(devices=devices)

@@ -56,6 +56,9 @@ import logging
 log = logging.getLogger("blivet")
 
 
+FSTAB_PATH = "/etc/fstab"
+
+
 @six.add_metaclass(SynchronizedMeta)
 class Blivet(object):
 
@@ -74,7 +77,7 @@ class Blivet(object):
 
         # fstab write location purposedly set to None. It has to be overriden
         # manually when using blivet.
-        self.fstab = FSTabManager(src_file="/etc/fstab", dest_file=None)
+        self.fstab = FSTabManager(src_file=FSTAB_PATH, dest_file=None)
 
         self._short_product_name = 'blivet'
 
