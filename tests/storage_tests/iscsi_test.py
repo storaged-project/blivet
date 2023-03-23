@@ -127,7 +127,7 @@ class ISCSITestCase(unittest.TestCase):
     def test_discover_login(self):
         from blivet.iscsi import iscsi, has_iscsi
 
-        if not has_iscsi():
+        if not has_iscsi() or not iscsi.available:
             self.skipTest("iSCSI not available, skipping")
 
         iscsi.initiator = self.initiator
