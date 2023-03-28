@@ -106,7 +106,7 @@ def _to_node_infos(variant):
 
 
 class iSCSIDependencyGuard(util.DependencyGuard):
-    error_msg = "storaged iSCSI functionality not available"
+    error_msg = "UDisks iSCSI functionality not available"
 
     def _check_avail(self):
         try:
