@@ -42,6 +42,7 @@ from .. import errors
 from .. import util
 from ..storage_log import log_method_call
 from .. import udev
+from ..flags import flags
 from ..size import Size, KiB, MiB, ROUND_UP, ROUND_DOWN
 from ..static_data.lvm_info import lvs_info
 from ..tasks import availability
@@ -2729,12 +2730,14 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         # Setup VG parents (in case they are dmraid partitions for example)
         self.vg.setup_parents(orig=True)
 
-        if self.original_format.exists:
-            self.original_format.teardown()
-        if self.format.exists:
-            self.format.teardown()
+        if not flags.allow_online_fs_resize:
+            if self.original_format.exists:
+                self.original_format.teardown()
+            if self.format.exists:
+                self.format.teardown()
 
-        udev.settle()
+            udev.settle()
+
         blockdev.lvm.lvresize(self.vg.name, self._name, self.size)
 
     @type_specific
