@@ -91,6 +91,9 @@ class Flags(object):
 
         self.debug_threads = False
 
+        # Allow online filesystem resizes
+        self.allow_online_fs_resize = False
+
     def get_boot_cmdline(self):
         with open("/proc/cmdline") as f:
             buf = f.read().strip()

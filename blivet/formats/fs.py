@@ -56,7 +56,7 @@ from ..i18n import N_
 from .. import udev
 from ..mounts import mounts_cache
 
-from .fslib import kernel_filesystems
+from .fslib import kernel_filesystems, FSResize
 
 import logging
 log = logging.getLogger("blivet")
@@ -87,6 +87,9 @@ class FS(DeviceFormat):
     # This number is more guess than precise number because this
     # value is already unpredictable and can change in the future...
     _metadata_size_factor = 1.0
+
+    # support for resize: grow/shrink, online/offline
+    _resize_support = 0
 
     config_actions_map = {"label": "write_label"}
 
@@ -436,12 +439,27 @@ class FS(DeviceFormat):
             self.write_uuid()
 
     def _pre_resize(self):
-        # file systems need a check before being resized
-        self.do_check()
+        if self.status:
+            if flags.allow_online_fs_resize:
+                if self.target_size > self.size and not self._resize_support & FSResize.ONLINE_GROW:
+                    raise FSError("This filesystem doesn't support online growing")
+                if self.target_size < self.size and not self._resize_support & FSResize.ONLINE_SHRINK:
+                    raise FSError("This filesystem doesn't support online shrinking")
+            else:
+                raise FSError("Resizing of mounted filesystems is disabled")
+
+        if self.status:
+            # fsck tools in general don't allow checks on mounted filesystems
+            log.debug("Filesystem on %s is mounted, not checking", self.device)
+        else:
+            # file systems need a check before being resized
+            self.do_check()
+
         super(FS, self)._pre_resize()
 
     def _post_resize(self):
-        self.do_check()
+        if not self.status:
+            self.do_check()
         super(FS, self)._post_resize()
 
     def do_check(self):
@@ -838,6 +856,7 @@ class Ext2FS(FS):
     _formattable = True
     _supported = True
     _resizable = True
+    _resize_support = FSResize.ONLINE_GROW | FSResize.OFFLINE_GROW | FSResize.OFFLINE_SHRINK
     _linux_native = True
     _max_size = Size("8 TiB")
     _dump = True
@@ -1097,6 +1116,7 @@ class XFS(FS):
     _linux_native = True
     _supported = True
     _resizable = True
+    _resize_support = FSResize.ONLINE_GROW | FSResize.OFFLINE_GROW
     _packages = ["xfsprogs"]
     _fsck_class = fsck.XFSCK
     _info_class = fsinfo.XFSInfo
@@ -1247,6 +1267,7 @@ class NTFS(FS):
     _labelfs = fslabeling.NTFSLabeling()
     _uuidfs = fsuuid.NTFSUUID()
     _resizable = True
+    _resize_support = FSResize.OFFLINE_GROW | FSResize.OFFLINE_SHRINK
     _formattable = True
     _supported = True
     _min_size = Size("1 MiB")
@@ -1489,6 +1510,9 @@ class TmpFS(NoDevFS):
         # device property, but as the device is always the
         # same, nothing actually needs to be set
         pass
+
+    def _pre_resize(self):
+        self.do_check()
 
     def do_resize(self):
         # Override superclass method to record whether mount options
