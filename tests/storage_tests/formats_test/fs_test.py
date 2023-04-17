@@ -6,9 +6,10 @@ import parted
 
 import blivet.formats.fs as fs
 from blivet.size import Size, ROUND_DOWN
-from blivet.errors import DeviceFormatError
+from blivet.errors import DeviceFormatError, FSError
 from blivet.formats import get_format
 from blivet.devices import PartitionDevice, DiskDevice
+from blivet.flags import flags
 
 from .loopbackedtestcase import LoopBackedTestCase
 
@@ -25,6 +26,46 @@ class Ext3FSTestCase(Ext2FSTestCase):
 
 class Ext4FSTestCase(Ext3FSTestCase):
     _fs_class = fs.Ext4FS
+
+    def test_online_resize(self):
+        an_fs = self._fs_class()
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+        an_fs.device = self.loop_devices[0]
+        self.assertIsNone(an_fs.create())
+        an_fs.update_size_info()
+
+        if not self.can_resize(an_fs):
+            self.skipTest("filesystem is not resizable")
+
+        # shrink offline first (ext doesn't support online shrinking)
+        TARGET_SIZE = Size("64 MiB")
+        an_fs.target_size = TARGET_SIZE
+        self.assertEqual(an_fs.target_size, TARGET_SIZE)
+        self.assertNotEqual(an_fs._size, TARGET_SIZE)
+        self.assertIsNone(an_fs.do_resize())
+
+        with tempfile.TemporaryDirectory() as mountpoint:
+            an_fs.mount(mountpoint=mountpoint)
+
+            # grow back when mounted
+            TARGET_SIZE = Size("100 MiB")
+            an_fs.target_size = TARGET_SIZE
+            self.assertEqual(an_fs.target_size, TARGET_SIZE)
+            self.assertNotEqual(an_fs._size, TARGET_SIZE)
+
+            # should fail, online resize disabled by default
+            with self.assertRaisesRegex(FSError, "Resizing of mounted filesystems is disabled"):
+                an_fs.do_resize()
+
+            # enable online resize
+            flags.allow_online_fs_resize = True
+            an_fs.do_resize()
+            flags.allow_online_fs_resize = False
+            self._test_sizes(an_fs)
+            self.assertEqual(an_fs.system_mountpoint, mountpoint)
+
+            an_fs.unmount()
 
 
 class FATFSTestCase(fstesting.FSAsRoot):

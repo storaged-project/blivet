@@ -36,3 +36,10 @@ def update_kernel_filesystems():
 
 
 update_kernel_filesystems()
+
+
+class FSResize():
+    OFFLINE_SHRINK = 1 << 1
+    OFFLINE_GROW = 1 << 2
+    ONLINE_SHRINK = 1 << 3
+    ONLINE_GROW = 1 << 4
