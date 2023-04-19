@@ -794,11 +794,12 @@ class PartitionDevice(StorageDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created")
 
-        # don't teardown when resizing luks
-        if self.format.type == "luks" and self.children:
-            self.children[0].format.teardown()
-        else:
-            self.teardown()
+        if not flags.allow_online_fs_resize:
+            # don't teardown when resizing luks
+            if self.format.type == "luks" and self.children:
+                self.children[0].format.teardown()
+            else:
+                self.teardown()
 
         if not self.sysfs_path:
             return

@@ -95,6 +95,9 @@ class Flags(object):
         # https://uapi-group.org/specifications/specs/discoverable_partitions_specification/
         self.gpt_discoverable_partitions = False
 
+        # Allow online filesystem resizes
+        self.allow_online_fs_resize = False
+
     def get_boot_cmdline(self):
         with open("/proc/cmdline") as f:
             buf = f.read().strip()
