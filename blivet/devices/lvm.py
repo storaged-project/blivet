@@ -97,7 +97,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
     def __init__(self, name, parents=None, size=None, free=None,
                  pe_size=None, pe_count=None, pe_free=None, pv_count=None,
-                 uuid=None, exists=False, sysfs_path='', exported=False):
+                 uuid=None, exists=False, sysfs_path='', exported=False,
+                 shared=False):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -124,6 +125,11 @@ class LVMVolumeGroupDevice(ContainerDevice):
             :type pv_count: int
             :keyword uuid: the VG UUID
             :type uuid: str
+
+            For non-existing VGs only:
+
+            :keyword shared: whether to create this VG as shared
+            :type shared: bool
         """
         # These attributes are used by _add_parent, so they must be initialized
         # prior to instantiating the superclass.
@@ -137,6 +143,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         self.pe_count = util.numeric_type(pe_count)
         self.pe_free = util.numeric_type(pe_free)
         self.exported = exported
+        self._shared = shared
 
         # TODO: validate pe_size if given
         if not self.pe_size:
@@ -257,10 +264,22 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         pv_list = [pv.path for pv in self.parents]
+        extra = dict()
+        if self._shared:
+            extra["shared"] = ""
         try:
-            blockdev.lvm.vgcreate(self.name, pv_list, self.pe_size)
+            blockdev.lvm.vgcreate(self.name, pv_list, self.pe_size, **extra)
         except blockdev.LVMError as err:
             raise errors.LVMError(err)
+
+        if self._shared:
+            if availability.BLOCKDEV_LVM_PLUGIN_SHARED.available:
+                try:
+                    blockdev.lvm.vglock_start(self.name)
+                except blockdev.LVMError as err:
+                    raise errors.LVMError(err)
+            else:
+                raise errors.LVMError("Shared LVM is not fully supported: %s" % ",".join(availability.BLOCKDEV_LVM_PLUGIN_SHARED.availability_errors))
 
     def _post_create(self):
         self._complete = True
@@ -682,7 +701,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     def __init__(self, name, parents=None, size=None, uuid=None, seg_type=None,
                  fmt=None, exists=False, sysfs_path='', grow=None, maxsize=None,
                  percent=None, cache_request=None, pvs=None, from_lvs=None,
-                 stripe_size=0):
+                 stripe_size=0, shared=False):
 
         if not exists:
             if seg_type not in [None, "linear", "thin", "thin-pool", "cache", "vdo-pool", "vdo", "cache-pool"] + lvm.raid_seg_types:
@@ -711,6 +730,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         self.seg_type = seg_type or "linear"
         self._raid_level = None
         self.ignore_skip_activation = 0
+        self._shared = shared
 
         self.req_grow = None
         self.req_max_size = Size(0)
@@ -2375,7 +2395,8 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
                  parent_lv=None, int_type=None, origin=None, vorigin=False,
                  metadata_size=None, chunk_size=None, profile=None, from_lvs=None,
                  compression=False, deduplication=False, index_memory=0,
-                 write_policy=None, cache_mode=None, attach_to=None, stripe_size=0):
+                 write_policy=None, cache_mode=None, attach_to=None, stripe_size=0,
+                 shared=False):
         """
             :param name: the device name (generally a device node's basename)
             :type name: str
@@ -2406,6 +2427,8 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             :type cache_request: :class:`~.devices.lvm.LVMCacheRequest`
             :keyword pvs: list of PVs to allocate extents from (size could be specified for each PV)
             :type pvs: list of :class:`~.devices.StorageDevice` or :class:`LVPVSpec` objects (tuples)
+            :keyword shared: whether to activate the newly create LV in shared mode
+            :type shared: bool
 
             For internal LVs only:
 
@@ -2481,7 +2504,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         LVMLogicalVolumeBase.__init__(self, name, parents, size, uuid, seg_type,
                                       fmt, exists, sysfs_path, grow, maxsize,
                                       percent, cache_request, pvs, from_lvs,
-                                      stripe_size)
+                                      stripe_size, shared)
         LVMVDOPoolMixin.__init__(self, compression, deduplication, index_memory,
                                  write_policy)
         LVMVDOLogicalVolumeMixin.__init__(self)
@@ -2714,7 +2737,13 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
                         controllable=self.controllable)
         ignore_skip_activation = self.is_snapshot_lv or self.ignore_skip_activation > 0
         try:
-            blockdev.lvm.lvactivate(self.vg.name, self._name, ignore_skip=ignore_skip_activation)
+            if self._shared:
+                if availability.BLOCKDEV_LVM_PLUGIN_SHARED.available:
+                    blockdev.lvm.lvactivate(self.vg.name, self._name, ignore_skip=ignore_skip_activation, shared=True)
+                else:
+                    raise errors.LVMError("Shared LVM is not fully supported: %s" % ",".join(availability.BLOCKDEV_LVM_PLUGIN_SHARED.availability_errors))
+            else:
+                blockdev.lvm.lvactivate(self.vg.name, self._name, ignore_skip=ignore_skip_activation)
         except blockdev.LVMError as err:
             raise errors.LVMError(err)
 
@@ -2753,6 +2782,9 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             extra = dict()
             if self._stripe_size:
                 extra["stripesize"] = str(int(self._stripe_size.convert_to("KiB")))
+
+            if self._shared:
+                extra["activate"] = "sy"
 
             try:
                 blockdev.lvm.lvcreate(self.vg.name, self._name, self.size,
