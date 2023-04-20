@@ -435,6 +435,14 @@ if hasattr(blockdev.LVMTech, "VDO"):
 else:
     BLOCKDEV_LVM_TECH_VDO = _UnavailableMethod(error_msg="Installed version of libblockdev doesn't support LVM VDO technology")
 
+if hasattr(blockdev.LVMTech, "SHARED"):
+    BLOCKDEV_LVM_SHARED = BlockDevTechInfo(plugin_name="lvm",
+                                           check_fn=blockdev.lvm_is_tech_avail,
+                                           technologies={blockdev.LVMTech.SHARED: blockdev.LVMTechMode.MODIFY})  # pylint: disable=no-member
+    BLOCKDEV_LVM_TECH_SHARED = BlockDevMethod(BLOCKDEV_LVM_SHARED)
+else:
+    BLOCKDEV_LVM_TECH_SHARED = _UnavailableMethod(error_msg="Installed version of libblockdev doesn't support shared LVM technology")
+
 # libblockdev mdraid plugin required technologies and modes
 BLOCKDEV_MD_ALL_MODES = (blockdev.MDTechMode.CREATE |
                          blockdev.MDTechMode.DELETE |
@@ -476,6 +484,7 @@ BLOCKDEV_DM_PLUGIN_RAID = blockdev_plugin("libblockdev dm plugin (raid technolog
 BLOCKDEV_LOOP_PLUGIN = blockdev_plugin("libblockdev loop plugin", BLOCKDEV_LOOP_TECH)
 BLOCKDEV_LVM_PLUGIN = blockdev_plugin("libblockdev lvm plugin", BLOCKDEV_LVM_TECH)
 BLOCKDEV_LVM_PLUGIN_VDO = blockdev_plugin("libblockdev lvm plugin (vdo technology)", BLOCKDEV_LVM_TECH_VDO)
+BLOCKDEV_LVM_PLUGIN_SHARED = blockdev_plugin("libblockdev lvm plugin (shared LVM technology)", BLOCKDEV_LVM_TECH_SHARED)
 BLOCKDEV_MDRAID_PLUGIN = blockdev_plugin("libblockdev mdraid plugin", BLOCKDEV_MD_TECH)
 BLOCKDEV_MPATH_PLUGIN = blockdev_plugin("libblockdev mpath plugin", BLOCKDEV_MPATH_TECH)
 BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("libblockdev swap plugin", BLOCKDEV_SWAP_TECH)
