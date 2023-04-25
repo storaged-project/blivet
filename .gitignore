@@ -27,3 +27,4 @@ pylint-log
 tests/pylint/.pylint.d/
 MANIFEST
 misc/.vagrant
+.vscode
