@@ -81,12 +81,40 @@ class LUKSNodevTestCase(unittest.TestCase):
                 crypto.calculate_luks2_max_memory.assert_called()
                 self.assertEqual(bd.luks_format.call_args[1]["extra"].pbkdf.max_memory_kb, 256 * 1024)
 
-    def test_sector_size(self):
+    def test_sector_size_luks1(self):
         fmt = LUKS()
         self.assertEqual(fmt.luks_sector_size, 0)
 
+        # sector size is not valid for luks1
         with self.assertRaises(ValueError):
             fmt = LUKS(luks_version="luks1", luks_sector_size=4096)
 
+        # just make sure we won't try to add the extra.sector_size argument ourselves
+        fmt = LUKS(luks_version="luks1")
+        with patch("blivet.devices.lvm.blockdev.crypto") as crypto:
+            fmt._create()
+            crypto.luks_format.assert_called()
+            self.assertIsNone(crypto.luks_format.call_args[1]["extra"])
+
+    def test_sector_size_luks2(self):
+        fmt = LUKS()
+        self.assertEqual(fmt.luks_sector_size, 0)
+
         fmt = LUKS(luks_version="luks2", luks_sector_size=4096)
         self.assertEqual(fmt.luks_sector_size, 4096)
+
+        fmt = LUKS()
+        with patch("blivet.devicelibs.crypto.calculate_luks2_max_memory", return_value=None):
+            with patch("blivet.devicelibs.crypto.get_optimal_luks_sector_size", return_value=512):
+                with patch("blivet.devices.lvm.blockdev.crypto") as crypto:
+                    fmt._create()
+                    crypto.luks_format.assert_called()
+                    self.assertEqual(crypto.luks_format.call_args[1]["extra"].sector_size, 512)
+
+        fmt = LUKS()
+        with patch("blivet.devicelibs.crypto.calculate_luks2_max_memory", return_value=None):
+            with patch("blivet.devicelibs.crypto.get_optimal_luks_sector_size", return_value=0):
+                with patch("blivet.devices.lvm.blockdev.crypto") as crypto:
+                    fmt._create()
+                    crypto.luks_format.assert_called()
+                    self.assertIsNone(crypto.luks_format.call_args[1]["extra"])
