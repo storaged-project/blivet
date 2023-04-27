@@ -141,12 +141,6 @@ class DBusBlivet(DBusObject):
         self._manager.add_object(added)
 
     def _action_executed(self, action):
-        if action.is_destroy:
-            if action.is_device:
-                self._device_removed(action.device, keep=False)
-            elif action.is_format:
-                self._format_removed(action.device, action.format, keep=False)
-
         self._action_removed(action)
 
     def _list_dbus_devices(self, removed=False):
