@@ -28,3 +28,4 @@ tests/pylint/.pylint.d/
 MANIFEST
 misc/.vagrant
 ChangeLog
+.vscode
