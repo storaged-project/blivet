@@ -366,7 +366,8 @@ class LUKSMethodsTestCase(FormatMethodsTestCase):
 
     def _test_create_backend(self):
         self.format.exists = False
-        self.format.create()
+        with patch("blivet.devicelibs.crypto.is_fips_enabled", return_value=False):
+            self.format.create()
         self.assertTrue(self.patches["blockdev"].crypto.luks_format.called)  # pylint: disable=no-member
 
     def _test_setup_backend(self):

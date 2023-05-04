@@ -21,6 +21,7 @@
 #
 
 import hashlib
+import os
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -100,3 +101,13 @@ def calculate_integrity_metadata_size(device_size, algorithm=DEFAULT_INTEGRITY_A
     jsize = (jsize / SECTOR_SIZE + 1) * SECTOR_SIZE  # round up to sector
 
     return msize + jsize
+
+
+def is_fips_enabled():
+    if not os.path.exists("/proc/sys/crypto/fips_enabled"):
+        # if the file doesn't exist, we are definitely not in FIPS mode
+        return False
+
+    with open("/proc/sys/crypto/fips_enabled", "r") as f:
+        enabled = f.read()
+    return enabled.strip() == "1"
