@@ -303,11 +303,13 @@ class LUKS(DeviceFormat):
             if luks_data.pbkdf_args:
                 self.pbkdf_args = luks_data.pbkdf_args
             else:
-                mem_limit = crypto.calculate_luks2_max_memory()
-                if mem_limit:
-                    self.pbkdf_args = LUKS2PBKDFArgs(max_memory_kb=int(mem_limit.convert_to(KiB)))
-                    luks_data.pbkdf_args = self.pbkdf_args
-                    log.info("PBKDF arguments for LUKS2 not specified, using defaults with memory limit %s", mem_limit)
+                # argon is not used with FIPS so we don't need to adjust the memory when in FIPS mode
+                if not crypto.is_fips_enabled():
+                    mem_limit = crypto.calculate_luks2_max_memory()
+                    if mem_limit:
+                        self.pbkdf_args = LUKS2PBKDFArgs(max_memory_kb=int(mem_limit.convert_to(KiB)))
+                        luks_data.pbkdf_args = self.pbkdf_args
+                        log.info("PBKDF arguments for LUKS2 not specified, using defaults with memory limit %s", mem_limit)
 
         if not self.luks_sector_size:
             self.luks_sector_size = crypto.get_optimal_luks_sector_size(self.device)
