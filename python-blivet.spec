@@ -21,6 +21,7 @@ Source1: http://github.com/storaged-project/blivet/archive/%{realname}-%{realver
 %global libblockdevver 3.0
 %global libbytesizever 0.3
 %global pyudevver 0.18
+%global s390utilscorever 2.31.0
 
 BuildArch: noarch
 
@@ -69,7 +70,7 @@ Recommends: libblockdev-swap >= %{libblockdevver}
 
 %ifarch s390 s390x
 Recommends: libblockdev-s390 >= %{libblockdevver}
-Requires: s390utils-core
+Requires: s390utils-core >= %{s390utilscorever}
 %endif
 
 Requires: python3-bytesize >= %{libbytesizever}
