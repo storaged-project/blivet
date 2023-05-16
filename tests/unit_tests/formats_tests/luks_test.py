@@ -6,9 +6,14 @@ except ImportError:
 import unittest
 
 from blivet.formats.luks import LUKS
+from blivet.size import Size
+from blivet.static_data import luks_data
 
 
 class LUKSNodevTestCase(unittest.TestCase):
+    def setUp(self):
+        luks_data.pbkdf_args = None
+
     def test_create_discard_option(self):
         # flags.discard_new=False --> no discard
         fmt = LUKS(exists=False)
@@ -50,6 +55,31 @@ class LUKSNodevTestCase(unittest.TestCase):
         # no default for non-XTS modes
         fmt = LUKS(cipher="aes-cbc-plain64")
         self.assertEqual(fmt.key_size, 0)
+
+    def test_luks2_pbkdf_memory_fips(self):
+        fmt = LUKS()
+        with patch("blivet.formats.luks.blockdev.crypto") as bd:
+            # fips enabled, pbkdf memory should not be set
+            with patch("blivet.formats.luks.crypto") as crypto:
+                attrs = {"is_fips_enabled.return_value": True,
+                         "get_optimal_luks_sector_size.return_value": 0,
+                         "calculate_luks2_max_memory.return_value": Size("256 MiB")}
+                crypto.configure_mock(**attrs)
+
+                fmt._create()
+                crypto.calculate_luks2_max_memory.assert_not_called()
+                self.assertIsNone(bd.luks_format.call_args[1]["extra"])
+
+            # fips disabled, pbkdf memory should be set
+            with patch("blivet.formats.luks.crypto") as crypto:
+                attrs = {"is_fips_enabled.return_value": False,
+                         "get_optimal_luks_sector_size.return_value": 0,
+                         "calculate_luks2_max_memory.return_value": Size("256 MiB")}
+                crypto.configure_mock(**attrs)
+
+                fmt._create()
+                crypto.calculate_luks2_max_memory.assert_called()
+                self.assertEqual(bd.luks_format.call_args[1]["extra"].pbkdf.max_memory_kb, 256 * 1024)
 
     def test_sector_size(self):
         fmt = LUKS()

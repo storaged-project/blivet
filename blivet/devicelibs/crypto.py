@@ -132,3 +132,9 @@ def get_optimal_luks_sector_size(device):
         # 512 logical block size which will make it harder to combine these in a single
         # LVM volume group if used as PVs
         return SECTOR_SIZE
+
+
+def is_fips_enabled():
+    with open("/proc/sys/crypto/fips_enabled", "r") as f:
+        enabled = f.read()
+    return enabled.strip() == "1"
