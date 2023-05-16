@@ -21,6 +21,7 @@
 #
 
 import hashlib
+import os
 
 import gi
 gi.require_version("BlockDev", "2.0")
@@ -135,6 +136,10 @@ def get_optimal_luks_sector_size(device):
 
 
 def is_fips_enabled():
+    if not os.path.exists("/proc/sys/crypto/fips_enabled"):
+        # if the file doesn't exist, we are definitely not in FIPS mode
+        return False
+
     with open("/proc/sys/crypto/fips_enabled", "r") as f:
         enabled = f.read()
     return enabled.strip() == "1"
