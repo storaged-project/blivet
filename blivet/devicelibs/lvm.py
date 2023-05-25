@@ -84,6 +84,9 @@ if hasattr(blockdev.LVMTech, "DEVICES"):
 else:
     HAVE_LVMDEVICES = False
 
+
+LVM_DEVICES_FILE = "/etc/lvm/devices/system.devices"
+
 # list of devices that LVM is allowed to use
 # with LVM >= 2.0.13 we'll use this for the --devices option and when creating
 # the /etc/lvm/devices/system.devices file
