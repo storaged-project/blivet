@@ -36,7 +36,7 @@ from ..size import Size
 from ..errors import PhysicalVolumeError
 from . import DeviceFormat, register_device_format
 from .. import udev
-from ..static_data.lvm_info import pvs_info
+from ..static_data.lvm_info import pvs_info, vgs_info
 
 import logging
 log = logging.getLogger("blivet")
@@ -121,9 +121,20 @@ class LVMPhysicalVolume(DeviceFormat):
     def supported(self):
         return super(LVMPhysicalVolume, self).supported and self._plugin.available
 
-    def lvmdevices_add(self):
+    def lvmdevices_add(self, force=True):
+        """ Add this PV to the LVM system devices file
+            :keyword force: whether to add the PV even if the system devices file doesn't exist and
+                            VGs are present in the system
+            :type force: bool
+        """
+
         if not lvm.HAVE_LVMDEVICES:
             raise PhysicalVolumeError("LVM devices file feature is not supported")
+
+        if not os.path.exists(lvm.LVM_DEVICES_FILE) and vgs_info.cache and not force:
+            log.debug("Not adding %s to devices file: %s doesn't exist and there are VGs present in the system",
+                      self.device, lvm.LVM_DEVICES_FILE)
+            return
 
         try:
             blockdev.lvm.devices_add(self.device)
@@ -154,7 +165,7 @@ class LVMPhysicalVolume(DeviceFormat):
                     blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
                 except blockdev.LVMError as e:
                     raise PhysicalVolumeError(e)
-                self.lvmdevices_add()
+                self.lvmdevices_add(force=False)
         else:
             try:
                 blockdev.lvm.pvcreate(self.device, data_alignment=self.data_alignment, extra=[ea_yes])
