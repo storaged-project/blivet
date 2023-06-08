@@ -57,7 +57,7 @@ def log_bd_message(level, msg):
 
 import gi
 gi.require_version("GLib", "2.0")
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 
 # initialize the libblockdev library
 from gi.repository import GLib
