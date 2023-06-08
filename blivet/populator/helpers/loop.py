@@ -39,12 +39,15 @@ class LoopDevicePopulator(DevicePopulator):
         name = udev.device_get_name(self.data)
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(self.data)
-        backing_file = blockdev.loop.get_backing_file(name)
-        if backing_file is None:
+        try:
+            info = blockdev.loop.info(name)
+        except blockdev.LoopError:
             return None
-        file_device = self._devicetree.get_device_by_name(backing_file)
+        if not info.backing_file:
+            return None
+        file_device = self._devicetree.get_device_by_name(info.backing_file)
         if not file_device:
-            file_device = FileDevice(backing_file, exists=True)
+            file_device = FileDevice(info.backing_file, exists=True)
             self._devicetree._add_device(file_device)
         device = LoopDevice(name,
                             parents=[file_device],

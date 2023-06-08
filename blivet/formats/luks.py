@@ -344,9 +344,11 @@ class LUKS(DeviceFormat):
         super(LUKS, self)._post_create(**kwargs)
 
         try:
-            self.uuid = blockdev.crypto.luks_uuid(self.device)
+            info = blockdev.crypto.luks_info(self.device)
         except blockdev.CryptoError as e:
             raise LUKSError("Failed to get UUID for the newly created LUKS device %s: %s" % (self.device, str(e)))
+        else:
+            self.uuid = info.uuid
 
         if not self.map_name:
             self.map_name = "luks-%s" % self.uuid
