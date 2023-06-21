@@ -262,10 +262,17 @@ class LUKS(DeviceFormat):
     def _setup(self, **kwargs):
         log_method_call(self, device=self.device, map_name=self.map_name,
                         type=self.type, status=self.status)
+
+        # passphrase is preferred for open
+        if self.__passphrase:
+            context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
+        elif self._key_file:
+            context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
+        else:
+            raise LUKSError("Passphrase or key file must be set for LUKS setup")
+
         try:
-            blockdev.crypto.luks_open(self.device, self.map_name,
-                                      passphrase=self.__passphrase,
-                                      key_file=self._key_file)
+            blockdev.crypto.luks_open(self.device, self.map_name, context=context)
         except blockdev.CryptoError as e:
             raise LUKSError(e)
 
@@ -328,10 +335,16 @@ class LUKS(DeviceFormat):
             else:
                 extra = None
 
+        if self.__passphrase:
+            context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
+        elif self._key_file:
+            context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
+        else:
+            raise LUKSError("Passphrase or key file must be set for LUKS create")
+
         try:
             blockdev.crypto.luks_format(self.device,
-                                        passphrase=self.__passphrase,
-                                        key_file=self._key_file,
+                                        context=context,
                                         cipher=self.cipher,
                                         key_size=self.key_size,
                                         min_entropy=self.min_luks_entropy,
@@ -339,6 +352,14 @@ class LUKS(DeviceFormat):
                                         extra=extra)
         except blockdev.CryptoError as e:
             raise LUKSError(e)
+
+        if self.__passphrase and self._key_file:
+            # both passphrase and keyfile are set, we need to add the keyfile too
+            ncontext = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
+            try:
+                blockdev.crypto.luks_add_key(self.device, context, ncontext)
+            except blockdev.CryptoError as e:
+                raise LUKSError(e)
 
     def _post_create(self, **kwargs):
         super(LUKS, self)._post_create(**kwargs)
@@ -373,11 +394,17 @@ class LUKS(DeviceFormat):
         if not self.exists:
             raise LUKSError("format has not been created")
 
+        # if both passphrase and keyfile are set, they both need to be valid so
+        # we can choose passphrase as default
+        if self.__passphrase:
+            context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
+        elif self._key_file:
+            context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
+
+        ncontext = blockdev.CryptoKeyslotContext(passphrase=passphrase)
+
         try:
-            blockdev.crypto.luks_add_key(self.device,
-                                         pass_=self.__passphrase,
-                                         key_file=self._key_file,
-                                         npass=passphrase)
+            blockdev.crypto.luks_add_key(self.device, context, ncontext)
         except blockdev.CryptoError as e:
             raise LUKSError(e)
 
@@ -386,6 +413,8 @@ class LUKS(DeviceFormat):
         Remove the saved passphrase (and possibly key file) from the LUKS
         header.
 
+        Note: If both passphrase and keyfile are set for this format, both
+              will be removed!
         """
 
         log_method_call(self, device=self.device,
@@ -393,12 +422,18 @@ class LUKS(DeviceFormat):
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        try:
-            blockdev.crypto.luks_remove_key(self.device,
-                                            pass_=self.__passphrase,
-                                            key_file=self._key_file)
-        except blockdev.CryptoError as e:
-            raise LUKSError(e)
+        def _remove_passphrase(context):
+            try:
+                blockdev.crypto.luks_remove_key(self.device, context=context)
+            except blockdev.CryptoError as e:
+                raise LUKSError(e)
+
+        if self.__passphrase:
+            context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
+            _remove_passphrase(context)
+        elif self._key_file:
+            context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
+            _remove_passphrase(context)
 
     def escrow(self, directory, backup_passphrase):
         log.debug("escrow: escrow_volume start for %s", self.device)

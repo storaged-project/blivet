@@ -371,7 +371,6 @@ BLOCKDEV_CRYPTO_ALL_MODES = (blockdev.CryptoTechMode.CREATE |
 BLOCKDEV_CRYPTO = BlockDevTechInfo(plugin_name="crypto",
                                    check_fn=blockdev.crypto_is_tech_avail,
                                    technologies={blockdev.CryptoTech.LUKS: BLOCKDEV_CRYPTO_ALL_MODES,
-                                                 blockdev.CryptoTech.LUKS2: BLOCKDEV_CRYPTO_ALL_MODES,
                                                  blockdev.CryptoTech.ESCROW: blockdev.CryptoTechMode.CREATE})
 BLOCKDEV_CRYPTO_TECH = BlockDevMethod(BLOCKDEV_CRYPTO)
 

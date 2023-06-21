@@ -57,7 +57,7 @@ class LUKSNodevTestCase(unittest.TestCase):
         self.assertEqual(fmt.key_size, 0)
 
     def test_luks2_pbkdf_memory_fips(self):
-        fmt = LUKS()
+        fmt = LUKS(passphrase="passphrase")
         with patch("blivet.formats.luks.blockdev.crypto") as bd:
             # fips enabled, pbkdf memory should not be set
             with patch("blivet.formats.luks.crypto") as crypto:
@@ -82,28 +82,28 @@ class LUKSNodevTestCase(unittest.TestCase):
                 self.assertEqual(bd.luks_format.call_args[1]["extra"].pbkdf.max_memory_kb, 256 * 1024)
 
     def test_sector_size_luks1(self):
-        fmt = LUKS()
+        fmt = LUKS(passphrase="passphrase")
         self.assertEqual(fmt.luks_sector_size, 0)
 
         # sector size is not valid for luks1
         with self.assertRaises(ValueError):
-            fmt = LUKS(luks_version="luks1", luks_sector_size=4096)
+            fmt = LUKS(luks_version="luks1", luks_sector_size=4096, passphrase="passphrase")
 
         # just make sure we won't try to add the extra.sector_size argument ourselves
-        fmt = LUKS(luks_version="luks1")
+        fmt = LUKS(luks_version="luks1", passphrase="passphrase")
         with patch("blivet.devices.lvm.blockdev.crypto") as crypto:
             fmt._create()
             crypto.luks_format.assert_called()
             self.assertIsNone(crypto.luks_format.call_args[1]["extra"])
 
     def test_sector_size_luks2(self):
-        fmt = LUKS()
+        fmt = LUKS(passphrase="passphrase")
         self.assertEqual(fmt.luks_sector_size, 0)
 
-        fmt = LUKS(luks_version="luks2", luks_sector_size=4096)
+        fmt = LUKS(luks_version="luks2", luks_sector_size=4096, passphrase="passphrase")
         self.assertEqual(fmt.luks_sector_size, 4096)
 
-        fmt = LUKS()
+        fmt = LUKS(passphrase="passphrase")
         with patch("blivet.devicelibs.crypto.calculate_luks2_max_memory", return_value=None):
             with patch("blivet.devicelibs.crypto.get_optimal_luks_sector_size", return_value=512):
                 with patch("blivet.devices.lvm.blockdev.crypto") as crypto:
@@ -111,7 +111,7 @@ class LUKSNodevTestCase(unittest.TestCase):
                     crypto.luks_format.assert_called()
                     self.assertEqual(crypto.luks_format.call_args[1]["extra"].sector_size, 512)
 
-        fmt = LUKS()
+        fmt = LUKS(passphrase="passphrase")
         with patch("blivet.devicelibs.crypto.calculate_luks2_max_memory", return_value=None):
             with patch("blivet.devicelibs.crypto.get_optimal_luks_sector_size", return_value=0):
                 with patch("blivet.devices.lvm.blockdev.crypto") as crypto:

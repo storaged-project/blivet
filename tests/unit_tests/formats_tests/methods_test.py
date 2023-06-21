@@ -366,12 +366,14 @@ class LUKSMethodsTestCase(FormatMethodsTestCase):
 
     def _test_create_backend(self):
         self.format.exists = False
+        self.format.passphrase = "passphrase"
         with patch("blivet.devicelibs.crypto.get_optimal_luks_sector_size", return_value=512):
             with patch("blivet.devicelibs.crypto.is_fips_enabled", return_value=False):
                 self.format.create()
         self.assertTrue(self.patches["blockdev"].crypto.luks_format.called)  # pylint: disable=no-member
 
     def _test_setup_backend(self):
+        self.format.passphrase = "passphrase"
         self.format.setup()
         self.assertTrue(self.patches["blockdev"].crypto.luks_open.called)
 
