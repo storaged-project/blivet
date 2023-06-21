@@ -350,7 +350,10 @@ class F2FSMkfs(FSMkfs):
 
     @property
     def args(self):
-        return []
+        # Enable the extended node bitmap, this means that we can create more
+        # files and directories without running out of inodes, even if the
+        # available space for metadata is limited.
+        return ["-i"]
 
 
 class UnimplementedFSMkfs(task.UnimplementedTask, FSMkfsTask):
