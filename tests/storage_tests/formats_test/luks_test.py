@@ -1,8 +1,10 @@
 import os
+import tempfile
 import unittest
 
 from blivet.formats.luks import LUKS, Integrity
 from blivet.devicelibs import crypto
+from blivet.errors import LUKSError
 from blivet.size import Size
 
 from . import loopbackedtestcase
@@ -64,6 +66,54 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         self.fmt.teardown()
         self.assertFalse(self.fmt.status)
+
+    def test_add_remove_passphrase(self):
+        self.fmt.device = self.loop_devices[0]
+
+        # create the luks format
+        self.fmt.create()
+
+        # add a new passphrase
+        self.fmt.add_passphrase("password2")
+
+        # we should now be able to setup the format using this passphrase
+        self.fmt.passphrase = "password2"
+        self.fmt.setup()
+        self.fmt.teardown()
+
+        # remove the original passphrase
+        self.fmt.passphrase = "password"
+        self.fmt.remove_passphrase()
+
+        # now setup should fail
+        with self.assertRaises(LUKSError):
+            self.fmt.setup()
+
+        # setup with the new passphrase should still be possible
+        self.fmt.passphrase = "password2"
+        self.fmt.setup()
+        self.fmt.teardown()
+
+    def test_setup_keyfile(self):
+        self.fmt.device = self.loop_devices[0]
+
+        with tempfile.NamedTemporaryFile(prefix="blivet_test") as temp:
+            temp.write(b"password2")
+
+            # create the luks format with both passphrase and keyfile
+            self.fmt._key_file = temp.name
+            self.fmt.create()
+
+            # open first with just password
+            self.fmt._key_file = None
+            self.fmt.setup()
+            self.fmt.teardown()
+
+            # now with keyfile
+            self.fmt._key_file = temp.name
+            self.fmt.passphrase = None
+            self.fmt.setup()
+            self.fmt.teardown()
 
     def _luks_close(self):
         self.fmt.teardown()
