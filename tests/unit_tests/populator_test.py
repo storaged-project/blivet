@@ -132,7 +132,7 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
         # The backing file check is now performed in the "run" method.
         # Test intentionally left empty
 
-    @patch("blivet.populator.helpers.loop.blockdev.loop.get_backing_file")
+    @patch("blivet.populator.helpers.loop.blockdev.loop.info")
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_is_dm", return_value=False)
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
@@ -144,14 +144,14 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
     def test_get_helper(self, *args):
         """Test get_device_helper for loop devices."""
         device_is_loop = args[0]
-        get_backing_file = args[7]
+        loop_info = args[7]
         data = {'SYS_PATH': 'dummy'}
-        get_backing_file.return_value = True
+        loop_info.return_value = Mock(baking_file="foobar")
         self.assertEqual(get_device_helper(data), self.helper_class)
 
-        get_backing_file.return_value = False
+        loop_info.return_value = Mock(baking_file=None)
         self.assertEqual(get_device_helper(data), self.helper_class)
-        get_backing_file.return_value = True
+        loop_info.return_value = Mock(baking_file="foobar")
 
         # verify that setting one of the required True return values to False prevents success
         device_is_loop.return_value = False
@@ -165,13 +165,13 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch.object(DeviceTree, "get_device_by_name")
     @patch.object(FileDevice, "status", return_value=True)
     @patch.object(LoopDevice, "status", return_value=True)
-    @patch("blivet.populator.helpers.loop.blockdev.loop.get_backing_file")
+    @patch("blivet.populator.helpers.loop.blockdev.loop.info")
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_get_sysfs_path", return_value=sentinel.sysfs_path)
     def test_run(self, *args):
         """Test loop device populator."""
         device_get_name = args[1]
-        get_backing_file = args[2]
+        loop_info = args[2]
 
         devicetree = DeviceTree()
         data = Mock()
@@ -182,13 +182,13 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_get_name.return_value = device_name
         backing_file = "/some/file"
 
-        get_backing_file.return_value = None
+        loop_info.return_value = Mock(backing_file=None)
         helper = self.helper_class(devicetree, data)
         device = helper.run()
 
         self.assertIsNone(device)
 
-        get_backing_file.return_value = backing_file
+        loop_info.return_value = Mock(backing_file=backing_file)
 
         device = helper.run()
 
@@ -391,7 +391,7 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
         # verify that setting one of the required False return values to True prevents success
         # as of now, loop is always checked before partition
         device_is_loop.return_value = True
-        with patch("blivet.populator.helpers.loop.blockdev.loop.get_backing_file", return_value=True):
+        with patch("blivet.populator.helpers.loop.blockdev.loop.info", return_value=Mock(backing_file="foobar")):
             self.assertNotEqual(get_device_helper(data), self.helper_class)
 
         device_is_loop.return_value = False

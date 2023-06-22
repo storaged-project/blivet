@@ -75,6 +75,7 @@ class DiskLabelTestCase(unittest.TestCase):
         arch.is_aarch64.return_value = False
         arch.is_arm.return_value = False
         arch.is_pmac.return_value = False
+        arch.is_x86.return_value = False
 
         self.assertEqual(disklabel_class.get_platform_label_types(), ["msdos", "gpt"])
 
@@ -95,6 +96,14 @@ class DiskLabelTestCase(unittest.TestCase):
         arch.is_arm.return_value = True
         self.assertEqual(disklabel_class.get_platform_label_types(), ["msdos", "gpt"])
         arch.is_arm.return_value = False
+
+        # this simulates x86_64
+        arch.is_x86.return_value = True
+        self.assertEqual(disklabel_class.get_platform_label_types(), ["gpt", "msdos"])
+        arch.is_efi.return_value = True
+        self.assertEqual(disklabel_class.get_platform_label_types(), ["gpt", "msdos"])
+        arch.is_x86.return_value = False
+        arch.is_efi.return_value = False
 
         arch.is_s390.return_value = True
         self.assertEqual(disklabel_class.get_platform_label_types(), ["msdos", "gpt", "dasd"])
@@ -138,6 +147,7 @@ class DiskLabelTestCase(unittest.TestCase):
         arch.is_aarch64.return_value = False
         arch.is_arm.return_value = False
         arch.is_pmac.return_value = False
+        arch.is_x86.return_value = False
 
         with mock.patch.object(dl, '_label_type_size_check') as size_check:
             # size check passes for first type ("msdos")

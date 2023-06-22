@@ -1,9 +1,9 @@
 import random
 
 try:
-    from unittest.mock import patch, Mock
+    from unittest.mock import patch, Mock, call
 except ImportError:
-    from mock import patch, Mock
+    from mock import patch, Mock, call
 
 from unittest import TestCase
 
@@ -23,6 +23,7 @@ from blivet.dbus.constants import FORMAT_OBJECT_PATH_BASE, FORMAT_REMOVED_OBJECT
 def mock_dbus_device(obj_id):
     obj = Mock(name="DBusDevice [%d]" % obj_id,
                id=obj_id,
+               transient=True,
                object_path="%s/%d" % (DEVICE_OBJECT_PATH_BASE, obj_id),
                _device=Mock(name="StorageDevice %d" % obj_id))
     return obj
@@ -60,8 +61,15 @@ class DBusBlivetTestCase(TestCase):
         self.dbus_object._blivet.reset_mock()
         self.dbus_object._blivet.devices = []
         self.dbus_object._blivet.devicetree.actions = []
+        device_ids = [1, 11, 20, 101]
+        dbus_devices = [mock_dbus_device(i) for i in device_ids]
+        self.dbus_object._manager.objects = [self.dbus_object]
+        self.dbus_object._manager.objects.extend(dbus_devices)
         self.dbus_object.Reset()
         self.dbus_object._blivet.reset.assert_called_once_with()
+        self.dbus_object._manager.remove_object.assert_has_calls([call(d) for d in dbus_devices])
+        self.assertNotIn(call(self.dbus_object),
+                         self.dbus_object._manager.remove_object.mock_calls)
         self.dbus_object._blivet.reset_mock()
 
     def test_RemoveDevice(self):

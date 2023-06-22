@@ -349,6 +349,15 @@ def is_arm():
     return os.uname()[4].startswith('arm')
 
 
+def is_riscv64():
+    """
+    :return: True if the hardware supports RISCV64, False otherwise.
+    :rtype: boolean
+
+    """
+    return os.uname()[4] == 'riscv64'
+
+
 def is_loongarch(bits=None):
     """
     :return: True if the hardware supports loongarch, False otherwise.
@@ -405,6 +414,8 @@ def get_arch():
         return 'alpha'
     elif is_arm():
         return 'arm'
+    elif is_riscv64():
+        return 'riscv64'
     elif is_loongarch(bits=32):
         return 'loongarch32'
     elif is_loongarch(bits=64):
