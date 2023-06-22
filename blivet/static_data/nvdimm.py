@@ -34,7 +34,7 @@ class NVDIMMDependencyGuard(util.DependencyGuard):
 
     def _check_avail(self):
         try:
-            BlockDev.nvdimm_is_tech_avail(BlockDev.NVDIMMTech.NVDIMM_TECH_NAMESPACE,
+            BlockDev.nvdimm_is_tech_avail(BlockDev.NVDIMMTech.NAMESPACE,
                                           BlockDev.NVDIMMTechMode.RECONFIGURE |
                                           BlockDev.NVDIMMTechMode.QUERY |
                                           BlockDev.NVDIMMTechMode.ACTIVATE_DEACTIVATE)
