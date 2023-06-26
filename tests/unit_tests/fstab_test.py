@@ -98,7 +98,8 @@ class FSTabTestCase(unittest.TestCase):
     def test_update(self):
 
         # Reset table
-        self.fstab.read(None)
+        self.fstab.src_file = None
+        self.fstab.read()
 
         # Device is not in the table and should be added
         dev1 = DiskDevice("device1", fmt=get_format("ext4", exists=True))
@@ -148,14 +149,13 @@ class FSTabTestCase(unittest.TestCase):
         action.device = dev2
         action.is_create = True
 
-        entry = self.fstab.entry_from_device(dev2)
-
         self.fstab.update(action, None)
-        self.assertIsNone(self.fstab.find_entry(entry=entry))
+        self.assertIsNone(self.fstab.find_entry(file="/media/absent_in_fstab"))
 
     def test_find_device(self):
         # Reset table
-        self.fstab.read(None)
+        self.fstab.src_file = None
+        self.fstab.read()
 
         b = Blivet()
 
@@ -170,7 +170,8 @@ class FSTabTestCase(unittest.TestCase):
     def test_get_device(self):
 
         # Reset table
-        self.fstab.read(None)
+        self.fstab.src_file = None
+        self.fstab.read()
 
         b = Blivet()
 

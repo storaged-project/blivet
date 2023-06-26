@@ -49,6 +49,7 @@ from ..errors import FSWriteLabelError, FSWriteUUIDError
 from . import DeviceFormat, register_device_format
 from .. import util
 from ..flags import flags
+from ..fstab import FSTabOptions
 from ..storage_log import log_exception_info, log_method_call
 from .. import arch
 from ..size import Size, ROUND_UP
@@ -120,6 +121,8 @@ class FS(DeviceFormat):
             raise TypeError("FS is an abstract class.")
 
         DeviceFormat.__init__(self, **kwargs)
+
+        self.fstab = FSTabOptions()
 
         # Create task objects
         self._fsck = self._fsck_class(self)

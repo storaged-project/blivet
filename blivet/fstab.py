@@ -29,6 +29,23 @@ import logging
 log = logging.getLogger("blivet")
 
 
+class FSTabOptions(object):
+    """ User prefered fstab settings object intended to be attached to device.format.
+        Set variables override otherwise automatically obtained values put into fstab.
+    """
+
+    def __init__(self):
+        self.freq = None
+        self.passno = None
+
+        # prefered spec identification type; default "UUID"
+        # possible values: None, "UUID", "LABEL", "PARTLABEL", "PARTUUID", "PATH"
+        self.spec_type = None
+
+        # list of fstab options to be used
+        self.mntops = []
+
+
 class FSTabEntry(object):
     """ One processed line of fstab
     """
@@ -205,6 +222,8 @@ class FSTabEntry(object):
 
     @passno.setter
     def passno(self, value):
+        if value not in [None, 0, 1, 2]:
+            raise ValueError("fstab field passno must be 0, 1 or 2 (got '%s')" % value)
         self._entry.passno = value
 
     @property
@@ -277,8 +296,12 @@ class FSTabManager(object):
         self.src_file = src_file
         self.dest_file = dest_file
 
+        # prefered spec identification type; default "UUID"
+        # possible values: None, "UUID", "LABEL", "PARTLABEL", "PARTUUID", "PATH"
+        self.spec_type = None
+
         if self.src_file is not None:
-            self.read(self.src_file)
+            self.read()
 
     def __deepcopy__(self, memo):
         clone = FSTabManager(src_file=self.src_file, dest_file=self.dest_file)
@@ -304,7 +327,7 @@ class FSTabManager(object):
 
         return clone
 
-    def __repr__(self):
+    def __str__(self):
         entry = self._table.next_fs()
         entries_str = ""
         while entry:
@@ -347,27 +370,25 @@ class FSTabManager(object):
 
         entry = FSTabEntry()
 
-        if device.format.uuid:
-            entry.spec = "UUID=%s" % device.format.uuid
-        else:
-            entry.spec = getattr(device, "fstab_spec", None)
-
         entry.file = None
         if device.format.mountable:
             entry.file = device.format.mountpoint
-        if device.format.type == "swap":
+        elif device.format.type == "swap":
             entry.file = "swap"
+        else:
+            raise ValueError("""cannot generate fstab entry from device '%s' because
+                                it is neither mountable nor swap type""" % device.format.name)
+
+        entry.spec = self._get_spec(device)
+        if entry.spec is None:
+            entry.spec = getattr(device, "fstab_spec", None)
 
         entry.vfstype = device.format.type
 
         return entry
 
-    def read(self, src_file=""):
-        """ Read the fstab file from path stored in self.src_file. Setting src_file parameter overrides
-            it with new value.
-
-            :keyword src_file: When set, reads fstab from path specified in it
-            :type src_file: str
+    def read(self):
+        """ Read the fstab file from path stored in self.src_file. Resets currently loaded table contents.
         """
 
         # Reset table
@@ -375,24 +396,15 @@ class FSTabManager(object):
         self._table.enable_comments(True)
 
         # resolve which file to read
-        if src_file == "":
-            if self.src_file is None:
-                # No parameter given, no internal value
-                return
-        elif src_file is None:
+        if self.src_file is None:
             return
-        else:
-            self.src_file = src_file
 
         self._table.errcb = self._parser_errcb
-        try:
-            self._table.parse_fstab(self.src_file)
-        except Exception as e:  # pylint: disable=broad-except
-            # libmount throws general Exception. Okay...
-            if str(e) == "No such file or directory":
-                log.warning("Fstab file '%s' does not exist", self.src_file)
-            else:
-                raise
+
+        if not os.path.isfile(self.src_file):
+            raise FileNotFoundError("Fstab file '%s' does not exist" % self.src_file)
+
+        self._table.parse_fstab(self.src_file)
 
     def find_device(self, blivet, spec=None, mntops=None, blkid_tab=None, crypt_tab=None, *, entry=None):
         """ Find a blivet device, based on spec or entry. Mount options can be used to refine the search.
@@ -535,7 +547,7 @@ class FSTabManager(object):
             _entry.freq = 0
 
         if passno is not None:
-            _entry.passno = freq
+            _entry.passno = passno
         elif _entry.passno is None:
             # 'passno' represents order of fsck run at the boot time (default: 0, i.e. disabled).
             # '/' should have 1, other checked should have 2
@@ -569,6 +581,8 @@ class FSTabManager(object):
         fs = self.find_entry(spec, file, entry=entry)
         if fs:
             self._table.remove_fs(fs.entry)
+        else:
+            raise ValueError("Cannot remove entry (%s) from fstab, because it is not there" % entry)
 
     def write(self, dest_file=None):
         """ Commit the self._table into the self._dest_file. Setting dest_file parameter overrides
@@ -664,6 +678,34 @@ class FSTabManager(object):
 
         return None
 
+    def _get_spec(self, device):
+        """ Resolve which device spec should be used and return it in a form accepted by fstab.
+            Returns None if desired spec was not found
+        """
+
+        # Use device specific spec type if it is set
+        # Use "globally" set (on FSTabManager level) spec type otherwise
+
+        spec = None
+        spec_type = device.format.fstab.spec_type or self.spec_type
+
+        if spec_type == "LABEL" and device.format.label:
+            spec = "LABEL=%s" % device.format.label
+        elif spec_type == "PARTUUID" and device.uuid:
+            spec = "PARTUUID=%s" % device.uuid
+        elif spec_type == "PARTLABEL" and device.format.name:
+            spec = "PARTLABEL=%s" % device.format.name
+        elif spec_type == "PATH":
+            spec = device.path
+        elif device.format.uuid:
+            # default choice
+            spec = "UUID=%s" % device.format.uuid
+        else:
+            # if everything else failed, let blivet decide
+            return None
+
+        return spec
+
     def update(self, action, bae_entry):
         """ Update fstab based on action type and device. Does not commit changes to a file.
 
@@ -689,22 +731,56 @@ class FSTabManager(object):
         if action.is_create and action.device.format.mountable:
             # add the device to the fstab
             # make sure it is not already present there
-            entry = self.entry_from_device(action.device)
-            found = self.find_entry(entry=entry)
+            try:
+                entry = self.entry_from_device(action.device)
+            except ValueError:
+                # this device should not be at fstab
+                found = None
+            else:
+                found = self.find_entry(entry=entry)
+
+            # get correct spec type to use (if None, the one already present in entry is used)
+            spec = self._get_spec(action.device)
+
             if found is None and action.device.format.mountpoint is not None:
                 # device is not present in fstab and has a defined mountpoint => add it
-                self.add_entry(entry=entry)
+                self.add_entry(spec=spec,
+                               mntops=action.device.format.fstab.mntops,
+                               freq=action.device.format.fstab.freq,
+                               passno=action.device.format.fstab.passno,
+                               entry=entry)
+            elif found and found.spec != spec and action.device.format.mountpoint is not None:
+                # allow change of spec of existing devices
+                self.remove_entry(entry=found)
+                self.add_entry(spec=spec,
+                               mntops=action.device.format.fstab.mntops,
+                               freq=action.device.format.fstab.freq,
+                               passno=action.device.format.fstab.passno,
+                               entry=found)
             elif found and found.file != action.device.format.mountpoint and action.device.format.mountpoint is not None:
                 # device already exists in fstab but with a different mountpoint => add it
-                self.add_entry(file=action.device.format.mountpoint, entry=found)
+                self.add_entry(spec=spec,
+                               file=action.device.format.mountpoint,
+                               mntops=action.device.format.fstab.mntops,
+                               freq=action.device.format.fstab.freq,
+                               passno=action.device.format.fstab.passno,
+                               entry=found)
             return
 
         if action.is_configure and action.is_format and bae_entry is not None:
             # Handle change of the mountpoint:
             # Change its value if it is defined, remove the fstab entry if it is None
-            entry = self.entry_from_device(action.device)
+
+            # get correct spec type to use (if None, the one already present in entry is used)
+            spec = self._get_spec(action.device)
+
             if action.device.format.mountpoint is not None and bae_entry.file != action.device.format.mountpoint:
                 self.remove_entry(entry=bae_entry)
-                self.add_entry(file=action.device.format.mountpoint, entry=bae_entry)
+                self.add_entry(spec=spec,
+                               file=action.device.format.mountpoint,
+                               mntops=action.device.format.fstab.mntops,
+                               freq=action.device.format.fstab.freq,
+                               passno=action.device.format.fstab.passno,
+                               entry=bae_entry)
             elif action.device.format.mountpoint is None:
                 self.remove_entry(entry=bae_entry)

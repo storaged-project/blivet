@@ -64,6 +64,12 @@ class FstabTestCase(StorageTestCase):
                                      parents=[vg], name="blivetTestLVMine")
             self.storage.create_device(lv)
 
+            # specify device spec representation in fstab
+            lv.format.fstab.spec_type = "PATH"
+            lv.format.fstab.freq = 54321
+            lv.format.fstab.passno = 2
+            lv.format.fstab.mntops = ['optionA', 'optionB']
+
             # Change the mountpoint, make sure the change will make it into the fstab
             ac = blivet.deviceaction.ActionConfigureFormat(device=lv, attr="mountpoint", new_value="/mnt/test2")
             self.storage.devicetree.actions.add(ac)
@@ -75,7 +81,9 @@ class FstabTestCase(StorageTestCase):
             with open(fstab_path, "r") as f:
                 contents = f.read()
                 self.assertTrue("blivetTestLVMine" in contents)
-                self.assertTrue("/mnt/test2" in contents)
+                self.assertTrue("54321" in contents)
+                self.assertTrue("54321 2" in contents)
+                self.assertTrue("optionA,optionB" in contents)
 
             dev = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestLVMine")
             self.storage.recursive_remove(dev)
@@ -88,13 +96,3 @@ class FstabTestCase(StorageTestCase):
                 contents = f.read()
                 self.assertFalse("blivetTestLVMine" in contents)
                 self.assertFalse("/mnt/test2" in contents)
-
-    def test_get_device(self):
-        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
-        self.assertIsNotNone(disk)
-
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            fstab_path = os.path.join(tmpdirname, 'fstab')
-
-            # change write path of blivet.fstab
-            self.storage.fstab.dest_file = fstab_path

@@ -289,8 +289,13 @@ class ActionList(object):
             # get (b)efore (a)ction.(e)xecute fstab entry
             # (device may not exist afterwards)
             if fstab is not None:
-                entry = fstab.entry_from_device(action.device)
-                bae_entry = fstab.find_entry(entry=entry)
+                try:
+                    entry = fstab.entry_from_device(action.device)
+                except ValueError:
+                    # this device should not be in fstab
+                    bae_entry = None
+                else:
+                    bae_entry = fstab.find_entry(entry=entry)
 
             with blivet_lock:
 
