@@ -21,7 +21,7 @@
 # Red Hat Author(s): Vojtěch Trefný <vtrefny@redhat.com>
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 
