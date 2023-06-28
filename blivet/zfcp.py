@@ -29,7 +29,7 @@ from .i18n import _
 from .util import stringize, unicodeize
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 

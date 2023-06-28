@@ -38,7 +38,7 @@ class MDRaidArrayDeviceTest(unittest.TestCase):
         with patch("blivet.devices.md.blockdev.md.create") as md_create:
             raid_array._create()
             md_create.assert_called_with("/dev/md/raid", "raid0", ["/dev/member1", "/dev/member2"],
-                                         0, version="default", bitmap=False,
+                                         0, version="default", bitmap=None,
                                          chunk_size=mdraid.MD_CHUNK_SIZE)
 
         raid_array = MDRaidArrayDevice(name="raid", level="raid1", member_devices=2,
@@ -50,7 +50,7 @@ class MDRaidArrayDeviceTest(unittest.TestCase):
         with patch("blivet.devices.md.blockdev.md.create") as md_create:
             raid_array._create()
             md_create.assert_called_with("/dev/md/raid", "raid1", ["/dev/member1", "/dev/member2"],
-                                         0, version="default", bitmap=True,
+                                         0, version="default", bitmap="internal",
                                          chunk_size=0)
 
     def test_chunk_size2(self):

@@ -23,7 +23,7 @@
 import gi
 import os
 
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 from gi.repository import BlockDev as blockdev
 
 from ..storage_log import log_exception_info, log_method_call

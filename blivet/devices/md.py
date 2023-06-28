@@ -27,7 +27,7 @@ import time
 from six.moves import reduce
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -620,7 +620,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         try:
             blockdev.md.create(self.path, level, disks, spares,
                                version=self.metadata_version,
-                               bitmap=self.create_bitmap,
+                               bitmap="internal" if self.create_bitmap else None,
                                chunk_size=int(self.chunk_size))
         except blockdev.MDRaidError as err:
             raise errors.MDRaidError(err)
