@@ -28,7 +28,7 @@ from .. import safe_dbus
 from ..devicelibs.stratis import STRATIS_SERVICE, STRATIS_PATH
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 gi.require_version("GLib", "2.0")
 gi.require_version("Gio", "2.0")
 
@@ -371,7 +371,6 @@ BLOCKDEV_CRYPTO_ALL_MODES = (blockdev.CryptoTechMode.CREATE |
 BLOCKDEV_CRYPTO = BlockDevTechInfo(plugin_name="crypto",
                                    check_fn=blockdev.crypto_is_tech_avail,
                                    technologies={blockdev.CryptoTech.LUKS: BLOCKDEV_CRYPTO_ALL_MODES,
-                                                 blockdev.CryptoTech.LUKS2: BLOCKDEV_CRYPTO_ALL_MODES,
                                                  blockdev.CryptoTech.ESCROW: blockdev.CryptoTechMode.CREATE})
 BLOCKDEV_CRYPTO_TECH = BlockDevMethod(BLOCKDEV_CRYPTO)
 
@@ -399,7 +398,7 @@ BLOCKDEV_LOOP_ALL_MODES = (blockdev.LoopTechMode.CREATE |
                            blockdev.LoopTechMode.QUERY)
 BLOCKDEV_LOOP = BlockDevTechInfo(plugin_name="loop",
                                  check_fn=blockdev.loop_is_tech_avail,
-                                 technologies={blockdev.LoopTech.LOOP_TECH_LOOP: BLOCKDEV_LOOP_ALL_MODES})
+                                 technologies={blockdev.LoopTech.LOOP: BLOCKDEV_LOOP_ALL_MODES})
 BLOCKDEV_LOOP_TECH = BlockDevMethod(BLOCKDEV_LOOP)
 
 # libblockdev lvm plugin required technologies and modes
@@ -437,7 +436,7 @@ BLOCKDEV_MD_ALL_MODES = (blockdev.MDTechMode.CREATE |
                          blockdev.MDTechMode.QUERY)
 BLOCKDEV_MD = BlockDevTechInfo(plugin_name="mdraid",
                                check_fn=blockdev.md_is_tech_avail,
-                               technologies={blockdev.MDTech.MD_TECH_MDRAID: BLOCKDEV_MD_ALL_MODES})
+                               technologies={blockdev.MDTech.MDRAID: BLOCKDEV_MD_ALL_MODES})
 BLOCKDEV_MD_TECH = BlockDevMethod(BLOCKDEV_MD)
 
 # libblockdev mpath plugin required technologies and modes
@@ -455,7 +454,7 @@ BLOCKDEV_SWAP_ALL_MODES = (blockdev.SwapTechMode.CREATE |
                            blockdev.SwapTechMode.SET_LABEL)
 BLOCKDEV_SWAP = BlockDevTechInfo(plugin_name="swap",
                                  check_fn=blockdev.swap_is_tech_avail,
-                                 technologies={blockdev.SwapTech.SWAP_TECH_SWAP: BLOCKDEV_SWAP_ALL_MODES})
+                                 technologies={blockdev.SwapTech.SWAP: BLOCKDEV_SWAP_ALL_MODES})
 BLOCKDEV_SWAP_TECH = BlockDevMethod(BLOCKDEV_SWAP)
 
 # libblockdev plugins

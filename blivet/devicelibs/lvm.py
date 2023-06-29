@@ -28,7 +28,7 @@ from collections import namedtuple
 import itertools
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -83,6 +83,9 @@ if hasattr(blockdev.LVMTech, "DEVICES"):
         HAVE_LVMDEVICES = True
 else:
     HAVE_LVMDEVICES = False
+
+
+LVM_DEVICES_FILE = "/etc/lvm/devices/system.devices"
 
 # list of devices that LVM is allowed to use
 # with LVM >= 2.0.13 we'll use this for the --devices option and when creating

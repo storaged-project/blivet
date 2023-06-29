@@ -27,7 +27,7 @@ import time
 from six.moves import reduce
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -269,8 +269,11 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
            :returns: estimated superblock size
            :rtype: :class:`~.size.Size`
         """
-        return blockdev.md.get_superblock_size(raw_array_size,
-                                               version=self.metadata_version)
+        try:
+            return blockdev.md.get_superblock_size(raw_array_size,
+                                                   version=self.metadata_version)
+        except blockdev.MDRaidError as err:
+            raise errors.MDRaidError(err)
 
     @property
     def size(self):
@@ -514,7 +517,10 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             member.setup(orig=orig)
             disks.append(member.path)
 
-        blockdev.md.activate(self.path, members=disks, uuid=self.mdadm_format_uuid)
+        try:
+            blockdev.md.activate(self.path, members=disks, uuid=self.mdadm_format_uuid)
+        except blockdev.MDRaidError as err:
+            raise errors.MDRaidError(err)
 
     def _post_teardown(self, recursive=False):
         super(MDRaidArrayDevice, self)._post_teardown(recursive=recursive)
@@ -542,7 +548,10 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         # file exists, we want to deactivate it. mdraid has too many
         # states.
         if self.exists and os.path.exists(self.path):
-            blockdev.md.deactivate(self.path)
+            try:
+                blockdev.md.deactivate(self.path)
+            except blockdev.MDRaidError as err:
+                raise errors.MDRaidError(err)
 
         self._post_teardown(recursive=recursive)
 
@@ -561,7 +570,11 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
         # update our uuid attribute with the new array's UUID
         # XXX this won't work for containers since no UUID is reported for them
-        info = blockdev.md.detail(self.path)
+        try:
+            info = blockdev.md.detail(self.path)
+        except blockdev.MDRaidError as err:
+            raise errors.MDRaidError(err)
+
         self.uuid = info.uuid
         for member in self.members:
             member.format.md_uuid = self.uuid
@@ -583,10 +596,13 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                 except blockdev.LVMError as e:
                     log.error("Failed to remove stale volume group from newly-created md array %s: %s",
                               self.path, str(e))
-                    raise
+                    raise errors.MDRaidError(e)
 
             # lvm says it is a pv whether or not there is vg metadata, so wipe the pv signature
-            blockdev.lvm.pvremove(self.path)
+            try:
+                blockdev.lvm.pvremove(self.path)
+            except blockdev.LVMError as err:
+                raise errors.MDRaidError(err)
 
         remove_stale_lvm()
 
@@ -601,24 +617,30 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         level = None
         if self.level:
             level = str(self.level)
-        blockdev.md.create(self.path, level, disks, spares,
-                           version=self.metadata_version,
-                           bitmap=self.create_bitmap,
-                           chunk_size=int(self.chunk_size))
+        try:
+            blockdev.md.create(self.path, level, disks, spares,
+                               version=self.metadata_version,
+                               bitmap="internal" if self.create_bitmap else None,
+                               chunk_size=int(self.chunk_size))
+        except blockdev.MDRaidError as err:
+            raise errors.MDRaidError(err)
         udev.settle()
 
     def _remove(self, member):
         self.setup()
         # see if the device must be marked as failed before it can be removed
         fail = (self.member_status(member) == "in_sync")
-        blockdev.md.remove(self.path, member.path, fail)
+        try:
+            blockdev.md.remove(self.path, member.path, fail)
+        except blockdev.MDRaidError as err:
+            raise errors.MDRaidError(err)
 
     def _add(self, member):
         """ Add a member device to an array.
 
            :param str member: the member's path
 
-           :raises: blockdev.MDRaidError
+           :raises: :class:`~.errors.MDRaidError`
         """
         self.setup()
 
@@ -630,7 +652,10 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         except errors.RaidError:
             pass
 
-        blockdev.md.add(self.path, member.path, raid_devs=raid_devices)
+        try:
+            blockdev.md.add(self.path, member.path, raid_devs=raid_devices)
+        except blockdev.MDRaidError as err:
+            raise errors.MDRaidError(err)
 
     @property
     def format_args(self):

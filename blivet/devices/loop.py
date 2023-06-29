@@ -20,7 +20,7 @@
 #
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -81,7 +81,11 @@ class LoopDevice(StorageDevice):
             # if our name is loopN we must already be active
             return self.name
 
-        name = blockdev.loop.get_loop_name(self.parents[0].path)
+        try:
+            name = blockdev.loop.get_loop_name(self.parents[0].path)
+        except blockdev.LoopError as e:
+            raise errors.LoopError(e)
+
         if name.startswith("loop"):
             self.name = name
 
@@ -106,7 +110,10 @@ class LoopDevice(StorageDevice):
         """ Open, or set up, a device. """
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
-        blockdev.loop.setup(self.parents[0].path)
+        try:
+            blockdev.loop.setup(self.parents[0].path)
+        except blockdev.LoopError as e:
+            raise errors.LoopError(e)
 
     def _post_setup(self):
         StorageDevice._post_setup(self)
@@ -117,7 +124,10 @@ class LoopDevice(StorageDevice):
         """ Close, or tear down, a device. """
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
-        blockdev.loop.teardown(self.path)
+        try:
+            blockdev.loop.teardown(self.path)
+        except blockdev.LoopError as e:
+            raise errors.LoopError(e)
 
     def _post_teardown(self, recursive=False):
         StorageDevice._post_teardown(self, recursive=recursive)

@@ -26,6 +26,8 @@ from .constants import BUS_NAME
 
 class DBusObject(dbus.service.Object):
     """ Base class for dbus objects. """
+    transient = True  # should this be removed on Blivet.Reset ?
+
     def __init__(self, manager):
         # pylint: disable=super-init-not-called
         self._present = True

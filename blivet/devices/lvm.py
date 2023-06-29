@@ -31,7 +31,7 @@ from enum import Enum
 import six
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -42,6 +42,7 @@ from .. import errors
 from .. import util
 from ..storage_log import log_method_call
 from .. import udev
+from ..flags import flags
 from ..size import Size, KiB, MiB, ROUND_UP, ROUND_DOWN
 from ..static_data.lvm_info import lvs_info
 from ..tasks import availability
@@ -247,13 +248,19 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ Close, or tear down, a device. """
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
-        blockdev.lvm.vgdeactivate(self.name)
+        try:
+            blockdev.lvm.vgdeactivate(self.name)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         pv_list = [pv.path for pv in self.parents]
-        blockdev.lvm.vgcreate(self.name, pv_list, self.pe_size)
+        try:
+            blockdev.lvm.vgcreate(self.name, pv_list, self.pe_size)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
     def _post_create(self):
         self._complete = True
@@ -277,9 +284,12 @@ class LVMVolumeGroupDevice(ContainerDevice):
             # the same name that we want to keep/use.
             return
 
-        blockdev.lvm.vgreduce(self.name, None)
-        blockdev.lvm.vgdeactivate(self.name)
-        blockdev.lvm.vgremove(self.name)
+        try:
+            blockdev.lvm.vgreduce(self.name, None)
+            blockdev.lvm.vgdeactivate(self.name)
+            blockdev.lvm.vgremove(self.name)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
     def _remove(self, member):
         status = []
@@ -291,15 +301,24 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # do not run pvmove on empty PVs
         member.format.update_size_info()
         if member.format.free < member.format.current_size:
-            blockdev.lvm.pvmove(member.path)
-        blockdev.lvm.vgreduce(self.name, member.path)
+            try:
+                blockdev.lvm.pvmove(member.path)
+            except blockdev.LVMError as err:
+                raise errors.LVMError(err)
+        try:
+            blockdev.lvm.vgreduce(self.name, member.path)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
         for (lv, status) in zip(self.lvs, status):
             if lv.status and not status:
                 lv.teardown()
 
     def _add(self, member):
-        blockdev.lvm.vgextend(self.name, member.path)
+        try:
+            blockdev.lvm.vgextend(self.name, member.path)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
     def _add_log_vol(self, lv):
         """ Add an LV to this VG. """
@@ -407,7 +426,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
             raise ValueError("'%s' is not a valid name for %s" % (new_name, self.type))
 
         if not dry_run:
-            blockdev.lvm.vgrename(old_name, new_name)
+            try:
+                blockdev.lvm.vgrename(old_name, new_name)
+            except blockdev.LVMError as err:
+                raise errors.LVMError(err)
             for pv in self.pvs:
                 pv.format.vg_name = new_name
 
@@ -990,7 +1012,12 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         if not self.exists:
             raise errors.DeviceError("device has not been created")
 
-        return blockdev.dm.node_from_name(self.map_name)
+        try:
+            node = blockdev.dm.node_from_name(self.map_name)
+        except blockdev.DMError as err:
+            raise errors.LVMError(err)
+        else:
+            return node
 
     def _get_name(self):
         """ This device's name. """
@@ -1065,7 +1092,10 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         """ Close, or tear down, a device. """
         log_method_call(self, self.name, status=self.status,
                         controllable=self.controllable)
-        blockdev.lvm.lvdeactivate(self.vg.name, self._name)
+        try:
+            blockdev.lvm.lvdeactivate(self.vg.name, self._name)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
     def _post_teardown(self, recursive=False):
         try:
@@ -1110,7 +1140,10 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             raise ValueError("'%s' is not a valid name for %s" % (new_name, self.type))
 
         if not dry_run:
-            blockdev.lvm.lvrename(self.vg.name, old_name, new_name)
+            try:
+                blockdev.lvm.lvrename(self.vg.name, old_name, new_name)
+            except blockdev.LVMError as err:
+                raise errors.LVMError(err)
 
     @property
     def lvname(self):
@@ -1493,7 +1526,11 @@ class LVMSnapshotMixin(object):
             pass
 
         udev.settle()
-        blockdev.lvm.lvsnapshotmerge(self.vg.name, self.lvname)
+
+        try:
+            blockdev.lvm.lvsnapshotmerge(self.vg.name, self.lvname)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
     @util.requires_property("is_snapshot_lv")
     def _update_format_from_origin(self):
@@ -1546,7 +1583,10 @@ class LVMSnapshotMixin(object):
         """ Create the device. """
         if not self.is_thin_lv:
             log_method_call(self, self.name, status=self.status)
-            blockdev.lvm.lvsnapshotcreate(self.vg.name, self.origin.lvname, self._name, self.size)
+            try:
+                blockdev.lvm.lvsnapshotcreate(self.vg.name, self.origin.lvname, self._name, self.size)
+            except blockdev.LVMError as err:
+                raise errors.LVMError(err)
         else:
             pool_name = None
             if not self.origin.is_thin_lv:
@@ -1554,8 +1594,11 @@ class LVMSnapshotMixin(object):
                 # to use
                 pool_name = self.pool.lvname
 
-            blockdev.lvm.thsnapshotcreate(self.vg.name, self.origin.lvname, self._name,
-                                          pool_name=pool_name)
+            try:
+                blockdev.lvm.thsnapshotcreate(self.vg.name, self.origin.lvname, self._name,
+                                              pool_name=pool_name)
+            except blockdev.LVMError as err:
+                raise errors.LVMError(err)
 
     def _post_create(self):
         DMDevice._post_create(self)
@@ -1570,7 +1613,10 @@ class LVMSnapshotMixin(object):
         # old-style snapshots' status is tied to the origin's so we never
         # explicitly activate or deactivate them and we have to tell lvremove
         # that it is okay to remove the active snapshot
-        blockdev.lvm.lvremove(self.vg.name, self._name, force=True)
+        try:
+            blockdev.lvm.lvremove(self.vg.name, self._name, force=True)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
     def depends_on(self, dep):
         if self.is_thin_lv:
@@ -1745,13 +1791,19 @@ class LVMThinPoolMixin(object):
                 extra["chunksize"] = str(int(self.chunk_size))
             data_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.data)
             meta_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.meta)
-            blockdev.lvm.thpool_convert(self.vg.name, data_lv.lvname, meta_lv.lvname, self.lvname, **extra)
+            try:
+                blockdev.lvm.thpool_convert(self.vg.name, data_lv.lvname, meta_lv.lvname, self.lvname, **extra)
+            except blockdev.LVMError as err:
+                raise errors.LVMError(err)
             # TODO: update the names of the internal LVs here
         else:
-            blockdev.lvm.thpoolcreate(self.vg.name, self.lvname, self.size,
-                                      md_size=self.metadata_size,
-                                      chunk_size=self.chunk_size,
-                                      profile=profile_name)
+            try:
+                blockdev.lvm.thpoolcreate(self.vg.name, self.lvname, self.size,
+                                          md_size=self.metadata_size,
+                                          chunk_size=self.chunk_size,
+                                          profile=profile_name)
+            except blockdev.LVMError as err:
+                raise errors.LVMError(err)
 
     def dracut_setup_args(self):
         return set()
@@ -1843,8 +1895,11 @@ class LVMThinLogicalVolumeMixin(object):
     def _create(self):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
-        blockdev.lvm.thlvcreate(self.vg.name, self.pool.lvname, self.lvname,
-                                self.size)
+        try:
+            blockdev.lvm.thlvcreate(self.vg.name, self.pool.lvname, self.lvname,
+                                    self.size)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
     def remove_hook(self, modparent=True):
         if modparent:
@@ -1987,10 +2042,13 @@ class LVMVDOPoolMixin(object):
         else:
             write_policy = blockdev.LVMVDOWritePolicy.AUTO
 
-        blockdev.lvm.vdo_pool_create(self.vg.name, self.vdo_lv.lvname, self.lvname,
-                                     self.size, self.vdo_lv.size, self.index_memory,
-                                     self.compression, self.deduplication,
-                                     write_policy)
+        try:
+            blockdev.lvm.vdo_pool_create(self.vg.name, self.vdo_lv.lvname, self.lvname,
+                                         self.size, self.vdo_lv.size, self.index_memory,
+                                         self.compression, self.deduplication,
+                                         write_policy)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
     @util.requires_property("is_vdo_pool")
     def _set_compression(self, new_compression, old_compression, dry_run):
@@ -2001,10 +2059,13 @@ class LVMVDOPoolMixin(object):
             raise ValueError("compression is already %s on this VDO pool" % ("enabled" if new_compression else "disabled"))
 
         if not dry_run:
-            if new_compression:
-                blockdev.lvm.vdo_enable_compression(self.vg.name, self.lvname)
-            else:
-                blockdev.lvm.vdo_disable_compression(self.vg.name, self.lvname)
+            try:
+                if new_compression:
+                    blockdev.lvm.vdo_enable_compression(self.vg.name, self.lvname)
+                else:
+                    blockdev.lvm.vdo_disable_compression(self.vg.name, self.lvname)
+            except blockdev.LVMError as err:
+                raise errors.LVMError(err)
 
     @util.requires_property("is_vdo_pool")
     def _set_deduplication(self, new_deduplication, old_deduplication, dry_run):
@@ -2015,10 +2076,13 @@ class LVMVDOPoolMixin(object):
             raise ValueError("deduplication is already %s on this VDO pool" % ("enabled" if new_deduplication else "disabled"))
 
         if not dry_run:
-            if new_deduplication:
-                blockdev.lvm.vdo_enable_deduplication(self.vg.name, self.lvname)
-            else:
-                blockdev.lvm.vdo_disable_deduplication(self.vg.name, self.lvname)
+            try:
+                if new_deduplication:
+                    blockdev.lvm.vdo_enable_deduplication(self.vg.name, self.lvname)
+                else:
+                    blockdev.lvm.vdo_disable_deduplication(self.vg.name, self.lvname)
+            except blockdev.LVMError as err:
+                raise errors.LVMError(err)
 
 
 class LVMVDOLogicalVolumeMixin(object):
@@ -2248,13 +2312,19 @@ class LVMCachePoolMixin(object):
                 extra["cachemode"] = self._cache_mode
             data_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.data)
             meta_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.meta)
-            blockdev.lvm.cache_pool_convert(self.vg.name, data_lv.lvname, meta_lv.lvname, self.lvname, **extra)
+            try:
+                blockdev.lvm.cache_pool_convert(self.vg.name, data_lv.lvname, meta_lv.lvname, self.lvname, **extra)
+            except blockdev.LVMError as err:
+                raise errors.LVMError(err)
         else:
-            blockdev.lvm.cache_create_pool(self.vg.name, self.lvname, self.size,
-                                           self.metadata_size,
-                                           cache_mode,
-                                           0,
-                                           [spec.pv.path for spec in self._pv_specs])
+            try:
+                blockdev.lvm.cache_create_pool(self.vg.name, self.lvname, self.size,
+                                               self.metadata_size,
+                                               cache_mode,
+                                               0,
+                                               [spec.pv.path for spec in self._pv_specs])
+            except blockdev.LVMError as err:
+                raise errors.LVMError(err)
         if self._attach_to:
             self._attach_to.attach_cache(self)
 
@@ -2643,7 +2713,10 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         log_method_call(self, self.name, orig=orig, status=self.status,
                         controllable=self.controllable)
         ignore_skip_activation = self.is_snapshot_lv or self.ignore_skip_activation > 0
-        blockdev.lvm.lvactivate(self.vg.name, self._name, ignore_skip=ignore_skip_activation)
+        try:
+            blockdev.lvm.lvactivate(self.vg.name, self._name, ignore_skip=ignore_skip_activation)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
     @type_specific
     def _pre_create(self):
@@ -2681,8 +2754,11 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             if self._stripe_size:
                 extra["stripesize"] = str(int(self._stripe_size.convert_to("KiB")))
 
-            blockdev.lvm.lvcreate(self.vg.name, self._name, self.size,
-                                  type=self.seg_type, pv_list=pvs, **extra)
+            try:
+                blockdev.lvm.lvcreate(self.vg.name, self._name, self.size,
+                                      type=self.seg_type, pv_list=pvs, **extra)
+            except blockdev.LVMError as err:
+                raise errors.LVMError(err)
         else:
             fast_pvs = [pv.path for pv in self.cache.fast_pvs]
 
@@ -2705,12 +2781,18 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
             # fast PVs may be required for allocation of the LV (it may span over the slow PVs and parts of
             # fast PVs)
             if self.cache.type == "cache":
-                mode = blockdev.lvm.cache_get_mode_from_str(self.cache.mode)
-                blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size, self.cache.md_size,
-                                                    mode, 0, util.dedup_list(slow_pvs + fast_pvs), fast_pvs)
+                try:
+                    mode = blockdev.lvm.cache_get_mode_from_str(self.cache.mode)
+                    blockdev.lvm.cache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size, self.cache.md_size,
+                                                        mode, 0, util.dedup_list(slow_pvs + fast_pvs), fast_pvs)
+                except blockdev.LVMError as err:
+                    raise errors.LVMError(err)
             else:
-                blockdev.lvm.writecache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size,
-                                                         util.dedup_list(slow_pvs + fast_pvs), fast_pvs)
+                try:
+                    blockdev.lvm.writecache_create_cached_lv(self.vg.name, self._name, self.size, self.cache.size,
+                                                             util.dedup_list(slow_pvs + fast_pvs), fast_pvs)
+                except blockdev.LVMError as err:
+                    raise errors.LVMError(err)
 
     @type_specific
     def _post_create(self):
@@ -2730,7 +2812,10 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     def _destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
-        blockdev.lvm.lvremove(self.vg.name, self._name)
+        try:
+            blockdev.lvm.lvremove(self.vg.name, self._name)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
     @type_specific
     def resize(self):
@@ -2739,13 +2824,18 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         # Setup VG parents (in case they are dmraid partitions for example)
         self.vg.setup_parents(orig=True)
 
-        if self.original_format.exists:
-            self.original_format.teardown()
-        if self.format.exists:
-            self.format.teardown()
+        if not flags.allow_online_fs_resize:
+            if self.original_format.exists:
+                self.original_format.teardown()
+            if self.format.exists:
+                self.format.teardown()
 
-        udev.settle()
-        blockdev.lvm.lvresize(self.vg.name, self._name, self.size)
+            udev.settle()
+
+        try:
+            blockdev.lvm.lvresize(self.vg.name, self._name, self.size)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
 
     @type_specific
     def _add_log_vol(self, lv):
@@ -2856,7 +2946,10 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     def attach_cache(self, cache_pool_lv):
         if self.is_thin_lv or self.is_snapshot_lv or self.is_internal_lv:
             raise errors.DeviceError("Cannot attach a cache pool to the '%s' LV" % self.name)
-        blockdev.lvm.cache_attach(self.vg.name, self.lvname, cache_pool_lv.lvname)
+        try:
+            blockdev.lvm.cache_attach(self.vg.name, self.lvname, cache_pool_lv.lvname)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
         self._cache = LVMCache(self, size=cache_pool_lv.size, exists=True)
 
     def attach_writecache(self, writecache_lv):
@@ -3023,8 +3116,11 @@ class LVMCache(Cache):
 
     def detach(self):
         vg_name = self._cached_lv.vg.name
-        ret = blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname)
-        blockdev.lvm.cache_detach(vg_name, self._cached_lv.lvname, False)
+        try:
+            ret = blockdev.lvm.cache_pool_name(vg_name, self._cached_lv.lvname)
+            blockdev.lvm.cache_detach(vg_name, self._cached_lv.lvname, False)
+        except blockdev.LVMError as err:
+            raise errors.LVMError(err)
         return ret
 
 

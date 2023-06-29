@@ -21,7 +21,7 @@
 #
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -262,10 +262,17 @@ class LUKS(DeviceFormat):
     def _setup(self, **kwargs):
         log_method_call(self, device=self.device, map_name=self.map_name,
                         type=self.type, status=self.status)
+
+        # passphrase is preferred for open
+        if self.__passphrase:
+            context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
+        elif self._key_file:
+            context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
+        else:
+            raise LUKSError("Passphrase or key file must be set for LUKS setup")
+
         try:
-            blockdev.crypto.luks_open(self.device, self.map_name,
-                                      passphrase=self.__passphrase,
-                                      key_file=self._key_file)
+            blockdev.crypto.luks_open(self.device, self.map_name, context=context)
         except blockdev.CryptoError as e:
             raise LUKSError(e)
 
@@ -274,7 +281,11 @@ class LUKS(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         log.debug("unmapping %s", self.map_name)
-        blockdev.crypto.luks_close(self.map_name)
+
+        try:
+            blockdev.crypto.luks_close(self.map_name)
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
 
         udev.settle()
 
@@ -299,13 +310,15 @@ class LUKS(DeviceFormat):
             if luks_data.pbkdf_args:
                 self.pbkdf_args = luks_data.pbkdf_args
             else:
-                mem_limit = crypto.calculate_luks2_max_memory()
-                if mem_limit:
-                    self.pbkdf_args = LUKS2PBKDFArgs(max_memory_kb=int(mem_limit.convert_to(KiB)))
-                    luks_data.pbkdf_args = self.pbkdf_args
-                    log.info("PBKDF arguments for LUKS2 not specified, using defaults with memory limit %s", mem_limit)
+                # argon is not used with FIPS so we don't need to adjust the memory when in FIPS mode
+                if not crypto.is_fips_enabled():
+                    mem_limit = crypto.calculate_luks2_max_memory()
+                    if mem_limit:
+                        self.pbkdf_args = LUKS2PBKDFArgs(max_memory_kb=int(mem_limit.convert_to(KiB)))
+                        luks_data.pbkdf_args = self.pbkdf_args
+                        log.info("PBKDF arguments for LUKS2 not specified, using defaults with memory limit %s", mem_limit)
 
-        if not self.luks_sector_size:
+        if not self.luks_sector_size and self.luks_version == "luks2":
             self.luks_sector_size = crypto.get_optimal_luks_sector_size(self.device)
 
         if self.pbkdf_args:
@@ -322,18 +335,42 @@ class LUKS(DeviceFormat):
             else:
                 extra = None
 
-        blockdev.crypto.luks_format(self.device,
-                                    passphrase=self.__passphrase,
-                                    key_file=self._key_file,
-                                    cipher=self.cipher,
-                                    key_size=self.key_size,
-                                    min_entropy=self.min_luks_entropy,
-                                    luks_version=crypto.LUKS_VERSIONS[self.luks_version],
-                                    extra=extra)
+        if self.__passphrase:
+            context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
+        elif self._key_file:
+            context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
+        else:
+            raise LUKSError("Passphrase or key file must be set for LUKS create")
+
+        try:
+            blockdev.crypto.luks_format(self.device,
+                                        context=context,
+                                        cipher=self.cipher,
+                                        key_size=self.key_size,
+                                        min_entropy=self.min_luks_entropy,
+                                        luks_version=crypto.LUKS_VERSIONS[self.luks_version],
+                                        extra=extra)
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
+
+        if self.__passphrase and self._key_file:
+            # both passphrase and keyfile are set, we need to add the keyfile too
+            ncontext = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
+            try:
+                blockdev.crypto.luks_add_key(self.device, context, ncontext)
+            except blockdev.CryptoError as e:
+                raise LUKSError(e)
 
     def _post_create(self, **kwargs):
         super(LUKS, self)._post_create(**kwargs)
-        self.uuid = blockdev.crypto.luks_uuid(self.device)
+
+        try:
+            info = blockdev.crypto.luks_info(self.device)
+        except blockdev.CryptoError as e:
+            raise LUKSError("Failed to get UUID for the newly created LUKS device %s: %s" % (self.device, str(e)))
+        else:
+            self.uuid = info.uuid
+
         if not self.map_name:
             self.map_name = "luks-%s" % self.uuid
 
@@ -357,16 +394,27 @@ class LUKS(DeviceFormat):
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        blockdev.crypto.luks_add_key(self.device,
-                                     pass_=self.__passphrase,
-                                     key_file=self._key_file,
-                                     npass=passphrase)
+        # if both passphrase and keyfile are set, they both need to be valid so
+        # we can choose passphrase as default
+        if self.__passphrase:
+            context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
+        elif self._key_file:
+            context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
+
+        ncontext = blockdev.CryptoKeyslotContext(passphrase=passphrase)
+
+        try:
+            blockdev.crypto.luks_add_key(self.device, context, ncontext)
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
 
     def remove_passphrase(self):
         """
         Remove the saved passphrase (and possibly key file) from the LUKS
         header.
 
+        Note: If both passphrase and keyfile are set for this format, both
+              will be removed!
         """
 
         log_method_call(self, device=self.device,
@@ -374,14 +422,28 @@ class LUKS(DeviceFormat):
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        blockdev.crypto.luks_remove_key(self.device,
-                                        pass_=self.__passphrase,
-                                        key_file=self._key_file)
+        def _remove_passphrase(context):
+            try:
+                blockdev.crypto.luks_remove_key(self.device, context=context)
+            except blockdev.CryptoError as e:
+                raise LUKSError(e)
+
+        if self.__passphrase:
+            context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
+            _remove_passphrase(context)
+        elif self._key_file:
+            context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
+            _remove_passphrase(context)
 
     def escrow(self, directory, backup_passphrase):
         log.debug("escrow: escrow_volume start for %s", self.device)
-        blockdev.crypto.escrow_device(self.device, self.__passphrase, self.escrow_cert,
-                                      directory, backup_passphrase)
+
+        try:
+            blockdev.crypto.escrow_device(self.device, self.__passphrase, self.escrow_cert,
+                                          directory, backup_passphrase)
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
+
         log.debug("escrow: escrow_volume done for %s", repr(self.device))
 
     def populate_ksdata(self, data):
@@ -479,9 +541,12 @@ class Integrity(DeviceFormat):
         else:
             extra = None
 
-        blockdev.crypto.integrity_format(self.device,
-                                         self.algorithm,
-                                         extra=extra)
+        try:
+            blockdev.crypto.integrity_format(self.device,
+                                             self.algorithm,
+                                             extra=extra)
+        except blockdev.CryptoError as e:
+            raise IntegrityError(e)
 
     def _teardown(self, **kwargs):
         """ Close, or tear down, the format. """
@@ -491,7 +556,10 @@ class Integrity(DeviceFormat):
 
         # it's safe to use luks_close here, it uses crypt_deactivate which works
         # for all devices supported by cryptsetup
-        blockdev.crypto.luks_close(self.map_name)
+        try:
+            blockdev.crypto.luks_close(self.map_name)
+        except blockdev.CryptoError as e:
+            raise IntegrityError(e)
 
         udev.settle()
 

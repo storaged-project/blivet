@@ -32,7 +32,7 @@ from ..size import Size
 from .. import udev
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -144,7 +144,10 @@ class SwapSpace(DeviceFormat):
             if not self.label_format_ok(self.label):
                 raise SwapSpaceError("bad label format")
 
-            blockdev.swap.mkswap(self.device, self.label)
+            try:
+                blockdev.swap.mkswap(self.device, self.label)
+            except blockdev.SwapError as err:
+                raise SwapSpaceError("Failed to change label on %s: %s" % (self.device, str(err)))
 
     label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
                      doc="the label for this swap space")
@@ -194,18 +197,31 @@ class SwapSpace(DeviceFormat):
     @property
     def status(self):
         """ Device status. """
-        return self.exists and blockdev.swap.swapstatus(self.device)
+        if not self.exists:
+            return False
+        try:
+            status = blockdev.swap.swapstatus(self.device)
+        except blockdev.SwapError as err:
+            raise SwapSpaceError("Failed to get swap status for %s: %s" % (self.device, str(err)))
+        else:
+            return status
 
     def _setup(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        blockdev.swap.swapon(self.device, priority=self.priority)
+        try:
+            blockdev.swap.swapon(self.device, priority=self.priority)
+        except blockdev.SwapError as err:
+            raise SwapSpaceError("Failed to activate swap %s: %s" % (self.device, str(err)))
 
     def _teardown(self, **kwargs):
         """ Close, or tear down, a device. """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        blockdev.swap.swapoff(self.device)
+        try:
+            blockdev.swap.swapoff(self.device)
+        except blockdev.SwapError as err:
+            raise SwapSpaceError("Failed to deactivate swap %s: %s" % (self.device, str(err)))
 
         udev.settle()
 
@@ -213,12 +229,18 @@ class SwapSpace(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         if self.uuid is None:
-            blockdev.swap.mkswap(self.device, label=self.label)
+            try:
+                blockdev.swap.mkswap(self.device, label=self.label)
+            except blockdev.SwapError as err:
+                raise SwapSpaceError(str(err))
         else:
             if not self.uuid_format_ok(self.uuid):
                 raise FSWriteUUIDError("bad UUID format for swap filesystem")
-            blockdev.swap.mkswap(self.device, label=self.label,
-                                 extra={"-U": self.uuid})
+            try:
+                blockdev.swap.mkswap(self.device, label=self.label,
+                                     extra={"-U": self.uuid})
+            except blockdev.SwapError as err:
+                raise SwapSpaceError(str(err))
 
 
 register_device_format(SwapSpace)

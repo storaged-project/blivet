@@ -23,7 +23,7 @@
 import gi
 import os
 
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 from gi.repository import BlockDev as blockdev
 
 from ..storage_log import log_exception_info, log_method_call
@@ -223,11 +223,8 @@ class DiskLabel(DeviceFormat):
         label_types = ["msdos", "gpt"]
         if arch.is_pmac():
             label_types = ["mac"]
-        elif arch.is_aarch64():
-            label_types = ["gpt", "msdos"]
-        elif arch.is_efi() and arch.is_arm():
-            label_types = ["msdos", "gpt"]
-        elif arch.is_efi() and not arch.is_aarch64():
+        # always prefer gpt on aarch64, x86_64, and EFI plats except 32-bit ARM
+        elif arch.is_aarch64() or arch.is_x86(bits=64) or (arch.is_efi() and not arch.is_arm()):
             label_types = ["gpt", "msdos"]
         elif arch.is_s390():
             label_types += ["dasd"]

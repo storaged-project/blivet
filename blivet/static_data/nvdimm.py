@@ -18,7 +18,7 @@
 #
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 gi.require_version("GLib", "2.0")
 from gi.repository import BlockDev
 from gi.repository import GLib
@@ -34,7 +34,7 @@ class NVDIMMDependencyGuard(util.DependencyGuard):
 
     def _check_avail(self):
         try:
-            BlockDev.nvdimm_is_tech_avail(BlockDev.NVDIMMTech.NVDIMM_TECH_NAMESPACE,
+            BlockDev.nvdimm_is_tech_avail(BlockDev.NVDIMMTech.NAMESPACE,
                                           BlockDev.NVDIMMTechMode.RECONFIGURE |
                                           BlockDev.NVDIMMTechMode.QUERY |
                                           BlockDev.NVDIMMTechMode.ACTIVATE_DEACTIVATE)

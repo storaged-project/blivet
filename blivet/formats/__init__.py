@@ -21,11 +21,6 @@
 # Red Hat Author(s): Dave Lehman <dlehman@redhat.com>
 #
 
-import gi
-gi.require_version("BlockDev", "2.0")
-
-from gi.repository import BlockDev as blockdev
-
 import os
 import importlib
 from six import add_metaclass

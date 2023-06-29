@@ -46,6 +46,8 @@ class DBusBlivet(DBusObject):
         It provides methods for controlling the blivet service and querying its
         state.
     """
+    transient = False
+
     def __init__(self, manager):
         super(DBusBlivet, self).__init__(manager)
         self._blivet = Blivet()
@@ -141,12 +143,6 @@ class DBusBlivet(DBusObject):
         self._manager.add_object(added)
 
     def _action_executed(self, action):
-        if action.is_destroy:
-            if action.is_device:
-                self._device_removed(action.device, keep=False)
-            elif action.is_format:
-                self._format_removed(action.device, action.format, keep=False)
-
         self._action_removed(action)
 
     def _list_dbus_devices(self, removed=False):
@@ -171,12 +167,9 @@ class DBusBlivet(DBusObject):
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE)
     def Reset(self):
         """ Reset the Blivet instance and populate the device tree. """
-        old_devices = self._blivet.devices[:]
-        for removed in old_devices:
-            self._device_removed(device=removed, keep=False)
-
-        for action in self._blivet.devicetree.actions:
-            self._action_removed(action)
+        for obj in self._manager.objects:
+            if obj.transient:
+                self._manager.remove_object(obj)
 
         self._blivet.reset()
 

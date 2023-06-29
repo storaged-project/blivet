@@ -21,9 +21,10 @@
 #
 
 import hashlib
+import os
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev
 
@@ -132,3 +133,13 @@ def get_optimal_luks_sector_size(device):
         # 512 logical block size which will make it harder to combine these in a single
         # LVM volume group if used as PVs
         return SECTOR_SIZE
+
+
+def is_fips_enabled():
+    if not os.path.exists("/proc/sys/crypto/fips_enabled"):
+        # if the file doesn't exist, we are definitely not in FIPS mode
+        return False
+
+    with open("/proc/sys/crypto/fips_enabled", "r") as f:
+        enabled = f.read()
+    return enabled.strip() == "1"

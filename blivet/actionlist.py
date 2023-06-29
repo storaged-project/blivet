@@ -148,11 +148,13 @@ class ActionList(object):
                     log.info("removing obsolete action %d (%d)",
                              obsolete.id, action.id)
                     self._actions.remove(obsolete)
+                    _callbacks.action_removed(action=obsolete)
 
                     if obsolete.obsoletes(action) and action in self._actions:
                         log.info("removing mutually-obsolete action %d (%d)",
                                  action.id, obsolete.id)
                         self._actions.remove(action)
+                        _callbacks.action_removed(action=action)
 
     def sort(self):
         """ Sort actions based on dependencies. """

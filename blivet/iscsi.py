@@ -106,7 +106,7 @@ def _to_node_infos(variant):
 
 
 class iSCSIDependencyGuard(util.DependencyGuard):
-    error_msg = "storaged iSCSI functionality not available"
+    error_msg = "UDisks iSCSI functionality not available"
 
     def _check_avail(self):
         try:
@@ -273,6 +273,7 @@ class iSCSI(object):
         if extra is None:
             extra = dict()
         extra["node.startup"] = GLib.Variant("s", "automatic")
+        extra["node.session.auth.chap_algs"] = GLib.Variant("s", "SHA3-256,SHA256,SHA1,MD5")
 
         args = GLib.Variant("(sisisa{sv})", node_info.conn_info + (extra,))
         self._call_initiator_method("Login", args)

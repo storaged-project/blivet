@@ -21,7 +21,7 @@ from .errors import DependencyError
 from . import safe_dbus
 
 import gi
-gi.require_version("BlockDev", "2.0")
+gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 
@@ -294,7 +294,12 @@ def get_mount_device(mountpoint):
 
     if mount_device and re.match(r'/dev/loop\d+$', mount_device):
         loop_name = os.path.basename(mount_device)
-        mount_device = blockdev.loop.get_backing_file(loop_name)
+        try:
+            info = blockdev.loop.info(loop_name)
+        except blockdev.LoopError as e:
+            log.warning("failed to get loop info for %s: %s", loop_name, str(e))
+            return None
+        mount_device = info.backing_file
         log.debug("found backing file %s for loop device %s", mount_device,
                   loop_name)
 
