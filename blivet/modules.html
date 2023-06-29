@@ -4,9 +4,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>blivet &#8212; Blivet 3.7.1 documentation</title>
+    <title>blivet &#8212; Blivet 3.8.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -15,6 +15,7 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
@@ -28,7 +29,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.7.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.8.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet</a></li> 
       </ul>
     </div>  
@@ -46,148 +47,251 @@
 <li class="toctree-l2"><a class="reference internal" href="blivet.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="blivet.dbus.html">blivet.dbus package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#module-blivet.dbus.action">blivet.dbus.action module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#module-blivet.dbus.blivet">blivet.dbus.blivet module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#module-blivet.dbus.constants">blivet.dbus.constants module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#module-blivet.dbus.device">blivet.dbus.device module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#module-blivet.dbus.format">blivet.dbus.format module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#module-blivet.dbus.manager">blivet.dbus.manager module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#module-blivet.dbus.object">blivet.dbus.object module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#module-blivet.dbus">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#blivet-dbus-action-module">blivet.dbus.action module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#blivet-dbus-blivet-module">blivet.dbus.blivet module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#blivet-dbus-constants-module">blivet.dbus.constants module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#blivet-dbus-device-module">blivet.dbus.device module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#blivet-dbus-format-module">blivet.dbus.format module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#blivet-dbus-manager-module">blivet.dbus.manager module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#blivet-dbus-object-module">blivet.dbus.object module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.dbus.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.devicelibs.html">blivet.devicelibs package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#module-blivet.devicelibs.btrfs">blivet.devicelibs.btrfs module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#module-blivet.devicelibs.crypto">blivet.devicelibs.crypto module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#module-blivet.devicelibs.disk">blivet.devicelibs.disk module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#module-blivet.devicelibs.edd">blivet.devicelibs.edd module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#module-blivet.devicelibs.gpt">blivet.devicelibs.gpt module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#module-blivet.devicelibs.lvm">blivet.devicelibs.lvm module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#module-blivet.devicelibs.mdraid">blivet.devicelibs.mdraid module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#module-blivet.devicelibs.raid">blivet.devicelibs.raid module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#module-blivet.devicelibs.stratis">blivet.devicelibs.stratis module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#module-blivet.devicelibs">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#blivet-devicelibs-btrfs-module">blivet.devicelibs.btrfs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#blivet-devicelibs-crypto-module">blivet.devicelibs.crypto module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#blivet-devicelibs-disk-module">blivet.devicelibs.disk module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#blivet-devicelibs-edd-module">blivet.devicelibs.edd module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#blivet-devicelibs-gpt-module">blivet.devicelibs.gpt module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#blivet-devicelibs-lvm-module">blivet.devicelibs.lvm module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#blivet-devicelibs-mdraid-module">blivet.devicelibs.mdraid module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#blivet-devicelibs-raid-module">blivet.devicelibs.raid module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#blivet-devicelibs-stratis-module">blivet.devicelibs.stratis module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devicelibs.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.devices.html">blivet.devices package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.btrfs">blivet.devices.btrfs module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.cache">blivet.devices.cache module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.container">blivet.devices.container module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.device">blivet.devices.device module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.disk">blivet.devices.disk module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.dm">blivet.devices.dm module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.file">blivet.devices.file module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.lib">blivet.devices.lib module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.loop">blivet.devices.loop module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.luks">blivet.devices.luks module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.lvm">blivet.devices.lvm module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.md">blivet.devices.md module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.network">blivet.devices.network module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.nfs">blivet.devices.nfs module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.nodev">blivet.devices.nodev module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.optical">blivet.devices.optical module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.partition">blivet.devices.partition module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.raid">blivet.devices.raid module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.storage">blivet.devices.storage module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices.stratis">blivet.devices.stratis module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-blivet.devices">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-btrfs-module">blivet.devices.btrfs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-cache-module">blivet.devices.cache module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-container-module">blivet.devices.container module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-device-module">blivet.devices.device module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-disk-module">blivet.devices.disk module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-dm-module">blivet.devices.dm module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-file-module">blivet.devices.file module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-lib-module">blivet.devices.lib module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-loop-module">blivet.devices.loop module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-luks-module">blivet.devices.luks module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-lvm-module">blivet.devices.lvm module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-md-module">blivet.devices.md module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-network-module">blivet.devices.network module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-nfs-module">blivet.devices.nfs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-nodev-module">blivet.devices.nodev module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-optical-module">blivet.devices.optical module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-partition-module">blivet.devices.partition module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-raid-module">blivet.devices.raid module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-storage-module">blivet.devices.storage module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#blivet-devices-stratis-module">blivet.devices.stratis module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.devices.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.events.html">blivet.events package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="blivet.events.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.events.html#module-blivet.events.changes">blivet.events.changes module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.events.html#module-blivet.events.handler">blivet.events.handler module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.events.html#module-blivet.events.manager">blivet.events.manager module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.events.html#module-blivet.events">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.events.html#blivet-events-changes-module">blivet.events.changes module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.events.html#blivet-events-handler-module">blivet.events.handler module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.events.html#blivet-events-manager-module">blivet.events.manager module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.events.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.formats.html">blivet.formats package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats.biosboot">blivet.formats.biosboot module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats.disklabel">blivet.formats.disklabel module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats.dmraid">blivet.formats.dmraid module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats.fs">blivet.formats.fs module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats.fslib">blivet.formats.fslib module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats.luks">blivet.formats.luks module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats.lvmpv">blivet.formats.lvmpv module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats.mdraid">blivet.formats.mdraid module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats.multipath">blivet.formats.multipath module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats.prepboot">blivet.formats.prepboot module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats.stratis">blivet.formats.stratis module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats.swap">blivet.formats.swap module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-blivet.formats">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#blivet-formats-biosboot-module">blivet.formats.biosboot module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#blivet-formats-disklabel-module">blivet.formats.disklabel module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#blivet-formats-dmraid-module">blivet.formats.dmraid module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#blivet-formats-fs-module">blivet.formats.fs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#blivet-formats-fslib-module">blivet.formats.fslib module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#blivet-formats-luks-module">blivet.formats.luks module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#blivet-formats-lvmpv-module">blivet.formats.lvmpv module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#blivet-formats-mdraid-module">blivet.formats.mdraid module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#blivet-formats-multipath-module">blivet.formats.multipath module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#blivet-formats-prepboot-module">blivet.formats.prepboot module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#blivet-formats-stratis-module">blivet.formats.stratis module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#blivet-formats-swap-module">blivet.formats.swap module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.formats.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.populator.html">blivet.populator package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="blivet.populator.html#subpackages">Subpackages</a></li>
 <li class="toctree-l4"><a class="reference internal" href="blivet.populator.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.populator.html#module-blivet.populator.populator">blivet.populator.populator module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.populator.html#module-blivet.populator">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.populator.html#blivet-populator-populator-module">blivet.populator.populator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.populator.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.static_data.html">blivet.static_data package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-blivet.static_data.luks_data">blivet.static_data.luks_data module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-blivet.static_data.lvm_info">blivet.static_data.lvm_info module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-blivet.static_data.mpath_info">blivet.static_data.mpath_info module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-blivet.static_data.nvdimm">blivet.static_data.nvdimm module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-blivet.static_data.stratis_info">blivet.static_data.stratis_info module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-blivet.static_data">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#blivet-static-data-luks-data-module">blivet.static_data.luks_data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#blivet-static-data-lvm-info-module">blivet.static_data.lvm_info module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#blivet-static-data-mpath-info-module">blivet.static_data.mpath_info module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#blivet-static-data-nvdimm-module">blivet.static_data.nvdimm module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#blivet-static-data-stratis-info-module">blivet.static_data.stratis_info module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.tasks.html">blivet.tasks package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.availability">blivet.tasks.availability module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.dfresize">blivet.tasks.dfresize module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fsck">blivet.tasks.fsck module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fsinfo">blivet.tasks.fsinfo module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fslabeling">blivet.tasks.fslabeling module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fsminsize">blivet.tasks.fsminsize module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fsmkfs">blivet.tasks.fsmkfs module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fsmount">blivet.tasks.fsmount module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fsreadlabel">blivet.tasks.fsreadlabel module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fsresize">blivet.tasks.fsresize module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fssize">blivet.tasks.fssize module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fssync">blivet.tasks.fssync module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fstask">blivet.tasks.fstask module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fsuuid">blivet.tasks.fsuuid module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fswritelabel">blivet.tasks.fswritelabel module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.fswriteuuid">blivet.tasks.fswriteuuid module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.lukstasks">blivet.tasks.lukstasks module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.pvtask">blivet.tasks.pvtask module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks.task">blivet.tasks.task module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-blivet.tasks">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-availability-module">blivet.tasks.availability module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-dfresize-module">blivet.tasks.dfresize module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fsck-module">blivet.tasks.fsck module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fsinfo-module">blivet.tasks.fsinfo module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fslabeling-module">blivet.tasks.fslabeling module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fsminsize-module">blivet.tasks.fsminsize module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fsmkfs-module">blivet.tasks.fsmkfs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fsmount-module">blivet.tasks.fsmount module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fsreadlabel-module">blivet.tasks.fsreadlabel module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fsresize-module">blivet.tasks.fsresize module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fssize-module">blivet.tasks.fssize module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fssync-module">blivet.tasks.fssync module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fstask-module">blivet.tasks.fstask module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fsuuid-module">blivet.tasks.fsuuid module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fswritelabel-module">blivet.tasks.fswritelabel module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-fswriteuuid-module">blivet.tasks.fswriteuuid module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-lukstasks-module">blivet.tasks.lukstasks module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-pvtask-module">blivet.tasks.pvtask module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#blivet-tasks-task-module">blivet.tasks.task module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.tasks.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="blivet.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.actionlist">blivet.actionlist module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.arch">blivet.arch module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.blivet">blivet.blivet module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.callbacks">blivet.callbacks module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.deviceaction">blivet.deviceaction module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.devicefactory">blivet.devicefactory module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.devicetree">blivet.devicetree module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.errors">blivet.errors module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.fcoe">blivet.fcoe module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.flags">blivet.flags module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.i18n">blivet.i18n module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.iscsi">blivet.iscsi module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.mounts">blivet.mounts module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.nvme">blivet.nvme module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.partitioning">blivet.partitioning module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.safe_dbus">blivet.safe_dbus module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.size">blivet.size module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.storage_log">blivet.storage_log module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.threads">blivet.threads module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.tsort">blivet.tsort module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.udev">blivet.udev module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.util">blivet.util module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.zfcp">blivet.zfcp module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-actionlist-module">blivet.actionlist module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-arch-module">blivet.arch module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-blivet-module">blivet.blivet module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-callbacks-module">blivet.callbacks module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-deviceaction-module">blivet.deviceaction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-devicefactory-module">blivet.devicefactory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-devicetree-module">blivet.devicetree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.errors">blivet.errors module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.AlignmentError"><code class="docutils literal notranslate"><span class="pre">AlignmentError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.AvailabilityError"><code class="docutils literal notranslate"><span class="pre">AvailabilityError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.BTRFSError"><code class="docutils literal notranslate"><span class="pre">BTRFSError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.BTRFSValueError"><code class="docutils literal notranslate"><span class="pre">BTRFSValueError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.CorruptGPTError"><code class="docutils literal notranslate"><span class="pre">CorruptGPTError</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.errors.CorruptGPTError.suggestion"><code class="docutils literal notranslate"><span class="pre">CorruptGPTError.suggestion</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DMError"><code class="docutils literal notranslate"><span class="pre">DMError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DMRaidMemberError"><code class="docutils literal notranslate"><span class="pre">DMRaidMemberError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DependencyError"><code class="docutils literal notranslate"><span class="pre">DependencyError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DeviceActionError"><code class="docutils literal notranslate"><span class="pre">DeviceActionError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DeviceCreateError"><code class="docutils literal notranslate"><span class="pre">DeviceCreateError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DeviceDestroyError"><code class="docutils literal notranslate"><span class="pre">DeviceDestroyError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DeviceError"><code class="docutils literal notranslate"><span class="pre">DeviceError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DeviceFactoryError"><code class="docutils literal notranslate"><span class="pre">DeviceFactoryError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DeviceFormatError"><code class="docutils literal notranslate"><span class="pre">DeviceFormatError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DeviceNotFoundError"><code class="docutils literal notranslate"><span class="pre">DeviceNotFoundError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DeviceResizeError"><code class="docutils literal notranslate"><span class="pre">DeviceResizeError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DeviceSetupError"><code class="docutils literal notranslate"><span class="pre">DeviceSetupError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DeviceTeardownError"><code class="docutils literal notranslate"><span class="pre">DeviceTeardownError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DeviceTreeError"><code class="docutils literal notranslate"><span class="pre">DeviceTreeError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DeviceUserDeniedFormatError"><code class="docutils literal notranslate"><span class="pre">DeviceUserDeniedFormatError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DiskLabelCommitError"><code class="docutils literal notranslate"><span class="pre">DiskLabelCommitError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DiskLabelError"><code class="docutils literal notranslate"><span class="pre">DiskLabelError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DiskLabelScanError"><code class="docutils literal notranslate"><span class="pre">DiskLabelScanError</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.errors.DiskLabelScanError.suggestion"><code class="docutils literal notranslate"><span class="pre">DiskLabelScanError.suggestion</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DuplicateUUIDError"><code class="docutils literal notranslate"><span class="pre">DuplicateUUIDError</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.errors.DuplicateUUIDError.suggestion"><code class="docutils literal notranslate"><span class="pre">DuplicateUUIDError.suggestion</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.DuplicateVGError"><code class="docutils literal notranslate"><span class="pre">DuplicateVGError</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.errors.DuplicateVGError.suggestion"><code class="docutils literal notranslate"><span class="pre">DuplicateVGError.suggestion</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.EventHandlingError"><code class="docutils literal notranslate"><span class="pre">EventHandlingError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.EventManagerError"><code class="docutils literal notranslate"><span class="pre">EventManagerError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.EventParamError"><code class="docutils literal notranslate"><span class="pre">EventParamError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.FCoEError"><code class="docutils literal notranslate"><span class="pre">FCoEError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.FSError"><code class="docutils literal notranslate"><span class="pre">FSError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.FSReadLabelError"><code class="docutils literal notranslate"><span class="pre">FSReadLabelError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.FSResizeError"><code class="docutils literal notranslate"><span class="pre">FSResizeError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.FSTabTypeMismatchError"><code class="docutils literal notranslate"><span class="pre">FSTabTypeMismatchError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.FSWriteLabelError"><code class="docutils literal notranslate"><span class="pre">FSWriteLabelError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.FSWriteUUIDError"><code class="docutils literal notranslate"><span class="pre">FSWriteUUIDError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.FormatCreateError"><code class="docutils literal notranslate"><span class="pre">FormatCreateError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.FormatDestroyError"><code class="docutils literal notranslate"><span class="pre">FormatDestroyError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.FormatResizeError"><code class="docutils literal notranslate"><span class="pre">FormatResizeError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.FormatSetupError"><code class="docutils literal notranslate"><span class="pre">FormatSetupError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.FormatTeardownError"><code class="docutils literal notranslate"><span class="pre">FormatTeardownError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.GPTVolUUIDError"><code class="docutils literal notranslate"><span class="pre">GPTVolUUIDError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.ISCSIError"><code class="docutils literal notranslate"><span class="pre">ISCSIError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.InconsistentPVSectorSize"><code class="docutils literal notranslate"><span class="pre">InconsistentPVSectorSize</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.IntegrityError"><code class="docutils literal notranslate"><span class="pre">IntegrityError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.InvalidDiskLabelError"><code class="docutils literal notranslate"><span class="pre">InvalidDiskLabelError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.InvalidMultideviceSelection"><code class="docutils literal notranslate"><span class="pre">InvalidMultideviceSelection</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.errors.InvalidMultideviceSelection.suggestion"><code class="docutils literal notranslate"><span class="pre">InvalidMultideviceSelection.suggestion</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.LUKSError"><code class="docutils literal notranslate"><span class="pre">LUKSError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.LVMError"><code class="docutils literal notranslate"><span class="pre">LVMError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.LoopError"><code class="docutils literal notranslate"><span class="pre">LoopError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.MDMemberError"><code class="docutils literal notranslate"><span class="pre">MDMemberError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.MDRaidError"><code class="docutils literal notranslate"><span class="pre">MDRaidError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.MPathError"><code class="docutils literal notranslate"><span class="pre">MPathError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.MultipathMemberError"><code class="docutils literal notranslate"><span class="pre">MultipathMemberError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.NVMeError"><code class="docutils literal notranslate"><span class="pre">NVMeError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.NoDisksError"><code class="docutils literal notranslate"><span class="pre">NoDisksError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.NoParentsError"><code class="docutils literal notranslate"><span class="pre">NoParentsError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.NotEnoughFreeSpaceError"><code class="docutils literal notranslate"><span class="pre">NotEnoughFreeSpaceError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.PartitioningError"><code class="docutils literal notranslate"><span class="pre">PartitioningError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.PhysicalVolumeError"><code class="docutils literal notranslate"><span class="pre">PhysicalVolumeError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.RaidError"><code class="docutils literal notranslate"><span class="pre">RaidError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.SinglePhysicalVolumeError"><code class="docutils literal notranslate"><span class="pre">SinglePhysicalVolumeError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.StorageError"><code class="docutils literal notranslate"><span class="pre">StorageError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.StratisError"><code class="docutils literal notranslate"><span class="pre">StratisError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.SwapSpaceError"><code class="docutils literal notranslate"><span class="pre">SwapSpaceError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.ThreadError"><code class="docutils literal notranslate"><span class="pre">ThreadError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.UdevError"><code class="docutils literal notranslate"><span class="pre">UdevError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.UnrecognizedFSTabEntryError"><code class="docutils literal notranslate"><span class="pre">UnrecognizedFSTabEntryError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.errors.UnusableConfigurationError"><code class="docutils literal notranslate"><span class="pre">UnusableConfigurationError</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.errors.UnusableConfigurationError.suggestion"><code class="docutils literal notranslate"><span class="pre">UnusableConfigurationError.suggestion</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-fcoe-module">blivet.fcoe module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-flags-module">blivet.flags module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.i18n">blivet.i18n module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.i18n.N_"><code class="docutils literal notranslate"><span class="pre">N_()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.i18n.P_"><code class="docutils literal notranslate"><span class="pre">P_()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-iscsi-module">blivet.iscsi module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-mounts-module">blivet.mounts module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-nvme-module">blivet.nvme module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-partitioning-module">blivet.partitioning module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.safe_dbus">blivet.safe_dbus module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.DBusCallError"><code class="docutils literal notranslate"><span class="pre">DBusCallError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.DBusPropertyError"><code class="docutils literal notranslate"><span class="pre">DBusPropertyError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.SafeDBusError"><code class="docutils literal notranslate"><span class="pre">SafeDBusError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.call_sync"><code class="docutils literal notranslate"><span class="pre">call_sync()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.check_object_available"><code class="docutils literal notranslate"><span class="pre">check_object_available()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.get_new_session_connection"><code class="docutils literal notranslate"><span class="pre">get_new_session_connection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.get_new_system_connection"><code class="docutils literal notranslate"><span class="pre">get_new_system_connection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.get_properties_sync"><code class="docutils literal notranslate"><span class="pre">get_properties_sync()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.get_property_sync"><code class="docutils literal notranslate"><span class="pre">get_property_sync()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-size-module">blivet.size module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-storage-log-module">blivet.storage_log module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-threads-module">blivet.threads module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-tsort-module">blivet.tsort module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-udev-module">blivet.udev module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-util-module">blivet.util module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#blivet-zfcp-module">blivet.zfcp module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -231,13 +335,13 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.7.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.8.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2023, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>
