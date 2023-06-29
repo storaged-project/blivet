@@ -1,11 +1,11 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.7.1
+Version: 3.8.0
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
-Release: 99%{?prerelease}%{?dist}
+Release: 1%{?prerelease}%{?dist}
 Epoch: 1
 License: LGPL-2.1-or-later
 %global realname blivet
@@ -107,6 +107,44 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 29 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.8.0-1
+- Revert "Makefile cleanup" (blivet-ci)
+- Require libblockdev 3.0 when importing from GI (vtrefny)
+- spec: Bump required version of libblockdev to 3.0 (vtrefny)
+- md: Adapt libblockdev 3.0 mdraid bitmap arg changes (tbzatek)
+- spec: Bump release to 99 to be always ahead of Fedora in nightly (vtrefny)
+- ci: Run GH actions tests in a Fedora container (vtrefny)
+- Add new LUKS tests for add/remove key and key file usage (vtrefny)
+- Adjust to the new libblockdev 3.0 crypto API (vtrefny)
+- Adjust to libblockdev 3.0 API changes (vtrefny)
+- blivet: Enable the extended node bitmap for F2FS (akoskovich)
+- Remove all state-dependent objects when resetting Blivet DBus object. (dlehman)
+- Run callbacks when pruning actions. (dlehman)
+- Always prefer GPT disk labels on x86_64 (and clean up the logic) (awilliam)
+- Do not add new PVs to the LVM devices file if it doesn't exist and VGs are present (vtrefny)
+- Add RISCV64 architecture helper [is_riscv64()] for arch module. (48907457+nirousseau)
+- iscsi: Extend allowed CHAP auth algorithms (tbzatek)
+- Fix checking FIPS mode when /proc/sys/crypto/fips_enabled doesn't exist (vtrefny)
+- Fix creating LUKS1 on disks with mixed sector size (#2188785) (vtrefny)
+- Do not set memory limit for LUKS2 when running in FIPS mode (vtrefny)
+- Revert "tests: Skip test_lvcreate_type on CentOS/RHEL 9" (vtrefny)
+- DBus: remove extra callback invocations (dlehman)
+- Add a test case for filesystem online resize (vtrefny)
+- Add support for filesystem online resize (vtrefny)
+- iscsi: Use UDisks instead of storaged in the availability message (vtrefny)
+- tests: Fix skipping iSCSI tests if UDisks iSCSI isn't available (vtrefny)
+- Add ChangeLog to .gitignore (vtrefny)
+- Makefile cleanup (vtrefny)
+- ci: Use Packit for daily builds in Copr (vtrefny)
+- Avoid raising libblockdev exceptions from our code (vtrefny)
+- ci: Fix Packit configuration (vtrefny)
+- Add support for specifying stripe size for RAID LVs (vtrefny)
+- tests: Use blivet-specific prefix for targetcli backing files (vtrefny)
+- Add a basic test case for the iscsi module (vtrefny)
+- Allow changing iSCSI initiator name after setting it (vtrefny)
+- Prefer UUID for fstab spec for DM devices too (vtrefny)
+- Remove support for Python 2 from spec and Makefile (vtrefny)
+
 * Thu Mar 16 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.7.1-1
 - Fix the get_mount_device function (vponcova)
 - Prefer using UUID for the kickstart --onpart argument (vtrefny)

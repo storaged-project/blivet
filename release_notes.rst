@@ -1,3 +1,18 @@
+3.8.0
+======
+* `Filesystem online resize support`_
+* `Libblockdev 3.0`_
+
+Filesystem online resize support
+---------------------------------
+Filesystem that support online shrink and/or grow can now be resized when
+mounted. The default behaviour is still to try to unmount the filesystem
+first. This can be controlled with the `flags.allow_online_fs_resize` flag.
+
+Libblockdev 3.0
+----------------
+Latest major release of the libblockdev library is now required for blivet.
+
 3.7.0
 ======
 * `NVMe and NVMe over Fabrics support`_
