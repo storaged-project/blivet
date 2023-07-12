@@ -112,8 +112,8 @@ class StratisBlockdev(DeviceFormat):
 
     @property
     def has_key(self):
-        return ((self.__passphrase not in ["", None]) or
-                (self._key_file and os.access(self._key_file, os.R_OK)))
+        return bool((self.__passphrase not in ["", None]) or
+                    (self._key_file and os.access(self._key_file, os.R_OK)))
 
     def unlock_pool(self):
         if not self.locked_pool:
