@@ -160,6 +160,11 @@ class iSCSI(object):
                 self._initiator = initiatorname
             except Exception as e:  # pylint: disable=broad-except
                 log.info("failed to get initiator name from iscsi firmware: %s", str(e))
+            else:
+                # write the firmware initiator to /etc/iscsi/initiatorname.iscsi
+                log.info("Setting up firmware iSCSI initiator name %s", self.initiator)
+                args = GLib.Variant("(sa{sv})", (initiatorname, None))
+                self._call_initiator_method("SetInitiatorName", args)
 
     # So that users can write iscsi() to get the singleton instance
     def __call__(self):
