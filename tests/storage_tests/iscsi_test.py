@@ -77,21 +77,17 @@ def create_iscsi_target(fpath, initiator_name=None):
         _delete_backstore(store_name)
         raise RuntimeError("Failed to create a new iscsi target")
 
-    if initiator_name:
-        status = subprocess.call(["targetcli", "/iscsi/%s/tpg1/acls create %s" % (iqn, initiator_name)], stdout=subprocess.DEVNULL)
-        if status != 0:
-            delete_iscsi_target(iqn, store_name)
-            raise RuntimeError("Failed to set ACLs for '%s'" % iqn)
-
     with udev_settle():
         status = subprocess.call(["targetcli", "/iscsi/%s/tpg1/luns create /backstores/fileio/%s" % (iqn, store_name)], stdout=subprocess.DEVNULL)
     if status != 0:
         delete_iscsi_target(iqn, store_name)
         raise RuntimeError("Failed to create a new LUN for '%s' using '%s'" % (iqn, store_name))
 
-    status = subprocess.call(["targetcli", "/iscsi/%s/tpg1 set attribute generate_node_acls=1" % iqn], stdout=subprocess.DEVNULL)
-    if status != 0:
-        raise RuntimeError("Failed to set ACLs for '%s'" % iqn)
+    if initiator_name:
+        status = subprocess.call(["targetcli", "/iscsi/%s/tpg1/acls create %s" % (iqn, initiator_name)], stdout=subprocess.DEVNULL)
+        if status != 0:
+            delete_iscsi_target(iqn, store_name)
+            raise RuntimeError("Failed to set ACLs for '%s'" % iqn)
 
     return iqn, store_name
 
@@ -130,6 +126,7 @@ class ISCSITestCase(unittest.TestCase):
         if not has_iscsi() or not iscsi.available:
             self.skipTest("iSCSI not available, skipping")
 
+        # initially set the initiator to the correct/allowed one
         iscsi.initiator = self.initiator
         nodes = iscsi.discover("127.0.0.1")
         self.assertTrue(nodes)
@@ -141,11 +138,28 @@ class ISCSITestCase(unittest.TestCase):
         self.assertEqual(nodes[0].port, 3260)
         self.assertEqual(nodes[0].name, self.dev)
 
-        # change the initiator name
+        # change the initiator name to a wrong one
         iscsi.initiator = self.initiator + "_1"
         self.assertEqual(iscsi.initiator, self.initiator + "_1")
 
-        # try to login
+        # check the change made it to /etc/iscsi/initiatorname.iscsi
+        initiator_file = read_file("/etc/iscsi/initiatorname.iscsi").strip()
+        self.assertEqual(initiator_file, "InitiatorName=%s" % self.initiator + "_1")
+
+        # try to login (should fail)
+        ret, err = iscsi.log_into_node(nodes[0])
+        self.assertFalse(ret)
+        self.assertIn("authorization failure", err)
+
+        # change the initiator name back to the correct one
+        iscsi.initiator = self.initiator
+        self.assertEqual(iscsi.initiator, self.initiator)
+
+        # check the change made it to /etc/iscsi/initiatorname.iscsi
+        initiator_file = read_file("/etc/iscsi/initiatorname.iscsi").strip()
+        self.assertEqual(initiator_file, "InitiatorName=%s" % self.initiator)
+
+        # try to login (should work now)
         ret, err = iscsi.log_into_node(nodes[0])
         self.assertTrue(ret, "Login failed: %s" % err)
 
