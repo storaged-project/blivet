@@ -313,6 +313,10 @@ class iSCSI(object):
         if not flags.ibft:
             return
 
+        # Make sure iscsi_ibft is loaded otherwise any atttempts will fail with
+        # 'Could not get list of targets from firmware. (err 21)'
+        util.run_program(['modprobe', '-a', 'iscsi_ibft'])
+
         args = GLib.Variant("(a{sv})", ([], ))
         try:
             found_nodes, _n_nodes = self._call_initiator_method("DiscoverFirmware", args)
