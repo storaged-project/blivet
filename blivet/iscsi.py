@@ -278,7 +278,7 @@ class iSCSI(object):
         if extra is None:
             extra = dict()
         extra["node.startup"] = GLib.Variant("s", "automatic")
-        extra["node.session.auth.chap_algs"] = GLib.Variant("s", "SHA3-256,SHA256,SHA1,MD5")
+        extra["node.session.auth.chap_algs"] = GLib.Variant("s", "SHA1,MD5")
 
         args = GLib.Variant("(sisisa{sv})", node_info.conn_info + (extra,))
         self._call_initiator_method("Login", args)
@@ -312,6 +312,10 @@ class iSCSI(object):
     def _start_ibft(self):
         if not flags.ibft:
             return
+
+        # Make sure iscsi_ibft is loaded otherwise any atttempts will fail with
+        # 'Could not get list of targets from firmware. (err 21)'
+        util.run_program(['modprobe', '-a', 'iscsi_ibft'])
 
         args = GLib.Variant("(a{sv})", ([], ))
         try:
