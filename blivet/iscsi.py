@@ -112,10 +112,9 @@ class iSCSIDependencyGuard(util.DependencyGuard):
         try:
             if not safe_dbus.check_object_available(STORAGED_SERVICE, STORAGED_MANAGER_PATH, MANAGER_IFACE):
                 return False
-            # storaged is modular and we need to make sure it has the iSCSI module
-            # loaded (this also autostarts storaged if it isn't running already)
+            # Load the iscsi UDisks module (this also autostarts udisksd if needed)
             safe_dbus.call_sync(STORAGED_SERVICE, STORAGED_MANAGER_PATH, MANAGER_IFACE,
-                                "EnableModules", GLib.Variant("(b)", (True,)))
+                                "EnableModule", GLib.Variant("(sb)", ("iscsi", True,)))
         except safe_dbus.DBusCallError:
             return False
         return safe_dbus.check_object_available(STORAGED_SERVICE, STORAGED_MANAGER_PATH, INITIATOR_IFACE)
