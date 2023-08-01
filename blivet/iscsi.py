@@ -45,12 +45,12 @@ INITIATOR_FILE = "/etc/iscsi/initiatorname.iscsi"
 ISCSI_MODULES = ['cxgb3i', 'bnx2i', 'be2iscsi']
 
 
-STORAGED_SERVICE = "org.freedesktop.UDisks2"
-STORAGED_PATH = "/org/freedesktop/UDisks2"
-STORAGED_MANAGER_PATH = "/org/freedesktop/UDisks2/Manager"
+UDISKS_SERVICE = "org.freedesktop.UDisks2"
+UDISKS_PATH = "/org/freedesktop/UDisks2"
+UDISKS_MANAGER_PATH = "/org/freedesktop/UDisks2/Manager"
 MANAGER_IFACE = "org.freedesktop.UDisks2.Manager"
 INITIATOR_IFACE = MANAGER_IFACE + ".ISCSI.Initiator"
-SESSION_IFACE = STORAGED_SERVICE + ".ISCSI.Session"
+SESSION_IFACE = UDISKS_SERVICE + ".ISCSI.Session"
 
 
 def has_iscsi():
@@ -89,7 +89,7 @@ class NodeInfo(object):
     @property
     def conn_info(self):
         """The 5-tuple of connection info (no auth info). This form
-        is useful for interacting with storaged.
+        is useful for interacting with udisks.
         """
         return (self.name, self.tpgt, self.address, self.port, self.iface)
 
@@ -110,18 +110,17 @@ class iSCSIDependencyGuard(util.DependencyGuard):
 
     def _check_avail(self):
         try:
-            if not safe_dbus.check_object_available(STORAGED_SERVICE, STORAGED_MANAGER_PATH, MANAGER_IFACE):
+            if not safe_dbus.check_object_available(UDISKS_SERVICE, UDISKS_MANAGER_PATH, MANAGER_IFACE):
                 return False
-            # storaged is modular and we need to make sure it has the iSCSI module
-            # loaded (this also autostarts storaged if it isn't running already)
-            safe_dbus.call_sync(STORAGED_SERVICE, STORAGED_MANAGER_PATH, MANAGER_IFACE,
-                                "EnableModules", GLib.Variant("(b)", (True,)))
+            # Load the iscsi UDisks module (this also autostarts udisksd if needed)
+            safe_dbus.call_sync(UDISKS_SERVICE, UDISKS_MANAGER_PATH, MANAGER_IFACE,
+                                "EnableModule", GLib.Variant("(sb)", ("iscsi", True,)))
         except safe_dbus.DBusCallError:
             return False
-        return safe_dbus.check_object_available(STORAGED_SERVICE, STORAGED_MANAGER_PATH, INITIATOR_IFACE)
+        return safe_dbus.check_object_available(UDISKS_SERVICE, UDISKS_MANAGER_PATH, INITIATOR_IFACE)
 
 
-storaged_iscsi_required = iSCSIDependencyGuard()
+udisks_iscsi_required = iSCSIDependencyGuard()
 
 
 class iSCSI(object):
@@ -175,7 +174,7 @@ class iSCSI(object):
         return self
 
     @property
-    @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
+    @udisks_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
     def available(self):
         return True
 
@@ -186,7 +185,7 @@ class iSCSI(object):
 
         return self.__connection
 
-    @storaged_iscsi_required(critical=True, eval_mode=util.EvalMode.onetime)
+    @udisks_iscsi_required(critical=True, eval_mode=util.EvalMode.onetime)
     def _call_initiator_method(self, method, args=None):
         """Class a method of the ISCSI.Initiator DBus object
 
@@ -195,7 +194,7 @@ class iSCSI(object):
         :type params: GLib.Variant
 
         """
-        return safe_dbus.call_sync(STORAGED_SERVICE, STORAGED_MANAGER_PATH,
+        return safe_dbus.call_sync(UDISKS_SERVICE, UDISKS_MANAGER_PATH,
                                    INITIATOR_IFACE, method, args,
                                    connection=self._connection)
 
@@ -205,7 +204,7 @@ class iSCSI(object):
         return self._initiator != ""
 
     @property
-    @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
+    @udisks_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
     def initiator(self):
         if self._initiator != "":
             return self._initiator
@@ -215,7 +214,7 @@ class iSCSI(object):
         return raw_initiator.decode("utf-8", errors="replace")
 
     @initiator.setter
-    @storaged_iscsi_required(critical=True, eval_mode=util.EvalMode.onetime)
+    @udisks_iscsi_required(critical=True, eval_mode=util.EvalMode.onetime)
     def initiator(self, val):
         if len(val) == 0:
             raise ValueError(_("Must provide an iSCSI initiator name"))
@@ -283,11 +282,11 @@ class iSCSI(object):
         args = GLib.Variant("(sisisa{sv})", node_info.conn_info + (extra,))
         self._call_initiator_method("Login", args)
 
-    @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
+    @udisks_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
     def _get_active_sessions(self):
         try:
-            objects = safe_dbus.call_sync(STORAGED_SERVICE,
-                                          STORAGED_PATH,
+            objects = safe_dbus.call_sync(UDISKS_SERVICE,
+                                          UDISKS_PATH,
                                           'org.freedesktop.DBus.ObjectManager',
                                           'GetManagedObjects',
                                           None)[0]
@@ -308,7 +307,7 @@ class iSCSI(object):
 
         return active
 
-    @storaged_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
+    @udisks_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
     def _start_ibft(self):
         if not flags.ibft:
             return
