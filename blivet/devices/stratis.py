@@ -129,8 +129,8 @@ class StratisPoolDevice(StorageDevice):
 
     @property
     def has_key(self):
-        return ((self.__passphrase not in ["", None]) or
-                (self._key_file and os.access(self._key_file, os.R_OK)))
+        return bool((self.__passphrase not in ["", None]) or
+                    (self._key_file and os.access(self._key_file, os.R_OK)))
 
     def _pre_create(self):
         super(StratisPoolDevice, self)._pre_create()
