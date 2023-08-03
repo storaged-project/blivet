@@ -1,11 +1,11 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.8.0
+Version: 3.8.1
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
-Release: 99%{?prerelease}%{?dist}
+Release: 1%{?prerelease}%{?dist}
 Epoch: 1
 License: LGPL-2.1-or-later
 %global realname blivet
@@ -107,6 +107,21 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 03 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.8.1-1
+- Ignore new false positives with the latest pylint (vtrefny)
+- iscsi: Rename storaged to udisks (tbzatek)
+- iscsi: Rework UDisks iscsi module activation (tbzatek)
+- iscsi: Make sure to modprobe iscsi_ibft (tbzatek)
+- iscsi: Downgrade default CHAP auth algs to SHA1,MD5 (tbzatek)
+- iscsi: Save firmware initiator name to /etc/iscsi/initiatorname.iscsi
+  (vtrefny)
+- spec: Bump release to 99 to be always ahead of Fedora in nightly (vtrefny)
+- tests: Improve iscsi_test.ISCSITestCase (vtrefny)
+- Make sure that LUKS.has_key always returns a boolean value (vtrefny)
+- Squashed 'translation-canary/' changes from d6a40985..5bb81253 (vtrefny)
+- Add btrfs subvolume specification to devicetree.resolve_device (vtrefny)
+- Revert "Makefile cleanup" (vtrefny)
+
 * Thu Jun 29 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.8.0-1
 - Revert "Makefile cleanup" (blivet-ci)
 - Require libblockdev 3.0 when importing from GI (vtrefny)
