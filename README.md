@@ -4,7 +4,7 @@ Blivet is a python module for system storage configuration.
 
 <img alt="CI status" src="https://fedorapeople.org/groups/storage_apis/statuses/blivet-master.svg" width="100%" height="300ex" />
 
-### Licence
+### License
 
 See [COPYING](https://github.com/storaged-project/blivet/blob/master/COPYING)
 
