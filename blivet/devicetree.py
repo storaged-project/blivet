@@ -600,7 +600,7 @@ class DeviceTreeBase(object):
         log_method_return(self, result)
         return result
 
-    def resolve_device(self, devspec, blkid_tab=None, crypt_tab=None, options=None):
+    def resolve_device(self, devspec, blkid_tab=None, crypt_tab=None, options=None, subvolspec=None):
         """ Return the device matching the provided device specification.
 
             The spec can be anything from a device name (eg: 'sda3') to a device
@@ -615,6 +615,8 @@ class DeviceTreeBase(object):
             :type crypt_tab: :class:`~.CryptTab`
             :keyword options: mount options
             :type options: str
+            :keyword subvolspec: btrfs subvolume specification
+            :type subvolspec: str
             :returns: the device
             :rtype: :class:`~.devices.StorageDevice` or None
         """
@@ -727,26 +729,32 @@ class DeviceTreeBase(object):
                         device = self.get_device_by_name(lv)
 
         # check mount options for btrfs volumes in case it's a subvol
-        if device and device.type.startswith("btrfs") and options:
+        if device and device.type.startswith("btrfs") and (subvolspec or options):
             # start with the volume -- not a subvolume
             device = getattr(device, "volume", device)
 
-            attr = None
-            if "subvol=" in options:
-                attr = "name"
-                val = util.get_option_value("subvol", options)
-            elif "subvolid=" in options:
-                attr = "vol_id"
-                val = util.get_option_value("subvolid", options)
-            elif device.default_subvolume:
-                # default subvolume
-                device = device.default_subvolume
-
-            if attr and val:
+            if subvolspec:
                 for subvol in device.subvolumes:
-                    if getattr(subvol, attr, None) == val:
+                    if subvol.format.subvolspec == subvolspec:
                         device = subvol
                         break
+            elif options:
+                attr = None
+                if "subvol=" in options:
+                    attr = "name"
+                    val = util.get_option_value("subvol", options)
+                elif "subvolid=" in options:
+                    attr = "vol_id"
+                    val = util.get_option_value("subvolid", options)
+                elif device.default_subvolume:
+                    # default subvolume
+                    device = device.default_subvolume
+
+                if attr and val:
+                    for subvol in device.subvolumes:
+                        if getattr(subvol, attr, None) == val:
+                            device = subvol
+                            break
 
         if device:
             log.debug("resolved '%s' to '%s' (%s)", devspec, device.name, device.type)

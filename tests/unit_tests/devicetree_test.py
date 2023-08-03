@@ -10,6 +10,7 @@ from blivet.actionlist import ActionList
 from blivet.errors import DeviceTreeError, DuplicateUUIDError, InvalidMultideviceSelection
 from blivet.deviceaction import ACTION_TYPE_DESTROY, ACTION_OBJECT_DEVICE
 from blivet.devicelibs import lvm
+from blivet.devices import BTRFSSubVolumeDevice, BTRFSVolumeDevice
 from blivet.devices import DiskDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
@@ -67,6 +68,49 @@ class DeviceTreeTestCase(unittest.TestCase):
 
         self.assertEqual(dt.resolve_device(dev3.name), dev3)
         self.assertEqual(dt.resolve_device(dev4.name), dev4)
+
+    def test_resolve_device_btrfs(self):
+        dt = DeviceTree()
+
+        # same uuid for both volume and subvolume
+        btrfs_uuid = "1234-56-7890"
+
+        dev = StorageDevice("deva", exists=True,
+                            fmt=get_format("btrfs", uuid=btrfs_uuid, exists=True),
+                            size=get_format("btrfs").min_size)
+        dt._add_device(dev)
+
+        vol = BTRFSVolumeDevice("vol", exists=True,
+                                parents=[dev],
+                                fmt=get_format("btrfs", uuid=btrfs_uuid, exists=True))
+        dt._add_device(vol)
+
+        sub1 = BTRFSSubVolumeDevice("sub1", exists=True,
+                                    parents=[vol],
+                                    fmt=get_format("btrfs", options="subvol=sub1",
+                                                   uuid=btrfs_uuid, exists=True,
+                                                   subvolspec="sub1"))
+        dt._add_device(sub1)
+
+        sub2 = BTRFSSubVolumeDevice("sub2", exists=True,
+                                    parents=[vol],
+                                    fmt=get_format("btrfs", options="subvol=sub2",
+                                                   uuid=btrfs_uuid, exists=True,
+                                                   subvolspec="sub2"))
+        dt._add_device(sub2)
+
+        # resolve with name should work as usual
+        self.assertEqual(dt.resolve_device(vol.name), vol)
+        self.assertEqual(dt.resolve_device(sub1.name), sub1)
+        self.assertEqual(dt.resolve_device(sub2.name), sub2)
+
+        # resolve by UUID with subvolspec
+        self.assertEqual(dt.resolve_device("UUID=%s" % btrfs_uuid, subvolspec=sub1.format.subvolspec), sub1)
+        self.assertEqual(dt.resolve_device("UUID=%s" % btrfs_uuid, subvolspec=sub2.format.subvolspec), sub2)
+
+        # resolve by UUID with options
+        self.assertEqual(dt.resolve_device("UUID=%s" % btrfs_uuid, options="subvol=%s" % sub1.name), sub1)
+        self.assertEqual(dt.resolve_device("UUID=%s" % btrfs_uuid, options="subvol=%s" % sub2.name), sub2)
 
     def test_device_name(self):
         # check that devicetree.names property contains all device's names

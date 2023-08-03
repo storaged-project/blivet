@@ -409,7 +409,7 @@ class MakeBumpVer:
         f.writelines(top)
 
         f.write("%changelog\n")
-        today = datetime.date.today()
+        today = datetime.date.today()  # pylint: disable=no-member
         stamp = today.strftime("%a %b %d %Y")
         f.write("* %s %s <%s> - %s-%s\n" % (stamp, self.gituser, self.gitemail,
                                             newVersion, self.new_release))
