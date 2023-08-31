@@ -164,6 +164,10 @@ class LVMVolumeGroupDevice(ContainerDevice):
         # >0 is fixed
         self.size_policy = self.size
 
+        if self._shared:
+            for pv in self.parents:
+                pv.format._vg_shared = True
+
     def __repr__(self):
         s = super(LVMVolumeGroupDevice, self).__repr__()
         s += ("  free = %(free)s  PE Size = %(pe_size)s  PE Count = %(pe_count)s\n"
