@@ -814,7 +814,8 @@ class NVMeFabricsNamespaceDevice(NVMeNamespaceDevice, NetworkStorageDevice):
 
     """ NVMe fabrics namespace """
     _type = "nvme-fabrics"
-    _packages = ["nvme-cli"]
+    # dracut '95nvmf' module dependencies
+    _packages = ["nvme-cli", "dracut-network"]
 
     def __init__(self, device, **kwargs):
         """
