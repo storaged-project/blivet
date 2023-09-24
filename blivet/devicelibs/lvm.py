@@ -111,11 +111,12 @@ def _set_global_config():
 
         config_string = " devices { %s } " % filter_string
     else:
-        config_string = " "
+        config_string = ""
 
     if not flags.lvm_metadata_backup:
         config_string += "backup {backup=0 archive=0} "
-    config_string += "log {level=7 file=/tmp/lvm.log syslog=0}"
+    if flags.debug:
+        config_string += "log {level=7 file=/tmp/lvm.log syslog=0}"
 
     blockdev.lvm.set_global_config(config_string)
 
