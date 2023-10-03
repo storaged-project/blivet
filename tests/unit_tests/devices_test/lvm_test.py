@@ -497,11 +497,6 @@ class LVMDeviceTest(unittest.TestCase):
                            size=Size("1 GiB"), exists=True)
         vg = LVMVolumeGroupDevice("testvg", parents=[pv], shared=True)
 
-        self.assertTrue(pv.format._vg_shared)
-        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
-            pv.format._create()
-            lvm.pvcreate.assert_not_called()
-
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
             vg._create()
             lvm.vgcreate.assert_called_with(vg.name, [pv.path], Size("4 MiB"), shared="")

@@ -95,7 +95,6 @@ class LVMPhysicalVolume(DeviceFormat):
         self.pe_start = kwargs.get("pe_start", lvm.LVM_PE_START)
         self.data_alignment = kwargs.get("data_alignment", Size(0))
         self._free = kwargs.get("free")  # None means unknown
-        self._vg_shared = False
 
         self.inconsistent_vg = False
 
@@ -155,10 +154,6 @@ class LVMPhysicalVolume(DeviceFormat):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         lvm.lvm_devices_add(self.device)
-
-        if self._vg_shared:
-            log.info("Shared VG: skipping pvcreate, PV format will be created by vgcreate")
-            return
 
         ea_yes = blockdev.ExtraArg.new("-y", "")
 
