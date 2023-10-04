@@ -86,8 +86,8 @@ def _should_skip(distro=None, version=None, arch=None, reason=None):  # pylint: 
 
     # DISTRO, VERSION and ARCH variables are set in main, we don't need to
     # call hostnamectl etc. for every test run
-    if (distro is None or DISTRO in distro) and (version is None or VERSION in version) and \
-       (arch is None or ARCH in arch):
+    if ((distro is None or DISTRO in distro) and (version is None or VERSION in version) and  # pylint: disable=used-before-assignment
+       (arch is None or ARCH in arch)):  # pylint: disable=used-before-assignment
         return True
 
     return False
