@@ -63,20 +63,11 @@ gi.require_version("BlockDev", "3.0")
 from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
 if arch.is_s390():
-    _REQUESTED_PLUGIN_NAMES = set(("btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390", "nvdimm"))
+    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390", "nvdimm", "nvme"))
 else:
-    _REQUESTED_PLUGIN_NAMES = set(("btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "nvdimm"))
-
-# nvme plugin is not generally available
-if hasattr(blockdev.Plugin, "NVME"):
-    _REQUESTED_PLUGIN_NAMES.add("nvme")
+    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "nvdimm", "nvme"))
 
 _requested_plugins = blockdev.plugin_specs_from_names(_REQUESTED_PLUGIN_NAMES)
-# XXX force non-dbus LVM plugin
-lvm_plugin = blockdev.PluginSpec()
-lvm_plugin.name = blockdev.Plugin.LVM
-lvm_plugin.so_name = "libbd_lvm.so.3"
-_requested_plugins.append(lvm_plugin)
 try:
     succ_, avail_plugs = blockdev.try_reinit(require_plugins=_requested_plugins, reload=False, log_func=log_bd_message)
 except GLib.GError as err:
