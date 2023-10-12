@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.8.1
+Version: 3.8.2
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -108,6 +108,23 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 12 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.8.2-1
+- tests: Ignore new pylint false positive with pylint 3.0 (vtrefny)
+- pylint: Use 'exit' instead of 'do_exit' for pylint.lint.Run (vtrefny)
+- Revert "When creating a shared LVM VG skip pvcreate" (vtrefny)
+- Revert "Force command line based libblockdev LVM plugin" (vtrefny)
+- ci: Bump actions/checkout from v2/3 to v4 (vtrefny)
+- spec: Add libblockdev-nvme as weak dependency (vtrefny)
+- Always require NVMe plugin (vtrefny)
+- Enable LVM logging only in debug mode (vtrefny)
+- nvme: Require additional rpms for dracut (tbzatek)
+- Force command line based libblockdev LVM plugin (vtrefny)
+- When creating a shared LVM VG skip pvcreate (vtrefny)
+- Add support for creating shared LVM setups (vtrefny)
+- nvme: Align HostNQN and HostID format to TP4126 (tbzatek)
+- README: Fix typo (vtrefny)
+- README: Update Debian dependencies for libblockdev 3.0 (vtrefny)
+
 * Thu Aug 03 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.8.1-1
 - Ignore new false positives with the latest pylint (vtrefny)
 - iscsi: Rename storaged to udisks (tbzatek)
