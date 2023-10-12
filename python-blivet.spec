@@ -64,6 +64,7 @@ Recommends: libblockdev-loop >= %{libblockdevver}
 Recommends: libblockdev-lvm >= %{libblockdevver}
 Recommends: libblockdev-mdraid >= %{libblockdevver}
 Recommends: libblockdev-mpath >= %{libblockdevver}
+Recommends: libblockdev-nvme >= %{libblockdevver}
 Recommends: libblockdev-swap >= %{libblockdevver}
 
 %ifarch s390 s390x

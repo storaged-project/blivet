@@ -18,16 +18,20 @@
 #
 
 import os
-import shutil
 
 from . import errors
-from . import util
+
+import gi
+gi.require_version("BlockDev", "3.0")
+
+from gi.repository import BlockDev as blockdev
 
 import logging
 log = logging.getLogger("blivet")
 
-HOSTNQN_FILE = "/etc/nvme/hostnqn"
-HOSTID_FILE = "/etc/nvme/hostid"
+ETC_NVME_PATH = "/etc/nvme/"
+HOSTNQN_FILE = ETC_NVME_PATH + "hostnqn"
+HOSTID_FILE = ETC_NVME_PATH + "hostid"
 
 
 class NVMe(object):
@@ -40,6 +44,8 @@ class NVMe(object):
 
     def __init__(self):
         self.started = False
+        self._hostnqn = None
+        self._hostid = None
 
     # So that users can write nvme() to get the singleton instance
     def __call__(self):
@@ -52,28 +58,38 @@ class NVMe(object):
         if self.started:
             return
 
-        rc, nqn = util.run_program_and_capture_output(["nvme", "gen-hostnqn"])
-        if rc != 0:
-            raise errors.NVMeError("Failed to generate hostnqn")
+        self._hostnqn = blockdev.nvme_get_host_nqn()
+        self._hostid = blockdev.nvme_get_host_id()
+        if not self._hostnqn:
+            self._hostnqn = blockdev.nvme_generate_host_nqn()
+        if not self._hostnqn:
+            raise errors.NVMeError("Failed to generate HostNQN")
+        if not self._hostid:
+            if 'uuid:' not in self._hostnqn:
+                raise errors.NVMeError("Missing UUID part in the HostNQN string '%s'" % self._hostnqn)
+            # derive HostID from HostNQN's UUID part
+            self._hostid = self._hostnqn.split('uuid:')[1]
 
-        with open(HOSTNQN_FILE, "w") as f:
-            f.write(nqn)
-
-        rc, hid = util.run_program_and_capture_output(["dmidecode", "-s", "system-uuid"])
-        if rc != 0:
-            raise errors.NVMeError("Failed to generate host ID")
-
-        with open(HOSTID_FILE, "w") as f:
-            f.write(hid)
+        # do not overwrite existing files, taken e.g. from initramfs
+        self.write("/", overwrite=False)
 
         self.started = True
 
-    def write(self, root):  # pylint: disable=unused-argument
-        # copy the hostnqn and hostid files
-        if not os.path.isdir(root + "/etc/nvme"):
-            os.makedirs(root + "/etc/nvme", 0o755)
-        shutil.copyfile(HOSTNQN_FILE, root + HOSTNQN_FILE)
-        shutil.copyfile(HOSTID_FILE, root + HOSTID_FILE)
+    def write(self, root, overwrite=True):  # pylint: disable=unused-argument
+        # write down the hostnqn and hostid files
+        p = root + ETC_NVME_PATH
+        if not os.path.isdir(p):
+            os.makedirs(p, 0o755)
+        p = root + HOSTNQN_FILE
+        if overwrite or not os.path.isfile(p):
+            with open(p, "w") as f:
+                f.write(self._hostnqn)
+                f.write("\n")
+        p = root + HOSTID_FILE
+        if overwrite or not os.path.isfile(p):
+            with open(p, "w") as f:
+                f.write(self._hostid)
+                f.write("\n")
 
 
 # Create nvme singleton
