@@ -301,7 +301,16 @@ class FSTabManager(object):
         self.spec_type = None
 
         if self.src_file is not None:
-            self.read()
+            # self.read() will raise an exception in case of invalid fstab path.
+            # This can interrupt object initialization thus preventing even setting read path
+            # to something else.
+            # This suppresses the exception.
+            if os.path.isfile(self.src_file):
+                self.read()
+            else:
+                # Acceptable at this point, but notify the user
+                log.info("Fstab file '%s' does not exist, setting fstab read path to None", self.src_file)
+                self.src_file = None
 
     def __deepcopy__(self, memo):
         clone = FSTabManager(src_file=self.src_file, dest_file=self.dest_file)
