@@ -115,10 +115,6 @@ class NTFSSize(FSSize):
     tags = _Tags(size="Cluster Size:", count="Volume Size in Clusters:")
 
 
-class ReiserFSSize(FSSize):
-    tags = _Tags(size="Blocksize:", count="Count of blocks on the device:")
-
-
 class XFSSize(FSSize):
     tags = _Tags(size="blocksize =", count="dblocks =")
 

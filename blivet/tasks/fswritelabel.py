@@ -99,14 +99,6 @@ class NTFSWriteLabel(FSWriteLabel):
         return [self.fs.device, self.fs.label]
 
 
-class ReiserFSWriteLabel(FSWriteLabel):
-    ext = availability.REISERFSTUNE_APP
-
-    @property
-    def args(self):
-        return ["-l", self.fs.label, self.fs.device]
-
-
 class XFSWriteLabel(FSWriteLabel):
     ext = availability.XFSADMIN_APP
 

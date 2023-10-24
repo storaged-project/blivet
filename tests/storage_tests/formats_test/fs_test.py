@@ -89,10 +89,6 @@ class JFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.JFS
 
 
-class ReiserFSTestCase(fstesting.FSAsRoot):
-    _fs_class = fs.ReiserFS
-
-
 class XFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.XFS
     _DEVICE_SIZE = Size("500 MiB")

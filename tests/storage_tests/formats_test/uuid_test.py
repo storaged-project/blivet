@@ -15,7 +15,7 @@ class InitializationTestCase(unittest.TestCase):
         """Initialize some filesystems with valid and invalid UUIDs."""
 
         # File systems that accept real UUIDs (RFC 4122)
-        for fscls in [fs.Ext2FS, fs.JFS, fs.ReiserFS, fs.XFS, fs.HFSPlus]:
+        for fscls in [fs.Ext2FS, fs.JFS, fs.XFS, fs.HFSPlus]:
             uuid = "0invalid-uuid-with-righ-tlength00000"
             self.assertFalse(fscls().uuid_format_ok(uuid))
             uuid = "01234567-12341234123401234567891a"
@@ -42,7 +42,7 @@ class InitializationTestCase(unittest.TestCase):
     def test_generate_new_uuid(self):
         """Test that newly generated UUIDs are considered valid"""
 
-        for fscls in (fs.Ext2FS, fs.JFS, fs.ReiserFS, fs.XFS, fs.HFSPlus,
+        for fscls in (fs.Ext2FS, fs.JFS, fs.XFS, fs.HFSPlus,
                       fs.FATFS, fs.NTFS):
             an_fs = fscls()
             for _i in range(100):
@@ -85,18 +85,6 @@ class JFSTestCase(fsuuid.SetUUIDAfterMkFs):
     _fs_class = fs.JFS
     _invalid_uuid = "abcdefgh-ijkl-mnop-qrst-uvwxyz123456"
     _valid_uuid = "ac54f987-b371-45d9-8846-7d6204081e5c"
-
-
-class ReiserFSTestCase(fsuuid.SetUUIDWithMkFs):
-    _fs_class = fs.ReiserFS
-    _invalid_uuid = "abcdefgh-ijkl-mnop-qrst-uvwxyz123456"
-    _valid_uuid = "1761023e-bab8-4919-a2cb-f26c89fe1cfe"
-
-
-class ReiserFSAfterTestCase(fsuuid.SetUUIDAfterMkFs):
-    _fs_class = fs.ReiserFS
-    _invalid_uuid = "abcdefgh-ijkl-mnop-qrst-uvwxyz123456"
-    _valid_uuid = "1761023e-bab8-4919-a2cb-f26c89fe1cfe"
 
 
 class HFSPlusTestCase(fsuuid.SetUUIDAfterMkFs):

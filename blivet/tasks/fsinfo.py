@@ -88,11 +88,6 @@ class NTFSInfo(FSInfo):
     options = ["-m"]
 
 
-class ReiserFSInfo(FSInfo):
-    ext = availability.DEBUGREISERFS_APP
-    options = []
-
-
 class XFSInfo(FSInfo):
     ext = availability.XFSDB_APP
     options = ["-c", "sb 0", "-c", "p dblocks", "-c", "p blocksize", "-r"]

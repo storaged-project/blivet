@@ -51,7 +51,6 @@ class Flags(object):
 
         self.gfs2 = True
         self.jfs = True
-        self.reiserfs = True
 
         # for this flag to take effect,
         # blockdev.mpath.set_friendly_names(flags.multipath_friendly_names) must
@@ -113,7 +112,6 @@ class Flags(object):
         self.noiswmd = "noiswmd" in self.boot_cmdline
         self.gfs2 = "gfs2" in self.boot_cmdline
         self.jfs = "jfs" in self.boot_cmdline
-        self.reiserfs = "reiserfs" in self.boot_cmdline
 
 
 flags = Flags()

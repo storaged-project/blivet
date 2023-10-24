@@ -1077,27 +1077,7 @@ class ReiserFS(FS):
 
     """ reiserfs filesystem """
     _type = "reiserfs"
-    _labelfs = fslabeling.ReiserFSLabeling()
-    _uuidfs = fsuuid.ReiserFSUUID()
-    _modules = ["reiserfs"]
-    _max_size = Size("16 TiB")
-    _formattable = True
     _linux_native = True
-    _dump = True
-    _check = True
-    _packages = ["reiserfs-utils"]
-    _info_class = fsinfo.ReiserFSInfo
-    _mkfs_class = fsmkfs.ReiserFSMkfs
-    _size_info_class = fssize.ReiserFSSize
-    _writelabel_class = fswritelabel.ReiserFSWriteLabel
-    _writeuuid_class = fswriteuuid.ReiserFSWriteUUID
-    _metadata_size_factor = 0.98  # reiserfs metadata may take 2% of space
-    parted_system = fileSystemType["reiserfs"]
-
-    @property
-    def supported(self):
-        """ Is this filesystem a supported type? """
-        return self.utils_available if flags.reiserfs else self._supported
 
 
 register_device_format(ReiserFS)

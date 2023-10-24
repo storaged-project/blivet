@@ -74,15 +74,6 @@ class JFSLabeling(FSLabeling):
         return len(label) < 17
 
 
-class ReiserFSLabeling(FSLabeling):
-
-    default_label = ""
-
-    @classmethod
-    def label_format_ok(cls, label):
-        return len(label) < 17
-
-
 class XFSLabeling(FSLabeling):
 
     default_label = ""

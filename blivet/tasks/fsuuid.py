@@ -60,12 +60,6 @@ class JFSUUID(FSUUID):
         return cls._check_rfc4122_uuid(uuid)
 
 
-class ReiserFSUUID(FSUUID):
-    @classmethod
-    def uuid_format_ok(cls, uuid):
-        return cls._check_rfc4122_uuid(uuid)
-
-
 class XFSUUID(FSUUID):
     @classmethod
     def uuid_format_ok(cls, uuid):

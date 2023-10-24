@@ -28,10 +28,6 @@ class InitializationTestCase(unittest.TestCase):
         self.assertFalse(fs.JFS().label_format_ok("root___filesystem"))
         self.assertTrue(fs.JFS().label_format_ok("root__filesystem"))
 
-        # ReiserFS has a maximum length of 16
-        self.assertFalse(fs.ReiserFS().label_format_ok("root___filesystem"))
-        self.assertTrue(fs.ReiserFS().label_format_ok("root__filesystem"))
-
         # XFS has a maximum length 12 and does not allow spaces
         self.assertFalse(fs.XFS().label_format_ok("root_filesyst"))
         self.assertFalse(fs.XFS().label_format_ok("root file"))
@@ -77,11 +73,6 @@ class Ext2FSTestCase(fslabeling.CompleteLabelingAsRoot):
 
 class JFSTestCase(fslabeling.LabelingWithRelabeling):
     _fs_class = fs.JFS
-    _invalid_label = "root___filesystem"
-
-
-class ReiserFSTestCase(fslabeling.LabelingWithRelabeling):
-    _fs_class = fs.ReiserFS
     _invalid_label = "root___filesystem"
 
 

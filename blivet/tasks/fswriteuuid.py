@@ -65,14 +65,6 @@ class NTFSWriteUUID(FSWriteUUID):
         return ["--new-serial=" + self.fs.uuid, self.fs.device]
 
 
-class ReiserFSWriteUUID(FSWriteUUID):
-    ext = availability.REISERFSTUNE_APP
-
-    @property
-    def args(self):
-        return ["-u", self.fs.uuid, self.fs.device]
-
-
 class XFSWriteUUID(FSWriteUUID):
     ext = availability.XFSADMIN_APP
 

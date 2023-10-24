@@ -84,7 +84,6 @@ formats
     * :class:`~blivet.formats.fs.NoDevFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.NTFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.ProcFS` (see :ref:`inherited public API <FSAPI>`)
-    * :class:`~blivet.formats.fs.ReiserFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.SELinuxFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.SysFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.TmpFS` (see :ref:`inherited public API <FSAPI>`)

@@ -316,19 +316,6 @@ class NTFSMkfs(FSMkfs):
         return ["-F", "-f"]
 
 
-class ReiserFSMkfs(FSMkfs):
-    ext = availability.MKREISERFS_APP
-    label_option = "-l"
-    nodiscard_option = None
-
-    def get_uuid_args(self, uuid):
-        return ["-u", uuid]
-
-    @property
-    def args(self):
-        return ["-f", "-f"]
-
-
 class XFSMkfs(FSMkfs):
     ext = availability.MKFS_XFS_APP
     label_option = "-L"
