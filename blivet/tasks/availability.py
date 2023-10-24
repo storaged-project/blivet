@@ -459,6 +459,20 @@ BLOCKDEV_SWAP = BlockDevTechInfo(plugin_name="swap",
                                  technologies={blockdev.SwapTech.SWAP: BLOCKDEV_SWAP_ALL_MODES})
 BLOCKDEV_SWAP_TECH = BlockDevMethod(BLOCKDEV_SWAP)
 
+# libblockdev fs plugin required technologies
+# no modes, we will check for specific functionality separately
+BLOCKDEV_FS = BlockDevTechInfo(plugin_name="fs",
+                               check_fn=blockdev.fs_is_tech_avail,
+                               technologies={blockdev.FSTech.GENERIC: 0,
+                                             blockdev.FSTech.MOUNT: 0,
+                                             blockdev.FSTech.EXT2: 0,
+                                             blockdev.FSTech.EXT3: 0,
+                                             blockdev.FSTech.EXT4: 0,
+                                             blockdev.FSTech.XFS: 0,
+                                             blockdev.FSTech.VFAT: 0,
+                                             blockdev.FSTech.NTFS: 0})
+BLOCKDEV_FS_TECH = BlockDevMethod(BLOCKDEV_FS)
+
 # libblockdev plugins
 # we can't just check if the plugin is loaded, we also need to make sure
 # that all technologies required by us our supported (some may be missing
@@ -475,6 +489,7 @@ BLOCKDEV_LVM_PLUGIN_SHARED = blockdev_plugin("libblockdev lvm plugin (shared LVM
 BLOCKDEV_MDRAID_PLUGIN = blockdev_plugin("libblockdev mdraid plugin", BLOCKDEV_MD_TECH)
 BLOCKDEV_MPATH_PLUGIN = blockdev_plugin("libblockdev mpath plugin", BLOCKDEV_MPATH_TECH)
 BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("libblockdev swap plugin", BLOCKDEV_SWAP_TECH)
+BLOCKDEV_FS_PLUGIN = blockdev_plugin("libblockdev fs plugin", BLOCKDEV_FS_TECH)
 
 # new version of dosftools changed behaviour of many tools
 DOSFSTOOLS_INFO = AppVersionInfo(app_name="mkdosfs",

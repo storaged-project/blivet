@@ -60,6 +60,7 @@ Requires: python3-blockdev >= %{libblockdevver}
 Recommends: libblockdev-btrfs >= %{libblockdevver}
 Recommends: libblockdev-crypto >= %{libblockdevver}
 Recommends: libblockdev-dm >= %{libblockdevver}
+Recommends: libblockdev-fs >= %{libblockdevver}
 Recommends: libblockdev-loop >= %{libblockdevver}
 Recommends: libblockdev-lvm >= %{libblockdevver}
 Recommends: libblockdev-mdraid >= %{libblockdevver}
