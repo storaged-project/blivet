@@ -482,16 +482,6 @@ BLOCKDEV_MDRAID_PLUGIN = blockdev_plugin("libblockdev mdraid plugin", BLOCKDEV_M
 BLOCKDEV_MPATH_PLUGIN = blockdev_plugin("libblockdev mpath plugin", BLOCKDEV_MPATH_TECH)
 BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("libblockdev swap plugin", BLOCKDEV_SWAP_TECH)
 
-# applications with versions
-# we need e2fsprogs newer than 1.41 and we are checking the version by running
-# the "e2fsck" tool and parsing its ouput for version number
-E2FSPROGS_INFO = AppVersionInfo(app_name="e2fsck",
-                                required_version="1.41.0",
-                                version_opt="-V",
-                                version_regex=r"e2fsck ([0-9+\.]+)[\-rc0-9+]* .*")
-E2FSPROGS_VERSION = VersionMethod(E2FSPROGS_INFO)
-
-
 # new version of dosftools changed behaviour of many tools
 DOSFSTOOLS_INFO = AppVersionInfo(app_name="mkdosfs",
                                  required_version="4.2",
@@ -503,16 +493,16 @@ DOSFSTOOLS_VERSION = VersionMethod(DOSFSTOOLS_INFO)
 DF_APP = application("df")
 DOSFSCK_APP = application("dosfsck")
 DOSFSLABEL_APP = application("dosfslabel")
-DUMPE2FS_APP = application_by_version("dumpe2fs", E2FSPROGS_VERSION)
-E2FSCK_APP = application_by_version("e2fsck", E2FSPROGS_VERSION)
-E2LABEL_APP = application_by_version("e2label", E2FSPROGS_VERSION)
+DUMPE2FS_APP = application("dumpe2fs")
+E2FSCK_APP = application("e2fsck")
+E2LABEL_APP = application("e2label")
 FSCK_HFSPLUS_APP = application("fsck.hfsplus")
 HFORMAT_APP = application("hformat")
 KPARTX_APP = application("kpartx")
 LVMDEVICES = application("lvmdevices")
 MKDOSFS_APP = application("mkdosfs")
 MKDOSFS_NEW_APP = application_by_version("mkdosfs", DOSFSTOOLS_VERSION)
-MKE2FS_APP = application_by_version("mke2fs", E2FSPROGS_VERSION)
+MKE2FS_APP = application("mke2fs")
 MKFS_BTRFS_APP = application("mkfs.btrfs")
 MKFS_GFS2_APP = application("mkfs.gfs2")
 MKFS_HFSPLUS_APP = application("mkfs.hfsplus")
@@ -523,8 +513,8 @@ MULTIPATH_APP = application("multipath")
 NTFSINFO_APP = application("ntfsinfo")
 NTFSLABEL_APP = application("ntfslabel")
 NTFSRESIZE_APP = application("ntfsresize")
-RESIZE2FS_APP = application_by_version("resize2fs", E2FSPROGS_VERSION)
-TUNE2FS_APP = application_by_version("tune2fs", E2FSPROGS_VERSION)
+RESIZE2FS_APP = application("resize2fs")
+TUNE2FS_APP = application("tune2fs")
 XFSADMIN_APP = application("xfs_admin")
 XFSDB_APP = application("xfs_db")
 XFSFREEZE_APP = application("xfs_freeze")
