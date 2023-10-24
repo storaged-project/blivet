@@ -525,7 +525,6 @@ RESIZE2FS_APP = application("resize2fs")
 TUNE2FS_APP = application("tune2fs")
 XFSADMIN_APP = application("xfs_admin")
 XFSDB_APP = application("xfs_db")
-XFSFREEZE_APP = application("xfs_freeze")
 XFSRESIZE_APP = application("xfs_growfs")
 XFSREPAIR_APP = application("xfs_repair")
 
