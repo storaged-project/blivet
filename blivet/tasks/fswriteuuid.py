@@ -49,14 +49,6 @@ class Ext2FSWriteUUID(FSWriteUUID):
         return ["-U", self.fs.uuid, self.fs.device]
 
 
-class JFSWriteUUID(FSWriteUUID):
-    ext = availability.JFSTUNE_APP
-
-    @property
-    def args(self):
-        return ["-U", self.fs.uuid, self.fs.device]
-
-
 class NTFSWriteUUID(FSWriteUUID):
     ext = availability.NTFSLABEL_APP
 

@@ -24,10 +24,6 @@ class InitializationTestCase(unittest.TestCase):
         self.assertFalse(fs.FATFS().label_format_ok("rtfilesystem"))
         self.assertTrue(fs.FATFS().label_format_ok("rfilesystem"))
 
-        # JFS has a maximum length of 16
-        self.assertFalse(fs.JFS().label_format_ok("root___filesystem"))
-        self.assertTrue(fs.JFS().label_format_ok("root__filesystem"))
-
         # XFS has a maximum length 12 and does not allow spaces
         self.assertFalse(fs.XFS().label_format_ok("root_filesyst"))
         self.assertFalse(fs.XFS().label_format_ok("root file"))
@@ -68,11 +64,6 @@ class FATFSTestCase(fslabeling.CompleteLabelingAsRoot):
 
 class Ext2FSTestCase(fslabeling.CompleteLabelingAsRoot):
     _fs_class = fs.Ext2FS
-    _invalid_label = "root___filesystem"
-
-
-class JFSTestCase(fslabeling.LabelingWithRelabeling):
-    _fs_class = fs.JFS
     _invalid_label = "root___filesystem"
 
 

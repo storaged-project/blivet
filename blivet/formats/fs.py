@@ -1048,26 +1048,7 @@ class JFS(FS):
 
     """ JFS filesystem """
     _type = "jfs"
-    _modules = ["jfs"]
-    _labelfs = fslabeling.JFSLabeling()
-    _uuidfs = fsuuid.JFSUUID()
-    _max_size = Size("8 TiB")
-    _formattable = True
     _linux_native = True
-    _dump = True
-    _check = True
-    _info_class = fsinfo.JFSInfo
-    _mkfs_class = fsmkfs.JFSMkfs
-    _size_info_class = fssize.JFSSize
-    _writelabel_class = fswritelabel.JFSWriteLabel
-    _writeuuid_class = fswriteuuid.JFSWriteUUID
-    _metadata_size_factor = 0.99  # jfs metadata may take 1% of space
-    parted_system = fileSystemType["jfs"]
-
-    @property
-    def supported(self):
-        """ Is this filesystem a supported type? """
-        return self.utils_available if flags.jfs else self._supported
 
 
 register_device_format(JFS)

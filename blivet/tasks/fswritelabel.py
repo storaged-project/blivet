@@ -83,14 +83,6 @@ class Ext2FSWriteLabel(FSWriteLabel):
         return [self.fs.device, self.fs.label]
 
 
-class JFSWriteLabel(FSWriteLabel):
-    ext = availability.JFSTUNE_APP
-
-    @property
-    def args(self):
-        return ["-L", self.fs.label, self.fs.device]
-
-
 class NTFSWriteLabel(FSWriteLabel):
     ext = availability.NTFSLABEL_APP
 

@@ -107,10 +107,6 @@ class Ext2FSSize(FSSize):
     tags = _Tags(size="Block size:", count="Block count:")
 
 
-class JFSSize(FSSize):
-    tags = _Tags(size="Physical block size:", count="Aggregate size:")
-
-
 class NTFSSize(FSSize):
     tags = _Tags(size="Cluster Size:", count="Volume Size in Clusters:")
 

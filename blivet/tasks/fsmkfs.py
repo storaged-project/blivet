@@ -293,17 +293,6 @@ class HFSPlusMkfs(FSMkfs):
         return []
 
 
-class JFSMkfs(FSMkfs):
-    ext = availability.MKFS_JFS_APP
-    label_option = "-L"
-    nodiscard_option = None
-    get_uuid_args = None
-
-    @property
-    def args(self):
-        return ["-q"]
-
-
 class NTFSMkfs(FSMkfs):
     ext = availability.MKNTFS_APP
     label_option = "-L"

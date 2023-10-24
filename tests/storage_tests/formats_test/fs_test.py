@@ -85,10 +85,6 @@ class GFS2TestCase(fstesting.FSAsRoot):
     _fs_class = fs.GFS2
 
 
-class JFSTestCase(fstesting.FSAsRoot):
-    _fs_class = fs.JFS
-
-
 class XFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.XFS
     _DEVICE_SIZE = Size("500 MiB")

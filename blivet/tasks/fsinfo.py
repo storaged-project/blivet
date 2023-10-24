@@ -78,11 +78,6 @@ class Ext2FSInfo(FSInfo):
     options = ["-h"]
 
 
-class JFSInfo(FSInfo):
-    ext = availability.JFSTUNE_APP
-    options = ["-l"]
-
-
 class NTFSInfo(FSInfo):
     ext = availability.NTFSINFO_APP
     options = ["-m"]

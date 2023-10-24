@@ -54,12 +54,6 @@ class FATFSUUID(FSUUID):
                    for char in (uuid[:4] + uuid[5:]))
 
 
-class JFSUUID(FSUUID):
-    @classmethod
-    def uuid_format_ok(cls, uuid):
-        return cls._check_rfc4122_uuid(uuid)
-
-
 class XFSUUID(FSUUID):
     @classmethod
     def uuid_format_ok(cls, uuid):

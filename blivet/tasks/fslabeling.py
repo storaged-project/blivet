@@ -65,15 +65,6 @@ class FATFSLabeling(FSLabeling):
         return len(label) < 12
 
 
-class JFSLabeling(FSLabeling):
-
-    default_label = ""
-
-    @classmethod
-    def label_format_ok(cls, label):
-        return len(label) < 17
-
-
 class XFSLabeling(FSLabeling):
 
     default_label = ""
