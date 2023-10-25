@@ -228,19 +228,12 @@ class SwapSpace(DeviceFormat):
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if self.uuid is None:
-            try:
-                blockdev.swap.mkswap(self.device, label=self.label)
-            except blockdev.SwapError as err:
-                raise SwapSpaceError(str(err))
-        else:
-            if not self.uuid_format_ok(self.uuid):
-                raise FSWriteUUIDError("bad UUID format for swap filesystem")
-            try:
-                blockdev.swap.mkswap(self.device, label=self.label,
-                                     extra={"-U": self.uuid})
-            except blockdev.SwapError as err:
-                raise SwapSpaceError(str(err))
+        if self.uuid and not self.uuid_format_ok(self.uuid):
+            raise FSWriteUUIDError("bad UUID format for swap filesystem")
+        try:
+            blockdev.swap.mkswap(self.device, label=self.label, uuid=self.uuid)
+        except blockdev.SwapError as err:
+            raise SwapSpaceError(str(err))
 
 
 register_device_format(SwapSpace)

@@ -428,7 +428,9 @@ class SwapMethodsTestCase(FormatMethodsTestCase):
     def _test_create_backend(self):
         self.format.exists = False
         self.format.create()
-        self.patches["blockdev"].swap.mkswap.assert_called_with(self.format.device, label=self.format.label)  # pylint: disable=no-member
+        self.patches["blockdev"].swap.mkswap.assert_called_with(self.format.device,
+                                                                label=self.format.label,  # pylint: disable=no-member
+                                                                uuid=self.format.uuid)
 
     def _test_setup_backend(self):
         self.format.setup()
