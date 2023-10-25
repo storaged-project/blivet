@@ -54,33 +54,38 @@ class InitializationTestCase(unittest.TestCase):
 class XFSTestCase(fslabeling.CompleteLabelingAsRoot):
     _fs_class = fs.XFS
     _invalid_label = "root filesystem"
+    _default_label = ""
     _DEVICE_SIZE = Size("500 MiB")
 
 
 class FATFSTestCase(fslabeling.CompleteLabelingAsRoot):
     _fs_class = fs.FATFS
     _invalid_label = "root___filesystem"
+    _default_label = ""
 
 
 class Ext2FSTestCase(fslabeling.CompleteLabelingAsRoot):
     _fs_class = fs.Ext2FS
     _invalid_label = "root___filesystem"
+    _default_label = ""
 
 
 class HFSTestCase(fslabeling.LabelingAsRoot):
     _fs_class = fs.HFS
     _invalid_label = "n" * 28
+    _default_label = "Untitled"
 
 
 class HFSPlusTestCase(fslabeling.LabelingAsRoot):
     _fs_class = fs.HFSPlus
     _invalid_label = "n" * 129
+    _default_label = "Untitled"
 
 
-@unittest.skip("Unable to create NTFS filesystem.")
 class NTFSTestCase(fslabeling.CompleteLabelingAsRoot):
     _fs_class = fs.NTFS
     _invalid_label = "n" * 129
+    _default_label = ""
 
 
 class LabelingSwapSpaceTestCase(loopbackedtestcase.LoopBackedTestCase):

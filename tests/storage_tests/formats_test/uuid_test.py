@@ -28,14 +28,14 @@ class InitializationTestCase(unittest.TestCase):
             self.assertTrue(fscls().uuid_format_ok(uuid))
 
         self.assertFalse(fs.FATFS().uuid_format_ok("1234-56789"))
-        self.assertFalse(fs.FATFS().uuid_format_ok("abcd-ef00"))
-        self.assertFalse(fs.FATFS().uuid_format_ok("12345678"))
+        self.assertTrue(fs.FATFS().uuid_format_ok("abcd-ef00"))
+        self.assertTrue(fs.FATFS().uuid_format_ok("12345678"))
         self.assertTrue(fs.FATFS().uuid_format_ok("1234-5678"))
         self.assertTrue(fs.FATFS().uuid_format_ok("ABCD-EF01"))
 
         self.assertFalse(fs.NTFS().uuid_format_ok("12345678901234567"))
         self.assertFalse(fs.NTFS().uuid_format_ok("abcdefgh"))
-        self.assertFalse(fs.NTFS().uuid_format_ok("abcdefabcdefabcd"))
+        self.assertTrue(fs.NTFS().uuid_format_ok("abcdefabcdefabcd"))
         self.assertTrue(fs.NTFS().uuid_format_ok("1234567890123456"))
         self.assertTrue(fs.NTFS().uuid_format_ok("ABCDEFABCDEFABCD"))
 
@@ -65,7 +65,7 @@ class XFSAfterTestCase(fsuuid.SetUUIDAfterMkFs):
 
 class FATFSTestCase(fsuuid.SetUUIDWithMkFs):
     _fs_class = fs.FATFS
-    _invalid_uuid = "c87ab0e1"
+    _invalid_uuid = "z87ab0e1"
     _valid_uuid = "DEAD-BEEF"
 
 
@@ -89,7 +89,7 @@ class HFSPlusTestCase(fsuuid.SetUUIDAfterMkFs):
 
 class NTFSTestCase(fsuuid.SetUUIDAfterMkFs):
     _fs_class = fs.NTFS
-    _invalid_uuid = "b22193477ac947fb"
+    _invalid_uuid = "z22193477ac947fb"
     _valid_uuid = "BC3B34461B8344A6"
 
 

@@ -131,11 +131,14 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         if an_fs._readlabel.availability_errors or not an_fs.relabels():
             self.skipTest("can not read or write label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.read_label(), an_fs._labelfs.default_label)
+        self.assertEqual(an_fs.read_label(), self._default_label)
 
         an_fs.label = "an_fs"
         self.assertIsNone(an_fs.write_label())
-        self.assertEqual(an_fs.read_label(), an_fs.label)
+        if an_fs.type in ("vfat", "efi"):
+            self.assertEqual(an_fs.read_label(), an_fs.label.upper())
+        else:
+            self.assertEqual(an_fs.read_label(), an_fs.label)
 
         an_fs.label = ""
         self.assertIsNone(an_fs.write_label())
@@ -157,7 +160,10 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         if an_fs._readlabel.availability_errors:
             self.skipTest("can not read label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.read_label(), "start")
+        if an_fs.type in ("vfat", "efi"):
+            self.assertEqual(an_fs.read_label(), "START")
+        else:
+            self.assertEqual(an_fs.read_label(), "start")
 
     def test_creating_none(self):
         """Create a filesystem with the label None.
@@ -167,7 +173,7 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         if an_fs._readlabel.availability_errors:
             self.skipTest("can not read label for filesystem %s" % an_fs.name)
         self.assertIsNone(an_fs.create())
-        self.assertEqual(an_fs.read_label(), an_fs._labelfs.default_label)
+        self.assertEqual(an_fs.read_label(), self._default_label)
 
     def test_creating_empty(self):
         """Create a filesystem with an empty label.

@@ -2,6 +2,10 @@ import abc
 
 from six import add_metaclass
 
+import gi
+gi.require_version("BlockDev", "3.0")
+from gi.repository import BlockDev
+
 
 @add_metaclass(abc.ABCMeta)
 class FSUUID(object):
@@ -38,26 +42,32 @@ class FSUUID(object):
                      if all(char in "0123456789abcdef" for char in chunk)]
         return chunklens == [8, 4, 4, 4, 12]
 
+    @classmethod
+    def _blockdev_check_uuid(cls, fstype, uuid):
+        try:
+            BlockDev.fs.check_uuid(fstype, uuid)
+        except BlockDev.FSError:
+            return False
+        else:
+            return True
+
 
 class Ext2FSUUID(FSUUID):
     @classmethod
     def uuid_format_ok(cls, uuid):
-        return cls._check_rfc4122_uuid(uuid)
+        return cls._blockdev_check_uuid("ext2", uuid)
 
 
 class FATFSUUID(FSUUID):
     @classmethod
     def uuid_format_ok(cls, uuid):
-        if len(uuid) != 9 or uuid[4] != '-':
-            return False
-        return all(char in "0123456789ABCDEF"
-                   for char in (uuid[:4] + uuid[5:]))
+        return cls._blockdev_check_uuid("vfat", uuid)
 
 
 class XFSUUID(FSUUID):
     @classmethod
     def uuid_format_ok(cls, uuid):
-        return cls._check_rfc4122_uuid(uuid)
+        return cls._blockdev_check_uuid("xfs", uuid)
 
 
 class HFSPlusUUID(FSUUID):
@@ -69,6 +79,4 @@ class HFSPlusUUID(FSUUID):
 class NTFSUUID(FSUUID):
     @classmethod
     def uuid_format_ok(cls, uuid):
-        if len(uuid) != 16:
-            return False
-        return all(char in "0123456789ABCDEF" for char in uuid)
+        return cls._blockdev_check_uuid("ntfs", uuid)

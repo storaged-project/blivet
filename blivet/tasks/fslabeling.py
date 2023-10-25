@@ -23,7 +23,9 @@ import abc
 
 from six import add_metaclass
 
-from . import availability
+import gi
+gi.require_version("BlockDev", "3.0")
+from gi.repository import BlockDev
 
 
 @add_metaclass(abc.ABCMeta)
@@ -31,9 +33,6 @@ class FSLabeling(object):
 
     """An abstract class that represents filesystem labeling actions.
     """
-
-    default_label = abc.abstractproperty(
-        doc="Default label set on this filesystem at creation.")
 
     @classmethod
     @abc.abstractmethod
@@ -46,37 +45,38 @@ class FSLabeling(object):
         """
         raise NotImplementedError
 
+    @classmethod
+    def _blockdev_check_label(cls, fstype, label):
+        try:
+            BlockDev.fs.check_label(fstype, label)
+        except BlockDev.FSError:
+            return False
+        else:
+            return True
+
 
 class Ext2FSLabeling(FSLabeling):
 
-    default_label = ""
-
     @classmethod
     def label_format_ok(cls, label):
-        return len(label) < 17
+        return cls._blockdev_check_label("ext2", label)
 
 
 class FATFSLabeling(FSLabeling):
 
-    default_label = "" if availability.MKDOSFS_NEW_APP.available else "NO NAME"
-
     @classmethod
     def label_format_ok(cls, label):
-        return len(label) < 12
+        return cls._blockdev_check_label("vfat", label)
 
 
 class XFSLabeling(FSLabeling):
 
-    default_label = ""
-
     @classmethod
     def label_format_ok(cls, label):
-        return ' ' not in label and len(label) < 13
+        return cls._blockdev_check_label("xfs", label)
 
 
 class HFSLabeling(FSLabeling):
-
-    default_label = "Untitled"
 
     @classmethod
     def label_format_ok(cls, label):
@@ -85,8 +85,6 @@ class HFSLabeling(FSLabeling):
 
 class HFSPlusLabeling(FSLabeling):
 
-    default_label = "Untitled"
-
     @classmethod
     def label_format_ok(cls, label):
         return ':' not in label and 0 < len(label) < 129
@@ -94,17 +92,13 @@ class HFSPlusLabeling(FSLabeling):
 
 class NTFSLabeling(FSLabeling):
 
-    default_label = ""
-
     @classmethod
     def label_format_ok(cls, label):
-        return len(label) < 129
+        return cls._blockdev_check_label("ntfs", label)
 
 
 class F2FSLabeling(FSLabeling):
 
-    default_label = ""
-
     @classmethod
     def label_format_ok(cls, label):
-        return len(label) < 513
+        return cls._blockdev_check_label("f2fs", label)

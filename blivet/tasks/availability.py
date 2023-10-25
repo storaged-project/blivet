@@ -251,6 +251,43 @@ class BlockDevMethod(Method):
                 return []
 
 
+class BlockDevFSMethod(Method):
+
+    """ Methods for when application is actually a libblockdev FS plugin functionality. """
+
+    def __init__(self, check_fn, fstype):
+        """ Initializer.
+
+            :param check_fn: function used to check for support availability
+            :param fstype: filesystem type to check for the support availability
+        """
+        self.check_fn = check_fn
+        self.fstype = fstype
+        self._availability_errors = None
+
+    def availability_errors(self, resource):
+        """ Returns [] if the plugin is loaded and functionality available.
+
+            :param resource: a libblockdev plugin
+            :type resource: :class:`ExternalResource`
+
+            :returns: [] if the name of the plugin is loaded
+            :rtype: list of str
+        """
+        if "fs" not in blockdev.get_available_plugin_names():
+            return ["libblockdev fs plugin not loaded"]
+        else:
+            try:
+                avail, utility = self.check_fn(self.fstype)
+            except blockdev.FSError as e:
+                return [str(e)]
+            if not avail:
+                return ["libblockdev fs plugin is loaded but some required runtime "
+                        "dependencies are not available: %s" % utility]
+            else:
+                return []
+
+
 class DBusMethod(Method):
 
     """ Methods for when application is actually a DBus service. """
@@ -332,6 +369,11 @@ def application_by_version(name, version_method):
 def blockdev_plugin(name, blockdev_method):
     """ Construct an external resource that is a libblockdev plugin. """
     return ExternalResource(blockdev_method, name)
+
+
+def blockdev_fs_plugin(blockdev_fs_method):
+    """ Construct an external resource that is a libblockdev FS plugin functionality. """
+    return ExternalResource(blockdev_fs_method, "libblockdev FS plugin method")
 
 
 def dbus_service(name, dbus_method):
@@ -473,6 +515,16 @@ BLOCKDEV_FS = BlockDevTechInfo(plugin_name="fs",
                                              blockdev.FSTech.NTFS: 0})
 BLOCKDEV_FS_TECH = BlockDevMethod(BLOCKDEV_FS)
 
+# libblockdev fs plugin methods
+BLOCKDEV_EXT_UUID = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_uuid, "ext2"))
+BLOCKDEV_XFS_UUID = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_uuid, "xfs"))
+BLOCKDEV_NTFS_UUID = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_uuid, "ntfs"))
+
+BLOCKDEV_EXT_LABEL = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_label, "ext2"))
+BLOCKDEV_XFS_LABEL = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_label, "xfs"))
+BLOCKDEV_VFAT_LABEL = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_label, "vfat"))
+BLOCKDEV_NTFS_LABEL = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_label, "ntfs"))
+
 # libblockdev plugins
 # we can't just check if the plugin is loaded, we also need to make sure
 # that all technologies required by us our supported (some may be missing
@@ -491,13 +543,6 @@ BLOCKDEV_MPATH_PLUGIN = blockdev_plugin("libblockdev mpath plugin", BLOCKDEV_MPA
 BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("libblockdev swap plugin", BLOCKDEV_SWAP_TECH)
 BLOCKDEV_FS_PLUGIN = blockdev_plugin("libblockdev fs plugin", BLOCKDEV_FS_TECH)
 
-# new version of dosftools changed behaviour of many tools
-DOSFSTOOLS_INFO = AppVersionInfo(app_name="mkdosfs",
-                                 required_version="4.2",
-                                 version_opt="--help",
-                                 version_regex=r"mkfs\.fat ([0-9+\.]+) .*")
-DOSFSTOOLS_VERSION = VersionMethod(DOSFSTOOLS_INFO)
-
 # applications
 DF_APP = application("df")
 DOSFSCK_APP = application("dosfsck")
@@ -510,7 +555,6 @@ HFORMAT_APP = application("hformat")
 KPARTX_APP = application("kpartx")
 LVMDEVICES = application("lvmdevices")
 MKDOSFS_APP = application("mkdosfs")
-MKDOSFS_NEW_APP = application_by_version("mkdosfs", DOSFSTOOLS_VERSION)
 MKE2FS_APP = application("mke2fs")
 MKFS_BTRFS_APP = application("mkfs.btrfs")
 MKFS_GFS2_APP = application("mkfs.gfs2")
