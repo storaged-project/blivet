@@ -255,12 +255,14 @@ class BlockDevFSMethod(Method):
 
     """ Methods for when application is actually a libblockdev FS plugin functionality. """
 
-    def __init__(self, check_fn, fstype):
+    def __init__(self, operation, check_fn, fstype):
         """ Initializer.
 
+            :param operation: operation to check for support availability
             :param check_fn: function used to check for support availability
             :param fstype: filesystem type to check for the support availability
         """
+        self.operation = operation
         self.check_fn = check_fn
         self.fstype = fstype
         self._availability_errors = None
@@ -278,7 +280,10 @@ class BlockDevFSMethod(Method):
             return ["libblockdev fs plugin not loaded"]
         else:
             try:
-                avail, utility = self.check_fn(self.fstype)
+                if self.operation in (FSOperation.UUID, FSOperation.LABEL):
+                    avail, utility = self.check_fn(self.fstype)
+                elif self.operation == FSOperation.RESIZE:
+                    avail, _mode, utility = self.check_fn(self.fstype)
             except blockdev.FSError as e:
                 return [str(e)]
             if not avail:
@@ -371,7 +376,7 @@ def blockdev_plugin(name, blockdev_method):
     return ExternalResource(blockdev_method, name)
 
 
-def blockdev_fs_plugin(blockdev_fs_method):
+def blockdev_fs_plugin_operation(blockdev_fs_method):
     """ Construct an external resource that is a libblockdev FS plugin functionality. """
     return ExternalResource(blockdev_fs_method, "libblockdev FS plugin method")
 
@@ -515,15 +520,26 @@ BLOCKDEV_FS = BlockDevTechInfo(plugin_name="fs",
                                              blockdev.FSTech.NTFS: 0})
 BLOCKDEV_FS_TECH = BlockDevMethod(BLOCKDEV_FS)
 
-# libblockdev fs plugin methods
-BLOCKDEV_EXT_UUID = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_uuid, "ext2"))
-BLOCKDEV_XFS_UUID = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_uuid, "xfs"))
-BLOCKDEV_NTFS_UUID = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_uuid, "ntfs"))
 
-BLOCKDEV_EXT_LABEL = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_label, "ext2"))
-BLOCKDEV_XFS_LABEL = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_label, "xfs"))
-BLOCKDEV_VFAT_LABEL = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_label, "vfat"))
-BLOCKDEV_NTFS_LABEL = blockdev_fs_plugin(BlockDevFSMethod(blockdev.fs.can_set_label, "ntfs"))
+# libblockdev fs plugin methods
+class FSOperation():
+    UUID = 0
+    LABEL = 1
+    RESIZE = 2
+
+
+BLOCKDEV_EXT_UUID = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.UUID, blockdev.fs.can_set_uuid, "ext2"))
+BLOCKDEV_XFS_UUID = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.UUID, blockdev.fs.can_set_uuid, "xfs"))
+BLOCKDEV_NTFS_UUID = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.UUID, blockdev.fs.can_set_uuid, "ntfs"))
+
+BLOCKDEV_EXT_LABEL = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.LABEL, blockdev.fs.can_set_label, "ext2"))
+BLOCKDEV_XFS_LABEL = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.LABEL, blockdev.fs.can_set_label, "xfs"))
+BLOCKDEV_VFAT_LABEL = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.LABEL, blockdev.fs.can_set_label, "vfat"))
+BLOCKDEV_NTFS_LABEL = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.LABEL, blockdev.fs.can_set_label, "ntfs"))
+
+BLOCKDEV_EXT_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "ext2"))
+BLOCKDEV_XFS_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "xfs"))
+BLOCKDEV_NTFS_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "ntfs"))
 
 # libblockdev plugins
 # we can't just check if the plugin is loaded, we also need to make sure

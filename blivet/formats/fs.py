@@ -1438,7 +1438,7 @@ class TmpFS(NoDevFS):
             This is not impossible, since a special option for mounting
             is size=<percentage>%.
         """
-        return "size=%s" % (self._resize.size_fmt % size.convert_to(self._resize.unit))
+        return "size=%sm" % size.convert_to(self._resize.unit)
 
     def _get_options(self):
         # Returns the regular mount options with the special size option,
