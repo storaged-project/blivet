@@ -576,7 +576,6 @@ BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("libblockdev swap plugin", BLOCKDEV_SWAP_
 BLOCKDEV_FS_PLUGIN = blockdev_plugin("libblockdev fs plugin", BLOCKDEV_FS_TECH)
 
 # applications
-DF_APP = application("df")
 DOSFSCK_APP = application("dosfsck")
 DOSFSLABEL_APP = application("dosfslabel")
 DUMPE2FS_APP = application("dumpe2fs")

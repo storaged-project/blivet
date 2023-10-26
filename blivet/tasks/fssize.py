@@ -20,16 +20,13 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
-
+import os
 import six
 
 from ..errors import FSError
 from ..size import Size
-from .. import util
 
-from . import availability
 from . import fstask
-from . import task
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -86,32 +83,24 @@ class XFSSize(FSSize):
         return Size(self.fs._current_info.block_size * self.fs._current_info.block_count)
 
 
-class TmpFSSize(task.BasicApplication, fstask.FSTask):
+class TmpFSSize(fstask.FSTask):
     description = "current filesystem size"
 
-    ext = availability.DF_APP
+    @property
+    def _availability_errors(self):
+        return []
 
     @property
-    def _size_command(self):
-        return [str(self.ext), self.fs.system_mountpoint, "--output=size"]
+    def depends_on(self):
+        return []
 
     def do_task(self):  # pylint: disable=arguments-differ
         error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
-        try:
-            (ret, out) = util.run_program_and_capture_output(self._size_command)
-            if ret:
-                raise FSError("Failed to execute command %s." % self._size_command)
-        except OSError:
-            raise FSError("Failed to execute command %s." % self._size_command)
-
-        lines = out.splitlines()
-        if len(lines) != 2 or lines[0].strip() != "1K-blocks":
-            raise FSError("Failed to parse output of command %s." % self._size_command)
-
-        return Size("%s KiB" % lines[1])
+        stat = os.statvfs(self.fs.system_mountpoint)
+        return Size(stat.f_bsize * stat.f_blocks)
 
 
 class UnimplementedFSSize(fstask.UnimplementedFSTask):
