@@ -661,6 +661,13 @@ class FS(DeviceFormat):
 
         if not self._readlabel.available:
             raise FSReadLabelError("can not read label for filesystem %s" % self.type)
+
+        try:
+            if self._info.available:
+                self._current_info = self._info.do_task()
+        except FSError as e:
+            log.info("Failed to obtain info for device %s: %s", self.device, e)
+
         return self._readlabel.do_task()
 
     def write_label(self, dry_run=False):

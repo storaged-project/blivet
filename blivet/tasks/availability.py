@@ -545,6 +545,7 @@ BLOCKDEV_NTFS_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation
 BLOCKDEV_EXT_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "ext2"))
 BLOCKDEV_XFS_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "xfs"))
 BLOCKDEV_NTFS_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "ntfs"))
+BLOCKDEV_VFAT_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "vfat"))
 
 # libblockdev plugins
 # we can't just check if the plugin is loaded, we also need to make sure
