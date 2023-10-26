@@ -23,12 +23,15 @@ import os
 
 from ..errors import FSError
 from ..flags import flags
-from .. import util
 from ..formats import fslib
 
 from . import availability
 from . import fstask
 from . import task
+
+import gi
+gi.require_version("BlockDev", "3.0")
+from gi.repository import BlockDev
 
 
 class FSMount(task.BasicApplication, fstask.FSTask):
@@ -40,20 +43,14 @@ class FSMount(task.BasicApplication, fstask.FSTask):
     # type argument to pass to mount, if different from filesystem type
     fstype = None
 
-    ext = availability.MOUNT_APP
+    ext = availability.BLOCKDEV_FS_PLUGIN
 
     # TASK methods
 
     @property
     def _has_driver(self):
         """ Is there a filesystem driver in the kernel modules directory. """
-        modpath = os.path.realpath(os.path.join("/lib/modules", os.uname()[2]))
-        if os.path.isdir(modpath):
-            modname = "%s.ko" % self.mount_type
-            for _root, _dirs, files in os.walk(modpath):
-                if any(x.startswith(modname) for x in files):
-                    return True
-        return False
+        return BlockDev.utils.have_kernel_module(self.mount_type)
 
     @property
     def _can_mount(self):
@@ -100,6 +97,9 @@ class FSMount(task.BasicApplication, fstask.FSTask):
         if not options or not isinstance(options, str):
             options = self.fs.mountopts or ",".join(self.options)
 
+        if options is None:
+            options = "defaults"
+
         return self._modify_options(options)
 
     def do_task(self, mountpoint, options=None):
@@ -114,15 +114,14 @@ class FSMount(task.BasicApplication, fstask.FSTask):
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
-        try:
-            rc = util.mount(self.fs.device, mountpoint,
-                            fstype=self.mount_type,
-                            options=self.mount_options(options))
-        except OSError as e:
-            raise FSError("mount failed: %s" % e)
+        mountpoint = os.path.normpath(mountpoint)
+        if not os.path.isdir(mountpoint):
+            os.makedirs(mountpoint)
 
-        if rc:
-            raise FSError("mount failed: %s" % rc)
+        try:
+            BlockDev.fs.mount(self.fs.device, mountpoint, self.mount_type, self.mount_options(options))
+        except BlockDev.FSError as e:
+            raise FSError("mount failed: %s" % e)
 
 
 class AppleBootstrapFSMount(FSMount):
