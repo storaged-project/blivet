@@ -280,7 +280,7 @@ class BlockDevFSMethod(Method):
             return ["libblockdev fs plugin not loaded"]
         else:
             try:
-                if self.operation in (FSOperation.UUID, FSOperation.LABEL):
+                if self.operation in (FSOperation.UUID, FSOperation.LABEL, FSOperation.INFO):
                     avail, utility = self.check_fn(self.fstype)
                 elif self.operation == FSOperation.RESIZE:
                     avail, _mode, utility = self.check_fn(self.fstype)
@@ -526,6 +526,7 @@ class FSOperation():
     UUID = 0
     LABEL = 1
     RESIZE = 2
+    INFO = 3
 
 
 BLOCKDEV_EXT_UUID = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.UUID, blockdev.fs.can_set_uuid, "ext2"))
@@ -540,6 +541,10 @@ BLOCKDEV_NTFS_LABEL = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.
 BLOCKDEV_EXT_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "ext2"))
 BLOCKDEV_XFS_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "xfs"))
 BLOCKDEV_NTFS_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "ntfs"))
+
+BLOCKDEV_EXT_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "ext2"))
+BLOCKDEV_XFS_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "xfs"))
+BLOCKDEV_NTFS_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "ntfs"))
 
 # libblockdev plugins
 # we can't just check if the plugin is loaded, we also need to make sure

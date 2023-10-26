@@ -91,15 +91,7 @@ class Ext2FSMinSize(FSMinSize):
         if self.fs._current_info is None:
             return None
 
-        block_size = None
-        for line in (l.strip() for l in self.fs._current_info.splitlines() if l.startswith("Block size:")):
-            try:
-                block_size = int(line.split(" ")[-1])
-                break
-            except ValueError:
-                continue
-
-        return Size(block_size) if block_size else None
+        return Size(self.fs._current_info.block_size)
 
     def _extract_num_blocks(self, info):
         """ Extract the number of blocks from the resizefs info.

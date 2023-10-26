@@ -24,11 +24,14 @@ import abc
 from six import add_metaclass
 
 from ..errors import FSError
-from .. import util
 
 from . import availability
 from . import fstask
 from . import task
+
+import gi
+gi.require_version("BlockDev", "3.0")
+from gi.repository import BlockDev
 
 
 @add_metaclass(abc.ABCMeta)
@@ -38,17 +41,9 @@ class FSInfo(task.BasicApplication, fstask.FSTask):
 
     description = "filesystem info"
 
-    options = abc.abstractproperty(
-        doc="Options for invoking the application.")
-
-    @property
-    def _info_command(self):
-        """ Returns the command for reading filesystem information.
-
-            :returns: a list of appropriate options
-            :rtype: list of str
-        """
-        return [str(self.ext)] + self.options + [self.fs.device]
+    @abc.abstractmethod
+    def _get_info(self):
+        raise NotImplementedError
 
     def do_task(self):  # pylint: disable=arguments-differ
         """ Returns information from the command.
@@ -61,31 +56,32 @@ class FSInfo(task.BasicApplication, fstask.FSTask):
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
-        error_msg = None
         try:
-            (rc, out) = util.run_program_and_capture_output(self._info_command)
-            if rc:
-                error_msg = "failed to gather fs info: %s" % rc
-        except OSError as e:
-            error_msg = "failed to gather fs info: %s" % e
-        if error_msg:
-            raise FSError(error_msg)
-        return out
+            info = self._get_info()
+        except BlockDev.FSError as e:
+            raise FSError("failed to gather fs info: %s" % e)
+        return info
 
 
 class Ext2FSInfo(FSInfo):
-    ext = availability.DUMPE2FS_APP
-    options = ["-h"]
+    ext = availability.BLOCKDEV_EXT_INFO
+
+    def _get_info(self):
+        return BlockDev.fs.ext2_get_info(self.fs.device)
 
 
 class NTFSInfo(FSInfo):
-    ext = availability.NTFSINFO_APP
-    options = ["-m"]
+    ext = availability.BLOCKDEV_NTFS_INFO
+
+    def _get_info(self):
+        return BlockDev.fs.ntfs_get_info(self.fs.device)
 
 
 class XFSInfo(FSInfo):
-    ext = availability.XFSDB_APP
-    options = ["-c", "sb 0", "-c", "p dblocks", "-c", "p blocksize", "-r"]
+    ext = availability.BLOCKDEV_XFS_INFO
+
+    def _get_info(self):
+        return BlockDev.fs.xfs_get_info(self.fs.device)
 
 
 class UnimplementedFSInfo(fstask.UnimplementedFSTask):

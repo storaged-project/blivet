@@ -20,7 +20,6 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
-from collections import namedtuple
 
 import six
 
@@ -32,18 +31,12 @@ from . import availability
 from . import fstask
 from . import task
 
-_tags = ("count", "size")
-_Tags = namedtuple("_Tags", _tags)
-
 
 @six.add_metaclass(abc.ABCMeta)
 class FSSize(fstask.FSTask):
 
     """ An abstract class that represents size information extraction. """
     description = "current filesystem size"
-
-    tags = abc.abstractproperty(
-        doc="Strings used for extracting components of size.")
 
     # TASK methods
 
@@ -54,6 +47,10 @@ class FSSize(fstask.FSTask):
     @property
     def depends_on(self):
         return [self.fs._info]
+
+    @abc.abstractmethod
+    def _get_size(self):
+        raise NotImplementedError
 
     # IMPLEMENTATION methods
 
@@ -71,48 +68,22 @@ class FSSize(fstask.FSTask):
         if self.fs._current_info is None:
             raise FSError("No info available for size computation.")
 
-        # Setup initial values
-        values = {}
-        for k in _tags:
-            values[k] = None
-
-        # Attempt to set values from info
-        for line in (l.strip() for l in self.fs._current_info.splitlines()):
-            key = six.next((k for k in _tags if line.startswith(getattr(self.tags, k))), None)
-            if not key:
-                continue
-
-            if values[key] is not None:
-                raise FSError("found two matches for key %s" % key)
-
-            # Look for last numeric value in matching line
-            fields = line.split()
-            fields.reverse()
-            for field in fields:
-                try:
-                    values[key] = int(field)
-                    break
-                except ValueError:
-                    continue
-
-        # Raise an error if a value is missing
-        missing = six.next((k for k in _tags if values[k] is None), None)
-        if missing is not None:
-            raise FSError("Failed to parse info for %s." % missing)
-
-        return values["count"] * Size(values["size"])
+        return self._get_size()
 
 
 class Ext2FSSize(FSSize):
-    tags = _Tags(size="Block size:", count="Block count:")
+    def _get_size(self):
+        return Size(self.fs._current_info.block_size * self.fs._current_info.block_count)
 
 
 class NTFSSize(FSSize):
-    tags = _Tags(size="Cluster Size:", count="Volume Size in Clusters:")
+    def _get_size(self):
+        return Size(self.fs._current_info.size)
 
 
 class XFSSize(FSSize):
-    tags = _Tags(size="blocksize =", count="dblocks =")
+    def _get_size(self):
+        return Size(self.fs._current_info.block_size * self.fs._current_info.block_count)
 
 
 class TmpFSSize(task.BasicApplication, fstask.FSTask):
