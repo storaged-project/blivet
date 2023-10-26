@@ -284,6 +284,8 @@ class BlockDevFSMethod(Method):
                     avail, utility = self.check_fn(self.fstype)
                 elif self.operation == FSOperation.RESIZE:
                     avail, _mode, utility = self.check_fn(self.fstype)
+                elif self.operation == FSOperation.MKFS:
+                    avail, _options, utility = self.check_fn(self.fstype)
             except blockdev.FSError as e:
                 return [str(e)]
             if not avail:
@@ -527,6 +529,7 @@ class FSOperation():
     LABEL = 1
     RESIZE = 2
     INFO = 3
+    MKFS = 4
 
 
 BLOCKDEV_EXT_UUID = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.UUID, blockdev.fs.can_set_uuid, "ext2"))
@@ -546,6 +549,13 @@ BLOCKDEV_EXT_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.IN
 BLOCKDEV_XFS_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "xfs"))
 BLOCKDEV_NTFS_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "ntfs"))
 BLOCKDEV_VFAT_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "vfat"))
+
+BLOCKDEV_BTRFS_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "btrfs"))
+BLOCKDEV_EXT_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "ext2"))
+BLOCKDEV_XFS_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "xfs"))
+BLOCKDEV_NTFS_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "ntfs"))
+BLOCKDEV_VFAT_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "vfat"))
+BLOCKDEV_F2FS_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "f2fs"))
 
 # libblockdev plugins
 # we can't just check if the plugin is loaded, we also need to make sure
