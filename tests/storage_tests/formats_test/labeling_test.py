@@ -29,12 +29,6 @@ class InitializationTestCase(unittest.TestCase):
         self.assertFalse(fs.XFS().label_format_ok("root file"))
         self.assertTrue(fs.XFS().label_format_ok("root_filesys"))
 
-        # HFS has a maximum length of 27, minimum length of 1, and does not allow colons
-        self.assertFalse(fs.HFS().label_format_ok("n" * 28))
-        self.assertFalse(fs.HFS().label_format_ok("root:file"))
-        self.assertFalse(fs.HFS().label_format_ok(""))
-        self.assertTrue(fs.HFS().label_format_ok("n" * 27))
-
         # HFSPlus has a maximum length of 128, minimum length of 1, and does not allow colons
         self.assertFalse(fs.HFSPlus().label_format_ok("n" * 129))
         self.assertFalse(fs.HFSPlus().label_format_ok("root:file"))
@@ -68,12 +62,6 @@ class Ext2FSTestCase(fslabeling.CompleteLabelingAsRoot):
     _fs_class = fs.Ext2FS
     _invalid_label = "root___filesystem"
     _default_label = ""
-
-
-class HFSTestCase(fslabeling.LabelingAsRoot):
-    _fs_class = fs.HFS
-    _invalid_label = "n" * 28
-    _default_label = "Untitled"
 
 
 class HFSPlusTestCase(fslabeling.LabelingAsRoot):

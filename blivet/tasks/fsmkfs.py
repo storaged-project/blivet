@@ -226,17 +226,6 @@ class GFS2Mkfs(FSMkfs):
         return ["-j", "1", "-p", "lock_nolock", "-O"]
 
 
-class HFSMkfs(FSMkfs):
-    ext = availability.HFORMAT_APP
-    label_option = "-l"
-    nodiscard_option = None
-    get_uuid_args = None
-
-    @property
-    def args(self):
-        return []
-
-
 class HFSPlusMkfs(FSMkfs):
     ext = availability.MKFS_HFSPLUS_APP
     label_option = "-v"

@@ -76,13 +76,6 @@ class XFSLabeling(FSLabeling):
         return cls._blockdev_check_label("xfs", label)
 
 
-class HFSLabeling(FSLabeling):
-
-    @classmethod
-    def label_format_ok(cls, label):
-        return ':' not in label and len(label) < 28 and len(label) > 0
-
-
 class HFSPlusLabeling(FSLabeling):
 
     @classmethod

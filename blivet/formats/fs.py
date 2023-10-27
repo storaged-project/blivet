@@ -1162,30 +1162,9 @@ register_device_format(StratisXFS)
 
 class HFS(FS):
     _type = "hfs"
-    _modules = ["hfs"]
-    _labelfs = fslabeling.HFSLabeling()
-    _formattable = True
-    _mkfs_class = fsmkfs.HFSMkfs
-    parted_system = fileSystemType["hfs"]
 
 
 register_device_format(HFS)
-
-
-class AppleBootstrapFS(HFS):
-    _type = "appleboot"
-    _name = N_("Apple Bootstrap")
-    _min_size = Size("768 KiB")
-    _max_size = Size("1 MiB")
-    _supported = True
-    _mount_class = fsmount.AppleBootstrapFSMount
-
-    @property
-    def supported(self):
-        return super(AppleBootstrapFS, self).supported and arch.is_pmac()
-
-
-register_device_format(AppleBootstrapFS)
 
 
 class HFSPlus(FS):

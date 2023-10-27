@@ -124,10 +124,6 @@ class FSMount(task.BasicApplication, fstask.FSTask):
             raise FSError("mount failed: %s" % e)
 
 
-class AppleBootstrapFSMount(FSMount):
-    fstype = "hfs"
-
-
 class BindFSMount(FSMount):
 
     @property

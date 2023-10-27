@@ -176,14 +176,6 @@ class XFSTestCase(fstesting.FSAsRoot):
         self.skipTest("Not checking resize for this test category.")
 
 
-class HFSTestCase(fstesting.FSAsRoot):
-    _fs_class = fs.HFS
-
-
-class AppleBootstrapFSTestCase(HFSTestCase):
-    _fs_class = fs.AppleBootstrapFS
-
-
 class HFSPlusTestCase(fstesting.FSAsRoot):
     _fs_class = fs.HFSPlus
 

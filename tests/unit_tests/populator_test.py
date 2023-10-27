@@ -24,7 +24,7 @@ from blivet.populator.helpers import OpticalDevicePopulator, PartitionDevicePopu
 from blivet.populator.helpers import LVMFormatPopulator, MDFormatPopulator, NVDIMMNamespaceDevicePopulator
 from blivet.populator.helpers import NVMeNamespaceDevicePopulator, NVMeFabricsNamespaceDevicePopulator
 from blivet.populator.helpers import get_format_helper, get_device_helper
-from blivet.populator.helpers.boot import AppleBootFormatPopulator, EFIFormatPopulator, MacEFIFormatPopulator
+from blivet.populator.helpers.boot import EFIFormatPopulator, MacEFIFormatPopulator
 from blivet.populator.helpers.formatpopulator import FormatPopulator
 from blivet.populator.helpers.disklabel import DiskLabelFormatPopulator
 from blivet.size import Size
@@ -1400,10 +1400,6 @@ class EFIFormatPopulatorTestCase(BootFormatPopulatorTestCase):
 class MacEFIFormatPopulatorTestCase(BootFormatPopulatorTestCase):
     helper_class = MacEFIFormatPopulator
     name_mismatch_ok = False
-
-
-class AppleBootFormatPopulatorTestCase(BootFormatPopulatorTestCase):
-    helper_class = AppleBootFormatPopulator
 
 
 if __name__ == "__main__":
