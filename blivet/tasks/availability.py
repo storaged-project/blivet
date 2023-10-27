@@ -576,39 +576,27 @@ BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("libblockdev swap plugin", BLOCKDEV_SWAP_
 BLOCKDEV_FS_PLUGIN = blockdev_plugin("libblockdev fs plugin", BLOCKDEV_FS_TECH)
 
 # applications
+# fsck
 DOSFSCK_APP = application("dosfsck")
-DOSFSLABEL_APP = application("dosfslabel")
-DUMPE2FS_APP = application("dumpe2fs")
 E2FSCK_APP = application("e2fsck")
-E2LABEL_APP = application("e2label")
 FSCK_HFSPLUS_APP = application("fsck.hfsplus")
-HFORMAT_APP = application("hformat")
-KPARTX_APP = application("kpartx")
-LVMDEVICES = application("lvmdevices")
-MKDOSFS_APP = application("mkdosfs")
-MKE2FS_APP = application("mke2fs")
-MKFS_BTRFS_APP = application("mkfs.btrfs")
-MKFS_GFS2_APP = application("mkfs.gfs2")
-MKFS_HFSPLUS_APP = application("mkfs.hfsplus")
-MKFS_XFS_APP = application("mkfs.xfs")
-MKNTFS_APP = application("mkntfs")
-MULTIPATH_APP = application("multipath")
-NTFSINFO_APP = application("ntfsinfo")
-NTFSLABEL_APP = application("ntfslabel")
+XFSREPAIR_APP = application("xfs_repair")
+FSCK_F2FS_APP = application("fsck.f2fs")
+
+# resize (for min size)
 NTFSRESIZE_APP = application("ntfsresize")
 RESIZE2FS_APP = application("resize2fs")
-TUNE2FS_APP = application("tune2fs")
-XFSADMIN_APP = application("xfs_admin")
-XFSDB_APP = application("xfs_db")
-XFSRESIZE_APP = application("xfs_growfs")
-XFSREPAIR_APP = application("xfs_repair")
 
-FSCK_F2FS_APP = application("fsck.f2fs")
-MKFS_F2FS_APP = application("mkfs.f2fs")
+# mkfs
+MKFS_GFS2_APP = application("mkfs.gfs2")
+MKFS_HFSPLUS_APP = application("mkfs.hfsplus")
 
-MOUNT_APP = application("mount")
-
+# other
+KPARTX_APP = application("kpartx")
+LVMDEVICES = application("lvmdevices")
+MULTIPATH_APP = application("multipath")
 STRATISPREDICTUSAGE_APP = application("stratis-predict-usage")
 
+# dbus services
 STRATIS_SERVICE_METHOD = DBusMethod(STRATIS_SERVICE, STRATIS_PATH)
 STRATIS_DBUS = dbus_service("stratis", STRATIS_SERVICE_METHOD)
