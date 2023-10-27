@@ -151,7 +151,6 @@ class DeviceTreeBase(object):
         for dev in self._devices + self._hidden:
             # don't include "req%d" partition names
             if (dev.type != "partition" or not dev.name.startswith("req")) and \
-               dev.type != "btrfs volume" and \
                dev.name not in names:
                 names.append(dev.name)
 
