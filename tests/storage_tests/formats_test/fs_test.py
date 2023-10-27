@@ -184,7 +184,6 @@ class MacEFIFSTestCase(HFSPlusTestCase):
     _fs_class = fs.MacEFIFS
 
 
-@unittest.skip("Unable to create because NTFS._formattable is False.")
 class NTFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.NTFS
 
