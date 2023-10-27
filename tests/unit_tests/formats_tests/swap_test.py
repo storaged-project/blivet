@@ -20,3 +20,14 @@ class SwapNodevTestCase(unittest.TestCase):
         with six.assertRaisesRegex(self, DeviceError, "device is too large for new format"):
             StorageDevice("dev", size=Size("17 TiB"),
                           fmt=get_format("swap"))
+
+    def test_swap_uuid_format(self):
+        fmt = get_format("swap")
+
+        # label -- at most 16 characters
+        self.assertTrue(fmt.label_format_ok("label"))
+        self.assertFalse(fmt.label_format_ok("a" * 17))
+
+        # uuid -- RFC 4122 format
+        self.assertTrue(fmt.uuid_format_ok("01234567-1234-1234-1234-012345678911"))
+        self.assertFalse(fmt.uuid_format_ok("aaaa"))
