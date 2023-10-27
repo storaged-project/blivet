@@ -425,7 +425,7 @@ class FS(DeviceFormat):
                         " is unacceptable for this filesystem.",
                         self.uuid, self.type)
         except FSError as e:
-            raise FormatCreateError(e, self.device)
+            raise FormatCreateError(e)
 
     def _post_create(self, **kwargs):
         super(FS, self)._post_create(**kwargs)
