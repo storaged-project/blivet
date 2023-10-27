@@ -593,7 +593,6 @@ MKFS_HFSPLUS_APP = application("mkfs.hfsplus")
 
 # other
 KPARTX_APP = application("kpartx")
-LVMDEVICES = application("lvmdevices")
 MULTIPATH_APP = application("multipath")
 STRATISPREDICTUSAGE_APP = application("stratis-predict-usage")
 
