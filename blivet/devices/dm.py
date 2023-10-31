@@ -47,10 +47,7 @@ class DMDevice(StorageDevice):
     """ A device-mapper device """
     _type = "dm"
     _dev_dir = "/dev/mapper"
-    _external_dependencies = [
-        availability.KPARTX_APP,
-        availability.BLOCKDEV_DM_PLUGIN
-    ]
+    _external_dependencies = [availability.BLOCKDEV_DM_PLUGIN]
 
     def __init__(self, name, fmt=None, size=None, dm_uuid=None, uuid=None,
                  target=None, exists=False, parents=None, sysfs_path=''):
