@@ -127,6 +127,10 @@ class DMDevice(StorageDevice):
 
     def setup_partitions(self):
         log_method_call(self, name=self.name)
+        if not availability.KPARTX_APP.available:
+            log.warning("'kpartx' not available, not activating partitions on %s", self.path)
+            return
+
         rc = util.run_program(["kpartx", "-a", "-s", self.path])
         if rc:
             raise errors.DMError("partition activation failed for '%s'" % self.name)
@@ -134,6 +138,9 @@ class DMDevice(StorageDevice):
 
     def teardown_partitions(self):
         log_method_call(self, name=self.name)
+        if not availability.KPARTX_APP.available:
+            log.warning("'kpartx' not available, not deactivating partitions on %s", self.path)
+            return
         rc = util.run_program(["kpartx", "-d", "-s", self.path])
         if rc:
             raise errors.DMError("partition deactivation failed for '%s'" % self.name)
