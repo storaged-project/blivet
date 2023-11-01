@@ -50,6 +50,7 @@
         - libselinux-python3
         - python3-blockdev
         - python3-bytesize
+        - python3-libmount
         - python3-libvirt
         - python3-paramiko
         - targetcli
@@ -102,6 +103,7 @@
         - libselinux-python3
         - python3-blockdev
         - python3-bytesize
+        - python3-libmount
         - python3-libvirt
         - python3-pip
         - targetcli
@@ -146,6 +148,8 @@
     package:
       state: present
       name:
+        - autopoint
+        - bison
         - dosfstools
         - e2fsprogs
         - xfsprogs
@@ -161,6 +165,18 @@
         - python3-pip
         - targetcli-fb
         - open-iscsi
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+  - name: Install libmount (Debian/Ubuntu)
+    block:
+      - name: Copy the libmount_deb script (Debian and CentOS non-x86_64)
+        copy:
+          src: files/libmount_deb.py
+          dest: "/tmp/libmount_deb.py"
+          mode: 0755
+
+      - name: Make and install libmount
+        shell: "python3 /tmp/libmount_deb.py"
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
   - name: Install pocketlint using pip (Debian/Ubuntu)

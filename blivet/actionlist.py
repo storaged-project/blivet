@@ -268,12 +268,13 @@ class ActionList(object):
             partition.parted_partition = pdisk.getPartitionByPath(partition.path)
 
     @with_flag("processing")
-    def process(self, callbacks=None, devices=None, dry_run=None):
+    def process(self, callbacks=None, devices=None, fstab=None, dry_run=None):
         """
         Execute all registered actions.
 
         :param callbacks: callbacks to be invoked when actions are executed
         :param devices: a list of all devices current in the devicetree
+        :param fstab: FSTabManagerObject tied to blivet, if None fstab file will not be modified
         :type callbacks: :class:`~.callbacks.DoItCallbacks`
 
         """
@@ -285,7 +286,19 @@ class ActionList(object):
             if dry_run:
                 continue
 
+            # get (b)efore (a)ction.(e)xecute fstab entry
+            # (device may not exist afterwards)
+            if fstab is not None:
+                try:
+                    entry = fstab.entry_from_device(action.device)
+                except ValueError:
+                    # this device should not be in fstab
+                    bae_entry = None
+                else:
+                    bae_entry = fstab.find_entry(entry=entry)
+
             with blivet_lock:
+
                 try:
                     action.execute(callbacks)
                 except DiskLabelCommitError:
@@ -314,5 +327,9 @@ class ActionList(object):
 
                 self._completed_actions.append(self._actions.pop(0))
                 _callbacks.action_executed(action=action)
+
+                if fstab is not None:
+                    fstab.update(action, bae_entry)
+                    fstab.write()
 
         self._post_process(devices=devices)
