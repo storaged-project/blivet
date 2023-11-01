@@ -225,7 +225,7 @@ class MultipathDevice(DMDevice):
     _packages = ["device-mapper-multipath"]
     _partitionable = True
     _is_disk = True
-    _external_dependencies = [availability.MULTIPATH_APP]
+    _external_dependencies = [availability.MULTIPATH_APP, availability.KPARTX_APP]
 
     def __init__(self, name, fmt=None, size=None, wwn=None,
                  parents=None, sysfs_path=''):

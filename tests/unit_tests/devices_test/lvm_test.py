@@ -904,10 +904,9 @@ class BlivetLVMVDODependenciesTest(BlivetLVMUnitTest):
                                   size=blivet.size.Size("40 GiB"))
 
         # Dependencies check: for VDO types these should be combination of "normal"
-        # LVM dependencies (LVM libblockdev plugin + kpartx and DM plugin from DMDevice)
+        # LVM dependencies (LVM libblockdev plugin and DM plugin from DMDevice)
         # and LVM VDO technology from the LVM plugin
-        lvm_vdo_dependencies = ["kpartx",
-                                "libblockdev dm plugin",
+        lvm_vdo_dependencies = ["libblockdev dm plugin",
                                 "libblockdev lvm plugin",
                                 "libblockdev lvm plugin (vdo technology)"]
         pool_deps = [d.name for d in vdopool.external_dependencies]
@@ -930,8 +929,7 @@ class BlivetLVMVDODependenciesTest(BlivetLVMUnitTest):
                                      size=blivet.size.Size("1 GiB"))
 
         normalvl_deps = [d.name for d in normallv.external_dependencies]
-        six.assertCountEqual(self, normalvl_deps, ["kpartx",
-                                                   "libblockdev dm plugin",
+        six.assertCountEqual(self, normalvl_deps, ["libblockdev dm plugin",
                                                    "libblockdev lvm plugin"])
 
         with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies",
