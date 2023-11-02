@@ -24,6 +24,7 @@ import os
 
 from parted import PARTITION_SWAP, fileSystemType
 from ..errors import FSWriteUUIDError, SwapSpaceError
+from ..fstab import FSTabOptions
 from ..storage_log import log_method_call
 from ..tasks import availability
 from ..tasks import fsuuid
@@ -77,6 +78,8 @@ class SwapSpace(DeviceFormat):
         """
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
+
+        self.fstab = FSTabOptions()
 
         self.priority = kwargs.get("priority", -1)
         self.label = kwargs.get("label")

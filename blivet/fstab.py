@@ -629,7 +629,7 @@ class FSTabManager(object):
                 new_entry = self._copy_fs_entry(entry)
                 clean_table.add_fs(new_entry)
             else:
-                log.warning("Fstab entry: '%s' is not complete, it will not be written into the file", entry)
+                log.warning("Fstab entry: '%s' is incomplete, it will not be written into the file", entry)
             entry = self._table.next_fs()
 
         if os.path.exists(dest_file):

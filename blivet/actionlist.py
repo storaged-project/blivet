@@ -281,6 +281,8 @@ class ActionList(object):
         devices = devices or []
         self._pre_process(devices=devices)
 
+        skip_fstab = fstab is None or fstab.dest_file is None
+
         for action in self._actions[:]:
             log.info("executing action: %s", action)
             if dry_run:
@@ -288,7 +290,7 @@ class ActionList(object):
 
             # get (b)efore (a)ction.(e)xecute fstab entry
             # (device may not exist afterwards)
-            if fstab is not None:
+            if not skip_fstab:
                 try:
                     entry = fstab.entry_from_device(action.device)
                 except ValueError:
@@ -328,7 +330,7 @@ class ActionList(object):
                 self._completed_actions.append(self._actions.pop(0))
                 _callbacks.action_executed(action=action)
 
-                if fstab is not None:
+                if not skip_fstab:
                     fstab.update(action, bae_entry)
                     fstab.write()
 

@@ -96,3 +96,22 @@ class FstabTestCase(StorageTestCase):
                 contents = f.read()
                 self.assertFalse("blivetTestLVMine" in contents)
                 self.assertFalse("/mnt/test2" in contents)
+
+    def test_swap_creation(self):
+        # test swap creation for presence of FSTabOptions object
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            fstab_path = os.path.join(tmpdirname, 'fstab')
+
+            # change write path of blivet.fstab
+            self.storage.fstab.dest_file = fstab_path
+
+            self.storage.format_device(disk, blivet.formats.get_format("swap"))
+
+            try:
+                self.storage.do_it()
+            except AttributeError as e:
+                if "has no attribute 'fstab'" in str(e):
+                    self.fail("swap creation test failed on missing FSTabOptions object: %s" % str(e))
