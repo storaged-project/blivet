@@ -31,6 +31,11 @@ import stat
 
 from parted import fileSystemType, PARTITION_BOOT
 
+import gi
+gi.require_version("BlockDev", "3.0")
+
+from gi.repository import BlockDev as blockdev
+
 from ..tasks import fsck
 from ..tasks import fsinfo
 from ..tasks import fslabeling
@@ -485,13 +490,13 @@ class FS(DeviceFormat):
 
         for module in self._modules:
             try:
-                rc = util.run_program(["modprobe", "--dry-run", module])
-            except OSError as e:
-                log.error("Could not check kernel module availability %s: %s", module, e)
+                avail = blockdev.utils.have_kernel_module(module)
+            except blockdev.UtilsError as e:
+                log.error("Could not check kernel module availability %s: %s", module, str(e))
                 self._supported = False
                 return
 
-            if rc:
+            if not avail:
                 log.debug("Kernel module %s not available", module)
                 self._supported = False
                 return
