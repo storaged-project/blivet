@@ -33,7 +33,9 @@ from collections import namedtuple
 
 import gi
 gi.require_version("GLib", "2.0")
+gi.require_version("BlockDev", "3.0")
 from gi.repository import GLib
+from gi.repository import BlockDev
 
 import logging
 log = logging.getLogger("blivet")
@@ -314,7 +316,10 @@ class iSCSI(object):
 
         # Make sure iscsi_ibft is loaded otherwise any atttempts will fail with
         # 'Could not get list of targets from firmware. (err 21)'
-        util.run_program(['modprobe', '-a', 'iscsi_ibft'])
+        try:
+            BlockDev.utils.load_kernel_module("iscsi_ibft", None)
+        except BlockDev.UtilsError as e:
+            log.error("failed to load iscsi_ibft: %s", str(e))
 
         args = GLib.Variant("(a{sv})", ([], ))
         try:
@@ -394,7 +399,12 @@ class iSCSI(object):
                 os.makedirs(fulldir, 0o755)
 
         log.info("iSCSI startup")
-        util.run_program(['modprobe', '-a'] + ISCSI_MODULES)
+        for module in ISCSI_MODULES:
+            try:
+                BlockDev.utils.load_kernel_module(module, None)
+            except BlockDev.UtilsError as e:
+                log.error("failed to load %s: %s", module, str(e))
+
         # iscsiuio is needed by Broadcom offload cards (bnx2i). Currently
         # not present in iscsi-initiator-utils for Fedora.
         iscsiuio = shutil.which('iscsiuio')
