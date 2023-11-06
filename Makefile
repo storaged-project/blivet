@@ -165,36 +165,7 @@ rpmlog:
 	@echo
 
 bumpver: po-pull
-	@opts="-n $(PKGNAME) -v $(VERSION) -r $(RPMRELEASE)" ; \
-	if [ ! -z "$(IGNORE)" ]; then \
-		opts="$${opts} -i $(IGNORE)" ; \
-	fi ; \
-	if [ ! -z "$(MAP)" ]; then \
-		opts="$${opts} -m $(MAP)" ; \
-	fi ; \
-	if [ ! -z "$(SKIP_ACKS)" ]; then \
-		opts="$${opts} -s" ; \
-	fi ; \
-	if [ ! -z "$(BZDEBUG)" ]; then \
-		opts="$${opts} -d" ; \
-	fi ; \
-	( scripts/makebumpver $${opts} ) || exit 1 ; \
-
-scratch-bumpver:
-	@opts="-n $(PKGNAME) -v $(RPMVERSION) -r $(RPMRELEASE) --newrelease $(RC_RELEASE)" ; \
-	if [ ! -z "$(IGNORE)" ]; then \
-		opts="$${opts} -i $(IGNORE)" ; \
-	fi ; \
-	if [ ! -z "$(MAP)" ]; then \
-		opts="$${opts} -m $(MAP)" ; \
-	fi ; \
-	if [ ! -z "$(SKIP_ACKS)" ]; then \
-		opts="$${opts} -s" ; \
-	fi ; \
-	if [ ! -z "$(BZDEBUG)" ]; then \
-		opts="$${opts} -d" ; \
-	fi ; \
-	( scripts/makebumpver $${opts} ) || exit 1 ; \
+	( scripts/makebumpver -n $(PKGNAME) -v $(VERSION) -r $(RPMRELEASE) ) || exit 1 ;
 
 scratch:
 	@rm -f ChangeLog
