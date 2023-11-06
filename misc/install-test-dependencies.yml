@@ -38,13 +38,11 @@
         - e2fsprogs
         - xfsprogs
         - hfsplus-tools
-        - python3-mock
+        - ntfsprogs
         - python3-coverage
         - python3-pocketlint
-        - python3-bugzilla
         - python3-pycodestyle
         - python3-six
-        - python3-kickstart
         - python3-pyudev
         - python3-pyparted
         - libselinux-python3
@@ -94,10 +92,8 @@
         - e2fsprogs
         - xfsprogs
         - python3-coverage
-        - python3-bugzilla
         - python3-pycodestyle
         - python3-six
-        - python3-kickstart
         - python3-pyudev
         - python3-pyparted
         - libselinux-python3
@@ -137,7 +133,6 @@
         - libblockdev-plugins-all
         - gir1.2-blockdev-2.0
         - python3-bytesize
-        - python3-mock
         - python3-selinux
         - python3-pyudev
         - python3-parted
@@ -153,14 +148,13 @@
         - dosfstools
         - e2fsprogs
         - xfsprogs
-        - python3-mock
+        - ntfs-3g
         - python3-coverage
         - python3-pycodestyle
         - pycodestyle
         - gettext
         - python3-polib
         - python3-paramiko
-        - python3-bugzilla
         - python3-libvirt
         - python3-pip
         - targetcli-fb
