@@ -15,7 +15,7 @@ class InitializationTestCase(unittest.TestCase):
         """Initialize some filesystems with valid and invalid UUIDs."""
 
         # File systems that accept real UUIDs (RFC 4122)
-        for fscls in [fs.Ext2FS, fs.JFS, fs.ReiserFS, fs.XFS, fs.HFSPlus]:
+        for fscls in [fs.Ext2FS, fs.XFS, fs.HFSPlus]:
             uuid = "0invalid-uuid-with-righ-tlength00000"
             self.assertFalse(fscls().uuid_format_ok(uuid))
             uuid = "01234567-12341234123401234567891a"
@@ -28,21 +28,21 @@ class InitializationTestCase(unittest.TestCase):
             self.assertTrue(fscls().uuid_format_ok(uuid))
 
         self.assertFalse(fs.FATFS().uuid_format_ok("1234-56789"))
-        self.assertFalse(fs.FATFS().uuid_format_ok("abcd-ef00"))
-        self.assertFalse(fs.FATFS().uuid_format_ok("12345678"))
+        self.assertTrue(fs.FATFS().uuid_format_ok("abcd-ef00"))
+        self.assertTrue(fs.FATFS().uuid_format_ok("12345678"))
         self.assertTrue(fs.FATFS().uuid_format_ok("1234-5678"))
         self.assertTrue(fs.FATFS().uuid_format_ok("ABCD-EF01"))
 
         self.assertFalse(fs.NTFS().uuid_format_ok("12345678901234567"))
         self.assertFalse(fs.NTFS().uuid_format_ok("abcdefgh"))
-        self.assertFalse(fs.NTFS().uuid_format_ok("abcdefabcdefabcd"))
+        self.assertTrue(fs.NTFS().uuid_format_ok("abcdefabcdefabcd"))
         self.assertTrue(fs.NTFS().uuid_format_ok("1234567890123456"))
         self.assertTrue(fs.NTFS().uuid_format_ok("ABCDEFABCDEFABCD"))
 
     def test_generate_new_uuid(self):
         """Test that newly generated UUIDs are considered valid"""
 
-        for fscls in (fs.Ext2FS, fs.JFS, fs.ReiserFS, fs.XFS, fs.HFSPlus,
+        for fscls in (fs.Ext2FS, fs.XFS, fs.HFSPlus,
                       fs.FATFS, fs.NTFS):
             an_fs = fscls()
             for _i in range(100):
@@ -65,7 +65,7 @@ class XFSAfterTestCase(fsuuid.SetUUIDAfterMkFs):
 
 class FATFSTestCase(fsuuid.SetUUIDWithMkFs):
     _fs_class = fs.FATFS
-    _invalid_uuid = "c87ab0e1"
+    _invalid_uuid = "z87ab0e1"
     _valid_uuid = "DEAD-BEEF"
 
 
@@ -81,24 +81,6 @@ class Ext2FSAfterTestCase(fsuuid.SetUUIDAfterMkFs):
     _valid_uuid = "bad19a10-075a-4e99-8922-e4638722a567"
 
 
-class JFSTestCase(fsuuid.SetUUIDAfterMkFs):
-    _fs_class = fs.JFS
-    _invalid_uuid = "abcdefgh-ijkl-mnop-qrst-uvwxyz123456"
-    _valid_uuid = "ac54f987-b371-45d9-8846-7d6204081e5c"
-
-
-class ReiserFSTestCase(fsuuid.SetUUIDWithMkFs):
-    _fs_class = fs.ReiserFS
-    _invalid_uuid = "abcdefgh-ijkl-mnop-qrst-uvwxyz123456"
-    _valid_uuid = "1761023e-bab8-4919-a2cb-f26c89fe1cfe"
-
-
-class ReiserFSAfterTestCase(fsuuid.SetUUIDAfterMkFs):
-    _fs_class = fs.ReiserFS
-    _invalid_uuid = "abcdefgh-ijkl-mnop-qrst-uvwxyz123456"
-    _valid_uuid = "1761023e-bab8-4919-a2cb-f26c89fe1cfe"
-
-
 class HFSPlusTestCase(fsuuid.SetUUIDAfterMkFs):
     _fs_class = fs.HFSPlus
     _invalid_uuid = "abcdefgh-ijkl-mnop-qrst-uvwxyz123456"
@@ -107,7 +89,7 @@ class HFSPlusTestCase(fsuuid.SetUUIDAfterMkFs):
 
 class NTFSTestCase(fsuuid.SetUUIDAfterMkFs):
     _fs_class = fs.NTFS
-    _invalid_uuid = "b22193477ac947fb"
+    _invalid_uuid = "z22193477ac947fb"
     _valid_uuid = "BC3B34461B8344A6"
 
 

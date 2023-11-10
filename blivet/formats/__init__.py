@@ -25,6 +25,11 @@ import os
 import importlib
 from six import add_metaclass
 
+import gi
+gi.require_version("BlockDev", "3.0")
+
+from gi.repository import BlockDev as blockdev
+
 from .. import udev
 from ..util import get_sysfs_path_by_name
 from ..util import run_program
@@ -560,19 +565,10 @@ class DeviceFormat(ObjectID):
             raise DeviceFormatError("device path does not exist or is not writable")
 
     def _destroy(self, **kwargs):
-        rc = 0
-        err = ""
         try:
-            rc = run_program(["wipefs", "-f", "-a", self.device])
-        except OSError as e:
-            err = str(e)
-        else:
-            if rc:
-                err = str(rc)
-
-        if err:
-            msg = "error wiping old signatures from %s: %s" % (self.device, err)
-            raise FormatDestroyError(msg)
+            blockdev.fs.clean(self.device, force=True)
+        except blockdev.FSError as e:
+            raise FormatDestroyError("error wiping old signatures from %s: %s" % (self.device, str(e)))
 
     def _post_destroy(self, **kwargs):
         udev.settle()

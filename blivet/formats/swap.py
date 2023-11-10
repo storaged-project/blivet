@@ -27,7 +27,6 @@ from ..errors import FSWriteUUIDError, SwapSpaceError
 from ..fstab import FSTabOptions
 from ..storage_log import log_method_call
 from ..tasks import availability
-from ..tasks import fsuuid
 from . import DeviceFormat, register_device_format
 from ..size import Size
 from .. import udev
@@ -117,8 +116,13 @@ class SwapSpace(DeviceFormat):
         return True and self._plugin.available
 
     def label_format_ok(self, label):
-        """Returns True since no known restrictions on the label."""
-        return True
+        """Check whether the given label is correct (16 characters or shorter)."""
+        try:
+            blockdev.swap.check_label(label)
+        except blockdev.SwapError:
+            return False
+        else:
+            return True
 
     def write_label(self, dry_run=False):
         """ Create a label for this format.
@@ -157,7 +161,12 @@ class SwapSpace(DeviceFormat):
 
     def uuid_format_ok(self, uuid):
         """Check whether the given UUID is correct according to RFC 4122."""
-        return fsuuid.FSUUID._check_rfc4122_uuid(uuid)
+        try:
+            blockdev.swap.check_uuid(uuid)
+        except blockdev.SwapError:
+            return False
+        else:
+            return True
 
     def _set_priority(self, priority):
         # pylint: disable=attribute-defined-outside-init
@@ -231,19 +240,12 @@ class SwapSpace(DeviceFormat):
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        if self.uuid is None:
-            try:
-                blockdev.swap.mkswap(self.device, label=self.label)
-            except blockdev.SwapError as err:
-                raise SwapSpaceError(str(err))
-        else:
-            if not self.uuid_format_ok(self.uuid):
-                raise FSWriteUUIDError("bad UUID format for swap filesystem")
-            try:
-                blockdev.swap.mkswap(self.device, label=self.label,
-                                     extra={"-U": self.uuid})
-            except blockdev.SwapError as err:
-                raise SwapSpaceError(str(err))
+        if self.uuid and not self.uuid_format_ok(self.uuid):
+            raise FSWriteUUIDError("bad UUID format for swap filesystem")
+        try:
+            blockdev.swap.mkswap(self.device, label=self.label, uuid=self.uuid)
+        except blockdev.SwapError as err:
+            raise SwapSpaceError(str(err))
 
 
 register_device_format(SwapSpace)

@@ -67,12 +67,12 @@ class FormatMethodsTestCase(unittest.TestCase):
         pass
 
     def _test_destroy_backend(self):
-        with patch("blivet.formats.run_program") as run_program:
-            run_program.return_value = 0
+        with patch("blivet.formats.blockdev") as blockdev:
+            blockdev.fs.clean.return_value = True
             self.format.exists = True
             self.format.destroy()
             self.assertFalse(self.format.exists)
-            run_program.assert_called_with(["wipefs", "-f", "-a", self.format.device])
+            blockdev.fs.clean.assert_called_with(self.format.device, force=True)
 
     def _test_setup_backend(self):
         pass
@@ -428,7 +428,9 @@ class SwapMethodsTestCase(FormatMethodsTestCase):
     def _test_create_backend(self):
         self.format.exists = False
         self.format.create()
-        self.patches["blockdev"].swap.mkswap.assert_called_with(self.format.device, label=self.format.label)  # pylint: disable=no-member
+        self.patches["blockdev"].swap.mkswap.assert_called_with(self.format.device,
+                                                                label=self.format.label,  # pylint: disable=no-member
+                                                                uuid=self.format.uuid)
 
     def _test_setup_backend(self):
         self.format.setup()

@@ -53,7 +53,7 @@ To install these dependencies use following commands:
        # dnf install python3-blockdev libblockdev-plugins-all python3-bytesize libbytesize python3-pyparted parted libselinux-python3
  * On Debian and Ubuntu based distributions:
 
-       # apt-get install python3-blockdev python3-bytesize python3-parted python3-selinux gir1.2-blockdev-3.0 libblockdev-lvm3 libblockdev-btrfs3 libblockdev-swap3 libblockdev-loop3 libblockdev-crypto3 libblockdev-mpath3 libblockdev-dm3 libblockdev-mdraid3 libblockdev-nvdimm3
+       # apt-get install python3-blockdev python3-bytesize python3-parted python3-selinux gir1.2-blockdev-3.0 libblockdev-lvm3 libblockdev-btrfs3 libblockdev-swap3 libblockdev-loop3 libblockdev-crypto3 libblockdev-mpath3 libblockdev-dm3 libblockdev-mdraid3 libblockdev-nvdimm3 libblockdev-fs3
 
 ### Development
 

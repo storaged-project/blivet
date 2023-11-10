@@ -20,20 +20,13 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
-from collections import namedtuple
-
+import os
 import six
 
 from ..errors import FSError
 from ..size import Size
-from .. import util
 
-from . import availability
 from . import fstask
-from . import task
-
-_tags = ("count", "size")
-_Tags = namedtuple("_Tags", _tags)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -41,9 +34,6 @@ class FSSize(fstask.FSTask):
 
     """ An abstract class that represents size information extraction. """
     description = "current filesystem size"
-
-    tags = abc.abstractproperty(
-        doc="Strings used for extracting components of size.")
 
     # TASK methods
 
@@ -54,6 +44,10 @@ class FSSize(fstask.FSTask):
     @property
     def depends_on(self):
         return [self.fs._info]
+
+    @abc.abstractmethod
+    def _get_size(self):
+        raise NotImplementedError
 
     # IMPLEMENTATION methods
 
@@ -71,84 +65,42 @@ class FSSize(fstask.FSTask):
         if self.fs._current_info is None:
             raise FSError("No info available for size computation.")
 
-        # Setup initial values
-        values = {}
-        for k in _tags:
-            values[k] = None
-
-        # Attempt to set values from info
-        for line in (l.strip() for l in self.fs._current_info.splitlines()):
-            key = six.next((k for k in _tags if line.startswith(getattr(self.tags, k))), None)
-            if not key:
-                continue
-
-            if values[key] is not None:
-                raise FSError("found two matches for key %s" % key)
-
-            # Look for last numeric value in matching line
-            fields = line.split()
-            fields.reverse()
-            for field in fields:
-                try:
-                    values[key] = int(field)
-                    break
-                except ValueError:
-                    continue
-
-        # Raise an error if a value is missing
-        missing = six.next((k for k in _tags if values[k] is None), None)
-        if missing is not None:
-            raise FSError("Failed to parse info for %s." % missing)
-
-        return values["count"] * Size(values["size"])
+        return self._get_size()
 
 
 class Ext2FSSize(FSSize):
-    tags = _Tags(size="Block size:", count="Block count:")
-
-
-class JFSSize(FSSize):
-    tags = _Tags(size="Physical block size:", count="Aggregate size:")
+    def _get_size(self):
+        return Size(self.fs._current_info.block_size * self.fs._current_info.block_count)
 
 
 class NTFSSize(FSSize):
-    tags = _Tags(size="Cluster Size:", count="Volume Size in Clusters:")
-
-
-class ReiserFSSize(FSSize):
-    tags = _Tags(size="Blocksize:", count="Count of blocks on the device:")
+    def _get_size(self):
+        return Size(self.fs._current_info.size)
 
 
 class XFSSize(FSSize):
-    tags = _Tags(size="blocksize =", count="dblocks =")
+    def _get_size(self):
+        return Size(self.fs._current_info.block_size * self.fs._current_info.block_count)
 
 
-class TmpFSSize(task.BasicApplication, fstask.FSTask):
+class TmpFSSize(fstask.FSTask):
     description = "current filesystem size"
 
-    ext = availability.DF_APP
+    @property
+    def _availability_errors(self):
+        return []
 
     @property
-    def _size_command(self):
-        return [str(self.ext), self.fs.system_mountpoint, "--output=size"]
+    def depends_on(self):
+        return []
 
     def do_task(self):  # pylint: disable=arguments-differ
         error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
-        try:
-            (ret, out) = util.run_program_and_capture_output(self._size_command)
-            if ret:
-                raise FSError("Failed to execute command %s." % self._size_command)
-        except OSError:
-            raise FSError("Failed to execute command %s." % self._size_command)
-
-        lines = out.splitlines()
-        if len(lines) != 2 or lines[0].strip() != "1K-blocks":
-            raise FSError("Failed to parse output of command %s." % self._size_command)
-
-        return Size("%s KiB" % lines[1])
+        stat = os.statvfs(self.fs.system_mountpoint)
+        return Size(stat.f_bsize * stat.f_blocks)
 
 
 class UnimplementedFSSize(fstask.UnimplementedFSTask):

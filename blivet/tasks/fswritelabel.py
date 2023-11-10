@@ -19,100 +19,54 @@
 #
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
-import abc
-
-from six import add_metaclass
-
-from .. import util
 from ..errors import FSWriteLabelError
 
 from . import availability
 from . import fstask
 from . import task
 
+import gi
+gi.require_version("BlockDev", "3.0")
+from gi.repository import BlockDev
 
-@add_metaclass(abc.ABCMeta)
+
 class FSWriteLabel(task.BasicApplication, fstask.FSTask):
-
     """ An abstract class that represents writing a label for a filesystem. """
 
     description = "write filesystem label"
-
-    args = abc.abstractproperty(doc="arguments for writing a label")
+    fstype = None
 
     # IMPLEMENTATION methods
-
-    @property
-    def _set_command(self):
-        """Get the command to label the filesystem.
-
-           :return: the command
-           :rtype: list of str
-        """
-        return [str(self.ext)] + self.args
 
     def do_task(self):  # pylint: disable=arguments-differ
         error_msgs = self.availability_errors
         if error_msgs:
             raise FSWriteLabelError("\n".join(error_msgs))
 
-        rc = util.run_program(self._set_command)
-        if rc:
-            raise FSWriteLabelError("label failed")
+        try:
+            BlockDev.fs.set_label(self.fs.device, self.fs.label, self.fstype)
+        except BlockDev.FSError as e:
+            raise FSWriteLabelError(str(e))
 
 
 class DosFSWriteLabel(FSWriteLabel):
-    ext = availability.DOSFSLABEL_APP
-
-    @property
-    def args(self):
-        if availability.MKDOSFS_NEW_APP.available:
-            if self.fs.label:
-                return [self.fs.device, self.fs.label]
-            else:
-                return [self.fs.device, "--reset"]
-        else:
-            return [self.fs.device, self.fs.label]
+    fstype = "vfat"
+    ext = availability.BLOCKDEV_VFAT_LABEL
 
 
 class Ext2FSWriteLabel(FSWriteLabel):
-    ext = availability.E2LABEL_APP
-
-    @property
-    def args(self):
-        return [self.fs.device, self.fs.label]
-
-
-class JFSWriteLabel(FSWriteLabel):
-    ext = availability.JFSTUNE_APP
-
-    @property
-    def args(self):
-        return ["-L", self.fs.label, self.fs.device]
+    fstype = "ext2"
+    ext = availability.BLOCKDEV_EXT_LABEL
 
 
 class NTFSWriteLabel(FSWriteLabel):
-    ext = availability.NTFSLABEL_APP
-
-    @property
-    def args(self):
-        return [self.fs.device, self.fs.label]
-
-
-class ReiserFSWriteLabel(FSWriteLabel):
-    ext = availability.REISERFSTUNE_APP
-
-    @property
-    def args(self):
-        return ["-l", self.fs.label, self.fs.device]
+    fstype = "ntfs"
+    ext = availability.BLOCKDEV_NTFS_LABEL
 
 
 class XFSWriteLabel(FSWriteLabel):
-    ext = availability.XFSADMIN_APP
-
-    @property
-    def args(self):
-        return ["-L", self.fs.label if self.fs.label != "" else "--", self.fs.device]
+    fstype = "xfs"
+    ext = availability.BLOCKDEV_XFS_LABEL
 
 
 class UnimplementedFSWriteLabel(fstask.UnimplementedFSTask):
