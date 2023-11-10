@@ -24,7 +24,7 @@ class SELinuxContextTestCase(unittest.TestCase):
         super(SELinuxContextTestCase, self).setUp()
         self.addCleanup(self._clean_up)
 
-    @patch("blivet.util.mount", return_value=0)
+    @patch("blivet.tasks.fsmount.BlockDev.fs.mount", return_value=True)
     @patch.object(fs.FS, "_pre_setup", return_value=True)
     @patch("os.access", return_value=True)
     # pylint: disable=unused-argument

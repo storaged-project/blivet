@@ -38,18 +38,17 @@
         - e2fsprogs
         - xfsprogs
         - hfsplus-tools
-        - python3-mock
+        - ntfsprogs
         - python3-coverage
         - python3-pocketlint
-        - python3-bugzilla
         - python3-pycodestyle
         - python3-six
-        - python3-kickstart
         - python3-pyudev
         - python3-pyparted
         - libselinux-python3
         - python3-blockdev
         - python3-bytesize
+        - python3-libmount
         - python3-libvirt
         - python3-paramiko
         - targetcli
@@ -93,15 +92,14 @@
         - e2fsprogs
         - xfsprogs
         - python3-coverage
-        - python3-bugzilla
         - python3-pycodestyle
         - python3-six
-        - python3-kickstart
         - python3-pyudev
         - python3-pyparted
         - libselinux-python3
         - python3-blockdev
         - python3-bytesize
+        - python3-libmount
         - python3-libvirt
         - python3-pip
         - targetcli
@@ -135,7 +133,6 @@
         - libblockdev-plugins-all
         - gir1.2-blockdev-2.0
         - python3-bytesize
-        - python3-mock
         - python3-selinux
         - python3-pyudev
         - python3-parted
@@ -146,21 +143,34 @@
     package:
       state: present
       name:
+        - autopoint
+        - bison
         - dosfstools
         - e2fsprogs
         - xfsprogs
-        - python3-mock
+        - ntfs-3g
         - python3-coverage
         - python3-pycodestyle
         - pycodestyle
         - gettext
         - python3-polib
         - python3-paramiko
-        - python3-bugzilla
         - python3-libvirt
         - python3-pip
         - targetcli-fb
         - open-iscsi
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+  - name: Install libmount (Debian/Ubuntu)
+    block:
+      - name: Copy the libmount_deb script (Debian and CentOS non-x86_64)
+        copy:
+          src: files/libmount_deb.py
+          dest: "/tmp/libmount_deb.py"
+          mode: 0755
+
+      - name: Make and install libmount
+        shell: "python3 /tmp/libmount_deb.py"
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
   - name: Install pocketlint using pip (Debian/Ubuntu)

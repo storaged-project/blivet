@@ -85,14 +85,6 @@ class GFS2TestCase(fstesting.FSAsRoot):
     _fs_class = fs.GFS2
 
 
-class JFSTestCase(fstesting.FSAsRoot):
-    _fs_class = fs.JFS
-
-
-class ReiserFSTestCase(fstesting.FSAsRoot):
-    _fs_class = fs.ReiserFS
-
-
 class XFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.XFS
     _DEVICE_SIZE = Size("500 MiB")
@@ -184,14 +176,6 @@ class XFSTestCase(fstesting.FSAsRoot):
         self.skipTest("Not checking resize for this test category.")
 
 
-class HFSTestCase(fstesting.FSAsRoot):
-    _fs_class = fs.HFS
-
-
-class AppleBootstrapFSTestCase(HFSTestCase):
-    _fs_class = fs.AppleBootstrapFS
-
-
 class HFSPlusTestCase(fstesting.FSAsRoot):
     _fs_class = fs.HFSPlus
 
@@ -200,7 +184,6 @@ class MacEFIFSTestCase(HFSPlusTestCase):
     _fs_class = fs.MacEFIFS
 
 
-@unittest.skip("Unable to create because NTFS._formattable is False.")
 class NTFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.NTFS
 

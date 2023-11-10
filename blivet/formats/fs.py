@@ -31,6 +31,11 @@ import stat
 
 from parted import fileSystemType, PARTITION_BOOT
 
+import gi
+gi.require_version("BlockDev", "3.0")
+
+from gi.repository import BlockDev as blockdev
+
 from ..tasks import fsck
 from ..tasks import fsinfo
 from ..tasks import fslabeling
@@ -49,6 +54,7 @@ from ..errors import FSWriteLabelError, FSWriteUUIDError
 from . import DeviceFormat, register_device_format
 from .. import util
 from ..flags import flags
+from ..fstab import FSTabOptions
 from ..storage_log import log_exception_info, log_method_call
 from .. import arch
 from ..size import Size, ROUND_UP
@@ -91,7 +97,8 @@ class FS(DeviceFormat):
     # support for resize: grow/shrink, online/offline
     _resize_support = 0
 
-    config_actions_map = {"label": "write_label"}
+    config_actions_map = {"label": "write_label",
+                          "mountpoint": "change_mountpoint"}
 
     def __init__(self, **kwargs):
         """
@@ -119,6 +126,8 @@ class FS(DeviceFormat):
             raise TypeError("FS is an abstract class.")
 
         DeviceFormat.__init__(self, **kwargs)
+
+        self.fstab = FSTabOptions()
 
         # Create task objects
         self._fsck = self._fsck_class(self)
@@ -425,7 +434,7 @@ class FS(DeviceFormat):
                         " is unacceptable for this filesystem.",
                         self.uuid, self.type)
         except FSError as e:
-            raise FormatCreateError(e, self.device)
+            raise FormatCreateError(e)
 
     def _post_create(self, **kwargs):
         super(FS, self)._post_create(**kwargs)
@@ -485,13 +494,13 @@ class FS(DeviceFormat):
 
         for module in self._modules:
             try:
-                rc = util.run_program(["modprobe", "--dry-run", module])
-            except OSError as e:
-                log.error("Could not check kernel module availability %s: %s", module, e)
+                avail = blockdev.utils.have_kernel_module(module)
+            except blockdev.UtilsError as e:
+                log.error("Could not check kernel module availability %s: %s", module, str(e))
                 self._supported = False
                 return
 
-            if rc:
+            if not avail:
                 log.debug("Kernel module %s not available", module)
                 self._supported = False
                 return
@@ -645,6 +654,11 @@ class FS(DeviceFormat):
 
         udev.settle()
 
+    def change_mountpoint(self, dry_run=False):
+        # This function is intentionally left blank. Mountpoint change utilizes
+        # only the generic part of this code branch
+        pass
+
     def read_label(self):
         """Read this filesystem's label.
 
@@ -661,6 +675,13 @@ class FS(DeviceFormat):
 
         if not self._readlabel.available:
             raise FSReadLabelError("can not read label for filesystem %s" % self.type)
+
+        try:
+            if self._info.available:
+                self._current_info = self._info.do_task()
+        except FSError as e:
+            log.info("Failed to obtain info for device %s: %s", self.device, e)
+
         return self._readlabel.do_task()
 
     def write_label(self, dry_run=False):
@@ -1048,26 +1069,7 @@ class JFS(FS):
 
     """ JFS filesystem """
     _type = "jfs"
-    _modules = ["jfs"]
-    _labelfs = fslabeling.JFSLabeling()
-    _uuidfs = fsuuid.JFSUUID()
-    _max_size = Size("8 TiB")
-    _formattable = True
     _linux_native = True
-    _dump = True
-    _check = True
-    _info_class = fsinfo.JFSInfo
-    _mkfs_class = fsmkfs.JFSMkfs
-    _size_info_class = fssize.JFSSize
-    _writelabel_class = fswritelabel.JFSWriteLabel
-    _writeuuid_class = fswriteuuid.JFSWriteUUID
-    _metadata_size_factor = 0.99  # jfs metadata may take 1% of space
-    parted_system = fileSystemType["jfs"]
-
-    @property
-    def supported(self):
-        """ Is this filesystem a supported type? """
-        return self.utils_available if flags.jfs else self._supported
 
 
 register_device_format(JFS)
@@ -1077,27 +1079,7 @@ class ReiserFS(FS):
 
     """ reiserfs filesystem """
     _type = "reiserfs"
-    _labelfs = fslabeling.ReiserFSLabeling()
-    _uuidfs = fsuuid.ReiserFSUUID()
-    _modules = ["reiserfs"]
-    _max_size = Size("16 TiB")
-    _formattable = True
     _linux_native = True
-    _dump = True
-    _check = True
-    _packages = ["reiserfs-utils"]
-    _info_class = fsinfo.ReiserFSInfo
-    _mkfs_class = fsmkfs.ReiserFSMkfs
-    _size_info_class = fssize.ReiserFSSize
-    _writelabel_class = fswritelabel.ReiserFSWriteLabel
-    _writeuuid_class = fswriteuuid.ReiserFSWriteUUID
-    _metadata_size_factor = 0.98  # reiserfs metadata may take 2% of space
-    parted_system = fileSystemType["reiserfs"]
-
-    @property
-    def supported(self):
-        """ Is this filesystem a supported type? """
-        return self.utils_available if flags.reiserfs else self._supported
 
 
 register_device_format(ReiserFS)
@@ -1194,30 +1176,9 @@ register_device_format(StratisXFS)
 
 class HFS(FS):
     _type = "hfs"
-    _modules = ["hfs"]
-    _labelfs = fslabeling.HFSLabeling()
-    _formattable = True
-    _mkfs_class = fsmkfs.HFSMkfs
-    parted_system = fileSystemType["hfs"]
 
 
 register_device_format(HFS)
-
-
-class AppleBootstrapFS(HFS):
-    _type = "appleboot"
-    _name = N_("Apple Bootstrap")
-    _min_size = Size("768 KiB")
-    _max_size = Size("1 MiB")
-    _supported = True
-    _mount_class = fsmount.AppleBootstrapFSMount
-
-    @property
-    def supported(self):
-        return super(AppleBootstrapFS, self).supported and arch.is_pmac()
-
-
-register_device_format(AppleBootstrapFS)
 
 
 class HFSPlus(FS):
@@ -1477,7 +1438,7 @@ class TmpFS(NoDevFS):
             This is not impossible, since a special option for mounting
             is size=<percentage>%.
         """
-        return "size=%s" % (self._resize.size_fmt % size.convert_to(self._resize.unit))
+        return "size=%sm" % size.convert_to(self._resize.unit)
 
     def _get_options(self):
         # Returns the regular mount options with the special size option,

@@ -59,7 +59,6 @@ formats
         * :attr:`~blivet.formats.fs.FS.system_mountpoint`
         * :meth:`~blivet.formats.fs.FS.write_label`
 
-    * :class:`~blivet.formats.fs.AppleBootstrapFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.BindFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.BTRFS` (see :ref:`inherited public API <FSAPI>`)
         * :attr:`~blivet.formats.fs.BTRFS.container_uuid`
@@ -73,18 +72,15 @@ formats
     * :class:`~blivet.formats.fs.FATFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.F2FS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.GFS2` (see :ref:`inherited public API <FSAPI>`)
-    * :class:`~blivet.formats.fs.HFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.HFSPlus` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.Iso9660FS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.UDFFS` (see :ref:`inherited public API <FSAPI>`)
-    * :class:`~blivet.formats.fs.JFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.MacEFIFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.NFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.NFSv4` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.NoDevFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.NTFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.ProcFS` (see :ref:`inherited public API <FSAPI>`)
-    * :class:`~blivet.formats.fs.ReiserFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.SELinuxFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.SysFS` (see :ref:`inherited public API <FSAPI>`)
     * :class:`~blivet.formats.fs.TmpFS` (see :ref:`inherited public API <FSAPI>`)

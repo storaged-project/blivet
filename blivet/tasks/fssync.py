@@ -24,11 +24,14 @@ import abc
 from six import add_metaclass
 
 from ..errors import FSError
-from .. import util
 
 from . import availability
 from . import fstask
 from . import task
+
+import gi
+gi.require_version("BlockDev", "3.0")
+from gi.repository import BlockDev
 
 
 @add_metaclass(abc.ABCMeta)
@@ -47,7 +50,7 @@ class XFSSync(FSSync):
 
     """ Sync application for XFS. """
 
-    ext = availability.XFSFREEZE_APP
+    ext = availability.BLOCKDEV_FS_PLUGIN
 
     def _get_mountpoint(self, root=None):
         mountpoint = self.fs.system_mountpoint
@@ -59,12 +62,6 @@ class XFSSync(FSSync):
 
         return mountpoint
 
-    def _freeze_command(self, root=None):
-        return [str(self.ext), "-f", self._get_mountpoint(root=root)]
-
-    def _unfreeze_command(self, root=None):
-        return [str(self.ext), "-u", self._get_mountpoint(root=root)]
-
     def do_task(self, root="/"):
         # pylint: disable=arguments-differ
         error_msgs = self.availability_errors
@@ -72,17 +69,16 @@ class XFSSync(FSSync):
             raise FSError("\n".join(error_msgs))
 
         error_msg = None
+        mountpoint = self._get_mountpoint(root=root)
         try:
-            rc = util.run_program(self._freeze_command(root=root), root=root)
-        except OSError as e:
+            BlockDev.fs.freeze(mountpoint)
+        except BlockDev.FSError as e:
             error_msg = "failed to sync filesytem: %s" % e
-        error_msg = error_msg or rc
 
         try:
-            rc = util.run_program(self._unfreeze_command(root=root), root=root)
-        except OSError as e:
-            error_msg = error_msg or "failed to sync filesystem: %s" % e
-        error_msg = error_msg or rc
+            BlockDev.fs.unfreeze(mountpoint)
+        except BlockDev.FSError as e:
+            error_msg = "failed to sync filesytem: %s" % e
 
         if error_msg:
             raise FSError(error_msg)

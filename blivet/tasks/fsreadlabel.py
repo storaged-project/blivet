@@ -20,12 +20,10 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
-import re
 
 from six import add_metaclass
 
 from ..errors import FSReadLabelError
-from .. import util
 
 from . import availability
 from . import fstask
@@ -38,36 +36,11 @@ class FSReadLabel(task.BasicApplication, fstask.FSTask):
     """ An abstract class that represents reading a filesystem's label. """
     description = "read filesystem label"
 
-    label_regex = abc.abstractproperty(
-        doc="Matches the string output by the reading application.")
-
-    args = abc.abstractproperty(doc="arguments for reading a label.")
+    @property
+    def depends_on(self):
+        return [self.fs._info]
 
     # IMPLEMENTATION methods
-
-    @property
-    def _read_command(self):
-        """Get the command to read the filesystem label.
-
-           :return: the command
-           :rtype: list of str
-        """
-        return [str(self.ext)] + self.args
-
-    def _extract_label(self, labelstr):
-        """Extract the label from an output string.
-
-           :param str labelstr: the string containing the label information
-
-           :return: the label
-           :rtype: str
-
-           Raises an FSReadLabelError if the label can not be extracted.
-        """
-        match = re.match(self.label_regex, labelstr)
-        if match is None:
-            raise FSReadLabelError("Unknown format for application %s" % self.ext)
-        return match.group('label')
 
     def do_task(self):  # pylint: disable=arguments-differ
         """ Get the label.
@@ -79,49 +52,26 @@ class FSReadLabel(task.BasicApplication, fstask.FSTask):
         if error_msgs:
             raise FSReadLabelError("\n".join(error_msgs))
 
-        (rc, out) = util.run_program_and_capture_output(self._read_command)
-        if rc != 0:
-            raise FSReadLabelError("read label failed")
+        if self.fs._current_info is None:
+            raise FSReadLabelError("No info available for size computation.")
 
-        label = out.strip()
-
-        return label if label == "" else self._extract_label(label)
+        return self.fs._current_info.label
 
 
 class DosFSReadLabel(FSReadLabel):
-    ext = availability.DOSFSLABEL_APP
-    label_regex = r'(?P<label>.*)'
-
-    @property
-    def args(self):
-        return [self.fs.device]
+    ext = availability.BLOCKDEV_VFAT_INFO
 
 
 class Ext2FSReadLabel(FSReadLabel):
-    ext = availability.E2LABEL_APP
-    label_regex = r'(?P<label>.*)'
-
-    @property
-    def args(self):
-        return [self.fs.device]
+    ext = availability.BLOCKDEV_EXT_INFO
 
 
 class NTFSReadLabel(FSReadLabel):
-    ext = availability.NTFSLABEL_APP
-    label_regex = r'(?P<label>.*)'
-
-    @property
-    def args(self):
-        return [self.fs.device]
+    ext = availability.BLOCKDEV_NTFS_INFO
 
 
 class XFSReadLabel(FSReadLabel):
-    ext = availability.XFSADMIN_APP
-    label_regex = r'label = "(?P<label>.*)"'
-
-    @property
-    def args(self):
-        return ["-l", self.fs.device]
+    ext = availability.BLOCKDEV_XFS_INFO
 
 
 class UnimplementedFSReadLabel(fstask.UnimplementedFSTask):

@@ -31,6 +31,10 @@ from . import availability
 from . import fstask
 from . import task
 
+import gi
+gi.require_version("BlockDev", "3.0")
+from gi.repository import BlockDev
+
 
 @add_metaclass(abc.ABCMeta)
 class FSMkfsTask(fstask.FSTask):
@@ -211,55 +215,6 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
             raise FSError("format failed: %s" % ret)
 
 
-class BTRFSMkfs(FSMkfs):
-    ext = availability.MKFS_BTRFS_APP
-    label_option = None
-    nodiscard_option = ["--nodiscard"]
-
-    def get_uuid_args(self, uuid):
-        return ["-U", uuid]
-
-    @property
-    def args(self):
-        return []
-
-
-class Ext2FSMkfs(FSMkfs):
-    ext = availability.MKE2FS_APP
-    label_option = "-L"
-    nodiscard_option = ["-E", "nodiscard"]
-
-    _opts = []
-
-    def get_uuid_args(self, uuid):
-        return ["-U", uuid]
-
-    @property
-    def args(self):
-        return self._opts + (["-T", self.fs.fsprofile] if self.fs.fsprofile else [])
-
-
-class Ext3FSMkfs(Ext2FSMkfs):
-    _opts = ["-t", "ext3"]
-
-
-class Ext4FSMkfs(Ext3FSMkfs):
-    _opts = ["-t", "ext4"]
-
-
-class FATFSMkfs(FSMkfs):
-    ext = availability.MKDOSFS_APP
-    label_option = "-n"
-    nodiscard_option = None
-
-    def get_uuid_args(self, uuid):
-        return ["-i", uuid.replace('-', '')]
-
-    @property
-    def args(self):
-        return []
-
-
 class GFS2Mkfs(FSMkfs):
     ext = availability.MKFS_GFS2_APP
     label_option = None
@@ -269,17 +224,6 @@ class GFS2Mkfs(FSMkfs):
     @property
     def args(self):
         return ["-j", "1", "-p", "lock_nolock", "-O"]
-
-
-class HFSMkfs(FSMkfs):
-    ext = availability.HFORMAT_APP
-    label_option = "-l"
-    nodiscard_option = None
-    get_uuid_args = None
-
-    @property
-    def args(self):
-        return []
 
 
 class HFSPlusMkfs(FSMkfs):
@@ -293,67 +237,106 @@ class HFSPlusMkfs(FSMkfs):
         return []
 
 
-class JFSMkfs(FSMkfs):
-    ext = availability.MKFS_JFS_APP
-    label_option = "-L"
-    nodiscard_option = None
-    get_uuid_args = None
+@add_metaclass(abc.ABCMeta)
+class FSBlockDevMkfs(task.BasicApplication, FSMkfsTask):
 
-    @property
-    def args(self):
-        return ["-q"]
+    """An abstract class that represents filesystem creation actions. """
+    description = "mkfs"
+    can_nodiscard = False
+    can_set_uuid = False
+    can_label = False
+    fstype = None
 
+    def do_task(self, options=None, label=False, set_uuid=False, nodiscard=False):
+        """Create the format on the device and label if possible and desired.
 
-class NTFSMkfs(FSMkfs):
-    ext = availability.MKNTFS_APP
-    label_option = "-L"
-    nodiscard_option = None
-    get_uuid_args = None
+           :param options: any special options, may be None
+           :type options: list of str or NoneType
+           :param bool label: whether to label while creating, default is False
+           :param bool set_uuid: whether to set an UUID while creating, default
+                                 is False
+        """
+        # pylint: disable=arguments-differ
+        error_msgs = self.availability_errors
+        if error_msgs:
+            raise FSError("\n".join(error_msgs))
 
-    @property
-    def args(self):
-        # -F (force) to allow creating the format on disks, -f (fast) to skip zeroing the device
-        return ["-F", "-f"]
+        if set_uuid and self.fs.uuid and not self.fs.uuid_format_ok(self.fs.uuid):
+            raise FSWriteUUIDError("Choosing not to apply UUID (%s) during"
+                                   " creation of filesystem %s. UUID format"
+                                   " is unacceptable for this filesystem."
+                                   % (self.fs.uuid, self.fs.type))
+        if label and self.fs.label and not self.fs.label_format_ok(self.fs.label):
+            raise FSWriteLabelError("Choosing not to apply label (%s) during"
+                                    " creation of filesystem %s. Label format"
+                                    " is unacceptable for this filesystem."
+                                    % (self.fs.label, self.fs.type))
 
-
-class ReiserFSMkfs(FSMkfs):
-    ext = availability.MKREISERFS_APP
-    label_option = "-l"
-    nodiscard_option = None
-
-    def get_uuid_args(self, uuid):
-        return ["-u", uuid]
-
-    @property
-    def args(self):
-        return ["-f", "-f"]
-
-
-class XFSMkfs(FSMkfs):
-    ext = availability.MKFS_XFS_APP
-    label_option = "-L"
-    nodiscard_option = ["-K"]
-
-    def get_uuid_args(self, uuid):
-        return ["-m", "uuid=" + uuid]
-
-    @property
-    def args(self):
-        return ["-f"]
+        try:
+            bd_options = BlockDev.FSMkfsOptions(label=self.fs.label if label else None,
+                                                uuid=self.fs.uuid if set_uuid else None,
+                                                no_discard=self.fs._mkfs_nodiscard if nodiscard else False)
+            BlockDev.fs.mkfs(self.fs.device, self.fstype, bd_options, extra=options or [])
+        except BlockDev.FSError as e:
+            raise FSError(str(e))
 
 
-class F2FSMkfs(FSMkfs):
-    ext = availability.MKFS_F2FS_APP
-    label_option = "-l"
-    nodiscard_option = ["-t", "nodiscard"]
-    get_uuid_args = None
+class BTRFSMkfs(FSBlockDevMkfs):
+    ext = availability.BLOCKDEV_BTRFS_MKFS
+    fstype = "btrfs"
+    can_nodiscard = True
+    can_set_uuid = True
+    # XXX btrfs supports labels but we don't really support standalone btrfs
+    # and use labels as btrfs volume names
+    can_label = False
 
-    @property
-    def args(self):
-        # Enable the extended node bitmap, this means that we can create more
-        # files and directories without running out of inodes, even if the
-        # available space for metadata is limited.
-        return ["-i"]
+
+class Ext2FSMkfs(FSBlockDevMkfs):
+    ext = availability.BLOCKDEV_EXT_MKFS
+    fstype = "ext2"
+    can_nodiscard = True
+    can_set_uuid = True
+    can_label = True
+
+
+class Ext3FSMkfs(Ext2FSMkfs):
+    fstype = "ext3"
+
+
+class Ext4FSMkfs(Ext2FSMkfs):
+    fstype = "ext4"
+
+
+class FATFSMkfs(FSBlockDevMkfs):
+    ext = availability.BLOCKDEV_VFAT_MKFS
+    fstype = "vfat"
+    can_nodiscard = False
+    can_set_uuid = True
+    can_label = True
+
+
+class NTFSMkfs(FSBlockDevMkfs):
+    ext = availability.BLOCKDEV_NTFS_MKFS
+    fstype = "ntfs"
+    can_nodiscard = False
+    can_set_uuid = False
+    can_label = True
+
+
+class XFSMkfs(FSBlockDevMkfs):
+    ext = availability.BLOCKDEV_XFS_MKFS
+    fstype = "xfs"
+    can_nodiscard = True
+    can_set_uuid = True
+    can_label = True
+
+
+class F2FSMkfs(FSBlockDevMkfs):
+    ext = availability.BLOCKDEV_F2FS_MKFS
+    fstype = "f2fs"
+    can_nodiscard = True
+    can_set_uuid = False
+    can_label = True
 
 
 class UnimplementedFSMkfs(task.UnimplementedTask, FSMkfsTask):
