@@ -37,6 +37,7 @@ from ..errors import PhysicalVolumeError
 from . import DeviceFormat, register_device_format
 from .. import udev
 from ..static_data.lvm_info import pvs_info, vgs_info
+from ..flags import flags
 
 import logging
 log = logging.getLogger("blivet")
@@ -134,6 +135,10 @@ class LVMPhysicalVolume(DeviceFormat):
         if not os.path.exists(lvm.LVM_DEVICES_FILE) and vgs_info.cache and not force:
             log.debug("Not adding %s to devices file: %s doesn't exist and there are VGs present in the system",
                       self.device, lvm.LVM_DEVICES_FILE)
+            return
+
+        if not flags.lvm_devices_file:
+            log.debug("Not adding %s to devices file: 'lvm_devices_file' flag is set to False", self.device)
             return
 
         try:

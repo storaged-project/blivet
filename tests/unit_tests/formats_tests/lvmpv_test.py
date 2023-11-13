@@ -8,6 +8,7 @@ from contextlib import contextmanager
 import unittest
 
 from blivet.formats.lvmpv import LVMPhysicalVolume
+from blivet.flags import flags
 
 
 class LVMPVNodevTestCase(unittest.TestCase):
@@ -71,3 +72,18 @@ class LVMPVNodevTestCase(unittest.TestCase):
             fmt._create()
 
             mock["blockdev"].lvm.devices_add.assert_not_called()
+
+        with self.patches() as mock:
+            # LVM devices file enabled and devices file exists
+            # but flag set to false -> devices_add should not be called
+            mock["lvm"].HAVE_LVMDEVICES = True
+            mock["os"].path.exists.return_value = True
+            mock["vgs_info"].cache = {}
+            flags.lvm_devices_file = False
+
+            fmt._create()
+
+            mock["blockdev"].lvm.devices_add.assert_not_called()
+
+            # reset the flag back
+            flags.lvm_devices_file = True
