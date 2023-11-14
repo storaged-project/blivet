@@ -7,6 +7,8 @@
 ---
 - hosts: all
   become: true
+  vars:
+    test_dependencies: true  # whether to install test dependencies or not
 
   tasks:
 ####### Fedora
@@ -53,7 +55,7 @@
         - python3-paramiko
         - targetcli
         - iscsi-initiator-utils
-    when: ansible_distribution == 'Fedora'
+    when: ansible_distribution == 'Fedora' and test_dependencies|bool
 
 ####### CentOS 8/9
   - name: Install basic build tools (CentOS)
@@ -104,15 +106,15 @@
         - python3-pip
         - targetcli
         - iscsi-initiator-utils
-    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8' and test_dependencies|bool
 
   - name: Install paramiko using pip (not available in EPEL yet) (CentOS 9)
     pip: name=paramiko executable=pip3
-    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '9'
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '9' and test_dependencies|bool
 
   - name: Install pocketlint using pip (CentOS)
     pip: name=pocketlint executable=pip3
-    when: ansible_distribution == 'CentOS'
+    when: ansible_distribution == 'CentOS' and test_dependencies|bool
 
 ####### Debian/Ubuntu
   - name: Update apt cache (Debian/Ubuntu)
@@ -159,7 +161,7 @@
         - python3-pip
         - targetcli-fb
         - open-iscsi
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' and test_dependencies|bool
 
   - name: Install libmount (Debian/Ubuntu)
     block:
@@ -175,4 +177,4 @@
 
   - name: Install pocketlint using pip (Debian/Ubuntu)
     pip: name=pocketlint executable=pip3
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' and test_dependencies|bool
