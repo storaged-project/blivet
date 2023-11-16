@@ -272,11 +272,18 @@ class FSBlockDevMkfs(task.BasicApplication, FSMkfsTask):
                                     " is unacceptable for this filesystem."
                                     % (self.fs.label, self.fs.type))
 
+        if self.fs.create_options:
+            create_options = shlex.split(self.fs.create_options)
+        else:
+            create_options = []
+        if options:
+            create_options += options
+
         try:
             bd_options = BlockDev.FSMkfsOptions(label=self.fs.label if label else None,
                                                 uuid=self.fs.uuid if set_uuid else None,
                                                 no_discard=self.fs._mkfs_nodiscard if nodiscard else False)
-            BlockDev.fs.mkfs(self.fs.device, self.fstype, bd_options, extra=options or [])
+            BlockDev.fs.mkfs(self.fs.device, self.fstype, bd_options, extra={k: '' for k in create_options})
         except BlockDev.FSError as e:
             raise FSError(str(e))
 
