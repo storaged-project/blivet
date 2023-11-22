@@ -100,6 +100,11 @@ class DMDevice(StorageDevice):
         return self.name
 
     @property
+    def device_id(self):
+        # DM-<name>
+        return "DM-%s" % self.name
+
+    @property
     def status(self):
         try:
             return blockdev.dm.map_exists(self.map_name, True, True)

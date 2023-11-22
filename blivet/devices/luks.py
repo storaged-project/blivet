@@ -70,6 +70,11 @@ class LUKSDevice(DMCryptDevice):
             return self.parents[0].parents[0]
         return self.parents[0]
 
+    @property
+    def device_id(self):
+        # LUKS-<name>
+        return "LUKS-%s" % self.name
+
     def _get_size(self):
         if not self.exists:
             size = self.raw_device.size - crypto.LUKS_METADATA_SIZE
