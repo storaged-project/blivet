@@ -10,6 +10,7 @@ from blivet.errors import DeviceFormatError, FSError
 from blivet.formats import get_format
 from blivet.devices import PartitionDevice, DiskDevice
 from blivet.flags import flags
+from blivet.util import capture_output
 
 from .loopbackedtestcase import LoopBackedTestCase
 
@@ -66,6 +67,25 @@ class Ext4FSTestCase(Ext3FSTestCase):
             self.assertEqual(an_fs.system_mountpoint, mountpoint)
 
             an_fs.unmount()
+
+    def test_create_options(self):
+        label = "root-test-label"
+        uuid = "c1b9d5a2-f162-11cf-9ece-0020afc76f16"
+
+        an_fs = self._fs_class()
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+        an_fs.device = self.loop_devices[0]
+
+        # custom fs create options -- -L <label> and -U <uuid> for mke2fs
+        an_fs.create_options = "-L %s -U %s" % (label, uuid)
+        an_fs.create()
+
+        sys_label = an_fs.read_label()
+        self.assertEqual(sys_label, label)
+
+        out = capture_output(["blkid", "-sUUID", "-ovalue", self.loop_devices[0]])
+        self.assertEqual(out.strip(), uuid)
 
 
 class FATFSTestCase(fstesting.FSAsRoot):

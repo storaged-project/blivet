@@ -71,6 +71,9 @@ class Flags(object):
         # backup metadata in /etc/lvm/{archive,backup}
         self.lvm_metadata_backup = True
 
+        # set to False to not write new LVM PVs to /etc/lvm/devices/system.devices
+        self.lvm_devices_file = True
+
         # whether to include nodev filesystems in the devicetree
         self.include_nodev = False
 

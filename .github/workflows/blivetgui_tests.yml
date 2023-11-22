@@ -1,0 +1,53 @@
+name: Blivet-GUI tests
+
+on:
+  pull_request:
+    branches:
+     - 3.*-devel
+
+jobs:
+  build:
+    name: blivetgui-tests
+    runs-on: ubuntu-22.04
+    env:
+      CI_CONTAINER: blivet-ci-blivetgui-tests
+    steps:
+      - name: Checkout blivet repository
+        uses: actions/checkout@v4
+
+      - name: Install podman
+        run: |
+          sudo apt -qq update
+          sudo apt -y -qq install podman
+
+      - name: Build the container
+        run: |
+          podman build --no-cache -t ${{ env.CI_CONTAINER }} -f misc/ci.Dockerfile .
+
+      - name: Start the container
+        run: |
+          podman run -d -t --name ${{ env.CI_CONTAINER }} --privileged --volume "$(pwd):/app" --workdir "/app" ${{ env.CI_CONTAINER }}
+
+      - name: Install Blivet-GUI test dependencies in the container
+        run: |
+          podman exec -it ${{ env.CI_CONTAINER }} bash -c "ansible-playbook -i "localhost," -c local /blivet-gui/misc/install-test-dependencies.yml"
+
+      - name: Remove Blivet from the container (we want to install from source)
+        run: |
+          podman exec -it ${{ env.CI_CONTAINER }} bash -c "dnf -y remove python3-blivet --noautoremove"
+
+      - name: Install Blivet build dependencies in the container
+        run: |
+          podman exec -it ${{ env.CI_CONTAINER }} bash -c "ansible-playbook -i "localhost," -c local misc/install-test-dependencies.yml"
+
+      - name: Build and install Blivet in the container
+        run: |
+          podman exec -it ${{ env.CI_CONTAINER }} bash -c "python3 setup.py install --prefix=/usr"
+
+      - name: Run Blivet-GUI static analysis in the container
+        run: |
+          podman exec -it ${{ env.CI_CONTAINER }} bash -c "cd /blivet-gui && make check"
+
+      - name: Run Blivet-GUI unit tests in the container
+        run: |
+          podman exec -it ${{ env.CI_CONTAINER }} bash -c "cd /blivet-gui && make gui-test"
