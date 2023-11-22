@@ -388,6 +388,7 @@ class LVMPhysicalVolumeMethodsTestCase(FormatMethodsTestCase):
     def set_patches(self):
         super(LVMPhysicalVolumeMethodsTestCase, self).set_patches()
         self.patchers["blockdev"] = patch("blivet.formats.lvmpv.blockdev")
+        self.patchers["vgs_info"] = patch("blivet.formats.lvmpv.vgs_info")
 
     def _test_destroy_backend(self):
         self.format.exists = True
