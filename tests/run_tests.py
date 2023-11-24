@@ -5,10 +5,12 @@ from __future__ import print_function
 import argparse
 import dbus
 import os
+import pdb
 import re
 import six
 import subprocess
 import sys
+import traceback
 import unittest
 import yaml
 
@@ -136,6 +138,19 @@ def _get_tests_from_suite(test_suite, extracted_tests):
     return extracted_tests
 
 
+class DebugTestResult(unittest.TextTestResult):
+
+    def addError(self, test, err):  # pylint: disable=redefined-outer-name
+        traceback.print_exception(*err)
+        pdb.post_mortem(err[2])
+        super(DebugTestResult, self).addError(test, err)
+
+    def addFailure(self, test, err):  # pylint: disable=redefined-outer-name
+        traceback.print_exception(*err)
+        pdb.post_mortem(err[2])
+        super(DebugTestResult, self).addFailure(test, err)
+
+
 if __name__ == '__main__':
     testdir = os.path.abspath(os.path.dirname(__file__))
     projdir = os.path.abspath(os.path.normpath(os.path.join(testdir, '..')))
@@ -156,6 +171,8 @@ if __name__ == '__main__':
     argparser = argparse.ArgumentParser(description="Blivet test suite")
     argparser.add_argument("testname", nargs="*",
                            help="name of test class or method (e. g. 'devices_test' or 'formats_test.fs_test.Ext2FSTestCase'")
+    argparser.add_argument("-p", "--pdb", dest="pdb", help="run pdb after a failed test", action="store_true")
+    argparser.add_argument("-s", "--stop", dest="stop", help="stop executing after first failed test", action="store_true")
     args = argparser.parse_args()
 
     testdir = os.path.abspath(os.path.dirname(__file__))
@@ -196,7 +213,12 @@ if __name__ == '__main__':
 
         suite.addTest(test)
 
-    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    if args.pdb:
+        runner = unittest.TextTestRunner(verbosity=2, failfast=args.stop, resultclass=DebugTestResult)
+    else:
+        runner = unittest.TextTestRunner(verbosity=2, failfast=args.stop)
+
+    result = runner.run(suite)
 
     if result.wasSuccessful():
         sys.exit(0)
