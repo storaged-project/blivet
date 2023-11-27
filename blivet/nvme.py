@@ -18,6 +18,7 @@
 #
 
 import os
+import glob
 
 from . import errors
 
@@ -54,6 +55,22 @@ class NVMe(object):
     def __deepcopy__(self, memo_dict):  # pylint: disable=unused-argument
         return self
 
+    def _retrieve_fabrics_hostnqn(self):
+        for d in glob.glob('/sys/class/nvme-fabrics/ctl/nvme*/'):
+            try:
+                # invalidate old values
+                self._hostnqn = None
+                self._hostid = None
+                # read from sysfs
+                with open(os.path.join(d, 'hostnqn')) as f:
+                    self._hostnqn = f.readline().strip()
+                with open(os.path.join(d, 'hostid')) as f:
+                    self._hostid = f.readline().strip()
+                if self._hostnqn:
+                    break
+            except Exception:  # pylint: disable=broad-except
+                pass
+
     def startup(self):
         if self.started:
             return
@@ -61,6 +78,10 @@ class NVMe(object):
         self._hostnqn = blockdev.nvme_get_host_nqn()
         self._hostid = blockdev.nvme_get_host_id()
         if not self._hostnqn:
+            # see if there are any active fabrics connections and take their values over
+            self._retrieve_fabrics_hostnqn()
+        if not self._hostnqn:
+            # generate new values
             self._hostnqn = blockdev.nvme_generate_host_nqn()
         if not self._hostnqn:
             raise errors.NVMeError("Failed to generate HostNQN")
