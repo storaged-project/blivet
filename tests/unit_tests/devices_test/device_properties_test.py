@@ -631,7 +631,8 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
                          metadata_level=xform(self.assertIsNone),
                          parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
                          size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
-                         type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
+                         type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)),
+                         uuid=xform(self.assertIsNotNone))
 
         self.state_check(self.dev2,
                          target_size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
@@ -649,7 +650,8 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
                          metadata_level=xform(self.assertIsNone),
                          parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
                          size=xform(lambda x, m: self.assertEqual(x, Size("500 MiB"), m)),
-                         type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
+                         type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)),
+                         uuid=xform(self.assertIsNotNone))
 
         with six.assertRaisesRegex(self, ValueError, "BTRFSDevice.*must have at least one parent"):
             BTRFSVolumeDevice("dev")
@@ -738,7 +740,8 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
                          metadata_level=xform(self.assertIsNone),
                          parents=xform(lambda x, m: self.assertEqual(len(x), 1, m)),
                          size=xform(lambda x, m: self.assertEqual(x, BTRFS_MIN_MEMBER_SIZE, m)),
-                         type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)))
+                         type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)),
+                         uuid=xform(self.assertIsNotNone))
 
         self.assertEqual(snap.isleaf, True)
         self.assertEqual(snap.direct, True)
