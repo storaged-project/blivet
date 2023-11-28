@@ -5,6 +5,8 @@ actions:
     - 'git config user.name "Blivet CI"'
     # merge the release branch to get correct version in spec
     - 'git merge --ff origin/3.9-release'
+    # bump release to 99 to always be ahead of Fedora builds
+    - 'bash -c "sed -i -r \"s/Release:(\s*)\S+/Release: 99%{?dist}/\" python-blivet.spec"'
   get-current-version:
     - "python3 ./setup.py --version"
   create-archive:

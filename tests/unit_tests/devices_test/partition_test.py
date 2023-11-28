@@ -68,9 +68,11 @@ class PartitionDeviceTestCase(unittest.TestCase):
 
             # weights for / and /boot are not platform-specific (except for arm)
             fmt.mountpoint = "/"
+            fmt.type = "xfs"
             self.assertEqual(dev.weight, 0)
 
             fmt.mountpoint = "/boot"
+            fmt.type = "ext4"
             self.assertEqual(dev.weight, 2000)
 
             #
@@ -92,7 +94,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
 
             fmt.mountpoint = "/boot/efi"
             fmt.type = "efi"
-            self.assertEqual(dev.weight, 0)
+            self.assertEqual(dev.weight, 5000)
 
             #
             # UEFI
@@ -102,9 +104,10 @@ class PartitionDeviceTestCase(unittest.TestCase):
             self.assertEqual(dev.weight, 5000)
 
             fmt.type = "biosboot"
-            self.assertEqual(dev.weight, 0)
+            self.assertEqual(dev.weight, 5000)
 
             fmt.mountpoint = "/"
+            fmt.type = "xfs"
             self.assertEqual(dev.weight, 0)
 
             #
@@ -115,6 +118,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
             arch.is_arm.return_value = True
 
             fmt.mountpoint = "/"
+            fmt.type = "xfs"
             self.assertEqual(dev.weight, -100)
 
             #
@@ -126,38 +130,41 @@ class PartitionDeviceTestCase(unittest.TestCase):
             arch.is_ipseries.return_value = False
 
             fmt.mountpoint = "/"
+            fmt.type = "xfs"
             self.assertEqual(dev.weight, 0)
 
             fmt.type = "prepboot"
-            self.assertEqual(dev.weight, 0)
+            self.assertEqual(dev.weight, 5000)
 
             fmt.type = "appleboot"
-            self.assertEqual(dev.weight, 0)
+            self.assertEqual(dev.weight, 5000)
 
             arch.is_pmac.return_value = True
             self.assertEqual(dev.weight, 5000)
 
             fmt.type = "prepboot"
-            self.assertEqual(dev.weight, 0)
+            self.assertEqual(dev.weight, 5000)
 
             arch.is_pmac.return_value = False
             arch.is_ipseries.return_value = True
             self.assertEqual(dev.weight, 5000)
 
             fmt.type = "appleboot"
-            self.assertEqual(dev.weight, 0)
+            self.assertEqual(dev.weight, 5000)
 
             fmt.mountpoint = "/boot/efi"
             fmt.type = "efi"
-            self.assertEqual(dev.weight, 0)
+            self.assertEqual(dev.weight, 5000)
 
             fmt.type = "biosboot"
-            self.assertEqual(dev.weight, 0)
+            self.assertEqual(dev.weight, 5000)
 
             fmt.mountpoint = "/"
+            fmt.type = "xfs"
             self.assertEqual(dev.weight, 0)
 
             fmt.mountpoint = "/boot"
+            fmt.type = "ext4"
             self.assertEqual(dev.weight, 2000)
 
     def test_weight_2(self):
