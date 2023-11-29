@@ -419,7 +419,7 @@ class Blivet(object):
             if extended and not logical_parts:
                 log.debug("removing empty extended partition from %s", disk.name)
                 extended_name = device_path_to_name(extended.getDeviceNodeName())
-                extended = self.devicetree.get_device_by_name(extended_name)
+                extended = self.devicetree.get_device_by_device_id(extended_name)
                 self.destroy_device(extended)
 
     def get_free_space(self, disks=None, partitions=None):
