@@ -634,6 +634,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             blockdev.md.remove(self.path, member.path, fail)
         except blockdev.MDRaidError as err:
             raise errors.MDRaidError(err)
+        finally:
+            member.format.md_uuid = None
 
     def _add(self, member):
         """ Add a member device to an array.
@@ -656,6 +658,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             blockdev.md.add(self.path, member.path, raid_devs=raid_devices)
         except blockdev.MDRaidError as err:
             raise errors.MDRaidError(err)
+        finally:
+            member.format.md_uuid = self.uuid
 
     @property
     def format_args(self):
