@@ -646,7 +646,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """
         self.setup()
 
-        raid_devices = None
+        raid_devices = 0
         try:
             if not self.level.has_redundancy():
                 if self.level is not raid.Linear:
