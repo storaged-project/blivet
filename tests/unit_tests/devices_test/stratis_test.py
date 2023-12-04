@@ -104,3 +104,13 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                 encrypted=True,
                                                                 passphrase="secret",
                                                                 key_file=None)
+
+    def test_device_id(self):
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
+                           size=Size("2 GiB"), exists=False)
+
+        pool = StratisPoolDevice("testpool", parents=[bd])
+        self.assertEqual(pool.device_id, "STRATIS-testpool")
+
+        fs = StratisFilesystemDevice("testfs", parents=[pool], size=Size("1 GiB"))
+        self.assertEqual(fs.device_id, "STRATIS-testpool/testfs")

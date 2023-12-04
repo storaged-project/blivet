@@ -571,6 +571,16 @@ class LVMDeviceTest(unittest.TestCase):
         vg._remove_parent(pv2)
         self.assertEqual(pv2.format.vg_name, None)
 
+    def test_device_id(self):
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("1 GiB"))
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv])
+        self.assertEqual(vg.device_id, "LVM-testvg")
+
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
+                                    fmt=blivet.formats.get_format("xfs"))
+        self.assertEqual(lv.device_id, "LVM-testvg-testlv")
+
 
 class TypeSpecificCallsTest(unittest.TestCase):
     def test_type_specific_calls(self):
