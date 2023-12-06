@@ -1,8 +1,26 @@
 import os
+import time
+
+from contextlib import contextmanager
 
 from ..storagetestcase import StorageTestCase
 
 import blivet
+
+
+@contextmanager
+def wait_for_resync():
+    try:
+        yield
+    finally:
+        time.sleep(2)
+        action = True
+        while action:
+            with open("/proc/mdstat", "r") as f:
+                action = "resync" in f.read()
+            if action:
+                print("Sleeping")
+                time.sleep(1)
 
 
 class MDTestCase(StorageTestCase):
@@ -57,7 +75,8 @@ class MDTestCase(StorageTestCase):
                                          member_devices=members)
         self.storage.create_device(array)
 
-        self.storage.do_it()
+        with wait_for_resync():
+            self.storage.do_it()
         self.storage.reset()
 
         array = self.storage.devicetree.get_device_by_name(self.raidname)
@@ -95,7 +114,8 @@ class MDTestCase(StorageTestCase):
                                          metadata_version="1.2")
         self.storage.create_device(array)
 
-        self.storage.do_it()
+        with wait_for_resync():
+            self.storage.do_it()
         self.storage.reset()
 
         array = self.storage.devicetree.get_device_by_name(self.raidname)
@@ -111,7 +131,8 @@ class MDTestCase(StorageTestCase):
                                          member_devices=2)
         self.storage.create_device(array)
 
-        self.storage.do_it()
+        with wait_for_resync():
+            self.storage.do_it()
         self.storage.reset()
 
         array = self.storage.devicetree.get_device_by_name(self.raidname)
@@ -133,7 +154,8 @@ class MDTestCase(StorageTestCase):
                                          member_devices=2)
         self.storage.create_device(array)
 
-        self.storage.do_it()
+        with wait_for_resync():
+            self.storage.do_it()
         self.storage.reset()
 
         array = self.storage.devicetree.get_device_by_name(self.raidname)
@@ -158,7 +180,9 @@ class MDTestCase(StorageTestCase):
 
         ac = blivet.deviceaction.ActionAddMember(array, part)
         self.storage.devicetree.actions.add(ac)
-        self.storage.do_it()
+
+        with wait_for_resync():
+            self.storage.do_it()
 
         array = self.storage.devicetree.get_device_by_name(self.raidname)
         self.assertIsNotNone(array)
@@ -171,7 +195,9 @@ class MDTestCase(StorageTestCase):
         # and now remove it from the array
         ac = blivet.deviceaction.ActionRemoveMember(array, part)
         self.storage.devicetree.actions.add(ac)
-        self.storage.do_it()
+
+        with wait_for_resync():
+            self.storage.do_it()
 
         array = self.storage.devicetree.get_device_by_name(self.raidname)
         self.assertIsNotNone(array)
