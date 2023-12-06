@@ -6,8 +6,8 @@
 # development/testing.
 #
 # Use 'vagrant up && vagrant ssh' to spawn the default machine (most recent
-# Fedora) and ssh into it or e.g. 'vagrant up bl-f36 && vagrant ssh bl-f36' to
-# use a Fedora 36 based machine, etc.
+# Fedora) and ssh into it or e.g. 'vagrant up bl-f39 && vagrant ssh bl-f39' to
+# use a Fedora 39 based machine, etc.
 #
 
 def os_cpu_cores
@@ -34,19 +34,19 @@ Vagrant.configure("2") do |config|
     v.disk_driver :cache => "unsafe"
   end
 
-  config.vm.define "bl-f36", primary: true, autostart: true do |f36|
-    f36.vm.box = "fedora/36-cloud-base"
+  config.vm.define "bl-f39", primary: true, autostart: true do |f39|
+    f39.vm.box = "fedora/39-cloud-base"
 
-    f36.vm.provision "ansible" do |ansible|
+    f39.vm.provision "ansible" do |ansible|
       ansible.playbook = "install-test-dependencies.yml"
       ansible.extra_vars = { ansible_python_interpreter:"/usr/bin/python3" }
     end
   end
 
-  config.vm.define "bl-f35", primary: false, autostart: false do |f35|
-    f35.vm.box = "fedora/35-cloud-base"
+  config.vm.define "bl-f38", primary: false, autostart: false do |f38|
+    f38.vm.box = "fedora/38-cloud-base"
 
-    f35.vm.provision "ansible" do |ansible|
+    f38.vm.provision "ansible" do |ansible|
       ansible.playbook = "install-test-dependencies.yml"
       ansible.extra_vars = { ansible_python_interpreter:"/usr/bin/python3" }
     end
@@ -72,11 +72,11 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  config.vm.define "bl-u2204", primary: false, autostart: false do |u2204|
-    u2204.vm.box = "generic/ubuntu2204"
+  config.vm.define "bl-u2304", primary: false, autostart: false do |u2304|
+    u2304.vm.box = "generic/ubuntu2304"
 
     # install all test dependencies using ansible
-    u2204.vm.provision "ansible" do |ansible|
+    u2304.vm.provision "ansible" do |ansible|
       ansible.playbook = "install-test-dependencies.yml"
       ansible.extra_vars = { ansible_python_interpreter:"/usr/bin/python3" }
     end
