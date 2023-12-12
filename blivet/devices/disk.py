@@ -469,10 +469,12 @@ class ZFCPDiskDevice(DiskDevice):
             :keyword hba_id: ???
             :keyword wwpn: ???
             :keyword fcp_lun: ???
+            :keyword id_path: string from udev-builtin-path_id
         """
         self.hba_id = kwargs.pop("hba_id")
         self.wwpn = kwargs.pop("wwpn")
         self.fcp_lun = kwargs.pop("fcp_lun")
+        self.id_path = kwargs.pop("id_path")
         DiskDevice.__init__(self, device, **kwargs)
         self._clear_local_tags()
         self.tags.add(Tags.remote)

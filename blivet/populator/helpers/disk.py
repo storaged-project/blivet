@@ -223,6 +223,7 @@ class ZFCPDevicePopulator(DiskDevicePopulator):
     def _get_kwargs(self):
         kwargs = super(ZFCPDevicePopulator, self)._get_kwargs()
 
+        kwargs["id_path"] = udev.device_get_path(self.data)
         for attr in ['hba_id', 'wwpn', 'fcp_lun']:
             kwargs[attr] = udev.device_get_zfcp_attribute(self.data, attr=attr)
 
