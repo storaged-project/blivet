@@ -30,7 +30,7 @@ from gi.repository import GLib
 from ... import udev
 from ... import util
 from ...devices import DASDDevice, DiskDevice, FcoeDiskDevice, iScsiDiskDevice
-from ...devices import MDBiosRaidArrayDevice, ZFCPDiskDevice, NVDIMMNamespaceDevice
+from ...devices import MDBiosRaidArrayDevice, ZFCPDiskDevice
 from ...devices import NVMeNamespaceDevice, NVMeFabricsNamespaceDevice
 from ...devices import device_path_to_name
 from ...storage_log import log_method_call
@@ -223,36 +223,11 @@ class ZFCPDevicePopulator(DiskDevicePopulator):
     def _get_kwargs(self):
         kwargs = super(ZFCPDevicePopulator, self)._get_kwargs()
 
+        kwargs["id_path"] = udev.device_get_path(self.data)
         for attr in ['hba_id', 'wwpn', 'fcp_lun']:
             kwargs[attr] = udev.device_get_zfcp_attribute(self.data, attr=attr)
 
         log.info("%s is a zfcp device", udev.device_get_name(self.data))
-        return kwargs
-
-
-class NVDIMMNamespaceDevicePopulator(DiskDevicePopulator):
-    priority = 20
-
-    _device_class = NVDIMMNamespaceDevice
-
-    @classmethod
-    def match(cls, data):
-        return (super(NVDIMMNamespaceDevicePopulator, NVDIMMNamespaceDevicePopulator).match(data) and
-                udev.device_is_nvdimm_namespace(data))
-
-    def _get_kwargs(self):
-        kwargs = super(NVDIMMNamespaceDevicePopulator, self)._get_kwargs()
-
-        from ...static_data import nvdimm
-        ninfo = nvdimm.get_namespace_info(self.data.get("DEVNAME"))
-
-        kwargs["mode"] = blockdev.nvdimm_namespace_get_mode_str(ninfo.mode)
-        kwargs["devname"] = ninfo.dev
-        kwargs["uuid"] = ninfo.uuid
-        kwargs["sector_size"] = ninfo.sector_size
-        kwargs["id_path"] = udev.device_get_path(self.data)
-
-        log.info("%s is an NVDIMM namespace device", udev.device_get_name(self.data))
         return kwargs
 
 

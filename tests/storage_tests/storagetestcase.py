@@ -183,7 +183,7 @@ class StorageTestCase(unittest.TestCase):
         self.vdevs = []
         self._dev_files = []
 
-        for _ in range(2):
+        for _ in range(4):
             dev_file = create_sparse_tempfile("blivet_test", self._disk_size)
             self._dev_files.append(dev_file)
             try:

@@ -64,6 +64,9 @@ class BtrfsTestCase(StorageTestCase):
         vol = self.storage.new_btrfs(name=self.volname, parents=[part])
         self.storage.create_device(vol)
 
+        self.assertIsNotNone(vol.uuid)
+        pre_uuid = vol.uuid
+
         sub = self.storage.new_btrfs_sub_volume(parents=[vol], name="blivetTestSubVol")
         self.storage.create_device(sub)
 
@@ -88,6 +91,7 @@ class BtrfsTestCase(StorageTestCase):
         self.assertEqual(vol.format.container_uuid, vol.uuid)
         self.assertEqual(len(vol.parents), 1)
         self.assertEqual(vol.parents[0].name, part.name)
+        self.assertEqual(vol.uuid, pre_uuid)
 
         sub = self.storage.devicetree.get_device_by_name("blivetTestSubVol")
         self.assertIsNotNone(sub)

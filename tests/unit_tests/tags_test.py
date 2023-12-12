@@ -72,7 +72,7 @@ class DeviceTagsTest(unittest.TestCase):
         fcoe_device = FcoeDiskDevice('test6', nic=None, identifier=None, id_path=None)
         self.assertIn(Tags.remote, fcoe_device.tags)
         self.assertNotIn(Tags.local, fcoe_device.tags)
-        zfcp_device = ZFCPDiskDevice('test7', hba_id=None, wwpn=None, fcp_lun=None)
+        zfcp_device = ZFCPDiskDevice('test7', hba_id=None, wwpn=None, fcp_lun=None, id_path=None)
         self.assertIn(Tags.remote, zfcp_device.tags)
         self.assertNotIn(Tags.local, zfcp_device.tags)
 

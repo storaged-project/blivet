@@ -1037,20 +1037,6 @@ def device_get_fcoe_identifier(info):
         return path_components[3]
 
 
-def device_is_nvdimm_namespace(info):
-    if info.get("DEVTYPE") != "disk":
-        return False
-
-    if not blockdev.is_plugin_available(blockdev.Plugin.NVDIMM):
-        # nvdimm plugin is not available -- even if this is an nvdimm device we
-        # don't have tools to work with it, so we should pretend it's just a disk
-        return False
-
-    devname = info.get("DEVNAME", "")
-    ninfo = blockdev.nvdimm_namespace_get_devname(devname)
-    return ninfo is not None
-
-
 def device_is_nvme_namespace(info):
     if info.get("DEVTYPE") != "disk":
         return False
