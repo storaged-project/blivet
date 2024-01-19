@@ -300,6 +300,29 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertIsNone(dt.get_device_by_name("dev3"))
         self.assertEqual(dt.get_device_by_name("dev3", hidden=True), dev3)
 
+    def test_get_device_by_device_id(self):
+        dt = DeviceTree()
+
+        # for StorageDevice, device_id is just name
+        dev1 = StorageDevice("dev1", exists=False, parents=[])
+        dev2 = StorageDevice("dev2", exists=False, parents=[dev1])
+        dt._add_device(dev1)
+        dt._add_device(dev2)
+
+        self.assertIsNone(dt.get_device_by_device_id("dev3"))
+        self.assertEqual(dt.get_device_by_device_id("dev2"), dev2)
+        self.assertEqual(dt.get_device_by_device_id("dev1"), dev1)
+
+        dev2.complete = False
+        self.assertEqual(dt.get_device_by_device_id("dev2"), None)
+        self.assertEqual(dt.get_device_by_device_id("dev2", incomplete=True), dev2)
+
+        dev3 = StorageDevice("dev3", exists=True, parents=[])
+        dt._add_device(dev3)
+        dt.hide(dev3)
+        self.assertIsNone(dt.get_device_by_device_id("dev3"))
+        self.assertEqual(dt.get_device_by_device_id("dev3", hidden=True), dev3)
+
     def test_recursive_remove(self):
         dt = DeviceTree()
         dev1 = StorageDevice("dev1", exists=False, parents=[])

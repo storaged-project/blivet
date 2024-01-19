@@ -151,6 +151,10 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             raise errors.DeviceError("A device with mdcontainer member must be mdbiosraidarray.")
 
     @property
+    def device_id(self):
+        return "MDRAID-%s" % self.name
+
+    @property
     def mdadm_format_uuid(self):
         """ This array's UUID, formatted for external use.
 

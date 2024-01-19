@@ -236,7 +236,7 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
         # a failure because the ordering is not complete, meaning any of several device helpers
         # could be the first helper class checked.
 
-    @patch.object(DeviceTree, "get_device_by_name")
+    @patch.object(DeviceTree, "get_device_by_device_id")
     @patch.object(DeviceTree, "_add_parent_devices")
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_get_lv_vg_name")
@@ -244,53 +244,39 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
         """Test lvm device populator."""
         device_get_lv_vg_name = args[0]
         device_get_name = args[1]
-        get_device_by_name = args[3]
+        get_device_by_device_id = args[3]
 
         devicetree = DeviceTree()
         data = Mock()
 
+        lv_name = "lvtest"
+        vg_name = "vg_test"
+
         # Add parent devices and then look up the device.
-        device_get_name.return_value = sentinel.lv_name
-        devicetree.get_device_by_name.return_value = None
+        device_get_name.return_value = lv_name
+        devicetree.get_device_by_device_id.return_value = None
 
         # pylint: disable=unused-argument
-        def _get_device_by_name(name, **kwargs):
-            if name == sentinel.lv_name:
+        def _get_device_by_device_id(device_id, **kwargs):
+            if device_id == "LVM-" + lv_name:
                 return sentinel.lv_device
 
-        get_device_by_name.side_effect = _get_device_by_name
-        device_get_lv_vg_name.return_value = sentinel.vg_name
+        get_device_by_device_id.side_effect = _get_device_by_device_id
+        device_get_lv_vg_name.return_value = vg_name
         helper = self.helper_class(devicetree, data)
 
         self.assertEqual(helper.run(), sentinel.lv_device)
-        self.assertEqual(devicetree.get_device_by_name.call_count, 3)  # pylint: disable=no-member
-        get_device_by_name.assert_has_calls(
-            [call(sentinel.vg_name, hidden=True),
-             call(sentinel.vg_name),
-             call(sentinel.lv_name)])
+        self.assertEqual(devicetree.get_device_by_device_id.call_count, 3)  # pylint: disable=no-member
+        get_device_by_device_id.assert_has_calls(
+            [call("LVM-" + vg_name, hidden=True),
+             call("LVM-" + vg_name),
+             call("LVM-" + lv_name)])
 
         # Add parent devices, but the device is still not in the tree
-        get_device_by_name.side_effect = None
-        get_device_by_name.return_value = None
+        get_device_by_device_id.side_effect = None
+        get_device_by_device_id.return_value = None
         self.assertEqual(helper.run(), None)
-        get_device_by_name.assert_called_with(sentinel.lv_name)
-
-        # A non-vg device with the same name as the vg is already in the tree.
-        # pylint: disable=unused-argument
-        def _get_device_by_name2(name, **kwargs):
-            if name == sentinel.lv_name:
-                return sentinel.lv_device
-            elif name == sentinel.vg_name:
-                return sentinel.non_vg_device
-
-        get_device_by_name.side_effect = _get_device_by_name2
-        if six.PY3:
-            with self.assertLogs('blivet', level='WARNING') as log_cm:
-                self.assertEqual(helper.run(), sentinel.lv_device)
-            log_entry = "WARNING:blivet:found non-vg device with name %s" % sentinel.vg_name
-            self.assertTrue(log_entry in log_cm.output)
-        else:
-            self.assertEqual(helper.run(), sentinel.lv_device)
+        get_device_by_device_id.assert_called_with("LVM-" + lv_name)
 
 
 class OpticalDevicePopulatorTestCase(PopulatorHelperTestCase):
@@ -687,7 +673,7 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
         # a failure because the ordering is not complete, meaning any of several device helpers
         # could be the first helper class checked.
 
-    @patch.object(DeviceTree, "get_device_by_name")
+    @patch.object(DeviceTree, "get_device_by_device_id")
     @patch.object(DeviceTree, "_add_parent_devices")
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_get_md_uuid")
@@ -695,7 +681,7 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
     def test_run(self, *args):
         """Test md device populator."""
         device_get_md_name = args[0]
-        get_device_by_name = args[4]
+        get_device_by_device_id = args[4]
 
         devicetree = DeviceTree()
 
@@ -706,7 +692,7 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
 
         device_name = "mdtest"
         device_get_md_name.return_value = device_name
-        get_device_by_name.return_value = device
+        get_device_by_device_id.return_value = device
         helper = self.helper_class(devicetree, data)
 
         self.assertEqual(helper.run(), device)

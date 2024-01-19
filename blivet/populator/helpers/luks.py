@@ -121,7 +121,7 @@ class LUKSFormatPopulator(FormatPopulator):
             return
 
         # look up or create the mapped device
-        if not self._devicetree.get_device_by_name(self.device.format.map_name):
+        if not self._devicetree.get_device_by_device_id("LUKS-" + self.device.format.map_name):
             passphrase = luks_data.luks_devs.get(self.device.format.uuid)
             if self.device.format.configured:
                 pass

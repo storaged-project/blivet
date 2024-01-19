@@ -58,7 +58,7 @@ class MDDevicePopulator(DevicePopulator):
             return None
 
         # try to get the device again now that we've got all the parents
-        device = self._devicetree.get_device_by_name(name, incomplete=flags.allow_imperfect_devices)
+        device = self._devicetree.get_device_by_device_id("MDRAID-" + name, incomplete=flags.allow_imperfect_devices)
 
         if device is None:
             try:
@@ -175,7 +175,7 @@ class MDFormatPopulator(FormatPopulator):
                     md_name = md_name[2:]
 
                 if md_name:
-                    array = self._devicetree.get_device_by_name(md_name, incomplete=True)
+                    array = self._devicetree.get_device_by_device_id("MDRAID-" + md_name, incomplete=True)
                     if array and array.uuid != md_uuid:
                         log.error("found multiple devices with the name %s", md_name)
 

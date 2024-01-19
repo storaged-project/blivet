@@ -55,3 +55,13 @@ class BlivetNewBtrfsVolumeDeviceTest(unittest.TestCase):
         self.assertEqual(sub.format.type, "btrfs")
         self.assertEqual(sub.size, vol.size)
         self.assertEqual(sub.volume, vol)
+
+    def test_device_id(self):
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("btrfs"),
+                           size=Size("2 GiB"), exists=False)
+
+        vol = BTRFSVolumeDevice("testvolume", parents=[bd])
+        self.assertEqual(vol.device_id, "BTRFS-" + vol.uuid)
+
+        sub = BTRFSSubVolumeDevice("testsub", parents=[vol])
+        self.assertEqual(sub.device_id, "BTRFS-" + vol.uuid + "-testsub")

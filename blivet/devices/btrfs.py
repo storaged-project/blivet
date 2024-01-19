@@ -226,6 +226,11 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
     def members(self):
         return list(self.parents)
 
+    @property
+    def device_id(self):
+        # BTRFS-<uuid>
+        return "BTRFS-%s" % self.uuid
+
     def _set_level(self, value, data):
         """ Sets a valid level for this device and level type.
 
@@ -598,6 +603,11 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
     @property
     def container(self):
         return self.volume
+
+    @property
+    def device_id(self):
+        # BTRFS-<volume uuid>-<name>
+        return "BTRFS-%s-%s" % (self.volume.uuid, self.name)
 
     def setup_parents(self, orig=False):
         """ Run setup method of all parent devices. """
