@@ -190,3 +190,7 @@ class PartitionDeviceTestCase(unittest.TestCase):
 
             PartitionDevice("testpart1", exists=True, parents=[disk])
             self.assertFalse(disk.is_empty)
+
+    def test_device_id(self):
+        part = PartitionDevice("req1", exists=False)
+        self.assertEqual(part.device_id, "req1")

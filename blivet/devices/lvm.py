@@ -208,6 +208,11 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ Device node representing this device. """
         return "%s/%s" % (self._dev_dir, self.map_name)
 
+    @property
+    def device_id(self):
+        # LVM-<vgname>
+        return "LVM-%s" % self.name
+
     def update_sysfs_path(self):
         """ Update this device's sysfs path. """
         log_method_call(self, self.name, status=self.status)
@@ -1175,6 +1180,11 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     def lvname(self):
         """ The LV's name (not including VG name). """
         return self._name
+
+    @property
+    def device_id(self):
+        # LVM-<vgname>-<lvname>
+        return "LVM-%s" % self.name
 
     @property
     def complete(self):

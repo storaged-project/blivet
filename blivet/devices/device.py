@@ -263,6 +263,16 @@ class Device(util.ObjectID):
                     doc="This device's name")
 
     @property
+    def device_id(self):
+        """ Unique ID for this device.
+
+            Note: This is an internal identifier in Blivet which is designed to be unique
+                  even for devices with the same name or label.
+                  This ID is persistent between blivet.reset() calls for existing devices.
+        """
+        return self.name
+
+    @property
     def isleaf(self):
         """ True if no other device depends on this one. """
         return not bool(self.children)

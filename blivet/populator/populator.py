@@ -192,7 +192,7 @@ class PopulatorMixin(object):
         if md_name is None:
             log.warning("No name for possibly degraded md array.")
         else:
-            device = self.get_device_by_name(md_name, incomplete=flags.allow_imperfect_devices)
+            device = self.get_device_by_device_id("MDRAID-" + md_name, incomplete=flags.allow_imperfect_devices)
 
         if device and not isinstance(device, MDRaidArrayDevice):
             log.warning("Found device %s, but it turns out not be an md array device after all.", device.name)

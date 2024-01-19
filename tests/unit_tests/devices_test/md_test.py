@@ -85,3 +85,13 @@ class MDRaidArrayDeviceTest(unittest.TestCase):
 
         with six.assertRaisesRegex(self, ValueError, "specifying chunk size is not allowed for raid1"):
             raid_array.chunk_size = Size("512 KiB")
+
+    def test_device_id(self):
+        member1 = StorageDevice("member1", fmt=blivet.formats.get_format("mdmember"),
+                                size=Size("1 GiB"))
+        member2 = StorageDevice("member2", fmt=blivet.formats.get_format("mdmember"),
+                                size=Size("1 GiB"))
+
+        raid_array = MDRaidArrayDevice(name="raid", level="raid0", member_devices=2,
+                                       total_devices=2, parents=[member1, member2])
+        self.assertEqual(raid_array.device_id, "MDRAID-raid")
