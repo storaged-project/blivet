@@ -28,6 +28,7 @@ import tempfile
 import uuid as uuid_mod
 import random
 import stat
+from contextlib import contextmanager
 
 from parted import fileSystemType, PARTITION_BOOT
 
@@ -61,6 +62,7 @@ from ..size import Size, ROUND_UP
 from ..i18n import N_
 from .. import udev
 from ..mounts import mounts_cache
+from ..devicelibs import btrfs
 
 from .fslib import kernel_filesystems, FSResize
 
@@ -96,6 +98,9 @@ class FS(DeviceFormat):
 
     # support for resize: grow/shrink, online/offline
     _resize_support = 0
+
+    # directories that even a newly created empty filesystem can contain (e.g. lost+found)
+    _system_dirs = []
 
     config_actions_map = {"label": "write_label",
                           "mountpoint": "change_mountpoint"}
@@ -557,6 +562,49 @@ class FS(DeviceFormat):
 
         return ret
 
+    @contextmanager
+    def _do_temp_mount(self):
+        if not self.exists:
+            raise FSError("format doesn't exist")
+
+        if not self.mountable:
+            raise FSError("format cannot be mounted")
+
+        if not self.device:
+            raise FSError("no device associated with the format")
+
+        if self.status:
+            yield self.system_mountpoint
+
+        else:
+            tmpdir = tempfile.mkdtemp(prefix="blivet-tmp.%s" % os.path.basename(self.device))
+            try:
+                util.mount(device=self.device, mountpoint=tmpdir, fstype=self.type,
+                           options=self.mountopts)
+            except FSError as e:
+                log.debug("temp mount failed: %s", e)
+                raise
+
+            try:
+                yield tmpdir
+            finally:
+                util.umount(mountpoint=tmpdir)
+                os.rmdir(tmpdir)
+
+    @property
+    def is_empty(self):
+        """ Check whether this filesystem os empty or not
+
+            Note: If the filesystem is not mounted, this will temporarily mount it
+                  to a temporary directory.
+        """
+
+        with self._do_temp_mount() as mnt:
+            content = os.listdir(mnt)
+            if content and not all(c in self._system_dirs for c in content):
+                return False
+            return True
+
     def _pre_setup(self, **kwargs):
         """ Check to see if the filesystem should be mounted.
 
@@ -893,6 +941,7 @@ class Ext2FS(FS):
     _writeuuid_class = fswriteuuid.Ext2FSWriteUUID
     parted_system = fileSystemType["ext2"]
     _metadata_size_factor = 0.93  # ext2 metadata may take 7% of space
+    _system_dirs = ["lost+found"]
 
     def _post_setup(self, **kwargs):
         super(Ext2FS, self)._post_setup(**kwargs)
@@ -1036,6 +1085,21 @@ class BTRFS(FS):
     @container_uuid.setter
     def container_uuid(self, uuid):
         self.vol_uuid = uuid
+
+    @property
+    def is_empty(self):
+        """ Check whether this filesystem os empty or not
+
+            Note: If the filesystem is not mounted, this will temporarily mount it
+                  to a temporary directory.
+        """
+
+        with self._do_temp_mount() as mnt:
+            content = os.listdir(mnt)
+            subvols = btrfs.get_mountpoint_subvolumes(mnt)
+            if content and not all(c in self._system_dirs + subvols for c in content):
+                return False
+            return True
 
 
 register_device_format(BTRFS)
