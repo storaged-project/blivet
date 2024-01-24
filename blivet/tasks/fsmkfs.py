@@ -217,7 +217,7 @@ class FSMkfs(task.BasicApplication, FSMkfsTask):
 
 class GFS2Mkfs(FSMkfs):
     ext = availability.MKFS_GFS2_APP
-    label_option = None
+    label_option = "-t"
     nodiscard_option = None
     get_uuid_args = None
 

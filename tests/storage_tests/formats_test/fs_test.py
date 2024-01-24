@@ -100,9 +100,21 @@ class BTRFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.BTRFS
 
 
-@unittest.skip("Unable to create GFS2 filesystem.")
 class GFS2TestCase(fstesting.FSAsRoot):
     _fs_class = fs.GFS2
+    _valid_label = "label:label"
+
+    @classmethod
+    def setUpClass(cls):
+        # allow creating gfs2
+        flags.gfs2 = True
+        super(GFS2TestCase, cls).setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        # reset flag back to default
+        flags.gfs2 = False
+        super(GFS2TestCase, cls).tearDownClass()
 
 
 class XFSTestCase(fstesting.FSAsRoot):
