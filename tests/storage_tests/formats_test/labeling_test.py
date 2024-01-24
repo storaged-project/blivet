@@ -37,6 +37,12 @@ class NTFSTestCase(fslabeling.CompleteLabelingAsRoot):
     _default_label = ""
 
 
+class GFS2TestCase(fslabeling.CompleteLabelingAsRoot):
+    _fs_class = fs.GFS2
+    _invalid_label = "label:label*"
+    _default_label = ""
+
+
 class LabelingSwapSpaceTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def test_labeling(self):

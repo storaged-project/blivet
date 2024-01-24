@@ -20,6 +20,7 @@
 # Red Hat Author(s): Anne Mulhern <amulhern@redhat.com>
 
 import abc
+import string
 
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -92,3 +93,19 @@ class F2FSLabeling(FSLabeling):
     @classmethod
     def label_format_ok(cls, label):
         return cls._blockdev_check_label("f2fs", label)
+
+
+class GFS2Labeling(FSLabeling):
+
+    @classmethod
+    def label_format_ok(cls, label):
+        try:
+            clustername, lockspace = label.split(":")
+        except ValueError:
+            return False
+
+        if len(clustername) > 32 or len(lockspace) > 30:
+            return False
+
+        allowed = string.ascii_letters + string.digits + "-_"
+        return all(c in allowed for c in clustername) and all(c in allowed for c in lockspace)
