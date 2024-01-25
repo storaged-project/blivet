@@ -55,6 +55,7 @@
         - python3-paramiko
         - targetcli
         - iscsi-initiator-utils
+        - gfs2-utils
     when: ansible_distribution == 'Fedora' and test_dependencies|bool
 
 ####### CentOS 8/9
@@ -161,6 +162,7 @@
         - python3-pip
         - targetcli-fb
         - open-iscsi
+        - gfs2-utils
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' and test_dependencies|bool
 
   - name: Install libmount (Debian/Ubuntu)

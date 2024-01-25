@@ -117,7 +117,6 @@ class BTRFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.BTRFS
 
 
-@unittest.skip("Unable to create GFS2 filesystem.")
 class GFS2TestCase(fstesting.FSAsRoot):
     _fs_class = fs.GFS2
 
