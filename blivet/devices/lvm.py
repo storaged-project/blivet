@@ -760,7 +760,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             # we reserve space for it
             self._metadata_size = self.vg.pe_size
             self._size -= self._metadata_size
-        elif self.seg_type in ("thin-pool", "cache_pool"):
+        elif self.seg_type in ("thin-pool", "cache-pool"):
             # LVMThinPoolMixin and LVMCachePoolMixin set self._metadata_size on their own
             if not self.exists and not from_lvs and not grow:
                 # a thin pool we are not going to grow -> lets calculate metadata
