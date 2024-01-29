@@ -2311,7 +2311,7 @@ class LVMCachePoolMixin(object):
 
         old_md_size = self._metadata_size
         if self._metadata_size == 0 or enforced:
-            self._metadata_size = blockdev.lvm.cache_get_default_md_size(self._size)
+            self._metadata_size = Size(blockdev.lvm.cache_get_default_md_size(self._size))
             log.debug("Using recommended metadata size: %s", self._metadata_size)
 
         self._metadata_size = self.vg.align(self._metadata_size, roundup=True)
