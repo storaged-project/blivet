@@ -1,3 +1,21 @@
+3.9.0
+======
+* `Fstab support`_
+* `Libblockdev FS plugin used for filesystem operations`_
+
+Fstab support
+--------------
+Blivet now supports managing the `/etc/fstab` entries. This can be done
+either automatically when changing devices (filesystems) or manually
+via the newly added `fstab` module.
+
+Libblockdev FS plugin used for filesystem operations
+------------------------------------------------------
+Filesystem management and operations are now done using the libblockdev
+FS plugin instead of running the filesystem-specific tools directly.
+Support for some older/unused filesystems (HFS, JFS, ReiserFS) has been
+removed.
+
 3.8.0
 ======
 * `Filesystem online resize support`_
