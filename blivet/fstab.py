@@ -38,7 +38,7 @@ class FSTabOptions(object):
         self.freq = None
         self.passno = None
 
-        # prefered spec identification type; default "UUID"
+        # preferred spec identification type; default "UUID"
         # possible values: None, "UUID", "LABEL", "PARTLABEL", "PARTUUID", "PATH"
         self.spec_type = None
 
@@ -296,7 +296,7 @@ class FSTabManager(object):
         self.src_file = src_file
         self.dest_file = dest_file
 
-        # prefered spec identification type; default "UUID"
+        # preferred spec identification type; default "UUID"
         # possible values: None, "UUID", "LABEL", "PARTLABEL", "PARTUUID", "PATH"
         self.spec_type = None
 

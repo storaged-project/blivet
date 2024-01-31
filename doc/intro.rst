@@ -4,7 +4,7 @@ Introduction to Blivet
 Blivet is a python module for system storage configuration.
 
 The main thing that blivet offers is the ability to model a series of changes
-without necessarily commiting any of the changes to disk. You can schedule an
+without necessarily committing any of the changes to disk. You can schedule an
 arbitrarily large series of changes (called 'actions'), seeing the effects of
 each (within the :class:`~.devicetree.DeviceTree` instance) as it is scheduled.
 Nothing is written to disk, however, until you execute the actions.
@@ -84,7 +84,7 @@ To make changes to the configuration you'll schedule actions, but
 At this point, the StorageDevice representing sda3 is no longer in the tree.
 That means you could allocate a new partition from the newly free space if you
 wanted to (via blivet, that is, since there is not actually any free space on
-the physical disk yet -- you haven't commited the changes). If you now ran the
+the physical disk yet -- you haven't committed the changes). If you now ran the
 following line::
 
     sda3 = b.devicetree.get_device_by_name("sda3")
