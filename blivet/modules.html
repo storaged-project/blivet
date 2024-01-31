@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>blivet &#8212; Blivet 3.8.2 documentation</title>
+    <title>blivet &#8212; Blivet 3.9.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -29,7 +29,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.8.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.9.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet</a></li> 
       </ul>
     </div>  
@@ -133,7 +133,6 @@
 <li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-blivet.static_data.luks_data">blivet.static_data.luks_data module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-blivet.static_data.lvm_info">blivet.static_data.lvm_info module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-blivet.static_data.mpath_info">blivet.static_data.mpath_info module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-blivet.static_data.nvdimm">blivet.static_data.nvdimm module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-blivet.static_data.stratis_info">blivet.static_data.stratis_info module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="blivet.static_data.html#module-blivet.static_data">Module contents</a></li>
 </ul>
@@ -531,6 +530,7 @@
 <li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicetree.DeviceTreeBase.expand_taglist"><code class="docutils literal notranslate"><span class="pre">DeviceTreeBase.expand_taglist()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicetree.DeviceTreeBase.filesystems"><code class="docutils literal notranslate"><span class="pre">DeviceTreeBase.filesystems</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicetree.DeviceTreeBase.get_dependent_devices"><code class="docutils literal notranslate"><span class="pre">DeviceTreeBase.get_dependent_devices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicetree.DeviceTreeBase.get_device_by_device_id"><code class="docutils literal notranslate"><span class="pre">DeviceTreeBase.get_device_by_device_id()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicetree.DeviceTreeBase.get_device_by_id"><code class="docutils literal notranslate"><span class="pre">DeviceTreeBase.get_device_by_id()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicetree.DeviceTreeBase.get_device_by_label"><code class="docutils literal notranslate"><span class="pre">DeviceTreeBase.get_device_by_label()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicetree.DeviceTreeBase.get_device_by_name"><code class="docutils literal notranslate"><span class="pre">DeviceTreeBase.get_device_by_name()</span></code></a></li>
@@ -661,6 +661,37 @@
 <li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.flags.Flags.update_from_boot_cmdline"><code class="docutils literal notranslate"><span class="pre">Flags.update_from_boot_cmdline()</span></code></a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.fstab">blivet.fstab module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabEntry"><code class="docutils literal notranslate"><span class="pre">FSTabEntry</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabEntry.comment"><code class="docutils literal notranslate"><span class="pre">FSTabEntry.comment</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabEntry.entry"><code class="docutils literal notranslate"><span class="pre">FSTabEntry.entry</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabEntry.file"><code class="docutils literal notranslate"><span class="pre">FSTabEntry.file</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabEntry.freq"><code class="docutils literal notranslate"><span class="pre">FSTabEntry.freq</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabEntry.get_raw_mntops"><code class="docutils literal notranslate"><span class="pre">FSTabEntry.get_raw_mntops()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabEntry.is_valid"><code class="docutils literal notranslate"><span class="pre">FSTabEntry.is_valid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabEntry.mntops"><code class="docutils literal notranslate"><span class="pre">FSTabEntry.mntops</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabEntry.mntops_add"><code class="docutils literal notranslate"><span class="pre">FSTabEntry.mntops_add()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabEntry.passno"><code class="docutils literal notranslate"><span class="pre">FSTabEntry.passno</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabEntry.spec"><code class="docutils literal notranslate"><span class="pre">FSTabEntry.spec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabEntry.vfstype"><code class="docutils literal notranslate"><span class="pre">FSTabEntry.vfstype</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabManager"><code class="docutils literal notranslate"><span class="pre">FSTabManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabManager.add_entry"><code class="docutils literal notranslate"><span class="pre">FSTabManager.add_entry()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabManager.entry_from_device"><code class="docutils literal notranslate"><span class="pre">FSTabManager.entry_from_device()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabManager.find_device"><code class="docutils literal notranslate"><span class="pre">FSTabManager.find_device()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabManager.find_entry"><code class="docutils literal notranslate"><span class="pre">FSTabManager.find_entry()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabManager.get_device"><code class="docutils literal notranslate"><span class="pre">FSTabManager.get_device()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabManager.read"><code class="docutils literal notranslate"><span class="pre">FSTabManager.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabManager.remove_entry"><code class="docutils literal notranslate"><span class="pre">FSTabManager.remove_entry()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabManager.update"><code class="docutils literal notranslate"><span class="pre">FSTabManager.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabManager.write"><code class="docutils literal notranslate"><span class="pre">FSTabManager.write()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabManagerIterator"><code class="docutils literal notranslate"><span class="pre">FSTabManagerIterator</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.fstab.FSTabOptions"><code class="docutils literal notranslate"><span class="pre">FSTabOptions</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.i18n">blivet.i18n module</a><ul>
@@ -919,7 +950,6 @@
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_is_iscsi"><code class="docutils literal notranslate"><span class="pre">device_is_iscsi()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_is_loop"><code class="docutils literal notranslate"><span class="pre">device_is_loop()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_is_md"><code class="docutils literal notranslate"><span class="pre">device_is_md()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_is_nvdimm_namespace"><code class="docutils literal notranslate"><span class="pre">device_is_nvdimm_namespace()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_is_nvme_fabrics"><code class="docutils literal notranslate"><span class="pre">device_is_nvme_fabrics()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_is_nvme_namespace"><code class="docutils literal notranslate"><span class="pre">device_is_nvme_namespace()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_is_partition"><code class="docutils literal notranslate"><span class="pre">device_is_partition()</span></code></a></li>
@@ -1089,12 +1119,12 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.8.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.9.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2023, Red Hat, Inc..
+        &#169; Copyright 2013-2024, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>

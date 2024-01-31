@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>blivet.populator.helpers package &#8212; Blivet 3.8.2 documentation</title>
+    <title>blivet.populator.helpers package &#8212; Blivet 3.9.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -37,7 +37,7 @@
         <li class="right" >
           <a href="blivet.populator.html" title="blivet.populator package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.8.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.9.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="blivet.populator.html" accesskey="U">blivet.populator package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.populator.helpers package</a></li> 
@@ -56,16 +56,6 @@
 </section>
 <section id="module-blivet.populator.helpers.boot">
 <span id="blivet-populator-helpers-boot-module"></span><h2>blivet.populator.helpers.boot module<a class="headerlink" href="#module-blivet.populator.helpers.boot" title="Permalink to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="blivet.populator.helpers.boot.AppleBootFormatPopulator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.populator.helpers.boot.</span></span><span class="sig-name descname"><span class="pre">AppleBootFormatPopulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">devicetree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.helpers.boot.AppleBootFormatPopulator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.populator.helpers.boot.BootFormatPopulator" title="blivet.populator.helpers.boot.BootFormatPopulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BootFormatPopulator</span></code></a></p>
-<p>:param <a class="reference internal" href="blivet.html#blivet.devicetree.DeviceTree" title="blivet.devicetree.DeviceTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceTree</span></code></a> devicetree: the calling devicetree
-:param <code class="xref py py-class docutils literal notranslate"><span class="pre">pyudev.Device</span></code> data: udev data describing a device
-:keyword device: device instance corresponding to the udev data
-:type device: <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></p>
-</dd></dl>
-
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.populator.helpers.boot.BootFormatPopulator">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.populator.helpers.boot.</span></span><span class="sig-name descname"><span class="pre">BootFormatPopulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">devicetree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.helpers.boot.BootFormatPopulator" title="Permalink to this definition">¶</a></dt>
@@ -291,31 +281,6 @@ perform all processing related to the device’s formatting.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.populator.helpers.disk.MDBiosRaidDevicePopulator.priority">
 <span class="sig-name descname"><span class="pre">priority</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20</span></em><a class="headerlink" href="#blivet.populator.helpers.disk.MDBiosRaidDevicePopulator.priority" title="Permalink to this definition">¶</a></dt>
-<dd><p>Higher priority value gets checked for match first.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="blivet.populator.helpers.disk.NVDIMMNamespaceDevicePopulator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.populator.helpers.disk.</span></span><span class="sig-name descname"><span class="pre">NVDIMMNamespaceDevicePopulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">devicetree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.helpers.disk.NVDIMMNamespaceDevicePopulator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.populator.helpers.disk.DiskDevicePopulator" title="blivet.populator.helpers.disk.DiskDevicePopulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskDevicePopulator</span></code></a></p>
-<p>:param <a class="reference internal" href="blivet.html#blivet.devicetree.DeviceTree" title="blivet.devicetree.DeviceTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceTree</span></code></a> devicetree: the calling devicetree
-:param <code class="xref py py-class docutils literal notranslate"><span class="pre">pyudev.Device</span></code> data: udev data describing a device
-:keyword device: device instance corresponding to the udev data
-:type device: <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="blivet.populator.helpers.disk.NVDIMMNamespaceDevicePopulator.match">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.helpers.disk.NVDIMMNamespaceDevicePopulator.match" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return True if this helper is appropriate for the given device.</p>
-<p>:param <code class="xref py py-class docutils literal notranslate"><span class="pre">pyudev.Device</span></code> data: udev data describing a device
-:returns: whether this class is appropriate for the specified device
-:rtype: bool</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="blivet.populator.helpers.disk.NVDIMMNamespaceDevicePopulator.priority">
-<span class="sig-name descname"><span class="pre">priority</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20</span></em><a class="headerlink" href="#blivet.populator.helpers.disk.NVDIMMNamespaceDevicePopulator.priority" title="Permalink to this definition">¶</a></dt>
 <dd><p>Higher priority value gets checked for match first.</p>
 </dd></dl>
 
@@ -1097,7 +1062,6 @@ class. This function returns the first matching class.</p>
 <li><a class="reference internal" href="#">blivet.populator.helpers package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-blivet.populator.helpers.boot">blivet.populator.helpers.boot module</a><ul>
-<li><a class="reference internal" href="#blivet.populator.helpers.boot.AppleBootFormatPopulator"><code class="docutils literal notranslate"><span class="pre">AppleBootFormatPopulator</span></code></a></li>
 <li><a class="reference internal" href="#blivet.populator.helpers.boot.BootFormatPopulator"><code class="docutils literal notranslate"><span class="pre">BootFormatPopulator</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.populator.helpers.boot.BootFormatPopulator.match"><code class="docutils literal notranslate"><span class="pre">BootFormatPopulator.match()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.populator.helpers.boot.BootFormatPopulator.priority"><code class="docutils literal notranslate"><span class="pre">BootFormatPopulator.priority</span></code></a></li>
@@ -1146,11 +1110,6 @@ class. This function returns the first matching class.</p>
 <li><a class="reference internal" href="#blivet.populator.helpers.disk.MDBiosRaidDevicePopulator"><code class="docutils literal notranslate"><span class="pre">MDBiosRaidDevicePopulator</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.populator.helpers.disk.MDBiosRaidDevicePopulator.match"><code class="docutils literal notranslate"><span class="pre">MDBiosRaidDevicePopulator.match()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.populator.helpers.disk.MDBiosRaidDevicePopulator.priority"><code class="docutils literal notranslate"><span class="pre">MDBiosRaidDevicePopulator.priority</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#blivet.populator.helpers.disk.NVDIMMNamespaceDevicePopulator"><code class="docutils literal notranslate"><span class="pre">NVDIMMNamespaceDevicePopulator</span></code></a><ul>
-<li><a class="reference internal" href="#blivet.populator.helpers.disk.NVDIMMNamespaceDevicePopulator.match"><code class="docutils literal notranslate"><span class="pre">NVDIMMNamespaceDevicePopulator.match()</span></code></a></li>
-<li><a class="reference internal" href="#blivet.populator.helpers.disk.NVDIMMNamespaceDevicePopulator.priority"><code class="docutils literal notranslate"><span class="pre">NVDIMMNamespaceDevicePopulator.priority</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.populator.helpers.disk.NVMeFabricsNamespaceDevicePopulator"><code class="docutils literal notranslate"><span class="pre">NVMeFabricsNamespaceDevicePopulator</span></code></a><ul>
@@ -1374,14 +1333,14 @@ class. This function returns the first matching class.</p>
         <li class="right" >
           <a href="blivet.populator.html" title="blivet.populator package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.8.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.9.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="blivet.populator.html" >blivet.populator package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.populator.helpers package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2023, Red Hat, Inc..
+        &#169; Copyright 2013-2024, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>blivet.formats package &#8212; Blivet 3.8.2 documentation</title>
+    <title>blivet.formats package &#8212; Blivet 3.9.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -37,7 +37,7 @@
         <li class="right" >
           <a href="blivet.events.html" title="blivet.events package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.8.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.9.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.formats package</a></li> 
       </ul>
@@ -448,40 +448,6 @@ it via the ‘device’ kwarg to the <a class="reference internal" href="#blivet
 <span id="blivet-formats-fs-module"></span><h2>blivet.formats.fs module<a class="headerlink" href="#module-blivet.formats.fs" title="Permalink to this heading">¶</a></h2>
 <p>Filesystem classes.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="blivet.formats.fs.AppleBootstrapFS">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">AppleBootstrapFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.AppleBootstrapFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.HFS" title="blivet.formats.fs.HFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">HFS</span></code></a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>device</strong> – path to the block device node (required for
-existing filesystems)</p></li>
-<li><p><strong>mountpoint</strong> – the filesystem’s planned mountpoint</p></li>
-<li><p><strong>label</strong> – the filesystem label</p></li>
-<li><p><strong>uuid</strong> – the filesystem UUID</p></li>
-<li><p><strong>mountopts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – mount options for the filesystem</p></li>
-<li><p><strong>size</strong> – the filesystem’s size in MiB</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – indicates whether this is an existing filesystem</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The ‘device’ kwarg is required for existing formats. For non-
-existent formats, it is only necessary that the <code class="xref py py-attr docutils literal notranslate"><span class="pre">device</span></code>
-attribute be set before the <code class="xref py py-meth docutils literal notranslate"><span class="pre">create()</span></code> method runs. Note
-that you can specify the device at the last moment by specifying
-it via the ‘device’ kwarg to the <code class="xref py py-meth docutils literal notranslate"><span class="pre">create()</span></code> method.</p>
-</div>
-<dl class="py property">
-<dt class="sig sig-object py" id="blivet.formats.fs.AppleBootstrapFS.supported">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">supported</span></span><a class="headerlink" href="#blivet.formats.fs.AppleBootstrapFS.supported" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return an attribute of instance, which is of type owner.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="blivet.formats.fs.BTRFS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.formats.fs.</span></span><span class="sig-name descname"><span class="pre">BTRFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.BTRFS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><code class="xref py py-class docutils literal notranslate"><span class="pre">FS</span></code></a></p>
@@ -541,6 +507,16 @@ it via the ‘device’ kwarg to the <a class="reference internal" href="#blivet
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.formats.fs.BTRFS.is_empty">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_empty</span></span><a class="headerlink" href="#blivet.formats.fs.BTRFS.is_empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether this filesystem os empty or not</p>
+<dl class="simple">
+<dt>Note: If the filesystem is not mounted, this will temporarily mount it</dt><dd><p>to a temporary directory.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -954,6 +930,11 @@ creation, otherwise False.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="blivet.formats.fs.FS.change_mountpoint">
+<span class="sig-name descname"><span class="pre">change_mountpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FS.change_mountpoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="blivet.formats.fs.FS.check_module">
 <span class="sig-name descname"><span class="pre">check_module</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.fs.FS.check_module" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if kernel module required to support this filesystem is available.</p>
@@ -961,7 +942,7 @@ creation, otherwise False.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.formats.fs.FS.config_actions_map">
-<span class="sig-name descname"><span class="pre">config_actions_map</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'label':</span> <span class="pre">'write_label'}</span></em><a class="headerlink" href="#blivet.formats.fs.FS.config_actions_map" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">config_actions_map</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'label':</span> <span class="pre">'write_label',</span> <span class="pre">'mountpoint':</span> <span class="pre">'change_mountpoint'}</span></em><a class="headerlink" href="#blivet.formats.fs.FS.config_actions_map" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1060,6 +1041,16 @@ space taken the FS must provide this number to us.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.formats.fs.FS.is_empty">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_empty</span></span><a class="headerlink" href="#blivet.formats.fs.FS.is_empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether this filesystem os empty or not</p>
+<dl class="simple">
+<dt>Note: If the filesystem is not mounted, this will temporarily mount it</dt><dd><p>to a temporary directory.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1346,11 +1337,6 @@ attribute be set before the <code class="xref py py-meth docutils literal notran
 that you can specify the device at the last moment by specifying
 it via the ‘device’ kwarg to the <code class="xref py py-meth docutils literal notranslate"><span class="pre">create()</span></code> method.</p>
 </div>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="blivet.formats.fs.HFS.parted_system">
-<span class="sig-name descname"><span class="pre">parted_system</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_ped.FileSystemType</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#blivet.formats.fs.HFS.parted_system" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -1442,17 +1428,6 @@ attribute be set before the <code class="xref py py-meth docutils literal notran
 that you can specify the device at the last moment by specifying
 it via the ‘device’ kwarg to the <code class="xref py py-meth docutils literal notranslate"><span class="pre">create()</span></code> method.</p>
 </div>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="blivet.formats.fs.JFS.parted_system">
-<span class="sig-name descname"><span class="pre">parted_system</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_ped.FileSystemType</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#blivet.formats.fs.JFS.parted_system" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="blivet.formats.fs.JFS.supported">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">supported</span></span><a class="headerlink" href="#blivet.formats.fs.JFS.supported" title="Permalink to this definition">¶</a></dt>
-<dd><p>Is this filesystem a supported type?</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -1682,17 +1657,6 @@ attribute be set before the <code class="xref py py-meth docutils literal notran
 that you can specify the device at the last moment by specifying
 it via the ‘device’ kwarg to the <code class="xref py py-meth docutils literal notranslate"><span class="pre">create()</span></code> method.</p>
 </div>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="blivet.formats.fs.ReiserFS.parted_system">
-<span class="sig-name descname"><span class="pre">parted_system</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_ped.FileSystemType</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#blivet.formats.fs.ReiserFS.parted_system" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="blivet.formats.fs.ReiserFS.supported">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">supported</span></span><a class="headerlink" href="#blivet.formats.fs.ReiserFS.supported" title="Permalink to this definition">¶</a></dt>
-<dd><p>Is this filesystem a supported type?</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -2559,7 +2523,7 @@ runs. You can specify the device at the last moment by via the
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.formats.swap.SwapSpace.label_format_ok">
 <span class="sig-name descname"><span class="pre">label_format_ok</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.swap.SwapSpace.label_format_ok" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns True since no known restrictions on the label.</p>
+<dd><p>Check whether the given label is correct (16 characters or shorter).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -3064,14 +3028,11 @@ for an exhaustive list of the arguments that can be passed.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-blivet.formats.fs">blivet.formats.fs module</a><ul>
-<li><a class="reference internal" href="#blivet.formats.fs.AppleBootstrapFS"><code class="docutils literal notranslate"><span class="pre">AppleBootstrapFS</span></code></a><ul>
-<li><a class="reference internal" href="#blivet.formats.fs.AppleBootstrapFS.supported"><code class="docutils literal notranslate"><span class="pre">AppleBootstrapFS.supported</span></code></a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#blivet.formats.fs.BTRFS"><code class="docutils literal notranslate"><span class="pre">BTRFS</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.formats.fs.BTRFS.container_uuid"><code class="docutils literal notranslate"><span class="pre">BTRFS.container_uuid</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.BTRFS.create"><code class="docutils literal notranslate"><span class="pre">BTRFS.create()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.BTRFS.destroy"><code class="docutils literal notranslate"><span class="pre">BTRFS.destroy()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.formats.fs.BTRFS.is_empty"><code class="docutils literal notranslate"><span class="pre">BTRFS.is_empty</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.formats.fs.BindFS"><code class="docutils literal notranslate"><span class="pre">BindFS</span></code></a></li>
@@ -3106,6 +3067,7 @@ for an exhaustive list of the arguments that can be passed.</p>
 <li><a class="reference internal" href="#blivet.formats.fs.FS.can_modify_uuid"><code class="docutils literal notranslate"><span class="pre">FS.can_modify_uuid()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.FS.can_nodiscard"><code class="docutils literal notranslate"><span class="pre">FS.can_nodiscard()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.FS.can_set_uuid"><code class="docutils literal notranslate"><span class="pre">FS.can_set_uuid()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.formats.fs.FS.change_mountpoint"><code class="docutils literal notranslate"><span class="pre">FS.change_mountpoint()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.FS.check_module"><code class="docutils literal notranslate"><span class="pre">FS.check_module()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.FS.config_actions_map"><code class="docutils literal notranslate"><span class="pre">FS.config_actions_map</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.FS.controllable"><code class="docutils literal notranslate"><span class="pre">FS.controllable</span></code></a></li>
@@ -3117,6 +3079,7 @@ for an exhaustive list of the arguments that can be passed.</p>
 <li><a class="reference internal" href="#blivet.formats.fs.FS.free_space_estimate"><code class="docutils literal notranslate"><span class="pre">FS.free_space_estimate()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.FS.generate_new_uuid"><code class="docutils literal notranslate"><span class="pre">FS.generate_new_uuid()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.FS.get_required_size"><code class="docutils literal notranslate"><span class="pre">FS.get_required_size()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.formats.fs.FS.is_empty"><code class="docutils literal notranslate"><span class="pre">FS.is_empty</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.FS.label"><code class="docutils literal notranslate"><span class="pre">FS.label</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.FS.label_format_ok"><code class="docutils literal notranslate"><span class="pre">FS.label_format_ok()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.FS.labeling"><code class="docutils literal notranslate"><span class="pre">FS.labeling()</span></code></a></li>
@@ -3145,20 +3108,13 @@ for an exhaustive list of the arguments that can be passed.</p>
 <li><a class="reference internal" href="#blivet.formats.fs.GFS2.supported"><code class="docutils literal notranslate"><span class="pre">GFS2.supported</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#blivet.formats.fs.HFS"><code class="docutils literal notranslate"><span class="pre">HFS</span></code></a><ul>
-<li><a class="reference internal" href="#blivet.formats.fs.HFS.parted_system"><code class="docutils literal notranslate"><span class="pre">HFS.parted_system</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#blivet.formats.fs.HFS"><code class="docutils literal notranslate"><span class="pre">HFS</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.HFSPlus"><code class="docutils literal notranslate"><span class="pre">HFSPlus</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.formats.fs.HFSPlus.parted_system"><code class="docutils literal notranslate"><span class="pre">HFSPlus.parted_system</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.formats.fs.Iso9660FS"><code class="docutils literal notranslate"><span class="pre">Iso9660FS</span></code></a></li>
-<li><a class="reference internal" href="#blivet.formats.fs.JFS"><code class="docutils literal notranslate"><span class="pre">JFS</span></code></a><ul>
-<li><a class="reference internal" href="#blivet.formats.fs.JFS.parted_system"><code class="docutils literal notranslate"><span class="pre">JFS.parted_system</span></code></a></li>
-<li><a class="reference internal" href="#blivet.formats.fs.JFS.supported"><code class="docutils literal notranslate"><span class="pre">JFS.supported</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#blivet.formats.fs.JFS"><code class="docutils literal notranslate"><span class="pre">JFS</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.MacEFIFS"><code class="docutils literal notranslate"><span class="pre">MacEFIFS</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.formats.fs.MacEFIFS.supported"><code class="docutils literal notranslate"><span class="pre">MacEFIFS.supported</span></code></a></li>
 </ul>
@@ -3175,11 +3131,7 @@ for an exhaustive list of the arguments that can be passed.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.formats.fs.ProcFS"><code class="docutils literal notranslate"><span class="pre">ProcFS</span></code></a></li>
-<li><a class="reference internal" href="#blivet.formats.fs.ReiserFS"><code class="docutils literal notranslate"><span class="pre">ReiserFS</span></code></a><ul>
-<li><a class="reference internal" href="#blivet.formats.fs.ReiserFS.parted_system"><code class="docutils literal notranslate"><span class="pre">ReiserFS.parted_system</span></code></a></li>
-<li><a class="reference internal" href="#blivet.formats.fs.ReiserFS.supported"><code class="docutils literal notranslate"><span class="pre">ReiserFS.supported</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#blivet.formats.fs.ReiserFS"><code class="docutils literal notranslate"><span class="pre">ReiserFS</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.SELinuxFS"><code class="docutils literal notranslate"><span class="pre">SELinuxFS</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.StratisXFS"><code class="docutils literal notranslate"><span class="pre">StratisXFS</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.fs.SysFS"><code class="docutils literal notranslate"><span class="pre">SysFS</span></code></a></li>
@@ -3418,13 +3370,13 @@ for an exhaustive list of the arguments that can be passed.</p>
         <li class="right" >
           <a href="blivet.events.html" title="blivet.events package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.8.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.9.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.formats package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2023, Red Hat, Inc..
+        &#169; Copyright 2013-2024, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>

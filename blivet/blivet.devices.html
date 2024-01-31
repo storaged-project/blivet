@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>blivet.devices package &#8212; Blivet 3.8.2 documentation</title>
+    <title>blivet.devices package &#8212; Blivet 3.9.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
@@ -37,7 +37,7 @@
         <li class="right" >
           <a href="blivet.devicelibs.html" title="blivet.devicelibs package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.8.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.9.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devices package</a></li> 
       </ul>
@@ -208,6 +208,12 @@ False that are normally performed as part of the device constructor.</p>
 <dd><p>Return an attribute of instance, which is of type owner.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.btrfs.BTRFSSubVolumeDevice.device_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device_id</span></span><a class="headerlink" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice.device_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.devices.btrfs.BTRFSSubVolumeDevice.populate_ksdata">
 <span class="sig-name descname"><span class="pre">populate_ksdata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice.populate_ksdata" title="Permalink to this definition">¶</a></dt>
@@ -285,6 +291,12 @@ BTRFSVolumeDevice.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.btrfs.BTRFSVolumeDevice.default_subvolume">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_subvolume</span></span><a class="headerlink" href="#blivet.devices.btrfs.BTRFSVolumeDevice.default_subvolume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.btrfs.BTRFSVolumeDevice.device_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device_id</span></span><a class="headerlink" href="#blivet.devices.btrfs.BTRFSVolumeDevice.device_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an attribute of instance, which is of type owner.</p>
 </dd></dl>
 
@@ -625,6 +637,17 @@ the DiskDevice on which it resides.</p>
 <dt class="sig sig-object py" id="blivet.devices.device.Device.destroy">
 <span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.device.Device.destroy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Destroy the device.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.device.Device.device_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device_id</span></span><a class="headerlink" href="#blivet.devices.device.Device.device_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unique ID for this device.</p>
+<dl class="simple">
+<dt>Note: This is an internal identifier in Blivet which is designed to be unique</dt><dd><p>even for devices with the same name or label.
+This ID is persistent between blivet.reset() calls for existing devices.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -1029,39 +1052,6 @@ them.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="blivet.devices.disk.NVDIMMNamespaceDevice">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">NVDIMMNamespaceDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.NVDIMMNamespaceDevice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#blivet.devices.disk.DiskDevice" title="blivet.devices.disk.DiskDevice"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiskDevice</span></code></a></p>
-<p>Non-volatile memory namespace</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – the device name (generally a device node’s basename)</p></li>
-<li><p><strong>exists</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – does this device exist?</p></li>
-<li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the device’s size</p></li>
-<li><p><strong>parents</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>) – a list of parent devices</p></li>
-<li><p><strong>format</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.DeviceFormat" title="blivet.formats.DeviceFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceFormat</span></code></a> or a subclass of it) – this device’s formatting</p></li>
-<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – mode of the namespace</p></li>
-<li><p><strong>devname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the namespace (e.g. ‘namespace0.0’)</p></li>
-<li><p><strong>sector_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – sector size of the namespace in sector mode</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py property">
-<dt class="sig sig-object py" id="blivet.devices.disk.NVDIMMNamespaceDevice.description">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#blivet.devices.disk.NVDIMMNamespaceDevice.description" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return an attribute of instance, which is of type owner.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="blivet.devices.disk.NVDIMMNamespaceDevice.sector_size">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sector_size</span></span><a class="headerlink" href="#blivet.devices.disk.NVDIMMNamespaceDevice.sector_size" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return an attribute of instance, which is of type owner.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="blivet.devices.disk.NVMeController">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devices.disk.</span></span><span class="sig-name descname"><span class="pre">NVMeController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nvme_ver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsysnqn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport_address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.disk.NVMeController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
@@ -1173,6 +1163,7 @@ them.</p>
 </p></li>
 <li><p><strong>fcp_lun</strong> – <p>???</p>
 </p></li>
+<li><p><strong>id_path</strong> – string from udev-builtin-path_id</p></li>
 </ul>
 </dd>
 </dl>
@@ -1276,6 +1267,12 @@ them.</p>
 map name in many cases. The uuid, however, is a persistent UUID
 stored in device metadata on disk.</p>
 </div>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.dm.DMDevice.device_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device_id</span></span><a class="headerlink" href="#blivet.devices.dm.DMDevice.device_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.dm.DMDevice.dict">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dict</span></span><a class="headerlink" href="#blivet.devices.dm.DMDevice.dict" title="Permalink to this definition">¶</a></dt>
@@ -1531,11 +1528,6 @@ functions themselves should not modify the <a class="reference internal" href="#
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="blivet.devices.lib.Tags.nvdimm">
-<span class="sig-name descname"><span class="pre">nvdimm</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'nvdimm'</span></em><a class="headerlink" href="#blivet.devices.lib.Tags.nvdimm" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.devices.lib.Tags.nvme">
 <span class="sig-name descname"><span class="pre">nvme</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'nvme'</span></em><a class="headerlink" href="#blivet.devices.lib.Tags.nvme" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1737,6 +1729,12 @@ functions themselves should not modify the <a class="reference internal" href="#
 </ul>
 </dd>
 </dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.luks.LUKSDevice.device_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device_id</span></span><a class="headerlink" href="#blivet.devices.luks.LUKSDevice.device_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.devices.luks.LUKSDevice.dracut_setup_args">
 <span class="sig-name descname"><span class="pre">dracut_setup_args</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.luks.LUKSDevice.dracut_setup_args" title="Permalink to this definition">¶</a></dt>
@@ -2335,6 +2333,12 @@ format used.</p>
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeBase.data_vg_space_used">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_vg_space_used</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeBase.data_vg_space_used" title="Permalink to this definition">¶</a></dt>
 <dd><p>Space occupied by the data part of this LV, not including snapshots</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeBase.device_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device_id</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeBase.device_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -3170,6 +3174,12 @@ Return True if complete.</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMVolumeGroupDevice.device_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device_id</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMVolumeGroupDevice.device_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMVolumeGroupDevice.dict">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dict</span></span><a class="headerlink" href="#blivet.devices.lvm.LVMVolumeGroupDevice.dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an attribute of instance, which is of type owner.</p>
@@ -3724,6 +3734,12 @@ component devices as its count of active devices.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.md.MDRaidArrayDevice.description">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#blivet.devices.md.MDRaidArrayDevice.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.md.MDRaidArrayDevice.device_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device_id</span></span><a class="headerlink" href="#blivet.devices.md.MDRaidArrayDevice.device_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an attribute of instance, which is of type owner.</p>
 </dd></dl>
 
@@ -4931,6 +4947,12 @@ the size from /sys.</p>
 </ul>
 </dd>
 </dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.stratis.StratisFilesystemDevice.device_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device_id</span></span><a class="headerlink" href="#blivet.devices.stratis.StratisFilesystemDevice.device_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.devices.stratis.StratisFilesystemDevice.dracut_setup_args">
 <span class="sig-name descname"><span class="pre">dracut_setup_args</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.stratis.StratisFilesystemDevice.dracut_setup_args" title="Permalink to this definition">¶</a></dt>
@@ -4990,6 +5012,12 @@ False that are normally performed as part of the device constructor.</p>
 <dt class="sig sig-object py" id="blivet.devices.stratis.StratisPoolDevice.blockdevs">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">blockdevs</span></span><a class="headerlink" href="#blivet.devices.stratis.StratisPoolDevice.blockdevs" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of this pool block devices</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.stratis.StratisPoolDevice.device_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device_id</span></span><a class="headerlink" href="#blivet.devices.stratis.StratisPoolDevice.device_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -5095,6 +5123,7 @@ override the default value of modparent in new code.</p>
 <li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice"><code class="docutils literal notranslate"><span class="pre">BTRFSSubVolumeDevice</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice.add_hook"><code class="docutils literal notranslate"><span class="pre">BTRFSSubVolumeDevice.add_hook()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice.container"><code class="docutils literal notranslate"><span class="pre">BTRFSSubVolumeDevice.container</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice.device_id"><code class="docutils literal notranslate"><span class="pre">BTRFSSubVolumeDevice.device_id</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice.populate_ksdata"><code class="docutils literal notranslate"><span class="pre">BTRFSSubVolumeDevice.populate_ksdata()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice.remove_hook"><code class="docutils literal notranslate"><span class="pre">BTRFSSubVolumeDevice.remove_hook()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSSubVolumeDevice.setup_parents"><code class="docutils literal notranslate"><span class="pre">BTRFSSubVolumeDevice.setup_parents()</span></code></a></li>
@@ -5104,6 +5133,7 @@ override the default value of modparent in new code.</p>
 <li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSVolumeDevice"><code class="docutils literal notranslate"><span class="pre">BTRFSVolumeDevice</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSVolumeDevice.data_level"><code class="docutils literal notranslate"><span class="pre">BTRFSVolumeDevice.data_level</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSVolumeDevice.default_subvolume"><code class="docutils literal notranslate"><span class="pre">BTRFSVolumeDevice.default_subvolume</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSVolumeDevice.device_id"><code class="docutils literal notranslate"><span class="pre">BTRFSVolumeDevice.device_id</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSVolumeDevice.format_immutable"><code class="docutils literal notranslate"><span class="pre">BTRFSVolumeDevice.format_immutable</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSVolumeDevice.list_subvolumes"><code class="docutils literal notranslate"><span class="pre">BTRFSVolumeDevice.list_subvolumes()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.btrfs.BTRFSVolumeDevice.members"><code class="docutils literal notranslate"><span class="pre">BTRFSVolumeDevice.members</span></code></a></li>
@@ -5158,6 +5188,7 @@ override the default value of modparent in new code.</p>
 <li><a class="reference internal" href="#blivet.devices.device.Device.create"><code class="docutils literal notranslate"><span class="pre">Device.create()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.device.Device.depends_on"><code class="docutils literal notranslate"><span class="pre">Device.depends_on()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.device.Device.destroy"><code class="docutils literal notranslate"><span class="pre">Device.destroy()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devices.device.Device.device_id"><code class="docutils literal notranslate"><span class="pre">Device.device_id</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.device.Device.dict"><code class="docutils literal notranslate"><span class="pre">Device.dict</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.device.Device.dracut_setup_args"><code class="docutils literal notranslate"><span class="pre">Device.dracut_setup_args()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.device.Device.external_dependencies"><code class="docutils literal notranslate"><span class="pre">Device.external_dependencies</span></code></a></li>
@@ -5216,11 +5247,6 @@ override the default value of modparent in new code.</p>
 <li><a class="reference internal" href="#blivet.devices.disk.MultipathDevice.vendor"><code class="docutils literal notranslate"><span class="pre">MultipathDevice.vendor</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#blivet.devices.disk.NVDIMMNamespaceDevice"><code class="docutils literal notranslate"><span class="pre">NVDIMMNamespaceDevice</span></code></a><ul>
-<li><a class="reference internal" href="#blivet.devices.disk.NVDIMMNamespaceDevice.description"><code class="docutils literal notranslate"><span class="pre">NVDIMMNamespaceDevice.description</span></code></a></li>
-<li><a class="reference internal" href="#blivet.devices.disk.NVDIMMNamespaceDevice.sector_size"><code class="docutils literal notranslate"><span class="pre">NVDIMMNamespaceDevice.sector_size</span></code></a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#blivet.devices.disk.NVMeController"><code class="docutils literal notranslate"><span class="pre">NVMeController</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.devices.disk.NVMeController.id"><code class="docutils literal notranslate"><span class="pre">NVMeController.id</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.disk.NVMeController.name"><code class="docutils literal notranslate"><span class="pre">NVMeController.name</span></code></a></li>
@@ -5250,6 +5276,7 @@ override the default value of modparent in new code.</p>
 <li><a class="reference internal" href="#module-blivet.devices.dm">blivet.devices.dm module</a><ul>
 <li><a class="reference internal" href="#blivet.devices.dm.DMCryptDevice"><code class="docutils literal notranslate"><span class="pre">DMCryptDevice</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.dm.DMDevice"><code class="docutils literal notranslate"><span class="pre">DMDevice</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.devices.dm.DMDevice.device_id"><code class="docutils literal notranslate"><span class="pre">DMDevice.device_id</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.dm.DMDevice.dict"><code class="docutils literal notranslate"><span class="pre">DMDevice.dict</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.dm.DMDevice.get_dm_node"><code class="docutils literal notranslate"><span class="pre">DMDevice.get_dm_node()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.dm.DMDevice.map_name"><code class="docutils literal notranslate"><span class="pre">DMDevice.map_name</span></code></a></li>
@@ -5290,7 +5317,6 @@ override the default value of modparent in new code.</p>
 </li>
 <li><a class="reference internal" href="#blivet.devices.lib.Tags"><code class="docutils literal notranslate"><span class="pre">Tags</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.devices.lib.Tags.local"><code class="docutils literal notranslate"><span class="pre">Tags.local</span></code></a></li>
-<li><a class="reference internal" href="#blivet.devices.lib.Tags.nvdimm"><code class="docutils literal notranslate"><span class="pre">Tags.nvdimm</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lib.Tags.nvme"><code class="docutils literal notranslate"><span class="pre">Tags.nvme</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lib.Tags.remote"><code class="docutils literal notranslate"><span class="pre">Tags.remote</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lib.Tags.removable"><code class="docutils literal notranslate"><span class="pre">Tags.removable</span></code></a></li>
@@ -5322,6 +5348,7 @@ override the default value of modparent in new code.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.devices.luks.LUKSDevice"><code class="docutils literal notranslate"><span class="pre">LUKSDevice</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.devices.luks.LUKSDevice.device_id"><code class="docutils literal notranslate"><span class="pre">LUKSDevice.device_id</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.luks.LUKSDevice.dracut_setup_args"><code class="docutils literal notranslate"><span class="pre">LUKSDevice.dracut_setup_args()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.luks.LUKSDevice.max_size"><code class="docutils literal notranslate"><span class="pre">LUKSDevice.max_size</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.luks.LUKSDevice.populate_ksdata"><code class="docutils literal notranslate"><span class="pre">LUKSDevice.populate_ksdata()</span></code></a></li>
@@ -5435,6 +5462,7 @@ override the default value of modparent in new code.</p>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeBase.config_actions_map"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeBase.config_actions_map</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeBase.container"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeBase.container</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeBase.data_vg_space_used"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeBase.data_vg_space_used</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeBase.device_id"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeBase.device_id</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeBase.dict"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeBase.dict</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeBase.from_lvs"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeBase.from_lvs</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeBase.get_dm_node"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeBase.get_dm_node()</span></code></a></li>
@@ -5566,6 +5594,7 @@ override the default value of modparent in new code.</p>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMVolumeGroupDevice.align"><code class="docutils literal notranslate"><span class="pre">LVMVolumeGroupDevice.align()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMVolumeGroupDevice.cached_lvs"><code class="docutils literal notranslate"><span class="pre">LVMVolumeGroupDevice.cached_lvs</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMVolumeGroupDevice.complete"><code class="docutils literal notranslate"><span class="pre">LVMVolumeGroupDevice.complete</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devices.lvm.LVMVolumeGroupDevice.device_id"><code class="docutils literal notranslate"><span class="pre">LVMVolumeGroupDevice.device_id</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMVolumeGroupDevice.dict"><code class="docutils literal notranslate"><span class="pre">LVMVolumeGroupDevice.dict</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMVolumeGroupDevice.direct"><code class="docutils literal notranslate"><span class="pre">LVMVolumeGroupDevice.direct</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMVolumeGroupDevice.extents"><code class="docutils literal notranslate"><span class="pre">LVMVolumeGroupDevice.extents</span></code></a></li>
@@ -5653,6 +5682,7 @@ override the default value of modparent in new code.</p>
 <li><a class="reference internal" href="#blivet.devices.md.MDRaidArrayDevice.create_bitmap"><code class="docutils literal notranslate"><span class="pre">MDRaidArrayDevice.create_bitmap</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.md.MDRaidArrayDevice.degraded"><code class="docutils literal notranslate"><span class="pre">MDRaidArrayDevice.degraded</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.md.MDRaidArrayDevice.description"><code class="docutils literal notranslate"><span class="pre">MDRaidArrayDevice.description</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devices.md.MDRaidArrayDevice.device_id"><code class="docutils literal notranslate"><span class="pre">MDRaidArrayDevice.device_id</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.md.MDRaidArrayDevice.dict"><code class="docutils literal notranslate"><span class="pre">MDRaidArrayDevice.dict</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.md.MDRaidArrayDevice.dracut_setup_args"><code class="docutils literal notranslate"><span class="pre">MDRaidArrayDevice.dracut_setup_args()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.md.MDRaidArrayDevice.format_args"><code class="docutils literal notranslate"><span class="pre">MDRaidArrayDevice.format_args</span></code></a></li>
@@ -5835,6 +5865,7 @@ override the default value of modparent in new code.</p>
 </li>
 <li><a class="reference internal" href="#module-blivet.devices.stratis">blivet.devices.stratis module</a><ul>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisFilesystemDevice"><code class="docutils literal notranslate"><span class="pre">StratisFilesystemDevice</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.devices.stratis.StratisFilesystemDevice.device_id"><code class="docutils literal notranslate"><span class="pre">StratisFilesystemDevice.device_id</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisFilesystemDevice.dracut_setup_args"><code class="docutils literal notranslate"><span class="pre">StratisFilesystemDevice.dracut_setup_args()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisFilesystemDevice.fsname"><code class="docutils literal notranslate"><span class="pre">StratisFilesystemDevice.fsname</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisFilesystemDevice.pool"><code class="docutils literal notranslate"><span class="pre">StratisFilesystemDevice.pool</span></code></a></li>
@@ -5844,6 +5875,7 @@ override the default value of modparent in new code.</p>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisPoolDevice"><code class="docutils literal notranslate"><span class="pre">StratisPoolDevice</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisPoolDevice.add_hook"><code class="docutils literal notranslate"><span class="pre">StratisPoolDevice.add_hook()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisPoolDevice.blockdevs"><code class="docutils literal notranslate"><span class="pre">StratisPoolDevice.blockdevs</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devices.stratis.StratisPoolDevice.device_id"><code class="docutils literal notranslate"><span class="pre">StratisPoolDevice.device_id</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisPoolDevice.dracut_setup_args"><code class="docutils literal notranslate"><span class="pre">StratisPoolDevice.dracut_setup_args()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisPoolDevice.encrypted"><code class="docutils literal notranslate"><span class="pre">StratisPoolDevice.encrypted</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisPoolDevice.filesystems"><code class="docutils literal notranslate"><span class="pre">StratisPoolDevice.filesystems</span></code></a></li>
@@ -5909,13 +5941,13 @@ override the default value of modparent in new code.</p>
         <li class="right" >
           <a href="blivet.devicelibs.html" title="blivet.devicelibs package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.8.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.9.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devices package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2023, Red Hat, Inc..
+        &#169; Copyright 2013-2024, Red Hat, Inc..
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
