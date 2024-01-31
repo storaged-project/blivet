@@ -27,7 +27,7 @@ import importlib
 import warnings
 import syslog
 
-from . import util, arch
+from . import arch
 
 import logging
 log = logging.getLogger("blivet")

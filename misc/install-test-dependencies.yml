@@ -132,9 +132,9 @@
       state: present
       name:
         - python3-blockdev
-        - libblockdev2
+        - libblockdev3
         - libblockdev-plugins-all
-        - gir1.2-blockdev-2.0
+        - gir1.2-blockdev-3.0
         - python3-bytesize
         - python3-selinux
         - python3-pyudev
