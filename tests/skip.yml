@@ -23,3 +23,9 @@
 # - all "skips" can specified as a list, for example 'version: [10, 11]'
 
 ---
+
+- test: storage_tests.devices_test.md_test.MDTestCase
+  skip_on:
+    - distro: "centos"
+      version: "9"
+      reason: "MD tests are randomly failing on RHEL/CentOS 9"
