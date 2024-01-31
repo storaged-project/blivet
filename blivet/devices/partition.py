@@ -452,28 +452,24 @@ class PartitionDevice(StorageDevice):
         if isinstance(self.req_base_weight, int):
             return self.req_base_weight
 
-        # now we have the weights for varying mountpoints and fstypes by platform
-        weight = 0
-        if self.format.mountable and self.format.mountpoint == "/boot":
-            weight = 2000
-        elif (self.format.mountable and
-              self.format.mountpoint == "/boot/efi" and
-              self.format.type in ("efi", "macefi") and
-              arch.is_efi()):
-            weight = 5000
-        elif arch.is_x86() and self.format.type == "biosboot" and not arch.is_efi():
-            weight = 5000
-        elif self.format.mountable and arch.is_arm():
-            # On ARM images '/' must be the last partition.
-            if self.format.mountpoint == "/":
-                weight = -100
-        elif arch.is_ppc():
-            if arch.is_pmac() and self.format.type == "appleboot":
-                weight = 5000
-            elif arch.is_ipseries() and self.format.type == "prepboot":
-                weight = 5000
+        # Now we have the weights for varying mountpoints and fstypes by platform.
+        mountpoint = self.format.mountpoint if self.format.mountable else None
+        format_type = self.format.type
 
-        return weight
+        if mountpoint == "/boot":
+            return 2000
+
+        if mountpoint == "/boot/efi" and format_type in ("efi", "macefi"):
+            return 5000
+
+        if format_type in ("biosboot", "appleboot", "prepboot"):
+            return 5000
+
+        # On ARM images '/' must be the last partition.
+        if mountpoint == "/" and arch.is_arm():
+            return -100
+
+        return 0
 
     def _set_weight(self, weight):
         self.req_base_weight = weight

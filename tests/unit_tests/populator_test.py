@@ -12,7 +12,7 @@ from gi.repository import BlockDev as blockdev
 
 from blivet.devices import DiskDevice, DMDevice, FileDevice, LoopDevice
 from blivet.devices import MDRaidArrayDevice, MultipathDevice, OpticalDevice
-from blivet.devices import PartitionDevice, StorageDevice, NVDIMMNamespaceDevice
+from blivet.devices import PartitionDevice, StorageDevice
 from blivet.devices import NVMeNamespaceDevice, NVMeFabricsNamespaceDevice
 from blivet.devicelibs import lvm
 from blivet.devicetree import DeviceTree
@@ -21,10 +21,10 @@ from blivet.formats.disklabel import DiskLabel
 from blivet.populator.helpers import DiskDevicePopulator, DMDevicePopulator, LoopDevicePopulator
 from blivet.populator.helpers import LVMDevicePopulator, MDDevicePopulator, MultipathDevicePopulator
 from blivet.populator.helpers import OpticalDevicePopulator, PartitionDevicePopulator
-from blivet.populator.helpers import LVMFormatPopulator, MDFormatPopulator, NVDIMMNamespaceDevicePopulator
+from blivet.populator.helpers import LVMFormatPopulator, MDFormatPopulator
 from blivet.populator.helpers import NVMeNamespaceDevicePopulator, NVMeFabricsNamespaceDevicePopulator
 from blivet.populator.helpers import get_format_helper, get_device_helper
-from blivet.populator.helpers.boot import AppleBootFormatPopulator, EFIFormatPopulator, MacEFIFormatPopulator
+from blivet.populator.helpers.boot import EFIFormatPopulator, MacEFIFormatPopulator
 from blivet.populator.helpers.formatpopulator import FormatPopulator
 from blivet.populator.helpers.disklabel import DiskLabelFormatPopulator
 from blivet.size import Size
@@ -236,7 +236,7 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
         # a failure because the ordering is not complete, meaning any of several device helpers
         # could be the first helper class checked.
 
-    @patch.object(DeviceTree, "get_device_by_name")
+    @patch.object(DeviceTree, "get_device_by_device_id")
     @patch.object(DeviceTree, "_add_parent_devices")
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_get_lv_vg_name")
@@ -244,53 +244,39 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
         """Test lvm device populator."""
         device_get_lv_vg_name = args[0]
         device_get_name = args[1]
-        get_device_by_name = args[3]
+        get_device_by_device_id = args[3]
 
         devicetree = DeviceTree()
         data = Mock()
 
+        lv_name = "lvtest"
+        vg_name = "vg_test"
+
         # Add parent devices and then look up the device.
-        device_get_name.return_value = sentinel.lv_name
-        devicetree.get_device_by_name.return_value = None
+        device_get_name.return_value = lv_name
+        devicetree.get_device_by_device_id.return_value = None
 
         # pylint: disable=unused-argument
-        def _get_device_by_name(name, **kwargs):
-            if name == sentinel.lv_name:
+        def _get_device_by_device_id(device_id, **kwargs):
+            if device_id == "LVM-" + lv_name:
                 return sentinel.lv_device
 
-        get_device_by_name.side_effect = _get_device_by_name
-        device_get_lv_vg_name.return_value = sentinel.vg_name
+        get_device_by_device_id.side_effect = _get_device_by_device_id
+        device_get_lv_vg_name.return_value = vg_name
         helper = self.helper_class(devicetree, data)
 
         self.assertEqual(helper.run(), sentinel.lv_device)
-        self.assertEqual(devicetree.get_device_by_name.call_count, 3)  # pylint: disable=no-member
-        get_device_by_name.assert_has_calls(
-            [call(sentinel.vg_name, hidden=True),
-             call(sentinel.vg_name),
-             call(sentinel.lv_name)])
+        self.assertEqual(devicetree.get_device_by_device_id.call_count, 3)  # pylint: disable=no-member
+        get_device_by_device_id.assert_has_calls(
+            [call("LVM-" + vg_name, hidden=True),
+             call("LVM-" + vg_name),
+             call("LVM-" + lv_name)])
 
         # Add parent devices, but the device is still not in the tree
-        get_device_by_name.side_effect = None
-        get_device_by_name.return_value = None
+        get_device_by_device_id.side_effect = None
+        get_device_by_device_id.return_value = None
         self.assertEqual(helper.run(), None)
-        get_device_by_name.assert_called_with(sentinel.lv_name)
-
-        # A non-vg device with the same name as the vg is already in the tree.
-        # pylint: disable=unused-argument
-        def _get_device_by_name2(name, **kwargs):
-            if name == sentinel.lv_name:
-                return sentinel.lv_device
-            elif name == sentinel.vg_name:
-                return sentinel.non_vg_device
-
-        get_device_by_name.side_effect = _get_device_by_name2
-        if six.PY3:
-            with self.assertLogs('blivet', level='WARNING') as log_cm:
-                self.assertEqual(helper.run(), sentinel.lv_device)
-            log_entry = "WARNING:blivet:found non-vg device with name %s" % sentinel.vg_name
-            self.assertTrue(log_entry in log_cm.output)
-        else:
-            self.assertEqual(helper.run(), sentinel.lv_device)
+        get_device_by_device_id.assert_called_with("LVM-" + lv_name)
 
 
 class OpticalDevicePopulatorTestCase(PopulatorHelperTestCase):
@@ -518,81 +504,6 @@ class DiskDevicePopulatorTestCase(PopulatorHelperTestCase):
         self.assertTrue(device in devicetree.devices)
 
 
-class NVDIMMNamespaceDevicePopulatorTestCase(PopulatorHelperTestCase):
-    helper_class = NVDIMMNamespaceDevicePopulator
-
-    @patch("os.path.join")
-    @patch("blivet.udev.device_is_cdrom", return_value=False)
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=False)
-    @patch("blivet.udev.device_is_disk", return_value=True)
-    @patch("blivet.udev.device_is_nvdimm_namespace", return_value=True)
-    def test_match(self, *args):
-        """Test matching of NVDIMM namespace device populator."""
-        device_is_nvdimm_namespace = args[0]
-        self.assertTrue(self.helper_class.match(None))
-        device_is_nvdimm_namespace.return_value = False
-        self.assertFalse(self.helper_class.match(None))
-
-    @patch("os.path.join")
-    @patch("blivet.udev.device_is_cdrom", return_value=False)
-    @patch("blivet.udev.device_is_dm", return_value=False)
-    @patch("blivet.udev.device_is_loop", return_value=False)
-    @patch("blivet.udev.device_is_md", return_value=False)
-    @patch("blivet.udev.device_is_partition", return_value=False)
-    @patch("blivet.udev.device_is_disk", return_value=True)
-    @patch("blivet.udev.device_is_nvdimm_namespace", return_value=True)
-    def test_get_helper(self, *args):
-        """Test get_device_helper for NVDIMM namespaces."""
-        device_is_nvdimm_namespace = args[0]
-        data = {}
-        self.assertEqual(get_device_helper(data), self.helper_class)
-
-        # verify that setting one of the required True return values to False prevents success
-        device_is_nvdimm_namespace.return_value = False
-        self.assertNotEqual(get_device_helper(data), self.helper_class)
-        device_is_nvdimm_namespace.return_value = True
-
-    @patch("blivet.udev.device_get_name")
-    def test_run(self, *args):
-        """Test disk device populator."""
-        device_get_name = args[0]
-
-        devicetree = DeviceTree()
-
-        # set up some fake udev data to verify handling of specific entries
-        data = {'SYS_PATH': 'dummy', 'DEVNAME': 'dummy', 'ID_PATH': 'dummy'}
-
-        device_name = "nop"
-        device_get_name.return_value = device_name
-        helper = self.helper_class(devicetree, data)
-
-        nvdimm_data = Mock(mode=blockdev.NVDIMMNamespaceMode.SECTOR, devname='dummy',
-                           uuid='test-uuid', sector_size=512)
-
-        try:
-            patcher = patch("blivet.static_data.nvdimm.get_namespace_info", return_value=nvdimm_data)
-            patcher.start()
-        except AttributeError:
-            patcher = patch("blivet.static_data.nvdimm.nvdimm.get_namespace_info", return_value=nvdimm_data)
-            patcher.start()
-
-        with patch("blivet.populator.helpers.disk.blockdev.nvdimm_namespace_get_mode_str", return_value="sector"):
-            device = helper.run()
-
-        patcher.stop()
-
-        self.assertIsInstance(device, NVDIMMNamespaceDevice)
-        self.assertTrue(device.exists)
-        self.assertTrue(device.is_disk)
-        self.assertEqual(device.mode, 'sector')
-        self.assertEqual(device.uuid, 'test-uuid')
-        self.assertTrue(device.sector_size, 512)
-        self.assertTrue(device in devicetree.devices)
-
-
 class NVMeNamespaceDevicePopulatorTestCase(PopulatorHelperTestCase):
     helper_class = NVMeNamespaceDevicePopulator
 
@@ -762,7 +673,7 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
         # a failure because the ordering is not complete, meaning any of several device helpers
         # could be the first helper class checked.
 
-    @patch.object(DeviceTree, "get_device_by_name")
+    @patch.object(DeviceTree, "get_device_by_device_id")
     @patch.object(DeviceTree, "_add_parent_devices")
     @patch("blivet.udev.device_get_name")
     @patch("blivet.udev.device_get_md_uuid")
@@ -770,7 +681,7 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
     def test_run(self, *args):
         """Test md device populator."""
         device_get_md_name = args[0]
-        get_device_by_name = args[4]
+        get_device_by_device_id = args[4]
 
         devicetree = DeviceTree()
 
@@ -781,7 +692,7 @@ class MDDevicePopulatorTestCase(PopulatorHelperTestCase):
 
         device_name = "mdtest"
         device_get_md_name.return_value = device_name
-        get_device_by_name.return_value = device
+        get_device_by_device_id.return_value = device
         helper = self.helper_class(devicetree, data)
 
         self.assertEqual(helper.run(), device)
@@ -1400,10 +1311,6 @@ class EFIFormatPopulatorTestCase(BootFormatPopulatorTestCase):
 class MacEFIFormatPopulatorTestCase(BootFormatPopulatorTestCase):
     helper_class = MacEFIFormatPopulator
     name_mismatch_ok = False
-
-
-class AppleBootFormatPopulatorTestCase(BootFormatPopulatorTestCase):
-    helper_class = AppleBootFormatPopulator
 
 
 if __name__ == "__main__":

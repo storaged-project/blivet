@@ -208,6 +208,11 @@ class LVMVolumeGroupDevice(ContainerDevice):
         """ Device node representing this device. """
         return "%s/%s" % (self._dev_dir, self.map_name)
 
+    @property
+    def device_id(self):
+        # LVM-<vgname>
+        return "LVM-%s" % self.name
+
     def update_sysfs_path(self):
         """ Update this device's sysfs path. """
         log_method_call(self, self.name, status=self.status)
@@ -317,9 +322,15 @@ class LVMVolumeGroupDevice(ContainerDevice):
             if lv.exists:
                 lv.setup()
 
+        # if format was already scheduled for removal, use original_format
+        if member.format != "lvmpv":
+            fmt = member.original_format
+        else:
+            fmt = member.format
+
         # do not run pvmove on empty PVs
-        member.format.update_size_info()
-        if member.format.free < member.format.current_size:
+        fmt.update_size_info()
+        if fmt.free < fmt.current_size:
             try:
                 blockdev.lvm.pvmove(member.path)
             except blockdev.LVMError as err:
@@ -749,7 +760,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             # we reserve space for it
             self._metadata_size = self.vg.pe_size
             self._size -= self._metadata_size
-        elif self.seg_type in ("thin-pool", "cache_pool"):
+        elif self.seg_type in ("thin-pool", "cache-pool"):
             # LVMThinPoolMixin and LVMCachePoolMixin set self._metadata_size on their own
             if not self.exists and not from_lvs and not grow:
                 # a thin pool we are not going to grow -> lets calculate metadata
@@ -1169,6 +1180,11 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
     def lvname(self):
         """ The LV's name (not including VG name). """
         return self._name
+
+    @property
+    def device_id(self):
+        # LVM-<vgname>-<lvname>
+        return "LVM-%s" % self.name
 
     @property
     def complete(self):
@@ -2295,7 +2311,7 @@ class LVMCachePoolMixin(object):
 
         old_md_size = self._metadata_size
         if self._metadata_size == 0 or enforced:
-            self._metadata_size = blockdev.lvm.cache_get_default_md_size(self._size)
+            self._metadata_size = Size(blockdev.lvm.cache_get_default_md_size(self._size))
             log.debug("Using recommended metadata size: %s", self._metadata_size)
 
         self._metadata_size = self.vg.align(self._metadata_size, roundup=True)

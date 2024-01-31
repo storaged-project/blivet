@@ -10,6 +10,7 @@ from blivet.errors import DeviceFormatError, FSError
 from blivet.formats import get_format
 from blivet.devices import PartitionDevice, DiskDevice
 from blivet.flags import flags
+from blivet.util import capture_output
 
 from .loopbackedtestcase import LoopBackedTestCase
 
@@ -67,6 +68,42 @@ class Ext4FSTestCase(Ext3FSTestCase):
 
             an_fs.unmount()
 
+    def test_create_options(self):
+        label = "root-test-label"
+        uuid = "c1b9d5a2-f162-11cf-9ece-0020afc76f16"
+
+        an_fs = self._fs_class()
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+        an_fs.device = self.loop_devices[0]
+
+        # custom fs create options -- -L <label> and -U <uuid> for mke2fs
+        an_fs.create_options = "-L %s -U %s" % (label, uuid)
+        an_fs.create()
+
+        sys_label = an_fs.read_label()
+        self.assertEqual(sys_label, label)
+
+        out = capture_output(["blkid", "-sUUID", "-ovalue", self.loop_devices[0]])
+        self.assertEqual(out.strip(), uuid)
+
+    def test_fs_is_empty(self):
+        an_fs = self._fs_class()
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+        an_fs.device = self.loop_devices[0]
+        self.assertIsNone(an_fs.create())
+
+        self.assertTrue(an_fs.is_empty)
+
+        with tempfile.TemporaryDirectory() as mountpoint:
+            an_fs.mount(mountpoint=mountpoint)
+            os.makedirs(os.path.join(mountpoint, "test"))
+            an_fs.unmount()
+            self.assertFalse(an_fs.is_empty)
+
+        self.assertFalse(an_fs.is_empty)
+
 
 class FATFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.FATFS
@@ -80,17 +117,8 @@ class BTRFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.BTRFS
 
 
-@unittest.skip("Unable to create GFS2 filesystem.")
 class GFS2TestCase(fstesting.FSAsRoot):
     _fs_class = fs.GFS2
-
-
-class JFSTestCase(fstesting.FSAsRoot):
-    _fs_class = fs.JFS
-
-
-class ReiserFSTestCase(fstesting.FSAsRoot):
-    _fs_class = fs.ReiserFS
 
 
 class XFSTestCase(fstesting.FSAsRoot):
@@ -183,13 +211,22 @@ class XFSTestCase(fstesting.FSAsRoot):
         # XXX this tests assumes that resizing to max size - 1 B will fail, but xfs_grow won't
         self.skipTest("Not checking resize for this test category.")
 
+    def test_fs_is_empty(self):
+        an_fs = self._fs_class()
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+        an_fs.device = self.loop_devices[0]
+        self.assertIsNone(an_fs.create())
 
-class HFSTestCase(fstesting.FSAsRoot):
-    _fs_class = fs.HFS
+        self.assertTrue(an_fs.is_empty)
 
+        with tempfile.TemporaryDirectory() as mountpoint:
+            an_fs.mount(mountpoint=mountpoint)
+            os.makedirs(os.path.join(mountpoint, "test"))
+            an_fs.unmount()
+            self.assertFalse(an_fs.is_empty)
 
-class AppleBootstrapFSTestCase(HFSTestCase):
-    _fs_class = fs.AppleBootstrapFS
+        self.assertFalse(an_fs.is_empty)
 
 
 class HFSPlusTestCase(fstesting.FSAsRoot):
@@ -200,7 +237,6 @@ class MacEFIFSTestCase(HFSPlusTestCase):
     _fs_class = fs.MacEFIFS
 
 
-@unittest.skip("Unable to create because NTFS._formattable is False.")
 class NTFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.NTFS
 

@@ -251,6 +251,50 @@ class BlockDevMethod(Method):
                 return []
 
 
+class BlockDevFSMethod(Method):
+
+    """ Methods for when application is actually a libblockdev FS plugin functionality. """
+
+    def __init__(self, operation, check_fn, fstype):
+        """ Initializer.
+
+            :param operation: operation to check for support availability
+            :param check_fn: function used to check for support availability
+            :param fstype: filesystem type to check for the support availability
+        """
+        self.operation = operation
+        self.check_fn = check_fn
+        self.fstype = fstype
+        self._availability_errors = None
+
+    def availability_errors(self, resource):
+        """ Returns [] if the plugin is loaded and functionality available.
+
+            :param resource: a libblockdev plugin
+            :type resource: :class:`ExternalResource`
+
+            :returns: [] if the name of the plugin is loaded
+            :rtype: list of str
+        """
+        if "fs" not in blockdev.get_available_plugin_names():
+            return ["libblockdev fs plugin not loaded"]
+        else:
+            try:
+                if self.operation in (FSOperation.UUID, FSOperation.LABEL, FSOperation.INFO):
+                    avail, utility = self.check_fn(self.fstype)
+                elif self.operation == FSOperation.RESIZE:
+                    avail, _mode, utility = self.check_fn(self.fstype)
+                elif self.operation == FSOperation.MKFS:
+                    avail, _options, utility = self.check_fn(self.fstype)
+            except blockdev.FSError as e:
+                return [str(e)]
+            if not avail:
+                return ["libblockdev fs plugin is loaded but some required runtime "
+                        "dependencies are not available: %s" % utility]
+            else:
+                return []
+
+
 class DBusMethod(Method):
 
     """ Methods for when application is actually a DBus service. """
@@ -332,6 +376,11 @@ def application_by_version(name, version_method):
 def blockdev_plugin(name, blockdev_method):
     """ Construct an external resource that is a libblockdev plugin. """
     return ExternalResource(blockdev_method, name)
+
+
+def blockdev_fs_plugin_operation(blockdev_fs_method):
+    """ Construct an external resource that is a libblockdev FS plugin functionality. """
+    return ExternalResource(blockdev_fs_method, "libblockdev FS plugin method")
 
 
 def dbus_service(name, dbus_method):
@@ -419,23 +468,17 @@ BLOCKDEV_LVM = BlockDevTechInfo(plugin_name="lvm",
                                                                            blockdev.LVMTechMode.MODIFY)})
 BLOCKDEV_LVM_TECH = BlockDevMethod(BLOCKDEV_LVM)
 
-if hasattr(blockdev.LVMTech, "VDO"):
-    BLOCKDEV_LVM_VDO = BlockDevTechInfo(plugin_name="lvm",
-                                        check_fn=blockdev.lvm_is_tech_avail,
-                                        technologies={blockdev.LVMTech.VDO: (blockdev.LVMTechMode.CREATE |
-                                                                             blockdev.LVMTechMode.REMOVE |
-                                                                             blockdev.LVMTechMode.QUERY)})
-    BLOCKDEV_LVM_TECH_VDO = BlockDevMethod(BLOCKDEV_LVM_VDO)
-else:
-    BLOCKDEV_LVM_TECH_VDO = _UnavailableMethod(error_msg="Installed version of libblockdev doesn't support LVM VDO technology")
+BLOCKDEV_LVM_VDO = BlockDevTechInfo(plugin_name="lvm",
+                                    check_fn=blockdev.lvm_is_tech_avail,
+                                    technologies={blockdev.LVMTech.VDO: (blockdev.LVMTechMode.CREATE |
+                                                                         blockdev.LVMTechMode.REMOVE |
+                                                                         blockdev.LVMTechMode.QUERY)})
+BLOCKDEV_LVM_TECH_VDO = BlockDevMethod(BLOCKDEV_LVM_VDO)
 
-if hasattr(blockdev.LVMTech, "SHARED"):
-    BLOCKDEV_LVM_SHARED = BlockDevTechInfo(plugin_name="lvm",
-                                           check_fn=blockdev.lvm_is_tech_avail,
-                                           technologies={blockdev.LVMTech.SHARED: blockdev.LVMTechMode.MODIFY})  # pylint: disable=no-member
-    BLOCKDEV_LVM_TECH_SHARED = BlockDevMethod(BLOCKDEV_LVM_SHARED)
-else:
-    BLOCKDEV_LVM_TECH_SHARED = _UnavailableMethod(error_msg="Installed version of libblockdev doesn't support shared LVM technology")
+BLOCKDEV_LVM_SHARED = BlockDevTechInfo(plugin_name="lvm",
+                                       check_fn=blockdev.lvm_is_tech_avail,
+                                       technologies={blockdev.LVMTech.SHARED: blockdev.LVMTechMode.MODIFY})
+BLOCKDEV_LVM_TECH_SHARED = BlockDevMethod(BLOCKDEV_LVM_SHARED)
 
 # libblockdev mdraid plugin required technologies and modes
 BLOCKDEV_MD_ALL_MODES = (blockdev.MDTechMode.CREATE |
@@ -465,6 +508,55 @@ BLOCKDEV_SWAP = BlockDevTechInfo(plugin_name="swap",
                                  technologies={blockdev.SwapTech.SWAP: BLOCKDEV_SWAP_ALL_MODES})
 BLOCKDEV_SWAP_TECH = BlockDevMethod(BLOCKDEV_SWAP)
 
+# libblockdev fs plugin required technologies
+# no modes, we will check for specific functionality separately
+BLOCKDEV_FS = BlockDevTechInfo(plugin_name="fs",
+                               check_fn=blockdev.fs_is_tech_avail,
+                               technologies={blockdev.FSTech.GENERIC: 0,
+                                             blockdev.FSTech.MOUNT: 0,
+                                             blockdev.FSTech.EXT2: 0,
+                                             blockdev.FSTech.EXT3: 0,
+                                             blockdev.FSTech.EXT4: 0,
+                                             blockdev.FSTech.XFS: 0,
+                                             blockdev.FSTech.VFAT: 0,
+                                             blockdev.FSTech.NTFS: 0})
+BLOCKDEV_FS_TECH = BlockDevMethod(BLOCKDEV_FS)
+
+
+# libblockdev fs plugin methods
+class FSOperation():
+    UUID = 0
+    LABEL = 1
+    RESIZE = 2
+    INFO = 3
+    MKFS = 4
+
+
+BLOCKDEV_EXT_UUID = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.UUID, blockdev.fs.can_set_uuid, "ext2"))
+BLOCKDEV_XFS_UUID = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.UUID, blockdev.fs.can_set_uuid, "xfs"))
+BLOCKDEV_NTFS_UUID = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.UUID, blockdev.fs.can_set_uuid, "ntfs"))
+
+BLOCKDEV_EXT_LABEL = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.LABEL, blockdev.fs.can_set_label, "ext2"))
+BLOCKDEV_XFS_LABEL = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.LABEL, blockdev.fs.can_set_label, "xfs"))
+BLOCKDEV_VFAT_LABEL = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.LABEL, blockdev.fs.can_set_label, "vfat"))
+BLOCKDEV_NTFS_LABEL = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.LABEL, blockdev.fs.can_set_label, "ntfs"))
+
+BLOCKDEV_EXT_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "ext2"))
+BLOCKDEV_XFS_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "xfs"))
+BLOCKDEV_NTFS_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "ntfs"))
+
+BLOCKDEV_EXT_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "ext2"))
+BLOCKDEV_XFS_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "xfs"))
+BLOCKDEV_NTFS_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "ntfs"))
+BLOCKDEV_VFAT_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "vfat"))
+
+BLOCKDEV_BTRFS_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "btrfs"))
+BLOCKDEV_EXT_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "ext2"))
+BLOCKDEV_XFS_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "xfs"))
+BLOCKDEV_NTFS_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "ntfs"))
+BLOCKDEV_VFAT_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "vfat"))
+BLOCKDEV_F2FS_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "f2fs"))
+
 # libblockdev plugins
 # we can't just check if the plugin is loaded, we also need to make sure
 # that all technologies required by us our supported (some may be missing
@@ -481,67 +573,29 @@ BLOCKDEV_LVM_PLUGIN_SHARED = blockdev_plugin("libblockdev lvm plugin (shared LVM
 BLOCKDEV_MDRAID_PLUGIN = blockdev_plugin("libblockdev mdraid plugin", BLOCKDEV_MD_TECH)
 BLOCKDEV_MPATH_PLUGIN = blockdev_plugin("libblockdev mpath plugin", BLOCKDEV_MPATH_TECH)
 BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("libblockdev swap plugin", BLOCKDEV_SWAP_TECH)
-
-# applications with versions
-# we need e2fsprogs newer than 1.41 and we are checking the version by running
-# the "e2fsck" tool and parsing its ouput for version number
-E2FSPROGS_INFO = AppVersionInfo(app_name="e2fsck",
-                                required_version="1.41.0",
-                                version_opt="-V",
-                                version_regex=r"e2fsck ([0-9+\.]+)[\-rc0-9+]* .*")
-E2FSPROGS_VERSION = VersionMethod(E2FSPROGS_INFO)
-
-
-# new version of dosftools changed behaviour of many tools
-DOSFSTOOLS_INFO = AppVersionInfo(app_name="mkdosfs",
-                                 required_version="4.2",
-                                 version_opt="--help",
-                                 version_regex=r"mkfs\.fat ([0-9+\.]+) .*")
-DOSFSTOOLS_VERSION = VersionMethod(DOSFSTOOLS_INFO)
+BLOCKDEV_FS_PLUGIN = blockdev_plugin("libblockdev fs plugin", BLOCKDEV_FS_TECH)
 
 # applications
-DEBUGREISERFS_APP = application("debugreiserfs")
-DF_APP = application("df")
+# fsck
 DOSFSCK_APP = application("dosfsck")
-DOSFSLABEL_APP = application("dosfslabel")
-DUMPE2FS_APP = application_by_version("dumpe2fs", E2FSPROGS_VERSION)
-E2FSCK_APP = application_by_version("e2fsck", E2FSPROGS_VERSION)
-E2LABEL_APP = application_by_version("e2label", E2FSPROGS_VERSION)
+E2FSCK_APP = application("e2fsck")
 FSCK_HFSPLUS_APP = application("fsck.hfsplus")
-HFORMAT_APP = application("hformat")
-JFSTUNE_APP = application("jfs_tune")
-KPARTX_APP = application("kpartx")
-LVMDEVICES = application("lvmdevices")
-MKDOSFS_APP = application("mkdosfs")
-MKDOSFS_NEW_APP = application_by_version("mkdosfs", DOSFSTOOLS_VERSION)
-MKE2FS_APP = application_by_version("mke2fs", E2FSPROGS_VERSION)
-MKFS_BTRFS_APP = application("mkfs.btrfs")
+XFSREPAIR_APP = application("xfs_repair")
+FSCK_F2FS_APP = application("fsck.f2fs")
+
+# resize (for min size)
+NTFSRESIZE_APP = application("ntfsresize")
+RESIZE2FS_APP = application("resize2fs")
+
+# mkfs
 MKFS_GFS2_APP = application("mkfs.gfs2")
 MKFS_HFSPLUS_APP = application("mkfs.hfsplus")
-MKFS_JFS_APP = application("mkfs.jfs")
-MKFS_XFS_APP = application("mkfs.xfs")
-MKNTFS_APP = application("mkntfs")
-MKREISERFS_APP = application("mkreiserfs")
-MLABEL_APP = application("mlabel")
+
+# other
+KPARTX_APP = application("kpartx")
 MULTIPATH_APP = application("multipath")
-NTFSINFO_APP = application("ntfsinfo")
-NTFSLABEL_APP = application("ntfslabel")
-NTFSRESIZE_APP = application("ntfsresize")
-REISERFSTUNE_APP = application("reiserfstune")
-RESIZE2FS_APP = application_by_version("resize2fs", E2FSPROGS_VERSION)
-TUNE2FS_APP = application_by_version("tune2fs", E2FSPROGS_VERSION)
-XFSADMIN_APP = application("xfs_admin")
-XFSDB_APP = application("xfs_db")
-XFSFREEZE_APP = application("xfs_freeze")
-XFSRESIZE_APP = application("xfs_growfs")
-XFSREPAIR_APP = application("xfs_repair")
-
-FSCK_F2FS_APP = application("fsck.f2fs")
-MKFS_F2FS_APP = application("mkfs.f2fs")
-
-MOUNT_APP = application("mount")
-
 STRATISPREDICTUSAGE_APP = application("stratis-predict-usage")
 
+# dbus services
 STRATIS_SERVICE_METHOD = DBusMethod(STRATIS_SERVICE, STRATIS_PATH)
 STRATIS_DBUS = dbus_service("stratis", STRATIS_SERVICE_METHOD)

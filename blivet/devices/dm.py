@@ -47,10 +47,7 @@ class DMDevice(StorageDevice):
     """ A device-mapper device """
     _type = "dm"
     _dev_dir = "/dev/mapper"
-    _external_dependencies = [
-        availability.KPARTX_APP,
-        availability.BLOCKDEV_DM_PLUGIN
-    ]
+    _external_dependencies = [availability.BLOCKDEV_DM_PLUGIN]
 
     def __init__(self, name, fmt=None, size=None, dm_uuid=None, uuid=None,
                  target=None, exists=False, parents=None, sysfs_path=''):
@@ -103,6 +100,11 @@ class DMDevice(StorageDevice):
         return self.name
 
     @property
+    def device_id(self):
+        # DM-<name>
+        return "DM-%s" % self.name
+
+    @property
     def status(self):
         try:
             return blockdev.dm.map_exists(self.map_name, True, True)
@@ -130,6 +132,10 @@ class DMDevice(StorageDevice):
 
     def setup_partitions(self):
         log_method_call(self, name=self.name)
+        if not availability.KPARTX_APP.available:
+            log.warning("'kpartx' not available, not activating partitions on %s", self.path)
+            return
+
         rc = util.run_program(["kpartx", "-a", "-s", self.path])
         if rc:
             raise errors.DMError("partition activation failed for '%s'" % self.name)
@@ -137,6 +143,9 @@ class DMDevice(StorageDevice):
 
     def teardown_partitions(self):
         log_method_call(self, name=self.name)
+        if not availability.KPARTX_APP.available:
+            log.warning("'kpartx' not available, not deactivating partitions on %s", self.path)
+            return
         rc = util.run_program(["kpartx", "-d", "-s", self.path])
         if rc:
             raise errors.DMError("partition deactivation failed for '%s'" % self.name)

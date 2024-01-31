@@ -10,3 +10,4 @@ from .md_test import *
 from .network_test import *
 from .partition_test import *
 from .stratis_test import *
+from .btrfs_test import *

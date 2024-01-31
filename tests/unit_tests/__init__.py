@@ -9,6 +9,7 @@ from .devicefactory_test import *
 from .devicetree_test import *
 from .events_test import *
 from .misc_test import *
+from .nvme_test import *
 from .parentlist_test import *
 from .populator_test import *
 from .size_test import *

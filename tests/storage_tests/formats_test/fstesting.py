@@ -132,7 +132,10 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
         self.assertIsNone(an_fs.create())
         try:
             label = an_fs.read_label()
-            self.assertEqual(label, "label")
+            if an_fs.type in ("vfat", "efi"):
+                self.assertEqual(label, "LABEL")
+            else:
+                self.assertEqual(label, "label")
         except FSError:
             pass
 

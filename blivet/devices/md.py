@@ -151,6 +151,10 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             raise errors.DeviceError("A device with mdcontainer member must be mdbiosraidarray.")
 
     @property
+    def device_id(self):
+        return "MDRAID-%s" % self.name
+
+    @property
     def mdadm_format_uuid(self):
         """ This array's UUID, formatted for external use.
 
@@ -634,6 +638,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             blockdev.md.remove(self.path, member.path, fail)
         except blockdev.MDRaidError as err:
             raise errors.MDRaidError(err)
+        finally:
+            member.format.md_uuid = None
 
     def _add(self, member):
         """ Add a member device to an array.
@@ -644,7 +650,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         """
         self.setup()
 
-        raid_devices = None
+        raid_devices = 0
         try:
             if not self.level.has_redundancy():
                 if self.level is not raid.Linear:
@@ -656,6 +662,8 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             blockdev.md.add(self.path, member.path, raid_devs=raid_devices)
         except blockdev.MDRaidError as err:
             raise errors.MDRaidError(err)
+        finally:
+            member.format.md_uuid = self.uuid
 
     @property
     def format_args(self):

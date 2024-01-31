@@ -396,9 +396,17 @@ class LVMTestCase(StorageTestCase):
         pv1 = self.storage.devicetree.get_device_by_name(pv1.name)
         ac = blivet.deviceaction.ActionRemoveMember(vg, pv1)
         self.storage.devicetree.actions.add(ac)
-        self.storage.do_it()
 
         self.assertIsNone(pv1.format.vg_name)
+
+        # schedule also removing the lvmpv format from the PV
+        ac = blivet.deviceaction.ActionDestroyFormat(pv1)
+        self.storage.devicetree.actions.add(ac)
+
+        self.storage.do_it()
+
+        self.assertIsNone(pv1.format.type)
+
         self.storage.reset()
 
         self.storage.reset()

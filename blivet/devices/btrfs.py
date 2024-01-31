@@ -22,6 +22,7 @@
 import os
 import copy
 import tempfile
+import uuid
 
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -204,6 +205,9 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         self.subvolumes = []
         self.size_policy = self.size
 
+        if not self.exists and not self.uuid:
+            self.uuid = str(uuid.uuid4())
+
         if self.parents and not self.format.type:
             label = getattr(self.parents[0].format, "label", None)
             self.format = get_format("btrfs",
@@ -221,6 +225,11 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
     @property
     def members(self):
         return list(self.parents)
+
+    @property
+    def device_id(self):
+        # BTRFS-<uuid>
+        return "BTRFS-%s" % self.uuid
 
     def _set_level(self, value, data):
         """ Sets a valid level for this device and level type.
@@ -455,11 +464,16 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             md_level = str(self.metadata_level)
         else:
             md_level = None
+        if self.uuid:
+            extra = {"-U": self.uuid}
+        else:
+            extra = None
         try:
             blockdev.btrfs.create_volume([d.path for d in self.parents],
                                          label=self.format.label,
                                          data_level=data_level,
-                                         md_level=md_level)
+                                         md_level=md_level,
+                                         extra=extra)
         except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as err:
             raise errors.BTRFSError(err)
 
@@ -589,6 +603,11 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
     @property
     def container(self):
         return self.volume
+
+    @property
+    def device_id(self):
+        # BTRFS-<volume uuid>-<name>
+        return "BTRFS-%s-%s" % (self.volume.uuid, self.name)
 
     def setup_parents(self, orig=False):
         """ Run setup method of all parent devices. """

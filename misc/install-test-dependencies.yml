@@ -7,6 +7,8 @@
 ---
 - hosts: all
   become: true
+  vars:
+    test_dependencies: true  # whether to install test dependencies or not
 
   tasks:
 ####### Fedora
@@ -38,23 +40,23 @@
         - e2fsprogs
         - xfsprogs
         - hfsplus-tools
-        - python3-mock
+        - ntfsprogs
         - python3-coverage
         - python3-pocketlint
-        - python3-bugzilla
         - python3-pycodestyle
         - python3-six
-        - python3-kickstart
         - python3-pyudev
         - python3-pyparted
         - libselinux-python3
         - python3-blockdev
         - python3-bytesize
+        - python3-libmount
         - python3-libvirt
         - python3-paramiko
         - targetcli
         - iscsi-initiator-utils
-    when: ansible_distribution == 'Fedora'
+        - gfs2-utils
+    when: ansible_distribution == 'Fedora' and test_dependencies|bool
 
 ####### CentOS 8/9
   - name: Install basic build tools (CentOS)
@@ -93,28 +95,27 @@
         - e2fsprogs
         - xfsprogs
         - python3-coverage
-        - python3-bugzilla
         - python3-pycodestyle
         - python3-six
-        - python3-kickstart
         - python3-pyudev
         - python3-pyparted
         - libselinux-python3
         - python3-blockdev
         - python3-bytesize
+        - python3-libmount
         - python3-libvirt
         - python3-pip
         - targetcli
         - iscsi-initiator-utils
-    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8' and test_dependencies|bool
 
   - name: Install paramiko using pip (not available in EPEL yet) (CentOS 9)
     pip: name=paramiko executable=pip3
-    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '9'
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '9' and test_dependencies|bool
 
   - name: Install pocketlint using pip (CentOS)
     pip: name=pocketlint executable=pip3
-    when: ansible_distribution == 'CentOS'
+    when: ansible_distribution == 'CentOS' and test_dependencies|bool
 
 ####### Debian/Ubuntu
   - name: Update apt cache (Debian/Ubuntu)
@@ -135,7 +136,6 @@
         - libblockdev-plugins-all
         - gir1.2-blockdev-2.0
         - python3-bytesize
-        - python3-mock
         - python3-selinux
         - python3-pyudev
         - python3-parted
@@ -146,23 +146,37 @@
     package:
       state: present
       name:
+        - autopoint
+        - bison
         - dosfstools
         - e2fsprogs
         - xfsprogs
-        - python3-mock
+        - ntfs-3g
         - python3-coverage
         - python3-pycodestyle
         - pycodestyle
         - gettext
         - python3-polib
         - python3-paramiko
-        - python3-bugzilla
         - python3-libvirt
         - python3-pip
         - targetcli-fb
         - open-iscsi
+        - gfs2-utils
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' and test_dependencies|bool
+
+  - name: Install libmount (Debian/Ubuntu)
+    block:
+      - name: Copy the libmount_deb script (Debian and CentOS non-x86_64)
+        copy:
+          src: files/libmount_deb.py
+          dest: "/tmp/libmount_deb.py"
+          mode: 0755
+
+      - name: Make and install libmount
+        shell: "python3 /tmp/libmount_deb.py"
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
   - name: Install pocketlint using pip (Debian/Ubuntu)
     pip: name=pocketlint executable=pip3
-    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' and test_dependencies|bool

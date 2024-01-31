@@ -151,7 +151,6 @@ class DeviceTreeBase(object):
         for dev in self._devices + self._hidden:
             # don't include "req%d" partition names
             if (dev.type != "partition" or not dev.name.startswith("req")) and \
-               dev.type != "btrfs volume" and \
                dev.name not in names:
                 names.append(dev.name)
 
@@ -586,7 +585,7 @@ class DeviceTreeBase(object):
         return result
 
     def get_device_by_id(self, id_num, incomplete=False, hidden=False):
-        """ Return a device with specified device id.
+        """ Return a device with specified id.
 
             :param int id_num: the id to look for
             :param bool incomplete: include incomplete devices in search
@@ -597,6 +596,21 @@ class DeviceTreeBase(object):
         log_method_call(self, id_num=id_num, incomplete=incomplete, hidden=hidden)
         devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
         result = six.next((d for d in devices if d.id == id_num), None)
+        log_method_return(self, result)
+        return result
+
+    def get_device_by_device_id(self, device_id, incomplete=False, hidden=False):
+        """ Return a device with specified device id.
+
+            :param str device id: the device id to look for
+            :param bool incomplete: include incomplete devices in search
+            :param bool hidden: include hidden devices in search
+            :returns: the first matching device found
+            :rtype: :class:`~.devices.Device`
+        """
+        log_method_call(self, device_id=device_id, incomplete=incomplete, hidden=hidden)
+        devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
+        result = six.next((d for d in devices if d.device_id == device_id), None)
         log_method_return(self, result)
         return result
 

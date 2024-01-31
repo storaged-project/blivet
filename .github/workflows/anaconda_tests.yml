@@ -39,7 +39,7 @@ jobs:
           podman run -i --rm -v ./blivet:/blivet:z -v ./anaconda:/anaconda:z quay.io/rhinstaller/anaconda-ci:$TARGET_BRANCH sh -c " \
               set -xe; \
               dnf remove -y python3-blivet; \
-              dnf install -y python3-blockdev libblockdev-plugins-all python3-bytesize libbytesize python3-pyparted parted libselinux-python3; \
+              dnf install -y python3-blockdev libblockdev-plugins-all python3-bytesize libbytesize python3-pyparted python3-libmount parted libselinux-python3; \
               cd /blivet; \
               python3 ./setup.py install; \
               cd /anaconda; \

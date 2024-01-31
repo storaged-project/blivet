@@ -59,6 +59,11 @@ class StratisPoolDevice(StorageDevice):
         super(StratisPoolDevice, self).__init__(*args, **kwargs)
 
     @property
+    def device_id(self):
+        # STRATIS-<pool name>
+        return "STRATIS-%s" % self.name
+
+    @property
     def blockdevs(self):
         """ A list of this pool block devices """
         return self.parents[:]
@@ -215,6 +220,11 @@ class StratisFilesystemDevice(StorageDevice):
     def fsname(self):
         """ The Stratis filesystem name (not including pool name). """
         return self._name
+
+    @property
+    def device_id(self):
+        # STRATIS-<pool name>/<fsname>
+        return "STRATIS-%s/%s" % (self.pool.name, self.fsname)
 
     @property
     def pool(self):

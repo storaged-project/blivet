@@ -20,7 +20,15 @@
 # Author(s): David Lehman <dlehman@redhat.com>
 #
 
+import os
+
+import gi
+gi.require_version("BlockDev", "3.0")
+
+from gi.repository import BlockDev
+
 from . import raid
+from ..errors import BTRFSError
 from ..size import Size
 from ..tasks import availability
 
@@ -45,3 +53,16 @@ safe_name_characters = "0-9a-zA-Z._@/-"
 
 def is_btrfs_name_valid(name):
     return '\x00' not in name
+
+
+def get_mountpoint_subvolumes(mountpoint):
+    """ Get list of subvolume names on given mounted btrfs filesystem
+    """
+    if not os.path.ismount(mountpoint):
+        raise ValueError("%s doesn't seem to be a mountpoint" % mountpoint)
+    try:
+        subvols = BlockDev.btrfs.list_subvolumes(mountpoint)
+    except BlockDev.BtrfsError as e:
+        raise BTRFSError(str(e))
+    else:
+        return [s.path for s in subvols]

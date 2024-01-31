@@ -64,9 +64,3 @@ class MacEFIFormatPopulator(BootFormatPopulator):
         except AttributeError:
             # just in case device.parted_partition has no name attr
             return False
-
-
-class AppleBootFormatPopulator(BootFormatPopulator):
-    _type_specifier = "appleboot"
-    _base_type_specifier = "hfs"
-    _bootable = True

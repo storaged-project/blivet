@@ -50,8 +50,6 @@ class Flags(object):
         self.noiswmd = False
 
         self.gfs2 = True
-        self.jfs = True
-        self.reiserfs = True
 
         # for this flag to take effect,
         # blockdev.mpath.set_friendly_names(flags.multipath_friendly_names) must
@@ -72,6 +70,9 @@ class Flags(object):
         # set to False to suppress the default LVM behavior of saving
         # backup metadata in /etc/lvm/{archive,backup}
         self.lvm_metadata_backup = True
+
+        # set to False to not write new LVM PVs to /etc/lvm/devices/system.devices
+        self.lvm_devices_file = True
 
         # whether to include nodev filesystems in the devicetree
         self.include_nodev = False
@@ -112,8 +113,6 @@ class Flags(object):
         self.multipath = "nompath" not in self.boot_cmdline
         self.noiswmd = "noiswmd" in self.boot_cmdline
         self.gfs2 = "gfs2" in self.boot_cmdline
-        self.jfs = "jfs" in self.boot_cmdline
-        self.reiserfs = "reiserfs" in self.boot_cmdline
 
 
 flags = Flags()

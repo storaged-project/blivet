@@ -18,6 +18,12 @@
 #
 
 import os
+
+import gi
+gi.require_version("BlockDev", "3.0")
+
+from gi.repository import BlockDev
+
 from . import errors
 from . import udev
 from . import util
@@ -33,11 +39,18 @@ _fcoe_module_loaded = False
 def has_fcoe():
     global _fcoe_module_loaded
     if not _fcoe_module_loaded:
-        util.run_program(["modprobe", "libfc"])
-        _fcoe_module_loaded = True
+        try:
+            BlockDev.utils.load_kernel_module("libfc", None)
+        except BlockDev.UtilsError as e:
+            log.error("failed to load libfc: %s", str(e))
+        else:
+            _fcoe_module_loaded = True
         if "bnx2x" in util.lsmod():
             log.info("fcoe: loading bnx2fc")
-            util.run_program(["modprobe", "bnx2fc"])
+            try:
+                BlockDev.utils.load_kernel_module("bnx2fc", None)
+            except BlockDev.UtilsError as e:
+                log.error("failed to load bnx2fc: %s", str(e))
 
     return os.access("/sys/module/libfc", os.X_OK)
 
