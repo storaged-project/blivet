@@ -760,7 +760,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             # we reserve space for it
             self._metadata_size = self.vg.pe_size
             self._size -= self._metadata_size
-        elif self.seg_type in ("thin-pool", "cache_pool"):
+        elif self.seg_type in ("thin-pool", "cache-pool"):
             # LVMThinPoolMixin and LVMCachePoolMixin set self._metadata_size on their own
             if not self.exists and not from_lvs and not grow:
                 # a thin pool we are not going to grow -> lets calculate metadata
@@ -2311,7 +2311,7 @@ class LVMCachePoolMixin(object):
 
         old_md_size = self._metadata_size
         if self._metadata_size == 0 or enforced:
-            self._metadata_size = blockdev.lvm.cache_get_default_md_size(self._size)
+            self._metadata_size = Size(blockdev.lvm.cache_get_default_md_size(self._size))
             log.debug("Using recommended metadata size: %s", self._metadata_size)
 
         self._metadata_size = self.vg.align(self._metadata_size, roundup=True)

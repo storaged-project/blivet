@@ -1,4 +1,5 @@
 import os
+import tempfile
 import unittest
 
 from ..storagetestcase import StorageTestCase
@@ -152,3 +153,63 @@ class BtrfsTestCase(StorageTestCase):
 
     def test_btrfs_raid_raid1(self):
         self._test_btrfs_raid(blivet.devicelibs.raid.RAID1)
+
+    def test_btrfs_fs_is_empty(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.initialize_disk(disk)
+
+        part = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="btrfs",
+                                          parents=[disk])
+        self.storage.create_device(part)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        vol = self.storage.new_btrfs(name=self.volname, parents=[part])
+        self.storage.create_device(vol)
+
+        self.assertIsNotNone(vol.uuid)
+
+        sub1 = self.storage.new_btrfs_sub_volume(parents=[vol], name="blivetTestSubVol1")
+        self.storage.create_device(sub1)
+
+        sub2 = self.storage.new_btrfs_sub_volume(parents=[vol], name="blivetTestSubVol2")
+        self.storage.create_device(sub2)
+
+        sub3 = self.storage.new_btrfs_sub_volume(parents=[sub2], name="blivetTestSubVol2/blivetTestSubVol3")
+        self.storage.create_device(sub3)
+
+        self.storage.do_it()
+        self.storage.reset()
+        self.storage.reset()
+
+        vol = self.storage.devicetree.get_device_by_name(self.volname)
+        self.assertIsNotNone(vol)
+
+        self.assertTrue(vol.format.is_empty)
+        for sub in vol.subvolumes:
+            self.assertTrue(sub.format.is_empty)
+
+        # create a new directory in the second subvolume
+        with tempfile.TemporaryDirectory() as mountpoint:
+            vol.format.mount(mountpoint=mountpoint)
+            os.makedirs(os.path.join(mountpoint, "blivetTestSubVol2/test"))
+            vol.format.unmount()
+
+        self.assertTrue(vol.format.is_empty)
+
+        # first subvolume is empty
+        sub1 = self.storage.devicetree.get_device_by_name("blivetTestSubVol1")
+        self.assertIsNotNone(sub1)
+        self.assertTrue(sub1.format.is_empty)
+
+        # second subvolume is NOT empty
+        sub2 = self.storage.devicetree.get_device_by_name("blivetTestSubVol2")
+        self.assertIsNotNone(sub2)
+        self.assertFalse(sub2.format.is_empty)
+
+        # third subvolume is also empty
+        sub3 = self.storage.devicetree.get_device_by_name("blivetTestSubVol2/blivetTestSubVol3")
+        self.assertIsNotNone(sub3)
+        self.assertTrue(sub3.format.is_empty)

@@ -87,6 +87,23 @@ class Ext4FSTestCase(Ext3FSTestCase):
         out = capture_output(["blkid", "-sUUID", "-ovalue", self.loop_devices[0]])
         self.assertEqual(out.strip(), uuid)
 
+    def test_fs_is_empty(self):
+        an_fs = self._fs_class()
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+        an_fs.device = self.loop_devices[0]
+        self.assertIsNone(an_fs.create())
+
+        self.assertTrue(an_fs.is_empty)
+
+        with tempfile.TemporaryDirectory() as mountpoint:
+            an_fs.mount(mountpoint=mountpoint)
+            os.makedirs(os.path.join(mountpoint, "test"))
+            an_fs.unmount()
+            self.assertFalse(an_fs.is_empty)
+
+        self.assertFalse(an_fs.is_empty)
+
 
 class FATFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.FATFS
@@ -100,7 +117,6 @@ class BTRFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.BTRFS
 
 
-@unittest.skip("Unable to create GFS2 filesystem.")
 class GFS2TestCase(fstesting.FSAsRoot):
     _fs_class = fs.GFS2
 
@@ -194,6 +210,23 @@ class XFSTestCase(fstesting.FSAsRoot):
     def test_too_big2(self):
         # XXX this tests assumes that resizing to max size - 1 B will fail, but xfs_grow won't
         self.skipTest("Not checking resize for this test category.")
+
+    def test_fs_is_empty(self):
+        an_fs = self._fs_class()
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+        an_fs.device = self.loop_devices[0]
+        self.assertIsNone(an_fs.create())
+
+        self.assertTrue(an_fs.is_empty)
+
+        with tempfile.TemporaryDirectory() as mountpoint:
+            an_fs.mount(mountpoint=mountpoint)
+            os.makedirs(os.path.join(mountpoint, "test"))
+            an_fs.unmount()
+            self.assertFalse(an_fs.is_empty)
+
+        self.assertFalse(an_fs.is_empty)
 
 
 class HFSPlusTestCase(fstesting.FSAsRoot):
