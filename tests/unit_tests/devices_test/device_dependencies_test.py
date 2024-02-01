@@ -5,7 +5,6 @@ except ImportError:
 
 import unittest
 import os
-import six
 import blivet
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -203,7 +202,7 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         raid1 = self.bvt.new_partition(size=Size("1GiB"), fmt_type="mdmember")
         raid2 = self.bvt.new_partition(size=Size("1GiB"), fmt_type="mdmember")
 
-        with six.assertRaisesRegex(self, ValueError, "resource to create this format.*unavailable"):
+        with self.assertRaisesRegex(ValueError, "resource to create this format.*unavailable"):
             self.bvt.create_device(pv_fail)
 
         # to be able to test functions like destroy_device it is necessary to have some
@@ -245,7 +244,7 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         self.bvt.create_device(pool)
         self.unload_all_plugins()
 
-        with six.assertRaisesRegex(self, DependencyError, "requires unavailable_dependencies"):
+        with self.assertRaisesRegex(DependencyError, "requires unavailable_dependencies"):
             self.bvt.destroy_device(pool)
 
         try:
@@ -253,7 +252,7 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         except blockdev.BlockDevNotImplementedError:  # pylint: disable=catching-non-exception
             self.fail("Improper handling of missing libblockdev plugin")
 
-        with six.assertRaisesRegex(self, ValueError, "device cannot be resized"):
+        with self.assertRaisesRegex(ValueError, "device cannot be resized"):
             self.bvt.resize_device(lv3, Size("2GiB"))
 
         try:

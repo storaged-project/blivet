@@ -21,7 +21,6 @@
 
 import abc
 import os
-import six
 
 from ..errors import FSError
 from ..size import Size
@@ -29,8 +28,7 @@ from ..size import Size
 from . import fstask
 
 
-@six.add_metaclass(abc.ABCMeta)
-class FSSize(fstask.FSTask):
+class FSSize(fstask.FSTask, metaclass=abc.ABCMeta):
 
     """ An abstract class that represents size information extraction. """
     description = "current filesystem size"

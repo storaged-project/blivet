@@ -1,6 +1,5 @@
 import sys
 import abc
-import six
 from unittest import skipIf
 
 from . import loopbackedtestcase
@@ -9,8 +8,7 @@ from blivet.size import Size
 from blivet.util import capture_output
 
 
-@six.add_metaclass(abc.ABCMeta)
-class SetUUID(loopbackedtestcase.LoopBackedTestCase):
+class SetUUID(loopbackedtestcase.LoopBackedTestCase, metaclass=abc.ABCMeta):
 
     """Base class for UUID tests without any test methods."""
 
@@ -48,7 +46,7 @@ class SetUUIDWithMkFs(SetUUID):
         an_fs = self._fs_class(device=self.loop_devices[0],
                                uuid=self._invalid_uuid)
         if self._fs_class._type == "swap":
-            with six.assertRaisesRegex(self, FSWriteUUIDError, "bad UUID format"):
+            with self.assertRaisesRegex(FSWriteUUIDError, "bad UUID format"):
                 an_fs.create()
         else:
             with self.assertLogs('blivet', 'WARNING') as logs:
@@ -99,7 +97,7 @@ class SetUUIDAfterMkFs(SetUUID):
         self.assertIsNone(an_fs.create())
 
         an_fs.uuid = self._invalid_uuid
-        with six.assertRaisesRegex(self, FSError, "bad UUID format"):
+        with self.assertRaisesRegex(FSError, "bad UUID format"):
             an_fs.write_uuid()
 
     def test_reset_uuid(self):

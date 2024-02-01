@@ -1,4 +1,3 @@
-import six
 import unittest
 
 try:
@@ -51,7 +50,7 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
         self.assertAlmostEqual(fs.used_size, Size("20 MiB"), delta=Size("1 MiB"))
 
         with patch("blivet.devicetree.DeviceTree.names", []):
-            with six.assertRaisesRegex(self, StratisError, "not enough free space in the pool"):
+            with self.assertRaisesRegex(StratisError, "not enough free space in the pool"):
                 # not enough free space for a 2 TiB filesystem
                 b.new_stratis_filesystem(name="testfs2", parents=[pool], size=Size("2 TiB"))
 

@@ -51,7 +51,6 @@ BuildRequires: python3-devel
 BuildRequires: python3-setuptools
 
 Requires: python3
-Requires: python3-six
 Requires: python3-pyudev >= %{pyudevver}
 Requires: parted >= %{partedver}
 Requires: python3-pyparted >= %{pypartedver}

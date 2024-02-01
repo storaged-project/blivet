@@ -20,8 +20,6 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-from six import raise_from
-
 from .storage_log import log_method_call
 from .errors import DeviceFactoryError, StorageError
 from .devices import BTRFSDevice, DiskDevice
@@ -746,7 +744,7 @@ class DeviceFactory(object):
         except (StorageError, blockdev.BlockDevError) as e:
             log.error("device post-create method failed: %s", e)
             self.storage.destroy_device(device)
-            raise_from(StorageError(e), e)
+            raise StorageError(e) from e
         else:
             if not device.size:
                 self.storage.destroy_device(device)
@@ -941,7 +939,7 @@ class DeviceFactory(object):
                 self._revert_devicetree()
 
             if not isinstance(e, (StorageError, OverflowError)):
-                raise_from(DeviceFactoryError(e), e)
+                raise DeviceFactoryError(e) from e
 
             raise
 
@@ -2189,7 +2187,7 @@ class StratisFactory(DeviceFactory):
         except (StorageError, blockdev.BlockDevError) as e:
             log.error("device post-create method failed: %s", e)
             self.storage.destroy_device(device)
-            raise_from(StorageError(e), e)
+            raise StorageError(e) from e
         else:
             if not device.size:
                 self.storage.destroy_device(device)

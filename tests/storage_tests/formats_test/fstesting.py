@@ -1,6 +1,5 @@
 
 import abc
-from six import add_metaclass
 
 import os
 import tempfile
@@ -11,8 +10,7 @@ from blivet.size import Size, ROUND_DOWN
 from blivet.formats import fs
 
 
-@add_metaclass(abc.ABCMeta)
-class FSAsRoot(loopbackedtestcase.LoopBackedTestCase):
+class FSAsRoot(loopbackedtestcase.LoopBackedTestCase, metaclass=abc.ABCMeta):
 
     _fs_class = abc.abstractproperty(
         doc="The class of the filesystem being tested on.")

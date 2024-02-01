@@ -4,7 +4,6 @@ try:
 except ImportError:
     from mock import Mock, patch, sentinel
 
-import six
 import unittest
 
 from blivet.devicelibs import disk as disklib
@@ -92,10 +91,10 @@ class DiskLibTestCase(unittest.TestCase):
             return (volume.raid_type, volume.stripe_size, volume.drives, volume.min_io, volume.opt_io)
 
         def vpd83_search(vpd83):
-            return six.next((vol.nodes for vol in _client_volumes if vol.vpd83 == vpd83), None)
+            return next((vol.nodes for vol in _client_volumes if vol.vpd83 == vpd83), None)
 
         def system_by_id(sys_id):
-            return six.next((sys for sys in _client_systems if sys.id == sys_id), None)
+            return next((sys for sys in _client_systems if sys.id == sys_id), None)
 
         with patch("blivet.devicelibs.disk._lsm_required._check_avail", return_value=True):
             with patch("blivet.devicelibs.disk.lsm") as _lsm:

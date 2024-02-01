@@ -26,9 +26,8 @@ from __future__ import division
 
 import locale
 import os
+import pickle
 import unittest
-
-from six.moves import cPickle  # pylint: disable=import-error
 
 from decimal import Decimal
 
@@ -212,7 +211,7 @@ class SizeTestCase(unittest.TestCase):
 
     def test_pickling(self):
         s = Size("10 MiB")
-        self.assertEqual(s, cPickle.loads(cPickle.dumps(s)))
+        self.assertEqual(s, pickle.loads(pickle.dumps(s)))
 
     def test_ensure_percent_reserve(self):
         s = Size("8 GiB")

@@ -22,8 +22,6 @@
 import abc
 import shlex
 
-from six import add_metaclass
-
 from ..errors import FSError, FSWriteLabelError, FSWriteUUIDError
 from .. import util
 
@@ -36,16 +34,14 @@ gi.require_version("BlockDev", "3.0")
 from gi.repository import BlockDev
 
 
-@add_metaclass(abc.ABCMeta)
-class FSMkfsTask(fstask.FSTask):
+class FSMkfsTask(fstask.FSTask, metaclass=abc.ABCMeta):
 
     can_label = abc.abstractproperty(doc="whether this task labels")
     can_set_uuid = abc.abstractproperty(doc="whether this task can set UUID")
     can_nodiscard = abc.abstractproperty(doc="whether this task can set nodiscard option")
 
 
-@add_metaclass(abc.ABCMeta)
-class FSMkfs(task.BasicApplication, FSMkfsTask):
+class FSMkfs(task.BasicApplication, FSMkfsTask, metaclass=abc.ABCMeta):
 
     """An abstract class that represents filesystem creation actions. """
     description = "mkfs"
@@ -237,8 +233,7 @@ class HFSPlusMkfs(FSMkfs):
         return []
 
 
-@add_metaclass(abc.ABCMeta)
-class FSBlockDevMkfs(task.BasicApplication, FSMkfsTask):
+class FSBlockDevMkfs(task.BasicApplication, FSMkfsTask, metaclass=abc.ABCMeta):
 
     """An abstract class that represents filesystem creation actions. """
     description = "mkfs"

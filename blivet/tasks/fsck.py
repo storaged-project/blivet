@@ -21,8 +21,6 @@
 
 import abc
 
-from six import add_metaclass
-
 from ..errors import FSError
 from .. import util
 
@@ -33,8 +31,7 @@ from . import task
 _UNKNOWN_RC_MSG = "Unknown return code: %d"
 
 
-@add_metaclass(abc.ABCMeta)
-class FSCK(task.BasicApplication, fstask.FSTask):
+class FSCK(task.BasicApplication, fstask.FSTask, metaclass=abc.ABCMeta):
 
     """An abstract class that represents actions associated with
        checking consistency of a filesystem.

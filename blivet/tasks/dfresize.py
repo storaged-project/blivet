@@ -21,13 +21,10 @@
 
 import abc
 
-from six import add_metaclass
-
 from . import task
 
 
-@add_metaclass(abc.ABCMeta)
-class DFResizeTask(task.Task):
+class DFResizeTask(task.Task, metaclass=abc.ABCMeta):
     """ The abstract properties that any resize task must have. """
 
     unit = abc.abstractproperty(doc="Resize unit.")

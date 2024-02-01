@@ -21,7 +21,6 @@
 #
 
 import copy
-import six
 
 from ... import udev
 from ...devices import PartitionDevice
@@ -56,8 +55,8 @@ class PartitionDevicePopulator(DevicePopulator):
             disk = self._devicetree.get_device_by_device_id(disk_name)
             if disk is None:
                 # create a device instance for the disk
-                disk_info = six.next((i for i in udev.get_devices()
-                                      if udev.device_get_name(i) == disk_name), None)
+                disk_info = next((i for i in udev.get_devices()
+                                  if udev.device_get_name(i) == disk_name), None)
                 if disk_info is not None:
                     self._devicetree.handle_device(disk_info)
                     disk = self._devicetree.get_device_by_device_id(disk_name)

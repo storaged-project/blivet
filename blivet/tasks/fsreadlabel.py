@@ -21,8 +21,6 @@
 
 import abc
 
-from six import add_metaclass
-
 from ..errors import FSReadLabelError
 
 from . import availability
@@ -30,8 +28,7 @@ from . import fstask
 from . import task
 
 
-@add_metaclass(abc.ABCMeta)
-class FSReadLabel(task.BasicApplication, fstask.FSTask):
+class FSReadLabel(task.BasicApplication, fstask.FSTask, metaclass=abc.ABCMeta):
 
     """ An abstract class that represents reading a filesystem's label. """
     description = "read filesystem label"

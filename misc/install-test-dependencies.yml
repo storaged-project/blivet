@@ -44,7 +44,6 @@
         - python3-coverage
         - python3-pocketlint
         - python3-pycodestyle
-        - python3-six
         - python3-pyudev
         - python3-pyparted
         - libselinux-python3
@@ -96,7 +95,6 @@
         - xfsprogs
         - python3-coverage
         - python3-pycodestyle
-        - python3-six
         - python3-pyudev
         - python3-pyparted
         - libselinux-python3

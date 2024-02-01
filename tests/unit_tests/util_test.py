@@ -5,7 +5,6 @@ except ImportError:
     import mock
 
 import os
-import six
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -152,12 +151,9 @@ class DependencyGuardTestCase(unittest.TestCase):
 
     def test_dependency_guard(self):
         guard = TestDependencyGuard()
-        if six.PY3:
-            with self.assertLogs("blivet", level="WARNING") as cm:
-                self.assertEqual(self._test_dependency_guard_non_critical(), None)
-            self.assertTrue(TestDependencyGuard.error_msg in "\n".join(cm.output))
-        else:
+        with self.assertLogs("blivet", level="WARNING") as cm:
             self.assertEqual(self._test_dependency_guard_non_critical(), None)
+        self.assertTrue(TestDependencyGuard.error_msg in "\n".join(cm.output))
 
         with self.assertRaises(errors.DependencyError):
             self._test_dependency_guard_critical()

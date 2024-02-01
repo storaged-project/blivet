@@ -25,8 +25,6 @@ gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 
-import six
-
 import logging
 log = logging.getLogger("blivet")
 program_log = logging.getLogger("program")
@@ -202,7 +200,7 @@ def _run_program(argv, root='/', stdin=None, env_prune=None, stderr_to_stdout=Fa
                                     preexec_fn=chroot, cwd=root, env=env)
 
             out, err = proc.communicate()
-            if not binary_output and six.PY3:
+            if not binary_output:
                 out = out.decode("utf-8")
             if out:
                 if not stderr_to_stdout:
@@ -593,7 +591,7 @@ def numeric_type(num):
 
     if num is None:
         num = 0
-    elif not isinstance(num, (six.integer_types, float, Size, Decimal)):
+    elif not isinstance(num, (int, float, Size, Decimal)):
         raise ValueError("value (%s) must be either a number or None" % num)
 
     return num
@@ -1123,8 +1121,7 @@ class EvalMode(Enum):
     # TODO: no_sooner_than, if_changed,...
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DependencyGuard(object):
+class DependencyGuard(object, metaclass=abc.ABCMeta):
 
     error_msg = abc.abstractproperty(doc="Error message to report when a dependency is missing")
 

@@ -4,7 +4,6 @@ except ImportError:
     from mock import call, patch, sentinel, Mock, PropertyMock
 
 import gi
-import six
 import unittest
 
 gi.require_version("BlockDev", "3.0")
@@ -1061,7 +1060,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         def gdbu(uuid, **kwargs):  # pylint: disable=unused-argument
             # This version doesn't check format UUIDs
-            return six.next((d for d in devicetree.devices if d.uuid == uuid), None)
+            return next((d for d in devicetree.devices if d.uuid == uuid), None)
         get_device_by_uuid.side_effect = gdbu
 
         with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:

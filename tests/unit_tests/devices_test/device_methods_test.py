@@ -1,4 +1,3 @@
-import six
 import unittest
 
 try:
@@ -109,7 +108,7 @@ class StorageDeviceMethodsTestCase(unittest.TestCase):
         self.device.exists = True
         self.patches["status"].return_value = True
         with patch.object(self.device, "_create"):
-            six.assertRaisesRegex(self, DeviceError, "has already been created", self.device.create)
+            self.assertRaisesRegex(DeviceError, "has already been created", self.device.create)
             self.assertFalse(self.device._create.called)
         self.device.exists = False
 
@@ -121,7 +120,7 @@ class StorageDeviceMethodsTestCase(unittest.TestCase):
             with patch.object(self.device, "_post_create"):
                 with patch.object(self.device, "_pre_create"):
                     self.device._create.side_effect = _create
-                    six.assertRaisesRegex(self, RuntimeError, "problems", self.device.create)
+                    self.assertRaisesRegex(RuntimeError, "problems", self.device.create)
                     self.assertTrue(self.device._create.called)
                     self.assertFalse(self.device._post_create.called)
                     self.assertTrue(self.device._pre_create.called)
@@ -144,7 +143,7 @@ class StorageDeviceMethodsTestCase(unittest.TestCase):
         self.device.exists = False
         self.patches["status"].return_value = True
         with patch.object(self.device, "_destroy"):
-            six.assertRaisesRegex(self, DeviceError, "has not been created", self.device.destroy)
+            self.assertRaisesRegex(DeviceError, "has not been created", self.device.destroy)
             self.assertFalse(self.device._destroy.called)
         self.device.exists = True
 
@@ -155,7 +154,7 @@ class StorageDeviceMethodsTestCase(unittest.TestCase):
         with patch.object(self.device, "_destroy"):
             with patch.object(self.device, "_post_destroy"):
                 self.device._destroy.side_effect = _destroy
-                six.assertRaisesRegex(self, RuntimeError, "problems", self.device.destroy)
+                self.assertRaisesRegex(RuntimeError, "problems", self.device.destroy)
                 self.assertTrue(self.device._destroy.called)
                 self.assertFalse(self.device._post_destroy.called)
 
@@ -174,7 +173,7 @@ class StorageDeviceMethodsTestCase(unittest.TestCase):
         self.device.exists = False
         self.patches["status"].return_value = False
         with patch.object(self.device, "_setup"):
-            six.assertRaisesRegex(self, DeviceError, "has not been created", self.device.setup)
+            self.assertRaisesRegex(DeviceError, "has not been created", self.device.setup)
             self.assertFalse(self.device._setup.called)
 
         self.device.exists = True
@@ -217,7 +216,7 @@ class StorageDeviceMethodsTestCase(unittest.TestCase):
     def test_teardown(self):
         self.device.exists = False
         with patch.object(self.device, "_teardown"):
-            six.assertRaisesRegex(self, DeviceError, "has not been created", self.device.teardown)
+            self.assertRaisesRegex(DeviceError, "has not been created", self.device.teardown)
             self.assertFalse(self.device._teardown.called)
 
         self.device.exists = True

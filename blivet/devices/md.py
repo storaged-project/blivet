@@ -21,10 +21,9 @@
 
 import math
 import os
-import six
 import time
 
-from six.moves import reduce
+from functools import reduce
 
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -355,7 +354,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         return self._member_devices
 
     def _set_member_devices(self, number):
-        if not isinstance(number, six.integer_types):
+        if not isinstance(number, int):
             raise ValueError("member_devices must be an integer")
 
         if not self.exists and number > self.total_devices:
