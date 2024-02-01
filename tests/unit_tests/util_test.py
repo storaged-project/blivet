@@ -123,7 +123,7 @@ class TestRequiresProperty(unittest.TestCase):
         self.assertEqual(t.good_news, "Everything okay!")
 
         with self.assertRaises(ValueError):
-            t.bad_news
+            t.bad_news  # pylint: disable=pointless-statement
 
 
 class TestDependencyGuard(util.DependencyGuard):
@@ -146,7 +146,7 @@ class DependencyGuardTestCase(unittest.TestCase):
         return True
 
     def test_dependency_guard(self):
-        guard = TestDependencyGuard()
+        _guard = TestDependencyGuard()
         with self.assertLogs("blivet", level="WARNING") as cm:
             self.assertEqual(self._test_dependency_guard_non_critical(), None)
         self.assertTrue(TestDependencyGuard.error_msg in "\n".join(cm.output))

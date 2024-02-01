@@ -1,4 +1,3 @@
-# pylint: skip-file
 import unittest
 from unittest.mock import Mock, patch, sentinel
 
@@ -106,7 +105,7 @@ class DiskLibTestCase(unittest.TestCase):
                                               "volume_raid_info.side_effect": client_volume_raid_info})
                 _lsm.Client = client_mock
                 disklib.update_volume_info()
-                for (i, lvol) in enumerate(_client_volumes):
+                for (_i, lvol) in enumerate(_client_volumes):
                     bvol = disklib.volumes[lvol.nodes[0]]
                     system = system_by_id(lvol.system_id)
                     self.assertEqual(bvol.system, system.name)
