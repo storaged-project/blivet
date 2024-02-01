@@ -1,11 +1,7 @@
-try:
-    from unittest.mock import call, patch, sentinel, Mock, PropertyMock
-except ImportError:
-    from mock import call, patch, sentinel, Mock, PropertyMock
+import unittest
+from unittest.mock import call, patch, sentinel, Mock, PropertyMock
 
 import gi
-import unittest
-
 gi.require_version("BlockDev", "3.0")
 from gi.repository import BlockDev as blockdev
 

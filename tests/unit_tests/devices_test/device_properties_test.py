@@ -1,14 +1,10 @@
 import unittest
+from unittest.mock import patch, Mock
 
 import gi
 gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
-
-try:
-    from unittest.mock import patch, Mock
-except ImportError:
-    from mock import patch, Mock
 
 import blivet
 

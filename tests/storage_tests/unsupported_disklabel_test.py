@@ -1,9 +1,5 @@
-try:
-    from unittest.mock import patch, sentinel, DEFAULT
-except ImportError:
-    from mock import patch, sentinel, DEFAULT
-
 import unittest
+from unittest.mock import patch, sentinel, DEFAULT
 
 from blivet.actionlist import ActionList
 from blivet.deviceaction import ActionDestroyFormat

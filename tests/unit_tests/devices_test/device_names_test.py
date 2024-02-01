@@ -1,10 +1,6 @@
 # vim:set fileencoding=utf-8
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
-
 import unittest
+from unittest.mock import patch
 
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice

@@ -1,11 +1,7 @@
-try:
-    from unittest.mock import Mock
-except ImportError:
-    from mock import Mock
-
+import copy
 import os
 import unittest
-import copy
+from unittest.mock import Mock
 
 from blivet.fstab import FSTabManager, FSTabEntry
 from blivet.devices import DiskDevice

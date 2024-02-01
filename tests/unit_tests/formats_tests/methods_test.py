@@ -1,9 +1,5 @@
-try:
-    from unittest.mock import patch, sentinel, PropertyMock
-except ImportError:
-    from mock import patch, sentinel, PropertyMock
-
 import unittest
+from unittest.mock import patch, sentinel, PropertyMock
 
 from blivet.errors import DeviceFormatError
 from blivet.formats import DeviceFormat

@@ -1,9 +1,5 @@
-try:
-    from unittest.mock import patch, Mock, PropertyMock, sentinel
-except ImportError:
-    from mock import patch, Mock, PropertyMock, sentinel
-
 import unittest
+from unittest.mock import patch, Mock, PropertyMock, sentinel
 
 from blivet.actionlist import ActionList
 from blivet.errors import DeviceTreeError, DuplicateUUIDError, InvalidMultideviceSelection

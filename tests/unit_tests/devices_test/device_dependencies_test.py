@@ -1,10 +1,7 @@
-try:
-    from unittest.mock import patch, PropertyMock
-except ImportError:
-    from mock import patch, PropertyMock
-
-import unittest
 import os
+import unittest
+from unittest.mock import patch, PropertyMock
+
 import blivet
 import gi
 gi.require_version("BlockDev", "3.0")

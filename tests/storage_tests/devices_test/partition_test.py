@@ -5,10 +5,7 @@ import unittest
 from uuid import UUID
 import parted
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice

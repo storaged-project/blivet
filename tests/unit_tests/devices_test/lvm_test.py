@@ -1,9 +1,5 @@
-try:
-    from unittest.mock import patch, PropertyMock
-except ImportError:
-    from mock import patch, PropertyMock
-
 import unittest
+from unittest.mock import patch, PropertyMock
 
 import blivet
 

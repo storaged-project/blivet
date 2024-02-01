@@ -1,12 +1,8 @@
 # pylint: skip-file
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-
 import os
 import tempfile
 import unittest
+from unittest import mock
 from unittest.mock import patch
 from decimal import Decimal
 from textwrap import dedent

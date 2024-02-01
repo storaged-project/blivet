@@ -1,10 +1,6 @@
 # pylint: skip-file
-try:
-    from unittest.mock import Mock, patch, sentinel
-except ImportError:
-    from mock import Mock, patch, sentinel
-
 import unittest
+from unittest.mock import Mock, patch, sentinel
 
 from blivet.devicelibs import disk as disklib
 from blivet.size import Size

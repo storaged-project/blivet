@@ -1,9 +1,5 @@
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
-
 import unittest
+from unittest.mock import patch
 
 from blivet.formats.luks import LUKS
 from blivet.size import Size

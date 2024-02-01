@@ -1,9 +1,5 @@
-try:
-    from unittest.mock import patch, Mock
-except ImportError:
-    from mock import patch, Mock
-
 import unittest
+from unittest.mock import patch, Mock
 
 import parted
 

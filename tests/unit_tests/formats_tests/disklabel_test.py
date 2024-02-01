@@ -1,15 +1,9 @@
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-
 import parted
 import unittest
+from unittest.mock import Mock, PropertyMock, patch
 
 import blivet
 from blivet.size import Size
-
-patch = mock.patch
 
 
 class DiskLabelTestCase(unittest.TestCase):
@@ -17,8 +11,8 @@ class DiskLabelTestCase(unittest.TestCase):
     @patch("blivet.formats.disklabel.DiskLabel.fresh_parted_disk", None)
     def test_get_alignment(self):
         dl = blivet.formats.disklabel.DiskLabel()
-        dl._parted_disk = mock.Mock()
-        dl._parted_device = mock.Mock()
+        dl._parted_disk = Mock()
+        dl._parted_device = Mock()
         dl._parted_device.sectorSize = 512
 
         # 512 byte grain sze
@@ -111,11 +105,11 @@ class DiskLabelTestCase(unittest.TestCase):
 
     def test_label_type_size_check(self):
         dl = blivet.formats.disklabel.DiskLabel()
-        dl._parted_disk = mock.Mock()
-        dl._parted_device = mock.Mock()
+        dl._parted_disk = Mock()
+        dl._parted_device = Mock()
 
         with patch("blivet.formats.disklabel.parted") as patched_parted:
-            patched_parted.freshDisk.return_value = mock.Mock(name="parted.Disk", maxPartitionStartSector=10)
+            patched_parted.freshDisk.return_value = Mock(name="parted.Disk", maxPartitionStartSector=10)
             dl._parted_device.length = 100
             self.assertEqual(dl._label_type_size_check("foo"), False)
 
@@ -125,7 +119,7 @@ class DiskLabelTestCase(unittest.TestCase):
             dl._parted_device.length = 9
             self.assertEqual(dl._label_type_size_check("foo"), True)
 
-        with patch.object(blivet.formats.disklabel.DiskLabel, "parted_device", new=mock.PropertyMock(return_value=None)):
+        with patch.object(blivet.formats.disklabel.DiskLabel, "parted_device", new=PropertyMock(return_value=None)):
             # no parted device -> no passing size check
             self.assertEqual(dl._label_type_size_check("msdos"), False)
 
@@ -138,8 +132,8 @@ class DiskLabelTestCase(unittest.TestCase):
             4. is dasd for non-fba dasd on S390
         """
         dl = blivet.formats.disklabel.DiskLabel()
-        dl._parted_disk = mock.Mock()
-        dl._parted_device = mock.Mock()
+        dl._parted_disk = Mock()
+        dl._parted_device = Mock()
         dl._device = "labeltypefakedev"
 
         arch.is_s390.return_value = False
@@ -149,7 +143,7 @@ class DiskLabelTestCase(unittest.TestCase):
         arch.is_pmac.return_value = False
         arch.is_x86.return_value = False
 
-        with mock.patch.object(dl, '_label_type_size_check') as size_check:
+        with patch.object(dl, '_label_type_size_check') as size_check:
             # size check passes for first type ("msdos")
             size_check.return_value = True
             self.assertEqual(dl._get_best_label_type(), "msdos")
@@ -163,23 +157,23 @@ class DiskLabelTestCase(unittest.TestCase):
             self.assertEqual(dl._get_best_label_type(), "gpt")
 
         arch.is_pmac.return_value = True
-        with mock.patch.object(dl, '_label_type_size_check') as size_check:
+        with patch.object(dl, '_label_type_size_check') as size_check:
             size_check.return_value = True
             self.assertEqual(dl._get_best_label_type(), "mac")
         arch.is_pmac.return_value = False
 
         arch.is_efi.return_value = True
-        with mock.patch.object(dl, '_label_type_size_check') as size_check:
+        with patch.object(dl, '_label_type_size_check') as size_check:
             size_check.return_value = True
             self.assertEqual(dl._get_best_label_type(), "gpt")
         arch.is_efi.return_value = False
 
         arch.is_s390.return_value = True
-        with mock.patch('blivet.util.detect_virt') as virt:
+        with patch('blivet.util.detect_virt') as virt:
             virt.return_value = False
-            with mock.patch.object(dl, '_label_type_size_check') as size_check:
+            with patch.object(dl, '_label_type_size_check') as size_check:
                 size_check.return_value = True
-                with mock.patch("blivet.formats.disklabel.blockdev.s390") as _s390:
+                with patch("blivet.formats.disklabel.blockdev.s390") as _s390:
                     _s390.dasd_is_fba.return_value = False
                     self.assertEqual(dl._get_best_label_type(), "msdos")
 
