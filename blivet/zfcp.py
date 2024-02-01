@@ -562,5 +562,3 @@ class zFCP:
 
 # Create ZFCP singleton
 zfcp = zFCP()
-
-# vim:tw=78:ts=4:et:sw=4

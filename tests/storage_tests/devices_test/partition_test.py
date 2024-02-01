@@ -1,5 +1,3 @@
-# vim:set fileencoding=utf-8
-
 import os
 import unittest
 from uuid import UUID

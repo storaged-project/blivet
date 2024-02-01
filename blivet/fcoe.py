@@ -244,5 +244,3 @@ MODE="fabric"
 
 # Create FCoE singleton
 fcoe = FCoE()
-
-# vim:tw=78:ts=4:et:sw=4
