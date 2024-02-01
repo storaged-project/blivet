@@ -109,7 +109,7 @@ work to other active development branches and to ``master``.
     ``git push``
 
 - if there is no ``x.{y+1}-devel``, merge it onto ``{x+1}.y`` branches
-  as appopriate, oldest-to-newest
+  as appropriate, oldest-to-newest
 
   For example, if you already merged onto ``2.1-devel`` and there is
   no ``2.2-devel``, the next place to merge would be ``3.0-devel`` if
