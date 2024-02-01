@@ -671,54 +671,6 @@ def canonicalize_UUID(a_uuid):
     """
     return str(uuid.UUID(a_uuid.replace(':', '')))
 
-# Most Python 2/3 compatibility code equates python 2 str with python 3 bytes,
-# but the equivalence that we actually need to avoid return type surprises is
-# str/str.
-
-
-def stringize(inputstr):
-    """ Convert strings to a format compatible with Python 2's str.
-
-        :param str inputstr: the string to convert
-
-        :returns: a string with the correct type
-        :rtype: str
-
-        This method is for use in __str__ calls to ensure that they always
-        return a str. In Python 3, this method simply inputstr as a string. In
-        Python 2, it converts unicode into str. The returned str in python 2 is
-        encoded using utf-8.
-    """
-    if six.PY2:
-        # pylint: disable=undefined-variable
-        if isinstance(inputstr, unicode):
-            inputstr = inputstr.encode('utf-8')
-
-    return str(inputstr)
-
-# Like six.u, but without the part where it raises an exception on unicode
-# objects
-
-
-def unicodeize(inputstr):
-    """ Convert strings to a format compatible with Python 2's unicode.
-
-        :param str inputstr: the string to convert
-
-        :returns: a string with the correct type
-        :rtype: unicode
-
-        This method is for use in __unicode__ calls to ensure that they always
-        return a unicode. This method does not handle non-ASCII characters
-        in str parameters, but non-ASCII characters in unicode parameters will
-        be correctly passed through.
-    """
-    if six.PY2:
-        # pylint: disable=undefined-variable
-        return unicode(inputstr)
-    else:
-        return str(inputstr)
-
 
 def compare(first, second):
     """ Compare two objects.

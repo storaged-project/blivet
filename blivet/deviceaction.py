@@ -292,10 +292,7 @@ class DeviceAction(util.ObjectID, metaclass=SynchronizedMeta):
         return s
 
     def __str__(self):
-        return util.stringize(self._to_string())
-
-    def __unicode__(self):
-        return util.unicodeize(self._to_string())
+        return self._to_string()
 
     def requires(self, action):
         """ Return True if self requires action. """
