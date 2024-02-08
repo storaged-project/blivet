@@ -1,9 +1,5 @@
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
-
 import unittest
+from unittest.mock import patch
 
 from blivet.devices import DiskDevice, FcoeDiskDevice, iScsiDiskDevice, MultipathDevice, StorageDevice, ZFCPDiskDevice
 from blivet.devices.lib import Tags

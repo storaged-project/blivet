@@ -21,8 +21,6 @@
 
 import abc
 
-from six import add_metaclass
-
 from ..errors import FSError
 from .. import util
 from ..size import Size
@@ -32,8 +30,7 @@ from . import fstask
 from . import task
 
 
-@add_metaclass(abc.ABCMeta)
-class FSMinSize(task.BasicApplication, fstask.FSTask):
+class FSMinSize(task.BasicApplication, fstask.FSTask, metaclass=abc.ABCMeta):
 
     """ An abstract class that represents min size information extraction. """
 

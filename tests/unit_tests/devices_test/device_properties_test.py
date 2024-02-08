@@ -1,15 +1,10 @@
-import six
 import unittest
+from unittest.mock import patch, Mock
 
 import gi
 gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
-
-try:
-    from unittest.mock import patch, Mock
-except ImportError:
-    from mock import patch, Mock
 
 import blivet
 
@@ -76,7 +71,7 @@ class DeviceStateTestCase(unittest.TestCase):
             "parents": xform(lambda x, m: self.assertEqual(len(x), 0, m) and
                              self.assertIsInstance(x, ParentList, m)),
             "partitionable": xform(self.assertFalse),
-            "path": xform(lambda x, m: six.assertRegex(self, x, "^/dev", m)),
+            "path": xform(lambda x, m: self.assertRegex(x, "^/dev", m)),
             "raw_device": xform(self.assertIsNotNone),
             "resizable": xform(self.assertFalse),
             "size": xform(lambda x, m: self.assertEqual(x, Size(0), m)),
@@ -549,35 +544,35 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
                          parents=xform(lambda x, m: self.assertEqual(len(x), 2, m)),
                          uuid=xform(lambda x, m: self.assertEqual(x, self.dev20.uuid, m)))
 
-        with six.assertRaisesRegex(self, DeviceError, "invalid"):
+        with self.assertRaisesRegex(DeviceError, "invalid"):
             MDRaidArrayDevice("dev")
 
-        with six.assertRaisesRegex(self, DeviceError, "invalid"):
+        with self.assertRaisesRegex(DeviceError, "invalid"):
             MDRaidArrayDevice("dev", level="raid2")
 
-        with six.assertRaisesRegex(self, DeviceError, "invalid"):
+        with self.assertRaisesRegex(DeviceError, "invalid"):
             MDRaidArrayDevice(
                 "dev",
                 parents=[StorageDevice("parent", fmt=get_format("mdmember"))])
 
-        with six.assertRaisesRegex(self, DeviceError, "at least 2 members"):
+        with self.assertRaisesRegex(DeviceError, "at least 2 members"):
             MDRaidArrayDevice(
                 "dev",
                 level="raid0",
                 parents=[StorageDevice("parent", fmt=get_format("mdmember"))])
 
-        with six.assertRaisesRegex(self, DeviceError, "invalid"):
+        with self.assertRaisesRegex(DeviceError, "invalid"):
             MDRaidArrayDevice("dev", level="junk")
 
-        with six.assertRaisesRegex(self, DeviceError, "at least 2 members"):
+        with self.assertRaisesRegex(DeviceError, "at least 2 members"):
             MDRaidArrayDevice("dev", level=0, member_devices=2)
 
     def test_mdraid_array_device_methods(self):
         """Test for method calls on initialized MDRaidDevices."""
-        with six.assertRaisesRegex(self, DeviceError, "invalid"):
+        with self.assertRaisesRegex(DeviceError, "invalid"):
             self.dev7.level = "junk"
 
-        with six.assertRaisesRegex(self, DeviceError, "invalid"):
+        with self.assertRaisesRegex(DeviceError, "invalid"):
             self.dev7.level = None
 
 
@@ -653,27 +648,27 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
                          type=xform(lambda x, m: self.assertEqual(x, "btrfs volume", m)),
                          uuid=xform(self.assertIsNotNone))
 
-        with six.assertRaisesRegex(self, ValueError, "BTRFSDevice.*must have at least one parent"):
+        with self.assertRaisesRegex(ValueError, "BTRFSDevice.*must have at least one parent"):
             BTRFSVolumeDevice("dev")
 
-        with six.assertRaisesRegex(self, ValueError, "format"):
+        with self.assertRaisesRegex(ValueError, "format"):
             BTRFSVolumeDevice("dev", parents=[StorageDevice("deva", size=BTRFS_MIN_MEMBER_SIZE)])
 
-        with six.assertRaisesRegex(self, DeviceError, "btrfs subvolume.*must be a btrfs volume"):
+        with self.assertRaisesRegex(DeviceError, "btrfs subvolume.*must be a btrfs volume"):
             fmt = blivet.formats.get_format("btrfs")
             device = StorageDevice("deva", fmt=fmt, size=BTRFS_MIN_MEMBER_SIZE)
             BTRFSSubVolumeDevice("dev1", parents=[device])
 
         deva = OpticalDevice("deva", fmt=blivet.formats.get_format("btrfs", exists=True),
                              exists=True)
-        with six.assertRaisesRegex(self, BTRFSValueError, "at least"):
+        with self.assertRaisesRegex(BTRFSValueError, "at least"):
             BTRFSVolumeDevice("dev1", data_level="raid1", parents=[deva])
 
         deva = StorageDevice("deva", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)
         self.assertIsNotNone(BTRFSVolumeDevice("dev1", metadata_level="dup", parents=[deva]))
 
         deva = StorageDevice("deva", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)
-        with six.assertRaisesRegex(self, BTRFSValueError, "invalid"):
+        with self.assertRaisesRegex(BTRFSValueError, "invalid"):
             BTRFSVolumeDevice("dev1", data_level="dup", parents=[deva])
 
         self.assertEqual(self.dev1.isleaf, False)
@@ -698,24 +693,24 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
         self.assertIsNotNone(self.dev2.volume)
 
         # size
-        with six.assertRaisesRegex(self, RuntimeError, "cannot directly set size of btrfs volume"):
+        with self.assertRaisesRegex(RuntimeError, "cannot directly set size of btrfs volume"):
             self.dev1.size = Size("500 MiB")
 
     def test_btrfssnap_shot_device_init(self):
         parents = [StorageDevice("p1", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE)]
         vol = BTRFSVolumeDevice("test", parents=parents)
-        with six.assertRaisesRegex(self, ValueError, "non-existent btrfs snapshots must have a source"):
+        with self.assertRaisesRegex(ValueError, "non-existent btrfs snapshots must have a source"):
             BTRFSSnapShotDevice("snap1", parents=[vol])
 
-        with six.assertRaisesRegex(self, ValueError, "btrfs snapshot source must already exist"):
+        with self.assertRaisesRegex(ValueError, "btrfs snapshot source must already exist"):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=vol)
 
-        with six.assertRaisesRegex(self, ValueError, "btrfs snapshot source must be a btrfs subvolume"):
+        with self.assertRaisesRegex(ValueError, "btrfs snapshot source must be a btrfs subvolume"):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=parents[0])
 
         parents2 = [StorageDevice("p1", fmt=blivet.formats.get_format("btrfs"), size=BTRFS_MIN_MEMBER_SIZE, exists=True)]
         vol2 = BTRFSVolumeDevice("test2", parents=parents2, exists=True)
-        with six.assertRaisesRegex(self, ValueError, ".*snapshot and source must be in the same volume"):
+        with self.assertRaisesRegex(ValueError, ".*snapshot and source must be in the same volume"):
             BTRFSSnapShotDevice("snap1", parents=[vol], source=vol2)
 
         vol.exists = True

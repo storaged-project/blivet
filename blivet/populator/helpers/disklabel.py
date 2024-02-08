@@ -21,7 +21,6 @@
 #
 
 import os
-import six
 
 from ... import formats
 from ... import udev
@@ -111,22 +110,22 @@ class DiskLabelFormatPopulator(FormatPopulator):
             start_sector = partition.parted_partition.geometry.start
             udev_device = None
             if self.device.format.label_type == "gpt":
-                udev_device = six.next((ud for ud in udev_devices
-                                        if udev.device_get_partition_uuid(ud) == partition.uuid),
-                                       None)
+                udev_device = next((ud for ud in udev_devices
+                                   if udev.device_get_partition_uuid(ud) == partition.uuid),
+                                   None)
             else:
-                udev_device = six.next((ud for ud in udev_devices
-                                        if udev.device_get_partition_disk(ud) == self.device.name and
-                                        int(ud.get("ID_PART_ENTRY_OFFSET")) == start_sector),
-                                       None)
+                udev_device = next((ud for ud in udev_devices
+                                    if udev.device_get_partition_disk(ud) == self.device.name and
+                                    int(ud.get("ID_PART_ENTRY_OFFSET")) == start_sector),
+                                   None)
 
             if udev_device is None:
                 self._devicetree.recursive_remove(partition, modparent=False, actions=False)
                 continue
 
-            parted_partition = six.next((pp for pp in parted_partitions
-                                         if os.path.basename(pp.path) == udev.device_get_name(udev_device)),
-                                        None)
+            parted_partition = next((pp for pp in parted_partitions
+                                     if os.path.basename(pp.path) == udev.device_get_name(udev_device)),
+                                    None)
             log.debug("got parted_partition %s for partition %s",
                       parted_partition.path.split("/")[-1], partition.name)
             partition.parted_partition = parted_partition
@@ -135,10 +134,10 @@ class DiskLabelFormatPopulator(FormatPopulator):
         for parted_partition in self.device.format.partitions:
             partition_name = os.path.basename(parted_partition.path)
             start_sector = parted_partition.geometry.start
-            udev_device = six.next((ud for ud in udev_devices
-                                    if udev.device_get_name(ud) == partition_name and
-                                    int(ud.get("ID_PART_ENTRY_OFFSET")) == start_sector),
-                                   None)
+            udev_device = next((ud for ud in udev_devices
+                                if udev.device_get_name(ud) == partition_name and
+                               int(ud.get("ID_PART_ENTRY_OFFSET")) == start_sector),
+                               None)
 
             if udev_device is None:
                 continue

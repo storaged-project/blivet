@@ -22,8 +22,6 @@
 
 import copy
 
-from six import add_metaclass
-
 from . import util
 from . import udev
 from .errors import DependencyError, PartitioningError
@@ -108,8 +106,7 @@ def resize_type_from_string(type_string):
             return k
 
 
-@add_metaclass(SynchronizedMeta)
-class DeviceAction(util.ObjectID):
+class DeviceAction(util.ObjectID, metaclass=SynchronizedMeta):
 
     """ An action that will be carried out in the future on a Device.
 
@@ -295,10 +292,7 @@ class DeviceAction(util.ObjectID):
         return s
 
     def __str__(self):
-        return util.stringize(self._to_string())
-
-    def __unicode__(self):
-        return util.unicodeize(self._to_string())
+        return self._to_string()
 
     def requires(self, action):
         """ Return True if self requires action. """

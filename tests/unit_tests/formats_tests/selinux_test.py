@@ -1,12 +1,8 @@
 # pylint: disable=unused-import
 import os
 
-try:
-    from unittest.mock import patch, ANY
-except ImportError:
-    from mock import patch, ANY
-
 import unittest
+from unittest.mock import patch, ANY
 
 import blivet
 import blivet.formats.fs as fs

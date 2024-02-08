@@ -1,10 +1,5 @@
-try:
-    from unittest.mock import patch, Mock, PropertyMock, sentinel
-except ImportError:
-    from mock import patch, Mock, PropertyMock, sentinel
-
-import six
 import unittest
+from unittest.mock import patch, Mock, PropertyMock, sentinel
 
 from blivet.actionlist import ActionList
 from blivet.errors import DeviceTreeError, DuplicateUUIDError, InvalidMultideviceSelection
@@ -217,17 +212,17 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertTrue(dev1.add_hook.called)  # pylint: disable=no-member
 
         # adding an already-added device fails
-        six.assertRaisesRegex(self, DeviceTreeError, "Trying to add already existing device.", dt._add_device, dev1)
+        self.assertRaisesRegex(DeviceTreeError, "Trying to add already existing device.", dt._add_device, dev1)
 
         # adding a device with the same UUID
         dev_clone = StorageDevice("dev_clone", exists=False, uuid=sentinel.dev1_uuid, parents=[])
-        six.assertRaisesRegex(self, DuplicateUUIDError, "Duplicate UUID.*", dt._add_device, dev_clone)
+        self.assertRaisesRegex(DuplicateUUIDError, "Duplicate UUID.*", dt._add_device, dev_clone)
 
         dev2 = StorageDevice("dev2", exists=False, parents=[])
         dev3 = StorageDevice("dev3", exists=False, parents=[dev1, dev2])
 
         # adding a device with one or more parents not already in the tree fails
-        six.assertRaisesRegex(self, DeviceTreeError, "parent.*not in tree", dt._add_device, dev3)
+        self.assertRaisesRegex(DeviceTreeError, "parent.*not in tree", dt._add_device, dev3)
         self.assertFalse(dev2 in dt.devices)
         self.assertFalse(dev2.name in dt.names)
 
@@ -247,7 +242,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         dev1 = StorageDevice("dev1", exists=False, parents=[])
 
         # removing a device not in the tree raises an exception
-        six.assertRaisesRegex(self, ValueError, "not in tree", dt._remove_device, dev1)
+        self.assertRaisesRegex(ValueError, "not in tree", dt._remove_device, dev1)
 
         dt._add_device(dev1)
         with patch("blivet.devicetree.callbacks") as callbacks:
@@ -265,7 +260,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertTrue(dev2.name in dt.names)
 
         # removal of a non-leaf device raises an exception
-        six.assertRaisesRegex(self, ValueError, "non-leaf device", dt._remove_device, dev1)
+        self.assertRaisesRegex(ValueError, "non-leaf device", dt._remove_device, dev1)
         self.assertTrue(dev1 in dt.devices)
         self.assertTrue(dev1.name in dt.names)
         self.assertTrue(dev2 in dt.devices)

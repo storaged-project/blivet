@@ -23,7 +23,6 @@
 import os
 import pprint
 import re
-import six
 
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -52,8 +51,7 @@ log = logging.getLogger("blivet")
 _LVM_DEVICE_CLASSES = (LVMLogicalVolumeDevice, LVMVolumeGroupDevice)
 
 
-@six.add_metaclass(SynchronizedMeta)
-class DeviceTreeBase(object):
+class DeviceTreeBase(object, metaclass=SynchronizedMeta):
     """ A quasi-tree that represents the devices in the system.
 
         The tree contains a list of :class:`~.devices.StorageDevice` instances,
@@ -500,7 +498,7 @@ class DeviceTreeBase(object):
         result = None
         if path:
             devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-            result = six.next((d for d in devices if d.sysfs_path == path), None)
+            result = next((d for d in devices if d.sysfs_path == path), None)
         log_method_return(self, result)
         return result
 
@@ -517,7 +515,7 @@ class DeviceTreeBase(object):
         result = None
         if uuid:
             devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-            result = six.next((d for d in devices if d.uuid == uuid or d.format.uuid == uuid), None)
+            result = next((d for d in devices if d.uuid == uuid or d.format.uuid == uuid), None)
         log_method_return(self, result)
         return result
 
@@ -534,7 +532,7 @@ class DeviceTreeBase(object):
         result = None
         if label:
             devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-            result = six.next((d for d in devices if getattr(d.format, "label", None) == label), None)
+            result = next((d for d in devices if getattr(d.format, "label", None) == label), None)
         log_method_return(self, result)
         return result
 
@@ -551,9 +549,9 @@ class DeviceTreeBase(object):
         result = None
         if name:
             devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-            result = six.next((d for d in devices if d.name == name or
-                               (isinstance(d, _LVM_DEVICE_CLASSES) and d.name == name.replace("--", "-"))),
-                              None)
+            result = next((d for d in devices if d.name == name or
+                          (isinstance(d, _LVM_DEVICE_CLASSES) and d.name == name.replace("--", "-"))),
+                          None)
         log_method_return(self, result)
         return result
 
@@ -577,9 +575,9 @@ class DeviceTreeBase(object):
             # The usual order of the devices list is one where leaves are at
             # the end. So that the search can prefer leaves to interior nodes
             # the list that is searched is the reverse of the devices list.
-            result = six.next((d for d in reversed(list(devices)) if d.path == path or
-                               (isinstance(d, _LVM_DEVICE_CLASSES) and d.path == path.replace("--", "-"))),
-                              None)
+            result = next((d for d in reversed(list(devices)) if d.path == path or
+                          (isinstance(d, _LVM_DEVICE_CLASSES) and d.path == path.replace("--", "-"))),
+                          None)
 
         log_method_return(self, result)
         return result
@@ -595,7 +593,7 @@ class DeviceTreeBase(object):
         """
         log_method_call(self, id_num=id_num, incomplete=incomplete, hidden=hidden)
         devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-        result = six.next((d for d in devices if d.id == id_num), None)
+        result = next((d for d in devices if d.id == id_num), None)
         log_method_return(self, result)
         return result
 
@@ -610,7 +608,7 @@ class DeviceTreeBase(object):
         """
         log_method_call(self, device_id=device_id, incomplete=incomplete, hidden=hidden)
         devices = self._filter_devices(incomplete=incomplete, hidden=hidden)
-        result = six.next((d for d in devices if d.device_id == device_id), None)
+        result = next((d for d in devices if d.device_id == device_id), None)
         log_method_return(self, result)
         return result
 

@@ -23,7 +23,6 @@
 import getopt
 import os
 import shutil
-import six
 import subprocess
 import sys
 
@@ -80,10 +79,8 @@ def doGitDiff(tag, args=None):
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     out, _err = proc.communicate()
-    if six.PY3:
-        out = out.decode("utf-8")
 
-    return out.split('\n')
+    return out.decode("utf-8").split('\n')
 
 def copyUpdatedFiles(tag, updates, python_version):
     def install_to_dir(fname, relpath):

@@ -1,10 +1,5 @@
-try:
-    from unittest.mock import patch, sentinel, PropertyMock
-except ImportError:
-    from mock import patch, sentinel, PropertyMock
-
-import six
 import unittest
+from unittest.mock import patch, sentinel, PropertyMock
 
 from blivet.errors import DeviceFormatError
 from blivet.formats import DeviceFormat
@@ -88,7 +83,7 @@ class FormatMethodsTestCase(unittest.TestCase):
         self.format.exists = True
         with patch.object(self.format, "_create"):
             self.set_os_path_exists(True)
-            six.assertRaisesRegex(self, DeviceFormatError, "format already exists", self.format.create)
+            self.assertRaisesRegex(DeviceFormatError, "format already exists", self.format.create)
             self.assertFalse(self.format._create.called)  # pylint: disable=no-member
         self.format.exists = False
 
@@ -96,7 +91,7 @@ class FormatMethodsTestCase(unittest.TestCase):
         with patch.object(self.format, "_create"):
             # device must be accessible
             self.set_os_path_exists(False)
-            six.assertRaisesRegex(self, DeviceFormatError, "invalid device specification", self.format.create)
+            self.assertRaisesRegex(DeviceFormatError, "invalid device specification", self.format.create)
             self.assertFalse(self.format._create.called)  # pylint: disable=no-member
         self.set_os_path_exists(True)
 
@@ -110,14 +105,14 @@ class FormatMethodsTestCase(unittest.TestCase):
         with patch.object(self.format, "_create"):
             with patch.object(self.format, "_pre_create") as m:
                 m.side_effect = _fail
-                six.assertRaisesRegex(self, RuntimeError, "problems", self.format.create)
+                self.assertRaisesRegex(RuntimeError, "problems", self.format.create)
                 self.assertFalse(self.format._create.called)  # pylint: disable=no-member
                 self.assertFalse(self.format.exists)
 
         # _create raises -> no _post_create -> exists == False
         with patch.object(self.format, "_create") as m:
             m.side_effect = _fail
-            six.assertRaisesRegex(self, RuntimeError, "problems", self.format.create)
+            self.assertRaisesRegex(RuntimeError, "problems", self.format.create)
             self.assertTrue(self.format._create.called)  # pylint: disable=no-member
             self.assertFalse(self.format.exists)
 
@@ -141,7 +136,7 @@ class FormatMethodsTestCase(unittest.TestCase):
         self.format.exists = False
         with patch.object(self.format, "_destroy"):
             self.patches["os"].access.return_value = True
-            six.assertRaisesRegex(self, DeviceFormatError, "has not been created", self.format.destroy)
+            self.assertRaisesRegex(DeviceFormatError, "has not been created", self.format.destroy)
             self.assertFalse(self.format._destroy.called)  # pylint: disable=no-member
 
         self.format.exists = True
@@ -149,14 +144,14 @@ class FormatMethodsTestCase(unittest.TestCase):
         # format must be inactive
         with patch.object(self.format, "_destroy"):
             self.patches["status"].return_value = True
-            six.assertRaisesRegex(self, DeviceFormatError, "is active", self.format.destroy)
+            self.assertRaisesRegex(DeviceFormatError, "is active", self.format.destroy)
             self.assertFalse(self.format._destroy.called)  # pylint: disable=no-member
 
         # device must be accessible
         with patch.object(self.format, "_destroy"):
             self.patches["os"].access.return_value = False
             self.patches["status"].return_value = False
-            six.assertRaisesRegex(self, DeviceFormatError, "device path does not exist", self.format.destroy)
+            self.assertRaisesRegex(DeviceFormatError, "device path does not exist", self.format.destroy)
             self.assertFalse(self.format._destroy.called)  # pylint: disable=no-member
 
         self.patches["os"].access.return_value = True
@@ -170,14 +165,14 @@ class FormatMethodsTestCase(unittest.TestCase):
         with patch.object(self.format, "_destroy"):
             with patch.object(self.format, "_pre_destroy") as m:
                 m.side_effect = _fail
-                six.assertRaisesRegex(self, RuntimeError, "problems", self.format.destroy)
+                self.assertRaisesRegex(RuntimeError, "problems", self.format.destroy)
                 self.assertFalse(self.format._destroy.called)  # pylint: disable=no-member
                 self.assertTrue(self.format.exists)
 
         # _destroy raises -> no _post_destroy -> exists == True
         with patch.object(self.format, "_destroy") as m:
             m.side_effect = _fail
-            six.assertRaisesRegex(self, RuntimeError, "problems", self.format.destroy)
+            self.assertRaisesRegex(RuntimeError, "problems", self.format.destroy)
             self.assertTrue(self.format._destroy.called)  # pylint: disable=no-member
             self.assertTrue(self.format.exists)
 
@@ -201,7 +196,7 @@ class FormatMethodsTestCase(unittest.TestCase):
         self.format.exists = False
         with patch.object(self.format, "_setup"):
             self.set_os_path_exists(True)
-            six.assertRaisesRegex(self, DeviceFormatError, "has not been created", self.format.setup)
+            self.assertRaisesRegex(DeviceFormatError, "has not been created", self.format.setup)
             # _pre_setup raises exn -> no _setup
             self.assertFalse(self.format._setup.called)  # pylint: disable=no-member
         self.format.exists = True
@@ -209,7 +204,7 @@ class FormatMethodsTestCase(unittest.TestCase):
         # device must be accessible
         with patch.object(self.format, "_setup"):
             self.set_os_path_exists(False)
-            six.assertRaisesRegex(self, DeviceFormatError, "invalid|does not exist", self.format.setup)
+            self.assertRaisesRegex(DeviceFormatError, "invalid|does not exist", self.format.setup)
             # _pre_setup raises exn -> no _setup
             self.assertFalse(self.format._setup.called)  # pylint: disable=no-member
 
@@ -229,7 +224,7 @@ class FormatMethodsTestCase(unittest.TestCase):
 
         with patch.object(self.format, "_setup", side_effect=_fail):
             with patch.object(self.format, "_post_setup"):
-                six.assertRaisesRegex(self, RuntimeError, "problems", self.format.setup)
+                self.assertRaisesRegex(RuntimeError, "problems", self.format.setup)
                 self.assertFalse(self.format._post_setup.called)  # pylint: disable=no-member
 
         # _setup succeeds -> _post_setup
@@ -247,7 +242,7 @@ class FormatMethodsTestCase(unittest.TestCase):
         self.format.exists = False
         with patch.object(self.format, "_teardown"):
             self.set_os_path_exists(True)
-            six.assertRaisesRegex(self, DeviceFormatError, "has not been created", self.format.teardown)
+            self.assertRaisesRegex(DeviceFormatError, "has not been created", self.format.teardown)
             self.assertFalse(self.format._teardown.called)  # pylint: disable=no-member
         self.format.exists = True
 
@@ -255,7 +250,7 @@ class FormatMethodsTestCase(unittest.TestCase):
         # device must be accessible
         # with patch.object(self.format, "_teardown"):
         #    self.set_os_path_exists(False)
-        #    six.assertRaisesRegex(self, DeviceFormatError, "invalid device specification", self.format.teardown)
+        #    self.assertRaisesRegex(DeviceFormatError, "invalid device specification", self.format.teardown)
         #    self.assertFalse(self.format._teardown.called)  # pylint: disable=no-member
 
         # _teardown fails -> no _post_teardown
@@ -267,7 +262,7 @@ class FormatMethodsTestCase(unittest.TestCase):
 
         with patch.object(self.format, "_teardown", side_effect=_fail):
             with patch.object(self.format, "_post_teardown"):
-                six.assertRaisesRegex(self, RuntimeError, "problems", self.format.teardown)
+                self.assertRaisesRegex(RuntimeError, "problems", self.format.teardown)
                 self.assertFalse(self.format._post_teardown.called)  # pylint: disable=no-member
 
         # _teardown succeeds -> _post_teardown

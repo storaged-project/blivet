@@ -20,11 +20,10 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+import functools
 import threading
 from types import FunctionType
 from abc import ABCMeta
-from six import raise_from, wraps, PY3
-import functools
 
 from .errors import ThreadError
 from .flags import flags
@@ -33,22 +32,19 @@ blivet_lock = threading.RLock(verbose=flags.debug_threads)
 
 
 def _is_main_thread():
-    if PY3:
-        return threading.current_thread() == threading.main_thread()
-    else:
-        return threading.currentThread().name == "MainThread"  # pylint: disable=deprecated-method
+    return threading.current_thread() == threading.main_thread()
 
 
 def exclusive(m):
     """ Run a callable while holding the global lock. """
-    @wraps(m, set(functools.WRAPPER_ASSIGNMENTS) & set(dir(m)))
+    @functools.wraps(m, set(functools.WRAPPER_ASSIGNMENTS) & set(dir(m)))
     def run_with_lock(*args, **kwargs):
         with blivet_lock:
             if _is_main_thread():
                 exn_info = get_thread_exception()
                 if exn_info[1]:
                     clear_thread_exception()
-                    raise_from(ThreadError("raising queued exception"), exn_info[1])
+                    raise ThreadError("raising queued exception") from exn_info[1]
 
             return m(*args, **kwargs)
 

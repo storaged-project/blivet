@@ -35,7 +35,7 @@ from .flags import flags
 from .devices import Device, PartitionDevice, device_path_to_name
 from .size import Size
 from .i18n import _
-from .util import stringize, unicodeize, compare
+from .util import compare
 
 import logging
 log = logging.getLogger("blivet")
@@ -1177,10 +1177,7 @@ class Chunk(object):
         return s
 
     def __str__(self):
-        return stringize(self._to_string())
-
-    def __unicode__(self):
-        return unicodeize(self._to_string())
+        return self._to_string()
 
     def add_request(self, req):
         """ Add a request to this chunk.
@@ -1413,10 +1410,7 @@ class DiskChunk(Chunk):
         return s
 
     def __str__(self):
-        return stringize(self._to_string())
-
-    def __unicode__(self):
-        return unicodeize(self._to_string())
+        return self._to_string()
 
     def add_request(self, req):
         """ Add a request to this chunk.

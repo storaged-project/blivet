@@ -1,10 +1,6 @@
 import random
 
-try:
-    from unittest.mock import patch, Mock, call
-except ImportError:
-    from mock import patch, Mock, call
-
+from unittest.mock import patch, Mock, call
 from unittest import TestCase
 
 import dbus
