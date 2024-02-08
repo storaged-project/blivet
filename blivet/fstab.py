@@ -391,8 +391,45 @@ class FSTabManager(object):
         entry.spec = self._get_spec(device)
         if entry.spec is None:
             entry.spec = getattr(device, "fstab_spec", None)
-
         entry.vfstype = device.format.type
+
+        return entry
+
+    def entry_from_action(self, action):
+        """ Generate FSTabEntry object based on given blivet Action
+
+            :keyword action: action to process
+            :type action: :class: `blivet.deviceaction.DeviceAction`
+            :returns: fstab entry object based on device processed by action
+            :rtype: :class: `FSTabEntry`
+        """
+
+        if not action.is_format:
+            raise ValueError("""cannot generate fstab entry from action '%s' because
+                                its type is not 'format'""" % action)
+
+        fmt = action.format
+        if action.is_destroy:
+            fmt = action.orig_format
+        if action.is_create:
+            fmt = action.device.format
+
+        entry = FSTabEntry()
+
+        entry.file = None
+        if fmt.mountable:
+            entry.file = fmt.mountpoint
+        elif fmt.type == "swap":
+            entry.file = "swap"
+        else:
+            raise ValueError("""cannot generate fstab entry from action '%s' because
+                                it is neither mountable nor swap type""" % action)
+
+        entry.spec = self._get_spec(action.device)
+        if entry.spec is None:
+            entry.spec = getattr(action.device, "fstab_spec", None)
+
+        entry.vfstype = action.device.format.type
 
         return entry
 
@@ -546,7 +583,7 @@ class FSTabManager(object):
 
         if mntops is not None:
             _entry.mntops = mntops
-        elif _entry.mntops is None:
+        if _entry.mntops is None:
             _entry.mntops = ['defaults']
 
         if freq is not None:
@@ -696,7 +733,11 @@ class FSTabManager(object):
         # Use "globally" set (on FSTabManager level) spec type otherwise
 
         spec = None
-        spec_type = device.format.fstab.spec_type or self.spec_type
+
+        if hasattr(device.format, 'fstab') and device.format.fstab.spec_type:
+            spec_type = device.format.fstab.spec_type
+        else:
+            spec_type = self.spec_type
 
         if spec_type == "LABEL" and device.format.label:
             spec = "LABEL=%s" % device.format.label
@@ -737,7 +778,7 @@ class FSTabManager(object):
             # does not have UUID assigned yet, so we skip that one
             return
 
-        if action.is_create and action.device.format.mountable:
+        if action.is_create and action.is_format and action.device.format.mountable:
             # add the device to the fstab
             # make sure it is not already present there
             try:
@@ -745,6 +786,7 @@ class FSTabManager(object):
             except ValueError:
                 # this device should not be at fstab
                 found = None
+                entry = None
             else:
                 found = self.find_entry(entry=entry)
 
@@ -754,6 +796,7 @@ class FSTabManager(object):
             if found is None and action.device.format.mountpoint is not None:
                 # device is not present in fstab and has a defined mountpoint => add it
                 self.add_entry(spec=spec,
+                               file=action.device.format.mountpoint,
                                mntops=action.device.format.fstab.mntops,
                                freq=action.device.format.fstab.freq,
                                passno=action.device.format.fstab.passno,
