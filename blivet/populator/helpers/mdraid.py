@@ -60,6 +60,8 @@ class MDDevicePopulator(DevicePopulator):
         # try to get the device again now that we've got all the parents
         if name:
             device = self._devicetree.get_device_by_device_id("MDRAID-" + name, incomplete=flags.allow_imperfect_devices)
+        else:
+            device = None
 
         if device is None:
             try:
