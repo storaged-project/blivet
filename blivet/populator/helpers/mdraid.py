@@ -31,7 +31,7 @@ from ... import udev
 from ...devicelibs import raid
 from ...devices import MDRaidArrayDevice, MDContainerDevice
 from ...devices import device_path_to_name
-from ...errors import DeviceError, NoParentsError
+from ...errors import DeviceError, NoParentsError, MDRaidError
 from ...flags import flags
 from ...storage_log import log_method_call
 from .devicepopulator import DevicePopulator
@@ -221,6 +221,12 @@ class MDFormatPopulator(FormatPopulator):
                     return
 
                 self._devicetree.handle_device(array_info, update_orig_fmt=True)
+
+        if flags.auto_dev_updates and md_array and not md_array.status and md_array.complete:
+            try:
+                md_array.setup()
+            except MDRaidError:
+                log.warning("failed to activate MD array %s", md_array.name)
 
     def update(self):
         # update array based on current md data
