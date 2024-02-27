@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.9.0
+Version: 3.9.1
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -110,6 +110,16 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Tue Feb 27 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.9.1-1
+- Try to assemble MD arrays during populate (#2236356) (vtrefny)
+- Fix UnboundLocalError in MD populator (vtrefny)
+- Fix crash when scanning degraded/not fully assembled MD arrays (vtrefny)
+- pylint: Remove some old false positives (vtrefny)
+- tests: Skip MD storage tests on RHEL/CentOS 9 (vtrefny)
+- misc: Bump libblockdev version for Debian (vtrefny)
+- Fix typos (vtrefny)
+- Remove unused import (vtrefny)
+
 * Wed Jan 31 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.9.0-1
 - Fix getting default LVM cache metadata size from libblockdev (vtrefny)
 - Fix checking for segment type for cache pools (vtrefny)
