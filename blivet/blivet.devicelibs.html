@@ -6,14 +6,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>blivet.devicelibs package &#8212; Blivet 3.9.0 documentation</title>
+    <title>blivet.devicelibs package &#8212; Blivet 3.9.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
     
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/sphinx_highlight.js"></script>
     
@@ -37,7 +34,7 @@
         <li class="right" >
           <a href="blivet.dbus.html" title="blivet.dbus package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.9.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.9.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devicelibs package</a></li> 
       </ul>
@@ -637,19 +634,7 @@ meaningless.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devicelibs.raid.ErsatzRAID.is_uniform">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_uniform</span></span><a class="headerlink" href="#blivet.devicelibs.raid.ErsatzRAID.is_uniform" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
-<blockquote>
-<div><dl>
-<dt>class C(ABC):</dt><dd><p>&#64;property
-&#64;abstractmethod
-def my_abstract_property(self):</p>
-<blockquote>
-<div><p>…</p>
-</div></blockquote>
-</dd>
-</dl>
-</div></blockquote>
+<dd><p>Whether data is uniformly distributed across all devices.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -691,73 +676,25 @@ meaningless.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devicelibs.raid.RAIDLevel.is_uniform">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_uniform</span></span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevel.is_uniform" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
-<blockquote>
-<div><dl>
-<dt>class C(ABC):</dt><dd><p>&#64;property
-&#64;abstractmethod
-def my_abstract_property(self):</p>
-<blockquote>
-<div><p>…</p>
-</div></blockquote>
-</dd>
-</dl>
-</div></blockquote>
+<dd><p>Whether data is uniformly distributed across all devices.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devicelibs.raid.RAIDLevel.min_members">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">min_members</span></span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevel.min_members" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
-<blockquote>
-<div><dl>
-<dt>class C(ABC):</dt><dd><p>&#64;property
-&#64;abstractmethod
-def my_abstract_property(self):</p>
-<blockquote>
-<div><p>…</p>
-</div></blockquote>
-</dd>
-</dl>
-</div></blockquote>
+<dd><p>The minimum number of members required to make a fully functioning array.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devicelibs.raid.RAIDLevel.name">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevel.name" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
-<blockquote>
-<div><dl>
-<dt>class C(ABC):</dt><dd><p>&#64;property
-&#64;abstractmethod
-def my_abstract_property(self):</p>
-<blockquote>
-<div><p>…</p>
-</div></blockquote>
-</dd>
-</dl>
-</div></blockquote>
+<dd><p>The canonical name for this level</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devicelibs.raid.RAIDLevel.names">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">names</span></span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevel.names" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
-<blockquote>
-<div><dl>
-<dt>class C(ABC):</dt><dd><p>&#64;property
-&#64;abstractmethod
-def my_abstract_property(self):</p>
-<blockquote>
-<div><p>…</p>
-</div></blockquote>
-</dd>
-</dl>
-</div></blockquote>
+<dd><p>List of recognized names for this level.</p>
 </dd></dl>
 
 </dd></dl>
@@ -999,37 +936,13 @@ superblock size for this array</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devicelibs.raid.RAIDn.is_uniform">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_uniform</span></span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.is_uniform" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
-<blockquote>
-<div><dl>
-<dt>class C(ABC):</dt><dd><p>&#64;property
-&#64;abstractmethod
-def my_abstract_property(self):</p>
-<blockquote>
-<div><p>…</p>
-</div></blockquote>
-</dd>
-</dl>
-</div></blockquote>
+<dd><p>Whether data is uniformly distributed across all devices.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devicelibs.raid.RAIDn.level">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">level</span></span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.level" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
-<blockquote>
-<div><dl>
-<dt>class C(ABC):</dt><dd><p>&#64;property
-&#64;abstractmethod
-def my_abstract_property(self):</p>
-<blockquote>
-<div><p>…</p>
-</div></blockquote>
-</dd>
-</dl>
-</div></blockquote>
+<dd><p>A code representing the level</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1047,19 +960,7 @@ def my_abstract_property(self):</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devicelibs.raid.RAIDn.nick">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nick</span></span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDn.nick" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator indicating abstract properties.</p>
-<p>Deprecated, use ‘property’ with ‘abstractmethod’ instead:</p>
-<blockquote>
-<div><dl>
-<dt>class C(ABC):</dt><dd><p>&#64;property
-&#64;abstractmethod
-def my_abstract_property(self):</p>
-<blockquote>
-<div><p>…</p>
-</div></blockquote>
-</dd>
-</dl>
-</div></blockquote>
+<dd><p>A nickname for this level</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1368,14 +1269,14 @@ RAID level, including the RAID object itself.</p>
         <li class="right" >
           <a href="blivet.dbus.html" title="blivet.dbus package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.9.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.9.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devicelibs package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2024, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     </div>
   </body>
 </html>

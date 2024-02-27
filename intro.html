@@ -6,14 +6,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Introduction to Blivet &#8212; Blivet 3.9.0 documentation</title>
+    <title>Introduction to Blivet &#8212; Blivet 3.9.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     
@@ -37,7 +34,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to Blivet’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.9.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.9.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Introduction to Blivet</a></li> 
       </ul>
     </div>  
@@ -51,7 +48,7 @@
 <h1>Introduction to Blivet<a class="headerlink" href="#introduction-to-blivet" title="Permalink to this heading">¶</a></h1>
 <p>Blivet is a python module for system storage configuration.</p>
 <p>The main thing that blivet offers is the ability to model a series of changes
-without necessarily commiting any of the changes to disk. You can schedule an
+without necessarily committing any of the changes to disk. You can schedule an
 arbitrarily large series of changes (called ‘actions’), seeing the effects of
 each (within the <a class="reference internal" href="blivet/blivet.html#blivet.devicetree.DeviceTree" title="blivet.devicetree.DeviceTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceTree</span></code></a> instance) as it is scheduled.
 Nothing is written to disk, however, until you execute the actions.</p>
@@ -121,7 +118,7 @@ that build upon a device (<a class="reference internal" href="blivet/blivet.html
 <p>At this point, the StorageDevice representing sda3 is no longer in the tree.
 That means you could allocate a new partition from the newly free space if you
 wanted to (via blivet, that is, since there is not actually any free space on
-the physical disk yet – you haven’t commited the changes). If you now ran the
+the physical disk yet – you haven’t committed the changes). If you now ran the
 following line:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sda3</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">devicetree</span><span class="o">.</span><span class="n">get_device_by_name</span><span class="p">(</span><span class="s2">&quot;sda3&quot;</span><span class="p">)</span>
 </pre></div>
@@ -297,13 +294,13 @@ from which to allocate the partition:</p>
         <li class="right" >
           <a href="index.html" title="Welcome to Blivet’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.9.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.9.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Introduction to Blivet</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2013-2024, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     </div>
   </body>
 </html>
