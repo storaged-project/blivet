@@ -4,7 +4,7 @@ actions:
     - 'git config user.email "blivet-ci@example.com"'
     - 'git config user.name "Blivet CI"'
     # merge the release branch to get correct version in spec
-    - 'git merge --ff origin/3.9-release'
+    - 'git merge --ff origin/3.10-release'
     # bump release to 99 to always be ahead of Fedora builds
     - 'bash -c "sed -i -r \"s/Release:(\s*)\S+/Release: 99%{?dist}/\" python-blivet.spec"'
   get-current-version:
@@ -30,7 +30,7 @@ jobs:
   trigger: commit
   owner: "@storage"
   project: blivet-daily
-  branch: 3.9-devel
+  branch: 3.10-devel
   preserve_project: true
 
 srpm_build_deps:
