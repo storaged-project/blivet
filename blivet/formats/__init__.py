@@ -23,7 +23,6 @@
 
 import os
 import importlib
-from six import add_metaclass
 
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -135,8 +134,7 @@ def get_device_format_class(fmt_type):
     return fmt
 
 
-@add_metaclass(SynchronizedMeta)
-class DeviceFormat(ObjectID):
+class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
 
     """ Generic device format.
 

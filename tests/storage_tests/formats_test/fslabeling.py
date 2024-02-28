@@ -1,14 +1,12 @@
 
 import abc
-import six
 
 from . import loopbackedtestcase
 from blivet.errors import FSError, FSReadLabelError
 from blivet.size import Size
 
 
-@six.add_metaclass(abc.ABCMeta)
-class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase):
+class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase, metaclass=abc.ABCMeta):
 
     """Tests various aspects of labeling a filesystem where there
        is no easy way to read the filesystem's label once it has been
@@ -101,11 +99,11 @@ class LabelingWithRelabeling(LabelingAsRoot):
         self.assertIsNone(an_fs.write_label())
 
         an_fs.label = None
-        with six.assertRaisesRegex(self, FSError, "default label"):
+        with self.assertRaisesRegex(FSError, "default label"):
             an_fs.write_label()
 
         an_fs.label = self._invalid_label
-        with six.assertRaisesRegex(self, FSError, "bad label format"):
+        with self.assertRaisesRegex(FSError, "bad label format"):
             an_fs.write_label()
 
 
@@ -145,11 +143,11 @@ class CompleteLabelingAsRoot(LabelingAsRoot):
         self.assertEqual(an_fs.read_label(), an_fs.label)
 
         an_fs.label = None
-        with six.assertRaisesRegex(self, FSError, "default label"):
+        with self.assertRaisesRegex(FSError, "default label"):
             an_fs.write_label()
 
         an_fs.label = "n" * 129
-        with six.assertRaisesRegex(self, FSError, "bad label format"):
+        with self.assertRaisesRegex(FSError, "bad label format"):
             an_fs.write_label()
 
     def test_creating(self):

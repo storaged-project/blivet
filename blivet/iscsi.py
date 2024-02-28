@@ -621,5 +621,3 @@ class iSCSI(object):
 # Create iscsi singleton
 iscsi = iSCSI()
 """ An instance of :class:`iSCSI` """
-
-# vim:tw=78:ts=4:et:sw=4

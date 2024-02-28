@@ -21,7 +21,6 @@
 #
 
 import pprint
-from six import add_metaclass
 
 from .. import util
 from ..storage_log import log_method_call
@@ -33,8 +32,7 @@ log = logging.getLogger("blivet")
 from .lib import ParentList
 
 
-@add_metaclass(SynchronizedMeta)
-class Device(util.ObjectID):
+class Device(util.ObjectID, metaclass=SynchronizedMeta):
 
     """ A generic device.
 
@@ -118,10 +116,7 @@ class Device(util.ObjectID):
         return s
 
     def __str__(self):
-        return util.stringize(self._to_string())
-
-    def __unicode__(self):
-        return util.unicodeize(self._to_string())
+        return self._to_string()
 
     def _add_parent(self, parent):
         """ Called before adding a parent to this device.

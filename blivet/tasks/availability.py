@@ -22,8 +22,6 @@
 import abc
 import shutil
 
-from six import add_metaclass
-
 from .. import safe_dbus
 from ..devicelibs.stratis import STRATIS_SERVICE, STRATIS_PATH
 
@@ -94,8 +92,7 @@ class ExternalResource(object):
         return self.availability_errors == []
 
 
-@add_metaclass(abc.ABCMeta)
-class Method(object):
+class Method(object, metaclass=abc.ABCMeta):
 
     """ Method for determining if external resource is available."""
 

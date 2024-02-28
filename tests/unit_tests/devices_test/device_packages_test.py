@@ -1,5 +1,3 @@
-# vim:set fileencoding=utf-8
-
 import unittest
 
 from blivet.devices import DiskDevice

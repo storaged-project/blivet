@@ -21,15 +21,12 @@
 
 import abc
 
-from six import add_metaclass
-
 import gi
 gi.require_version("BlockDev", "3.0")
 from gi.repository import BlockDev
 
 
-@add_metaclass(abc.ABCMeta)
-class FSLabeling(object):
+class FSLabeling(object, metaclass=abc.ABCMeta):
 
     """An abstract class that represents filesystem labeling actions.
     """

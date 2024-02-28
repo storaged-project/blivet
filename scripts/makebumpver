@@ -24,7 +24,6 @@ import argparse
 import datetime
 import os
 import re
-import six
 import subprocess
 import sys
 import textwrap
@@ -47,10 +46,7 @@ class MakeBumpVer:
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         out, _err = proc.communicate()
-        if six.PY3:
-            out = out.decode("utf-8")
-
-        return out.strip('\n')
+        return out.decode("utf-8").strip('\n')
 
     def _incrementVersion(self):
         fields = self.version.split('.')
@@ -64,10 +60,8 @@ class MakeBumpVer:
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         out, _err = proc.communicate()
-        if six.PY3:
-            out = out.decode("utf-8")
 
-        ret = out.strip('\n').split('\n')
+        ret = out.decode("utf-8").strip('\n').split('\n')
 
         if len(ret) == 1 and ret[0].find('@') != -1:
             ret = [ret[0].split('@')[0]]
@@ -84,9 +78,7 @@ class MakeBumpVer:
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         out, _err = proc.communicate()
-        if six.PY3:
-            out = out.decode("utf-8")
-        lines = out.strip('\n').split('\n')
+        lines = out.decode("utf-8").strip('\n').split('\n')
 
         rpm_log = []
 

@@ -1,13 +1,8 @@
-
-import six
-import unittest
-from decimal import Decimal
 import os
+import unittest
+from unittest.mock import patch
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from decimal import Decimal
 
 import blivet
 
@@ -900,16 +895,16 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
                                                     size=Size("1 GiB"),
                                                     raid_level=0)
 
-        with six.assertRaisesRegex(self, devicefactory.DeviceFactoryError, "must have some RAID level"):
+        with self.assertRaisesRegex(devicefactory.DeviceFactoryError, "must have some RAID level"):
             devicefactory.get_device_factory(
                 self.b,
                 devicefactory.DEVICE_TYPE_MD,
                 size=Size("1 GiB"))
 
-        with six.assertRaisesRegex(self, RaidError, "requires at least"):
+        with self.assertRaisesRegex(RaidError, "requires at least"):
             factory1._get_device_space()
 
-        with six.assertRaisesRegex(self, RaidError, "requires at least"):
+        with self.assertRaisesRegex(RaidError, "requires at least"):
             factory1._configure()
 
         self.assertEqual(factory1.container_list, [])
@@ -922,7 +917,7 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
         ]
         self.assertIsNotNone(factory1._get_new_device(parents=parents))
 
-        with six.assertRaisesRegex(self, RaidError, "requires at least"):
+        with self.assertRaisesRegex(RaidError, "requires at least"):
             factory2._get_device_space()
 
         self.assertEqual(factory2.container_list, [])

@@ -1,5 +1,4 @@
 import inspect as _inspect
-import six as _six
 
 from .devicepopulator import DevicePopulator
 from .formatpopulator import FormatPopulator
@@ -51,7 +50,7 @@ def get_device_helper(data):
         The helper lists are sorted according to priorities defined within each
         class. This function returns the first matching class.
     """
-    return _six.next((h for h in _device_helpers if h.match(data)), None)
+    return next((h for h in _device_helpers if h.match(data)), None)
 
 
 def get_format_helper(data, device):
@@ -60,4 +59,4 @@ def get_format_helper(data, device):
         The helper lists are sorted according to priorities defined within each
         class. This function returns the first matching class.
     """
-    return _six.next((h for h in _format_helpers if h.match(data, device=device)), None)
+    return next((h for h in _format_helpers if h.match(data, device=device)), None)

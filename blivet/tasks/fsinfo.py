@@ -21,8 +21,6 @@
 
 import abc
 
-from six import add_metaclass
-
 from ..errors import FSError
 
 from . import availability
@@ -34,8 +32,7 @@ gi.require_version("BlockDev", "3.0")
 from gi.repository import BlockDev
 
 
-@add_metaclass(abc.ABCMeta)
-class FSInfo(task.BasicApplication, fstask.FSTask):
+class FSInfo(task.BasicApplication, fstask.FSTask, metaclass=abc.ABCMeta):
 
     """ An abstract class that represents an information gathering app. """
 

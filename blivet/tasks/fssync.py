@@ -21,7 +21,6 @@
 
 import abc
 
-from six import add_metaclass
 
 from ..errors import FSError
 
@@ -34,8 +33,7 @@ gi.require_version("BlockDev", "3.0")
 from gi.repository import BlockDev
 
 
-@add_metaclass(abc.ABCMeta)
-class FSSync(task.BasicApplication, fstask.FSTask):
+class FSSync(task.BasicApplication, fstask.FSTask, metaclass=abc.ABCMeta):
 
     """ An abstract class that represents syncing a filesystem. """
 
