@@ -202,9 +202,6 @@ class DASDDevicePopulator(DiskDevicePopulator):
     def _get_kwargs(self):
         kwargs = super(DASDDevicePopulator, self)._get_kwargs()
         kwargs["busid"] = udev.device_get_dasd_bus_id(self.data)
-        kwargs["opts"] = {}
-        for attr in ['readonly', 'use_diag', 'erplog', 'failfast']:
-            kwargs["opts"][attr] = udev.device_get_dasd_flag(self.data, attr)
 
         log.info("%s is a dasd device", udev.device_get_name(self.data))
         return kwargs
