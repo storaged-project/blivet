@@ -55,7 +55,7 @@ from ..errors import FSWriteLabelError, FSWriteUUIDError
 from . import DeviceFormat, register_device_format
 from .. import util
 from ..flags import flags
-from ..fstab import FSTabOptions
+from ..fstab import FSTabOptions, HAVE_LIBMOUNT
 from ..storage_log import log_exception_info, log_method_call
 from .. import arch
 from ..size import Size, ROUND_UP
@@ -702,10 +702,11 @@ class FS(DeviceFormat):
 
         udev.settle()
 
-    def change_mountpoint(self, dry_run=False):
+    def change_mountpoint(self, dry_run=False):  # pylint: disable=unused-argument
         # This function is intentionally left blank. Mountpoint change utilizes
         # only the generic part of this code branch
-        pass
+        if not HAVE_LIBMOUNT:
+            raise FSError("Fstab management is not supported on this system")
 
     def read_label(self):
         """Read this filesystem's label.
