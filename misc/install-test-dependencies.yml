@@ -146,8 +146,11 @@
     package:
       state: present
       name:
+        - automake
         - autopoint
         - bison
+        - libtool
+        - pkg-config
         - dosfstools
         - e2fsprogs
         - xfsprogs
