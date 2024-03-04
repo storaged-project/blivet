@@ -495,7 +495,8 @@ BLOCKDEV_MPATH_ALL_MODES = (blockdev.MpathTechMode.MODIFY |
                             blockdev.MpathTechMode.QUERY)
 BLOCKDEV_MPATH = BlockDevTechInfo(plugin_name="mpath",
                                   check_fn=blockdev.mpath_is_tech_avail,
-                                  technologies={blockdev.MpathTech.BASE: BLOCKDEV_MPATH_ALL_MODES})
+                                  technologies={blockdev.MpathTech.BASE: BLOCKDEV_MPATH_ALL_MODES,
+                                                blockdev.MpathTech.FRIENDLY_NAMES: blockdev.MpathTechMode.MODIFY})
 BLOCKDEV_MPATH_TECH = BlockDevMethod(BLOCKDEV_MPATH)
 
 # libblockdev swap plugin required technologies and modes
