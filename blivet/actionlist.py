@@ -290,7 +290,7 @@ class ActionList(object, metaclass=SynchronizedMeta):
             # (device may not exist afterwards)
             if not skip_fstab:
                 try:
-                    entry = fstab.entry_from_device(action.device)
+                    entry = fstab.entry_from_action(action)
                 except ValueError:
                     # this device should not be in fstab
                     bae_entry = None
