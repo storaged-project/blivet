@@ -357,7 +357,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
         # now try every possible mountpoint with any subvolspec in our cache
         parents = [p.name for p in self.parents]
-        mount_spec = next(((dev, subvol) for dev, subvol in mounts_cache.mountpoints if dev in parents), None)
+        mount_spec = next(((dev, subvol) for dev, subvol in mounts_cache.mountpoints if udev.resolve_devspec(dev) in parents), None)
         if mount_spec:
             try:
                 return mounts_cache.get_mountpoints(devspec=mount_spec[0],
