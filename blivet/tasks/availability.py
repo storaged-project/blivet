@@ -22,7 +22,6 @@
 import abc
 import shutil
 
-from .. import safe_dbus
 from ..devicelibs.stratis import STRATIS_SERVICE, STRATIS_PATH
 
 import gi
@@ -316,8 +315,7 @@ class DBusMethod(Method):
         """
         try:
             avail = blockdev.utils.dbus_service_available(None, Gio.BusType.SYSTEM, self.dbus_name, self.dbus_path)
-            avail = safe_dbus.check_object_available(self.dbus_name, self.dbus_path)
-        except safe_dbus.DBusCallError:
+        except blockdev.UtilsError:
             return ["DBus service %s not available" % resource.name]
         else:
             if avail:

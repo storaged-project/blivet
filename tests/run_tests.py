@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import argparse
+import csv
 import dbus
 import os
 import pdb
@@ -54,26 +55,72 @@ def get_version_from_pretty_name(pretty_name):
     return (distro, version)
 
 
-def get_version():
-    """ Try to get distro and version
+def get_version_from_cpe(cpe):
+    """ Try to get distro and version from 'OperatingSystemCPEName'
+        hostname property.
+
+        It should look like this:
+         - "cpe:/o:fedoraproject:fedora:39"
+         - "cpe:/o:redhat:enterprise_linux:7.3:GA:server
+    """
+    # 2nd to 4th fields from e.g. "cpe:/o:fedoraproject:fedora:25" or "cpe:/o:redhat:enterprise_linux:7.3:GA:server"
+    _project, distro, version = tuple(cpe.split(":")[2:5])
+    version = str(int(float(version)))
+    return (distro, version)
+
+
+def get_version_from_dbus():
+    """ Try to get distro and version from dbus
     """
 
     bus = dbus.SystemBus()
 
     # get information about the distribution from systemd (hostname1)
     sys_info = bus.get_object("org.freedesktop.hostname1", "/org/freedesktop/hostname1")
+
     cpe = str(sys_info.Get("org.freedesktop.hostname1", "OperatingSystemCPEName", dbus_interface=dbus.PROPERTIES_IFACE))
-
     if cpe:
-        # 2nd to 4th fields from e.g. "cpe:/o:fedoraproject:fedora:25" or "cpe:/o:redhat:enterprise_linux:7.3:GA:server"
-        _project, distro, version = tuple(cpe.split(":")[2:5])
-        # we want just the major version, so remove all decimal places (if any)
-        version = str(int(float(version)))
-    else:
-        pretty_name = str(sys_info.Get("org.freedesktop.hostname1", "OperatingSystemPrettyName", dbus_interface=dbus.PROPERTIES_IFACE))
-        distro, version = get_version_from_pretty_name(pretty_name)
+        return get_version_from_cpe(cpe)
 
-    return (distro, version)
+    pretty_name = str(sys_info.Get("org.freedesktop.hostname1", "OperatingSystemPrettyName", dbus_interface=dbus.PROPERTIES_IFACE))
+    if pretty_name:
+        return get_version_from_pretty_name(pretty_name)
+
+    raise RuntimeError("Failed to get distro and version from DBus")
+
+
+def get_version_from_os():
+    """ Try to get distro and version from /etc/os-release
+    """
+    if not os.path.isfile("/etc/os-release"):
+        raise RuntimeError("/etc/os-release does not exist")
+
+    with open('/etc/os-release') as csvfile:
+        reader = csv.reader(csvfile, delimiter='=')
+        release = dict(reader)
+
+    if 'CPE_NAME' in release.keys():
+        return get_version_from_cpe(release['CPE_NAME'])
+    elif 'PRETTY_NAME' in release.keys():
+        return get_version_from_cpe(release['PRETTY_NAME'])
+    elif 'ID' in release.keys() and 'VERSION_ID' in release.keys():
+        return (release['ID'], release['VERSION_ID'])
+
+    raise RuntimeError("Failed to get distro and version from /etc/os-release")
+
+
+def get_version():
+    try:
+        return get_version_from_dbus()
+    except Exception as err:  # pylint: disable=broad-except
+        print(err)
+
+    try:
+        return get_version_from_os()
+    except Exception as err:  # pylint: disable=broad-except
+        print(err)
+
+    raise RuntimeError("Failed to get distro and version")
 
 
 def _should_skip(distro=None, version=None, arch=None, reason=None):  # pylint: disable=unused-argument

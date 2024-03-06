@@ -1,9 +1,8 @@
 import os
-
-from .storagetestcase import StorageTestCase
-
 import blivet
 import tempfile
+
+from .storagetestcase import StorageTestCase
 
 
 class FstabTestCase(StorageTestCase):
@@ -96,6 +95,50 @@ class FstabTestCase(StorageTestCase):
                 contents = f.read()
                 self.assertFalse("blivetTestLVMine" in contents)
                 self.assertFalse("/mnt/test2" in contents)
+
+    def test_luks_creation(self):
+        # test creation of a multiple layer device
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        fstab_path = '/tmp/myfstab'
+
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            fstab_path = os.path.join(tmpdirname, 'fstab')
+
+            # change write path of blivet.fstab
+            self.storage.fstab.dest_file = fstab_path
+
+            self.storage.initialize_disk(disk)
+
+            var = self.storage.new_partition(fmt_type="luks",
+                                             fmt_args={"passphrase": "opensaysme"},
+                                             size=blivet.size.Size("200MiB"),
+                                             parents=[disk],
+                                             mountpoint="/mnt/test_fstab_luks_wrong")
+
+            self.storage.create_device(var)
+
+            varenc = blivet.devices.LUKSDevice(name="blivetTest_fstab_luks",
+                                               size=var.size,
+                                               parents=var)
+            self.storage.create_device(varenc)
+
+            varfs = blivet.formats.get_format(fmt_type="ext4",
+                                              device=varenc.path,
+                                              mountpoint="/mnt/test_fstab_luks_correct")
+            self.storage.format_device(varenc, varfs)
+
+            blivet.partitioning.do_partitioning(self.storage)
+
+            self.storage.do_it()
+            self.storage.reset()
+
+            # Check fstab contents for added device
+            with open(fstab_path, "r") as f:
+                contents = f.read()
+                self.assertTrue("/mnt/test_fstab_luks_correct" in contents)
+                self.assertFalse("/mnt/test_fstab_luks_wrong" in contents)
 
     def test_swap_creation(self):
         # test swap creation for presence of FSTabOptions object
