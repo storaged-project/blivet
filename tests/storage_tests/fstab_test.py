@@ -1,4 +1,6 @@
 import os
+import unittest
+
 import blivet
 import tempfile
 
@@ -6,6 +8,11 @@ from .storagetestcase import StorageTestCase
 
 
 class FstabTestCase(StorageTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        if not blivet.fstab.HAVE_LIBMOUNT:
+            raise unittest.SkipTest("Missing libmount support required for this test")
 
     def setUp(self):
         super().setUp()
