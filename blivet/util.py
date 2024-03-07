@@ -1165,7 +1165,7 @@ def detect_virt():
     except (safe_dbus.DBusCallError, safe_dbus.DBusPropertyError):
         return False
     else:
-        return vm[0] in ('qemu', 'kvm', 'xen', 'microsoft')
+        return vm[0] in ('qemu', 'kvm', 'xen', 'microsoft', 'amazon')
 
 
 def natural_sort_key(device):
