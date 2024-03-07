@@ -146,8 +146,11 @@
     package:
       state: present
       name:
+        - automake
         - autopoint
         - bison
+        - libtool
+        - pkg-config
         - dosfstools
         - e2fsprogs
         - xfsprogs
@@ -178,5 +181,5 @@
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
   - name: Install pocketlint using pip (Debian/Ubuntu)
-    pip: name=pocketlint executable=pip3
+    pip: name=pocketlint executable=pip3 extra_args=--break-system-packages
     when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' and test_dependencies|bool
