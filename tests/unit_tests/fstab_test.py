@@ -3,7 +3,7 @@ import os
 import unittest
 from unittest.mock import Mock
 
-from blivet.fstab import FSTabManager, FSTabEntry
+from blivet.fstab import FSTabManager, FSTabEntry, HAVE_LIBMOUNT
 from blivet.devices import DiskDevice
 from blivet.formats import get_format
 from blivet import Blivet
@@ -12,6 +12,11 @@ FSTAB_WRITE_FILE = "/tmp/test-blivet-fstab2"
 
 
 class FSTabTestCase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        if not HAVE_LIBMOUNT:
+            raise unittest.SkipTest("Missing libmount support required for this test")
 
     def setUp(self):
         self.fstab = FSTabManager()

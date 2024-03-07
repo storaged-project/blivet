@@ -22,8 +22,13 @@
 
 import os
 
-from libmount import Table, Fs, MNT_ITER_FORWARD
-from libmount import Error as LibmountException
+try:
+    from libmount import Table, Fs, MNT_ITER_FORWARD
+    from libmount import Error as LibmountException
+except ModuleNotFoundError:
+    HAVE_LIBMOUNT = False
+else:
+    HAVE_LIBMOUNT = True
 
 import logging
 log = logging.getLogger("blivet")
