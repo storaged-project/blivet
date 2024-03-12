@@ -207,3 +207,78 @@ class MDTestCase(StorageTestCase):
         self.assertEqual(array.spares, 0)
         self.assertFalse(array.degraded)
         self.assertIsNone(part.format.md_uuid)
+
+
+class BIOSRAIDTestCase(StorageTestCase):
+
+    def setUp(self):
+        super().setUp()
+
+        disks = [os.path.basename(vdev) for vdev in self.vdevs]
+        self.storage = blivet.Blivet()
+        self.storage.exclusive_disks = disks + ["vol0"]
+        self.storage.reset()
+
+        # make sure only the targetcli disks are in the devicetree
+        for disk in self.storage.disks:
+            if disk.name == "vol0":
+                continue
+            self.assertTrue(disk.path in self.vdevs)
+            self.assertIsNone(disk.format.type)
+            self.assertFalse(disk.children)
+
+    def _clean_up(self):
+        # cleanup with mdadm
+        _ret = blivet.util.run_program(["mdadm", "--stop", "/dev/md/vol0"])
+        _ret = blivet.util.run_program(["mdadm", "--stop", "/dev/md/ddf"])
+        _ret = blivet.util.run_program(["mdadm", "--zero-superblock", self.vdevs[0], self.vdevs[1]])
+
+        return super()._clean_up()
+
+    def _create_ddf_raid(self):
+        # prepare a fake DDF RAID using mdadm
+        ret = blivet.util.run_program(["mdadm", "--create", "/dev/md/ddf", "--run", "--level=container",
+                                       "--metadata=ddf", "--raid-devices=2", self.vdevs[0], self.vdevs[1]])
+        if ret != 0:
+            raise RuntimeError("Failed to setup DDF RAID for testing")
+
+        ret = blivet.util.run_program(["mdadm", "--create", "/dev/md/vol0", "--run", "--level=raid0",
+                                       "--raid-devices=1", "/dev/md/ddf", "--force"])
+        if ret != 0:
+            raise RuntimeError("Failed to setup DDF RAID for testing")
+
+    def test_ddf_raid(self):
+        self._create_ddf_raid()
+
+        with wait_for_resync():
+            self.storage.do_it()
+        self.storage.reset()
+
+        # check that we can correctly detect BIOS RAID arrays
+        vol0 = self.storage.devicetree.get_device_by_name("vol0")
+        self.assertIsNotNone(vol0)
+        self.assertEqual(vol0.type, "mdbiosraidarray")
+        self.assertEqual(vol0.level.name, "raid0")
+        self.assertEqual(len(vol0.parents), 1)
+
+        ddf = self.storage.devicetree.get_device_by_name("ddf")
+        self.assertIsNotNone(ddf)
+        self.assertEqual(ddf.type, "mdcontainer")
+        self.assertEqual(ddf.level.name, "container")
+        self.assertEqual(len(ddf.children), 1)
+        self.assertEqual(ddf.children[0], vol0)
+        self.assertEqual(len(ddf.parents), 2)
+        self.assertCountEqual([p.path for p in ddf.parents], [self.vdevs[0], self.vdevs[1]])
+
+        # check that partitions can be created and recognized on the array
+        self.storage.initialize_disk(vol0)
+        part = self.storage.new_partition(size=blivet.size.Size("100 MiB"), parents=[vol0])
+        self.storage.create_device(part)
+
+        blivet.partitioning.do_partitioning(self.storage)
+        self.storage.do_it()
+
+        self.storage.reset()
+
+        part = self.storage.devicetree.get_device_by_name("vol0p1")
+        self.assertIsNotNone(part)
