@@ -1095,9 +1095,15 @@ class BTRFS(FS):
                   to a temporary directory.
         """
 
+        def _pre_process_subvolnames(subvols):
+            # subvolumes without the subvolspec prefix (so names are relative to this subvolume)
+            if not self.subvolspec or self.subvolspec == 5:
+                return subvols
+            return [sub[sub.startswith(self.subvolspec + "/") and len(self.subvolspec) + 1:] for sub in subvols]
+
         with self._do_temp_mount() as mnt:
             content = os.listdir(mnt)
-            subvols = btrfs.get_mountpoint_subvolumes(mnt)
+            subvols = _pre_process_subvolnames(btrfs.get_mountpoint_subvolumes(mnt))
             if content and not all(c in self._system_dirs + subvols for c in content):
                 return False
             return True
