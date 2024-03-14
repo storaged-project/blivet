@@ -71,8 +71,19 @@ class NVMe(object):
             except Exception:  # pylint: disable=broad-except
                 pass
 
+    def available(self):
+        if not hasattr(blockdev.Plugin, "NVME"):
+            return False
+        if not hasattr(blockdev.NVMETech, "FABRICS"):
+            return False
+        return True
+
     def startup(self):
         if self.started:
+            return
+
+        if not self.available():
+            log.info("NVMe support not available, not starting")
             return
 
         self._hostnqn = blockdev.nvme_get_host_nqn()
@@ -97,6 +108,9 @@ class NVMe(object):
         self.started = True
 
     def write(self, root, overwrite=True):  # pylint: disable=unused-argument
+        if not self.available():
+            return
+
         # write down the hostnqn and hostid files
         p = root + ETC_NVME_PATH
         if not os.path.isdir(p):
