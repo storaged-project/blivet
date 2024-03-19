@@ -203,6 +203,8 @@ class StratisFilesystemDevice(StorageDevice):
     _min_size = Size("512 MiB")
 
     def __init__(self, name, parents=None, size=None, uuid=None, exists=False):
+        if size is None:
+            size = devicelibs.stratis.STRATIS_FS_SIZE
         if not exists and parents[0].free_space <= devicelibs.stratis.filesystem_md_size(size):
             raise StratisError("cannot create new stratis filesystem, not enough free space in the pool")
 

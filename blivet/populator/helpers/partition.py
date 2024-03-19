@@ -45,21 +45,21 @@ class PartitionDevicePopulator(DevicePopulator):
         log_method_call(self, name=name)
         sysfs_path = udev.device_get_sysfs_path(self.data)
 
-        device = self._devicetree.get_device_by_device_id(name)
+        device = self._devicetree.get_device_by_name(name)
         if device:
             return device
 
         disk = None
         disk_name = udev.device_get_partition_disk(self.data)
         if disk_name:
-            disk = self._devicetree.get_device_by_device_id(disk_name)
+            disk = self._devicetree.get_device_by_name(disk_name)
             if disk is None:
                 # create a device instance for the disk
                 disk_info = next((i for i in udev.get_devices()
                                   if udev.device_get_name(i) == disk_name), None)
                 if disk_info is not None:
                     self._devicetree.handle_device(disk_info)
-                    disk = self._devicetree.get_device_by_device_id(disk_name)
+                    disk = self._devicetree.get_device_by_name(disk_name)
 
         if disk is None:
             # if the disk is still not in the tree something has gone wrong
