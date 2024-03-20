@@ -258,8 +258,13 @@ class PartitionDevice(StorageDevice):
                    "start": self.parted_partition.geometry.start,
                    "end": self.parted_partition.geometry.end,
                    "flags": self.parted_partition.getFlagsAsString()})
-            if hasattr(parted.Partition, "type_uuid"):
-                s += " type_uuid = %s" % self.parted_partition.type_uuid
+            if hasattr(parted.Partition, "type_uuid") and self.parted_partition.type_uuid:
+                try:
+                    uuid_str = UUID(bytes=self.parted_partition.type_uuid)
+                except (TypeError, ValueError):
+                    pass
+                else:
+                    s += " type_uuid = %s" % uuid_str
         return s
 
     @property
@@ -276,8 +281,13 @@ class PartitionDevice(StorageDevice):
                       "start": self.parted_partition.geometry.start,
                       "end": self.parted_partition.geometry.end,
                       "flags": self.parted_partition.getFlagsAsString()})
-            if hasattr(parted.Partition, "type_uuid"):
-                d.update({"type_uuid": self.parted_partition.type_uuid})
+            if hasattr(parted.Partition, "type_uuid") and self.parted_partition.type_uuid:
+                try:
+                    uuid_str = UUID(bytes=self.parted_partition.type_uuid)
+                except (TypeError, ValueError):
+                    pass
+                else:
+                    d.update({"type_uuid": uuid_str})
         return d
 
     def align_target_size(self, newsize):
