@@ -1,0 +1,17 @@
+# reverse dependency test for blivet-gui
+# enabled: false
+
+adjust+:
+  when: revdeps == yes
+  enabled: true
+
+discover:
+    how: shell
+    url: https://github.com/storaged-project/blivet-gui
+    ref: main
+    tests:
+      - name: all
+        test: make test
+
+execute:
+    how: tmt

@@ -33,6 +33,24 @@ jobs:
   branch: 3.10-devel
   preserve_project: true
 
+# run tests for udisks consumers, see plans/ with `revdeps == yes`
+- job: tests
+  identifier: revdeps
+  trigger: pull_request
+  notifications:
+    failure_comment:
+      message: "Blivet-GUI tests failed for commit {commit_sha}. @vojtechtrefny please check."
+  targets:
+    - fedora-latest-stable
+  tf_extra_params:
+    environments:
+      - artifacts:
+        - type: repository-file
+          id: https://copr.fedorainfracloud.org/coprs/g/storage/blivet-daily/repo/fedora-$releasever/group_storage-blivet-daily-fedora-$releasever.repo
+        tmt:
+          context:
+            revdeps: "yes"
+
 srpm_build_deps:
  - git
  - make
