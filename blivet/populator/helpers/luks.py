@@ -26,7 +26,7 @@ gi.require_version("BlockDev", "3.0")
 from gi.repository import BlockDev as blockdev
 
 from ... import udev
-from ...devices import LUKSDevice, IntegrityDevice
+from ...devices import LUKSDevice, IntegrityDevice, BITLKDevice
 from ...errors import DeviceError, LUKSError
 from ...flags import flags
 from .devicepopulator import DevicePopulator
@@ -73,6 +73,21 @@ class IntegrityDevicePopulator(DevicePopulator):
                                  sysfs_path=udev.device_get_sysfs_path(self.data),
                                  parents=parents,
                                  exists=True)
+        self._devicetree._add_device(device)
+        return device
+
+
+class BITLKDevicePopulator(DevicePopulator):
+    @classmethod
+    def match(cls, data):
+        return udev.device_is_dm_bitlk(data)
+
+    def run(self):
+        parents = self._devicetree._add_parent_devices(self.data)
+        device = BITLKDevice(udev.device_get_name(self.data),
+                             sysfs_path=udev.device_get_sysfs_path(self.data),
+                             parents=parents,
+                             exists=True)
         self._devicetree._add_device(device)
         return device
 
