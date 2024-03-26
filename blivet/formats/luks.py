@@ -565,3 +565,18 @@ class Integrity(DeviceFormat):
 
 
 register_device_format(Integrity)
+
+
+class BitLocker(DeviceFormat):
+
+    """ DM integrity format """
+    _type = "bitlocker"
+    _name = N_("BitLocker")
+    _udev_types = ["BitLocker"]
+    _supported = False                 # is supported
+    _formattable = False               # can be formatted
+    _linux_native = False              # for clearpart
+    _resizable = False                 # can be resized
+
+
+register_device_format(BitLocker)

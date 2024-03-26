@@ -9,7 +9,7 @@ from .disk import DiskDevicePopulator, iScsiDevicePopulator, FCoEDevicePopulator
 from .disklabel import DiskLabelFormatPopulator
 from .dm import DMDevicePopulator
 from .loop import LoopDevicePopulator
-from .luks import LUKSDevicePopulator, LUKSFormatPopulator, IntegrityDevicePopulator, IntegrityFormatPopulator
+from .luks import LUKSDevicePopulator, LUKSFormatPopulator, IntegrityDevicePopulator, IntegrityFormatPopulator, BITLKDevicePopulator
 from .lvm import LVMDevicePopulator, LVMFormatPopulator
 from .mdraid import MDDevicePopulator, MDFormatPopulator
 from .multipath import MultipathDevicePopulator, MultipathFormatPopulator
