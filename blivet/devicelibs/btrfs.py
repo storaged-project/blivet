@@ -64,5 +64,8 @@ def get_mountpoint_subvolumes(mountpoint):
         subvols = BlockDev.btrfs.list_subvolumes(mountpoint)
     except BlockDev.BtrfsError as e:
         raise BTRFSError(str(e))
+    except BlockDev.BlockDevNotImplementedError:
+        log.warning("cannot get list of subvolumes: libblockdev btrfs plugin not available")
+        return []
     else:
         return [s.path for s in subvols]
