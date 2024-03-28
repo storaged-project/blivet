@@ -95,7 +95,7 @@ class StratisBlockdev(DeviceFormat):
 
     @property
     def dict(self):
-        d = super(StratisBlockdev, self).dict
+        d = super().dict
         d.update({"pool_name": self.pool_name, "pool_uuid": self.pool_uuid})
         return d
 

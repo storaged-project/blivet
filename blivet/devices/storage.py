@@ -145,7 +145,7 @@ class StorageDevice(Device):
         # Has to be here because Device does not have exists attribute
         if not self.exists and not self.is_name_valid(name):
             raise ValueError("%s is not a valid name for this device" % name)
-        super(StorageDevice, self).__init__(name, parents=parents)
+        super().__init__(name, parents=parents)
 
         self.format = fmt
         self.original_format = copy.deepcopy(self.format)
@@ -162,7 +162,7 @@ class StorageDevice(Device):
         exist = "existing"
         if not self.exists:
             exist = "non-existent"
-        s = "%s %s %s" % (exist, self.size, super(StorageDevice, self).__str__())
+        s = "{} {} {}".format(exist, self.size, super().__str__())
         if self.format.type:
             s += " with %s" % self.format
 
@@ -170,7 +170,7 @@ class StorageDevice(Device):
 
     @property
     def packages(self):
-        packages = super(StorageDevice, self).packages
+        packages = super().packages
         packages.extend(p for p in self.format.packages if p not in packages)
         return packages
 
@@ -257,7 +257,7 @@ class StorageDevice(Device):
         if value == self._name:
             return
 
-        super(StorageDevice, self)._set_name(value)
+        super()._set_name(value)
 
         # update our format's path
         # First, check that self._format has been defined in case this is
@@ -319,7 +319,7 @@ class StorageDevice(Device):
 
     @property
     def dict(self):
-        d = super(StorageDevice, self).dict
+        d = super().dict
         d.update({"uuid": self.uuid, "size": self.size,
                   "format": self.format.dict, "removable": self.removable,
                   "major": self.major, "minor": self.minor,
@@ -330,7 +330,7 @@ class StorageDevice(Device):
     @property
     def path(self):
         """ Device node representing this device. """
-        return "%s/%s" % (self._dev_dir, self.name)
+        return "{}/{}".format(self._dev_dir, self.name)
 
     def update_sysfs_path(self):
         """ Update this device's sysfs path. """
@@ -347,7 +347,7 @@ class StorageDevice(Device):
 
         # from_device_file() does not process exceptions but just propagates
         # any errors that are raised.
-        except (pyudev.DeviceNotFoundError, EnvironmentError, ValueError, OSError) as e:
+        except (pyudev.DeviceNotFoundError, OSError, ValueError) as e:
             log.error("failed to update sysfs path for %s: %s", self.name, e)
             self.sysfs_path = ''
         else:

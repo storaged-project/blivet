@@ -8,7 +8,7 @@ from . import loopbackedtestcase
 class LVMPVTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='run_test'):
-        super(LVMPVTestCase, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
+        super().__init__(methodName=methodName, device_spec=[Size("100 MiB")])
         self.fmt = LVMPhysicalVolume()
 
     def test_size(self):

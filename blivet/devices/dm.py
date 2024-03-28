@@ -76,7 +76,7 @@ class DMDevice(StorageDevice):
                 map name in many cases. The uuid, however, is a persistent UUID
                 stored in device metadata on disk.
         """
-        super(DMDevice, self).__init__(name, fmt=fmt, size=size,
+        super().__init__(name, fmt=fmt, size=size,
                                        exists=exists, uuid=uuid,
                                        parents=parents, sysfs_path=sysfs_path)
         self.target = target
@@ -90,7 +90,7 @@ class DMDevice(StorageDevice):
 
     @property
     def dict(self):
-        d = super(DMDevice, self).dict
+        d = super().dict
         d.update({"target": self.target, "dm_uuid": self.dm_uuid})
         return d
 
@@ -164,7 +164,7 @@ class DMDevice(StorageDevice):
             return
 
         log_method_call(self, self.name, status=self.status)
-        super(DMDevice, self)._set_name(value)
+        super()._set_name(value)
 
 
 class DMLinearDevice(DMDevice):

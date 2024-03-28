@@ -89,7 +89,7 @@ class LUKSDevice(DMCryptDevice):
             self.raw_device.size = newsize + crypto.LUKS_METADATA_SIZE
 
             # just run the StorageDevice._set_size to make sure we are in the format limits
-            super(LUKSDevice, self)._set_size(newsize - crypto.LUKS_METADATA_SIZE)
+            super()._set_size(newsize - crypto.LUKS_METADATA_SIZE)
         else:
             raise DeviceError("Cannot set size for an existing LUKS device")
 
@@ -167,12 +167,12 @@ class LUKSDevice(DMCryptDevice):
             self.name = new_name
 
     def dracut_setup_args(self):
-        return set(["rd.luks.uuid=luks-%s" % self.raw_device.format.uuid])
+        return {"rd.luks.uuid=luks-%s" % self.raw_device.format.uuid}
 
     def populate_ksdata(self, data):
         self.raw_device.populate_ksdata(data)
         data.encrypted = True
-        super(LUKSDevice, self).populate_ksdata(data)
+        super().populate_ksdata(data)
 
 
 class IntegrityDevice(DMIntegrityDevice):
@@ -227,7 +227,7 @@ class IntegrityDevice(DMIntegrityDevice):
             # fully controlled by LUKS and we don't need the integrity-specific tools
             return not LUKSDevice.unavailable_type_dependencies()
         else:
-            return super(IntegrityDevice, self).controllable()
+            return super().controllable()
 
     def _get_size(self):
         if not self.exists:
@@ -241,7 +241,7 @@ class IntegrityDevice(DMIntegrityDevice):
             self.raw_device.size = newsize + self.metadata_size
 
             # just run the StorageDevice._set_size to make sure we are in the format limits
-            super(IntegrityDevice, self)._set_size(newsize - self.metadata_size)
+            super()._set_size(newsize - self.metadata_size)
         else:
             raise DeviceError("Cannot set size for an existing integrity device")
 

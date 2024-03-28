@@ -105,7 +105,7 @@ class DeviceActionTestCase(BlivetTestCase):
 
             The other two disks (sdc,sdd) are left for individual tests to use.
         """
-        super(DeviceActionTestCase, self).setUp()
+        super().setUp()
 
         for name in ["sda", "sdb", "sdc", "sdd"]:
             disk = self.new_device(device_class=DiskDevice,

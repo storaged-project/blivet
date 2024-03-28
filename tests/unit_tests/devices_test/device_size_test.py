@@ -1,4 +1,3 @@
-
 import unittest
 
 from blivet.devicelibs import crypto

@@ -16,7 +16,7 @@ def wait_for_resync():
         time.sleep(2)
         action = True
         while action:
-            with open("/proc/mdstat", "r") as f:
+            with open("/proc/mdstat") as f:
                 action = "resync" in f.read()
             if action:
                 print("Sleeping")

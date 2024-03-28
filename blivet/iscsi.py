@@ -74,7 +74,7 @@ def has_iscsi():
 TargetInfo = namedtuple("TargetInfo", ["ipaddr", "port"])
 
 
-class NodeInfo(object):
+class NodeInfo:
     """Simple representation of node information."""
     def __init__(self, name, tpgt, address, port, iface):
         self.name = name
@@ -96,7 +96,7 @@ class NodeInfo(object):
         return (self.name, self.tpgt, self.address, self.port, self.iface)
 
 
-class LoginInfo(object):
+class LoginInfo:
     def __init__(self, node, logged_in):
         self.node = node
         self.logged_in = logged_in
@@ -125,7 +125,7 @@ class iSCSIDependencyGuard(util.DependencyGuard):
 udisks_iscsi_required = iSCSIDependencyGuard()
 
 
-class iSCSI(object):
+class iSCSI:
     """ iSCSI utility class.
 
         This class will automatically discover and login to iBFT (or

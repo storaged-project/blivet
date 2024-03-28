@@ -1,4 +1,3 @@
-
 import abc
 
 import os
@@ -18,7 +17,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase, metaclass=abc.ABCMeta):
     _DEVICE_SIZE = Size("100 MiB")
 
     def __init__(self, methodName='run_test'):
-        super(FSAsRoot, self).__init__(methodName=methodName, device_spec=[self._DEVICE_SIZE])
+        super().__init__(methodName=methodName, device_spec=[self._DEVICE_SIZE])
 
     def can_resize(self, an_fs):
         """ Returns True if this filesystem has all necessary resizing tools

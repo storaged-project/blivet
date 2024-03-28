@@ -45,7 +45,7 @@ for finder, mod_name, _ispkg in pkgutil.iter_modules(__path__):
         continue
 
     # Load the module
-    full_name = "{}.{}".format(__name__, mod_name)
+    full_name = f"{__name__}.{mod_name}"
     module = importlib.import_module(full_name)
 
     # Look for attributes that start with 'test_' and add them to the test list
@@ -66,7 +66,7 @@ def testString(poentry):
             test(poentry)
         except Exception as e: # pylint: disable=broad-except
             success = False
-            print("%s failed on %s: %s" % (test.__name__, poentry.msgid, str(e)))
+            print("{} failed on {}: {}".format(test.__name__, poentry.msgid, str(e)))
 
     return success
 

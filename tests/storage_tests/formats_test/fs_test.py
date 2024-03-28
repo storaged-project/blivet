@@ -78,7 +78,7 @@ class Ext4FSTestCase(Ext3FSTestCase):
         an_fs.device = self.loop_devices[0]
 
         # custom fs create options -- -L <label> and -U <uuid> for mke2fs
-        an_fs.create_options = "-L %s -U %s" % (label, uuid)
+        an_fs.create_options = "-L {} -U {}".format(label, uuid)
         an_fs.create()
 
         sys_label = an_fs.read_label()
@@ -298,7 +298,7 @@ class BindFSTestCase(fstesting.FSAsRoot):
 class SimpleTmpFSTestCase(LoopBackedTestCase):
 
     def __init__(self, methodName='run_test'):
-        super(SimpleTmpFSTestCase, self).__init__(methodName=methodName)
+        super().__init__(methodName=methodName)
 
     def test_simple(self):
         an_fs = fs.TmpFS()
@@ -312,7 +312,7 @@ class SimpleTmpFSTestCase(LoopBackedTestCase):
 class ResizeTmpFSTestCase(LoopBackedTestCase):
 
     def __init__(self, methodName='run_test'):
-        super(ResizeTmpFSTestCase, self).__init__(methodName=methodName)
+        super().__init__(methodName=methodName)
         self.an_fs = fs.TmpFS()
         self.an_fs.__class__._resizable = True
         self.mountpoint = None

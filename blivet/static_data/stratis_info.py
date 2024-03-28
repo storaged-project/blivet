@@ -48,7 +48,7 @@ StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_n
 StratisLockedPoolInfo = namedtuple("StratisLockedPoolInfo", ["uuid", "key_desc", "devices"])
 
 
-class StratisInfo(object):
+class StratisInfo:
     """ Class to be used as a singleton.
         Maintains the Stratis devices info cache.
     """

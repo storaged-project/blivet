@@ -125,9 +125,9 @@ class Path(str):
                 elif other.root != self.root:
                     raise ValueError("roots <%s> and <%s> don't match." %
                                      (self.root, other.root))
-            path = "%s/%s" % (self.path, other.path)
+            path = "{}/{}".format(self.path, other.path)
         else:
-            path = "%s/%s" % (self.path, other)
+            path = "{}/{}".format(self.path, other)
         path = normalize_path_slashes(path)
         return Path(path, root=self.root)
 
@@ -317,7 +317,7 @@ def total_memory():
     # import locally to avoid a cycle with size importing util
     from .size import Size
 
-    with open("/proc/meminfo", "r") as fobj:
+    with open("/proc/meminfo") as fobj:
         for line in fobj:
             if not line.startswith("MemTotal"):
                 # we are only interested in the MemTotal: line
@@ -405,10 +405,10 @@ def get_sysfs_attr(path, attr, root=None):
         log.warning("%s is not a valid attribute", attr)
         return None
 
-    f = open(fullattr, "r", encoding="utf-8", errors="replace")
+    f = open(fullattr, encoding="utf-8", errors="replace")
     data = f.read()
     f.close()
-    sdata = "".join(["%02x" % (ord(x),) for x in data])
+    sdata = "".join(["{:02x}".format(ord(x)) for x in data])
     testdata_log.debug("sysfs attr %s: %s", attribute, sdata)
     return data.strip()
 
@@ -456,9 +456,9 @@ def get_path_by_sysfs_path(sysfs_path, dev_type="block"):
     """ Return device path for a given device sysfs path. """
 
     dev = get_sysfs_attr(sysfs_path, "dev")
-    if not dev or not os.path.exists("/dev/%s/%s" % (dev_type, dev)):
+    if not dev or not os.path.exists("/dev/{}/{}".format(dev_type, dev)):
         raise RuntimeError("get_path_by_sysfs_path: Could not find device for %s" % sysfs_path)
-    return os.path.realpath("/dev/%s/%s" % (dev_type, dev))
+    return os.path.realpath("/dev/{}/{}".format(dev_type, dev))
 
 
 def get_cow_sysfs_path(dev_path, dev_sysfsPath):
@@ -516,7 +516,7 @@ def set_file_context(path, context, root=None):
     if root is None:
         root = '/'
 
-    full_path = os.path.normpath("%s/%s" % (root, path))
+    full_path = os.path.normpath("{}/{}".format(root, path))
     if context is None or not os.access(full_path, os.F_OK):
         return False
 
@@ -629,7 +629,7 @@ def read_file(filename, mode="r"):
     return content
 
 
-class ObjectID(object):
+class ObjectID:
 
     """This class is meant to be extended by other classes which require
        an ID which is preserved when an object copy is made.
@@ -647,7 +647,7 @@ class ObjectID(object):
 
     def __new__(cls, *args, **kwargs):
         # pylint: disable=unused-argument
-        self = super(ObjectID, cls).__new__(cls)
+        self = super().__new__(cls)
         self.id = self._newid_gen()  # pylint: disable=attribute-defined-outside-init,assignment-from-no-return
         return self
 
@@ -723,7 +723,7 @@ def set_up_logging(log_dir="/tmp", log_prefix="blivet", console_logs=None):
     program_log.setLevel(logging.DEBUG)
 
     def make_handler(path, prefix, level):
-        log_file = "%s/%s.log" % (path, prefix)
+        log_file = "{}/{}.log".format(path, prefix)
         log_file = os.path.realpath(log_file)
         handler = logging.FileHandler(log_file)
         handler.setLevel(level)
@@ -744,7 +744,7 @@ def set_up_logging(log_dir="/tmp", log_prefix="blivet", console_logs=None):
 
     log.info("sys.argv = %s", sys.argv)
 
-    prefix = "%s-testdata" % (log_prefix,)
+    prefix = "{}-testdata".format(log_prefix)
     handler = make_handler(log_dir, prefix, logging.DEBUG)
     testdata_log.setLevel(logging.DEBUG)
     testdata_log.addHandler(handler)
@@ -842,7 +842,7 @@ def variable_copy(obj, memo, omit=None, shallow=None, duplicate=None):
 
 
 def get_current_entropy():
-    with open("/proc/sys/kernel/random/entropy_avail", "r") as fobj:
+    with open("/proc/sys/kernel/random/entropy_avail") as fobj:
         return int(fobj.readline())
 
 
@@ -890,7 +890,7 @@ def indent(text, spaces=4):
     indentation = " " * spaces
     indented = []
     for line in text.splitlines():
-        indented.append("%s%s" % (indentation, line))
+        indented.append("{}{}".format(indentation, line))
 
     return "\n".join(indented)
 
@@ -955,7 +955,7 @@ _DEPRECATION_MESSAGE = "will be removed in a future version."
 
 
 def _default_deprecation_msg(func):
-    return "%s %s" % (func.__name__, _DEPRECATION_MESSAGE)
+    return "{} {}".format(func.__name__, _DEPRECATION_MESSAGE)
 
 
 _SPHINX_DEPRECATE = ".. deprecated::"
@@ -1062,7 +1062,7 @@ def requires_property(prop_name, val=True):
             if getattr(self, prop_name) == val:
                 return fn(self, *args, **kwargs)
             else:
-                raise ValueError("%s can only be accessed if %s evaluates to %s" % (fn.__name__, prop_name, val))
+                raise ValueError("{} can only be accessed if {} evaluates to {}".format(fn.__name__, prop_name, val))
         return func
     return guard
 
@@ -1073,7 +1073,7 @@ class EvalMode(Enum):
     # TODO: no_sooner_than, if_changed,...
 
 
-class DependencyGuard(object, metaclass=abc.ABCMeta):
+class DependencyGuard(metaclass=abc.ABCMeta):
 
     error_msg = abc.abstractproperty(doc="Error message to report when a dependency is missing")
 
@@ -1143,7 +1143,7 @@ def get_kernel_module_parameter(module, parameter):
     try:
         with open(parameter_path) as f:
             value = f.read().strip()
-    except IOError as e:
+    except OSError as e:
         log.warning("Couldn't get the value of the parameter '%s' from the kernel module '%s': %s",
                     parameter, module, str(e))
 

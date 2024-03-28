@@ -91,7 +91,7 @@ class iScsiDevicePopulator(DiskDevicePopulator):
 
     def _get_kwargs(self):
         from ...iscsi import iscsi
-        kwargs = super(iScsiDevicePopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
         kwargs["initiator"] = udev.device_get_iscsi_initiator(self.data)
         kwargs["address"] = udev.device_get_iscsi_address(self.data)
         kwargs["port"] = udev.device_get_iscsi_port(self.data)
@@ -135,7 +135,7 @@ class FCoEDevicePopulator(DiskDevicePopulator):
                 udev.device_is_fcoe(data))
 
     def _get_kwargs(self):
-        kwargs = super(FCoEDevicePopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
         kwargs["nic"] = udev.device_get_fcoe_nic(self.data)
         kwargs["identifier"] = udev.device_get_fcoe_identifier(self.data)
         kwargs["id_path"] = udev.device_get_path(self.data)
@@ -154,7 +154,7 @@ class MDBiosRaidDevicePopulator(DiskDevicePopulator):
                 udev.device_get_md_container(data))
 
     def _get_kwargs(self):
-        kwargs = super(MDBiosRaidDevicePopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
         parent_path = udev.device_get_md_container(self.data)
         parent_name = device_path_to_name(parent_path)
         container = self._devicetree.get_device_by_name(parent_name)
@@ -200,7 +200,7 @@ class DASDDevicePopulator(DiskDevicePopulator):
                 udev.device_is_dasd(data))
 
     def _get_kwargs(self):
-        kwargs = super(DASDDevicePopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
         kwargs["busid"] = udev.device_get_dasd_bus_id(self.data)
         kwargs["opts"] = {}
         for attr in ['readonly', 'use_diag', 'erplog', 'failfast']:
@@ -221,7 +221,7 @@ class ZFCPDevicePopulator(DiskDevicePopulator):
                 udev.device_is_zfcp(data))
 
     def _get_kwargs(self):
-        kwargs = super(ZFCPDevicePopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
 
         kwargs["id_path"] = udev.device_get_path(self.data)
         for attr in ['hba_id', 'wwpn', 'fcp_lun']:
@@ -242,7 +242,7 @@ class NVMeNamespaceDevicePopulator(DiskDevicePopulator):
                 udev.device_is_nvme_namespace(data) and not udev.device_is_nvme_fabrics(data))
 
     def _get_kwargs(self):
-        kwargs = super(NVMeNamespaceDevicePopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
 
         log.info("%s is an NVMe local namespace device", udev.device_get_name(self.data))
 
@@ -276,7 +276,7 @@ class NVMeFabricsNamespaceDevicePopulator(DiskDevicePopulator):
                 udev.device_is_nvme_namespace(data) and udev.device_is_nvme_fabrics(data))
 
     def _get_kwargs(self):
-        kwargs = super(NVMeFabricsNamespaceDevicePopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
 
         log.info("%s is an NVMe fabrics namespace device", udev.device_get_name(self.data))
 

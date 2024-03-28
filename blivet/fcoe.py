@@ -55,7 +55,7 @@ def has_fcoe():
     return os.access("/sys/module/libfc", os.X_OK)
 
 
-class FCoE(object):
+class FCoE:
 
     """ FCoE utility class.
 
@@ -208,7 +208,7 @@ class FCoE(object):
         cfg_dir = root + "/etc/fcoe"
         example_cfg = os.path.join(cfg_dir, "cfg-ethx")
         if os.access(example_cfg, os.R_OK):
-            lines = open(example_cfg, "r").readlines()
+            lines = open(example_cfg).readlines()
         else:
             anaconda_cfg = """FCOE_ENABLE="yes"
 DCB_REQUIRED="yes"

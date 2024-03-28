@@ -27,7 +27,7 @@ class StorageError(Exception):
 
     def __init__(self, *args, **kwargs):
         self.hardware_fault = kwargs.pop("hardware_fault", False)
-        super(StorageError, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class NoDisksError(StorageError):
@@ -226,7 +226,7 @@ class UnusableConfigurationError(StorageError):
     suggestion = ""
 
     def __init__(self, message, dev_name=None):
-        super(UnusableConfigurationError, self).__init__(message)
+        super().__init__(message)
         self.dev_name = dev_name
 
 

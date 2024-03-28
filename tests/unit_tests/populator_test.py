@@ -806,7 +806,7 @@ class FormatPopulatorTestCase(PopulatorHelperTestCase):
 
         with patch("blivet.udev.device_get_format", return_value=self.udev_type):
             self.assertTrue(self.helper_class.match(data, device),
-                            msg="Failed to match %s against %s" % (self.udev_type, self.helper_name))
+                            msg="Failed to match {} against {}".format(self.udev_type, self.helper_name))
 
     @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
     @patch("blivet.udev.device_is_partition", return_value=False)
@@ -1043,7 +1043,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         lv1.attr = "-wi-ao----"
         lv1.size = "2g"
         lv1.segtype = "linear"
-        lv1_name = "%s-%s" % (pv_info.vg_name, lv1.lv_name)
+        lv1_name = "{}-{}".format(pv_info.vg_name, lv1.lv_name)
 
         lv2 = Mock()
         lv2.id = 0
@@ -1053,7 +1053,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         lv2.attr = "-wi-ao----"
         lv2.size = "7g"
         lv2.segtype = "linear"
-        lv2_name = "%s-%s" % (pv_info.vg_name, lv2.lv_name)
+        lv2_name = "{}-{}".format(pv_info.vg_name, lv2.lv_name)
 
         lv_info = {lv1_name: lv1,
                    lv2_name: lv2}
@@ -1207,7 +1207,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
             self.assertEqual(array.name, array_name)
 
 
-class FakePartedPart(object):
+class FakePartedPart:
     """Fake parted_partition for testing the parted partition name
     matching stuff. Has to provide size also.
     """

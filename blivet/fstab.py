@@ -34,7 +34,7 @@ import logging
 log = logging.getLogger("blivet")
 
 
-class FSTabOptions(object):
+class FSTabOptions:
     """ User prefered fstab settings object intended to be attached to device.format.
         Set variables override otherwise automatically obtained values put into fstab.
     """
@@ -51,7 +51,7 @@ class FSTabOptions(object):
         self.mntops = []
 
 
-class FSTabEntry(object):
+class FSTabEntry:
     """ One processed line of fstab
     """
 
@@ -87,7 +87,7 @@ class FSTabEntry(object):
         _comment = ""
         if self._entry.comment not in ("", None):
             _comment = "%s\n" % self._entry.comment
-        _line = "%s\t%s\t%s\t%s\t%s\t%s\t" % (self._entry.source, self._entry.target, self._entry.fstype,
+        _line = "{}\t{}\t{}\t{}\t{}\t{}\t".format(self._entry.source, self._entry.target, self._entry.fstype,
                                               self._entry.options, self._entry.freq, self._entry.passno)
         return _comment + _line
 
@@ -254,7 +254,7 @@ class FSTabEntry(object):
         return not any(x is None for x in items)
 
 
-class FSTabManagerIterator(object):
+class FSTabManagerIterator:
     """ Iterator class for FSTabManager
         Iteration over libmount Table entries is weird - only one iterator can run at a time.
         This class purpose is to mitigate that.
@@ -280,7 +280,7 @@ class FSTabManagerIterator(object):
         raise StopIteration
 
 
-class FSTabManager(object):
+class FSTabManager:
     """ Read, write and modify fstab file.
         This class is meant to work even without blivet.
         However some of its methods require blivet and will not function without it.
@@ -533,11 +533,11 @@ class FSTabManager(object):
                 device.format = get_format("bind", device=device.path, exists=True)
 
         if device is None:
-            raise UnrecognizedFSTabEntryError("Could not resolve entry %s %s" % (_spec, vfstype))
+            raise UnrecognizedFSTabEntryError("Could not resolve entry {} {}".format(_spec, vfstype))
 
         fmt = get_format(vfstype, device=device.path, exists=True)
         if vfstype != "auto" and None in (device.format.type, fmt.type):
-            raise UnrecognizedFSTabEntryError("Unrecognized filesystem type for %s: '%s'" % (_spec, vfstype))
+            raise UnrecognizedFSTabEntryError("Unrecognized filesystem type for {}: '{}'".format(_spec, vfstype))
 
         if hasattr(device.format, "mountpoint"):
             device.format.mountpoint = file

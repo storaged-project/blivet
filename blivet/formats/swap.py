@@ -91,21 +91,21 @@ class SwapSpace(DeviceFormat):
 
     @property
     def dict(self):
-        d = super(SwapSpace, self).dict
+        d = super().dict
         d.update({"priority": self.priority, "label": self.label})
         return d
 
     @property
     def formattable(self):
-        return super(SwapSpace, self).formattable and self._plugin.available
+        return super().formattable and self._plugin.available
 
     @property
     def supported(self):
-        return super(SwapSpace, self).supported and self._plugin.available
+        return super().supported and self._plugin.available
 
     @property
     def controllable(self):
-        return super(SwapSpace, self).controllable and self._plugin.available
+        return super().controllable and self._plugin.available
 
     def labeling(self):
         """Returns True as mkswap can write a label to the swap space."""
@@ -154,7 +154,7 @@ class SwapSpace(DeviceFormat):
             try:
                 blockdev.swap.mkswap(self.device, self.label)
             except blockdev.SwapError as err:
-                raise SwapSpaceError("Failed to change label on %s: %s" % (self.device, str(err)))
+                raise SwapSpaceError("Failed to change label on {}: {}".format(self.device, str(err)))
 
     label = property(lambda s: s._get_label(), lambda s, l: s._set_label(l),
                      doc="the label for this swap space")
@@ -214,7 +214,7 @@ class SwapSpace(DeviceFormat):
         try:
             status = blockdev.swap.swapstatus(self.device)
         except blockdev.SwapError as err:
-            raise SwapSpaceError("Failed to get swap status for %s: %s" % (self.device, str(err)))
+            raise SwapSpaceError("Failed to get swap status for {}: {}".format(self.device, str(err)))
         else:
             return status
 
@@ -224,7 +224,7 @@ class SwapSpace(DeviceFormat):
         try:
             blockdev.swap.swapon(self.device, priority=self.priority)
         except blockdev.SwapError as err:
-            raise SwapSpaceError("Failed to activate swap %s: %s" % (self.device, str(err)))
+            raise SwapSpaceError("Failed to activate swap {}: {}".format(self.device, str(err)))
 
     def _teardown(self, **kwargs):
         """ Close, or tear down, a device. """
@@ -233,7 +233,7 @@ class SwapSpace(DeviceFormat):
         try:
             blockdev.swap.swapoff(self.device)
         except blockdev.SwapError as err:
-            raise SwapSpaceError("Failed to deactivate swap %s: %s" % (self.device, str(err)))
+            raise SwapSpaceError("Failed to deactivate swap {}: {}".format(self.device, str(err)))
 
         udev.settle()
 

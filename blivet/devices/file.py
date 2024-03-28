@@ -81,7 +81,7 @@ class FileDevice(StorageDevice):
             if mountpoint:
                 root = root[:-len(mountpoint)]
 
-        return os.path.normpath("%s%s" % (root, self.name))
+        return os.path.normpath("{}{}".format(root, self.name))
 
     def read_current_size(self):
         size = Size(0)

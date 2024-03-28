@@ -51,7 +51,7 @@ log = logging.getLogger("blivet")
 _LVM_DEVICE_CLASSES = (LVMLogicalVolumeDevice, LVMVolumeGroupDevice)
 
 
-class DeviceTreeBase(object, metaclass=SynchronizedMeta):
+class DeviceTreeBase(metaclass=SynchronizedMeta):
     """ A quasi-tree that represents the devices in the system.
 
         The tree contains a list of :class:`~.devices.StorageDevice` instances,
@@ -106,10 +106,10 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
         def show_subtree(root, depth):
             abbreviate_subtree = root in done
-            s = "%s%s\n" % ("  " * depth, root)
+            s = "{}{}\n".format("  " * depth, root)
             done.append(root)
             if abbreviate_subtree:
-                s += "%s...\n" % ("  " * (depth + 1),)
+                s += "{}...\n".format("  " * (depth + 1))
             else:
                 for child in root.children:
                     s += show_subtree(child, depth + 1)
@@ -422,8 +422,8 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 The disk may be hidden.
 
         """
-        return set(d for dep in self.get_dependent_devices(disk, hidden=True)
-                   for d in dep.disks)
+        return {d for dep in self.get_dependent_devices(disk, hidden=True)
+                   for d in dep.disks}
 
     def get_disk_actions(self, disks):
         """ Return a list of actions related to the specified disk.
@@ -737,7 +737,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                     (vg_name, _slash, lv_name) = name.partition("/")
                     if lv_name and "/" not in lv_name:
                         # looks like we may have one
-                        lv = "%s-%s" % (vg_name, lv_name)
+                        lv = "{}-{}".format(vg_name, lv_name)
                         device = self.get_device_by_name(lv)
 
         # check mount options for btrfs volumes in case it's a subvol

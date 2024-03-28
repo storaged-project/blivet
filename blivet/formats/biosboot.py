@@ -59,7 +59,7 @@ class BIOSBoot(DeviceFormat):
 
     @property
     def supported(self):
-        return super(BIOSBoot, self).supported and arch.is_x86() and not arch.is_efi()
+        return super().supported and arch.is_x86() and not arch.is_efi()
 
 
 register_device_format(BIOSBoot)

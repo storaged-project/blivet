@@ -62,7 +62,7 @@ class DeviceTagsTest(unittest.TestCase):
         #
         iscsi_kwarg_names = ["initiator", "name", "offload", "target", "address", "port",
                              "lun", "iface", "node", "ibft", "nic", "id_path"]
-        iscsi_device = iScsiDiskDevice('test5', **dict((k, None) for k in iscsi_kwarg_names))
+        iscsi_device = iScsiDiskDevice('test5', **{k: None for k in iscsi_kwarg_names})
         self.assertIn(Tags.remote, iscsi_device.tags)
         self.assertNotIn(Tags.local, iscsi_device.tags)
         fcoe_device = FcoeDiskDevice('test6', nic=None, identifier=None, id_path=None)

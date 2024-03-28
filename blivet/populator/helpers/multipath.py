@@ -57,7 +57,7 @@ class MultipathFormatPopulator(FormatPopulator):
     _type_specifier = "multipath_member"
 
     def _get_kwargs(self):
-        kwargs = super(MultipathFormatPopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
         # blkid does not care that the UUID it sees on a multipath member is
         # for the multipath set's (and not the member's) formatting, so we
         # have to discard it.

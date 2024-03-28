@@ -66,7 +66,7 @@ class FSTabTestCase(unittest.TestCase):
         self.fstab.write()
 
         # read the file and verify its contents
-        with open(FSTAB_WRITE_FILE, "r") as f:
+        with open(FSTAB_WRITE_FILE) as f:
             contents = f.read()
         self.assertTrue("/media/newpath" in contents)
 

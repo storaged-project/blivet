@@ -113,7 +113,7 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertEqual(cache.mode, "writethrough")
         self.assertIsNone(cache.backing_device_name)
         self.assertIsNone(cache.cache_device_name)
-        self.assertEqual(set(cache.fast_pvs), set([pv2]))
+        self.assertEqual(set(cache.fast_pvs), {pv2})
 
     def test_lvmcached_two_logical_volume_init(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
@@ -178,7 +178,7 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertFalse(cache.exists)
         self.assertIsNone(cache.backing_device_name)
         self.assertIsNone(cache.cache_device_name)
-        self.assertEqual(set(cache.fast_pvs), set([pv2]))
+        self.assertEqual(set(cache.fast_pvs), {pv2})
 
     def test_lvm_logical_volume_with_pvs_init(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
@@ -579,7 +579,7 @@ class LVMDeviceTest(unittest.TestCase):
 
 class TypeSpecificCallsTest(unittest.TestCase):
     def test_type_specific_calls(self):
-        class A(object):
+        class A:
             def __init__(self, a):
                 self._a = a
 
@@ -598,7 +598,7 @@ class TypeSpecificCallsTest(unittest.TestCase):
             def greeting(self, val):
                 self._greet = "Set by A: %s" % val  # pylint: disable=attribute-defined-outside-init
 
-        class B(object):
+        class B:
             def __init__(self, b):
                 self._b = b
 

@@ -69,7 +69,7 @@ class TestDefaultNamedtuple(unittest.TestCase):
         self.assertEqual(dnt, (None, None, 5, None))
 
 
-class Test(object):
+class Test:
     def __init__(self, s):
         self._s = s
 

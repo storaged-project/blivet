@@ -171,8 +171,8 @@ class DeviceAction(util.ObjectID, metaclass=SynchronizedMeta):
     def _check_device_dependencies(self):
         unavailable_dependencies = self.device.unavailable_direct_dependencies
         if unavailable_dependencies:
-            dependencies_str = ", ".join("%s:\n%s" % (str(d), ", ".join(d.availability_errors)) for d in unavailable_dependencies)
-            raise DependencyError("device type %s requires unavailable_dependencies: %s" % (self.device.type, dependencies_str))
+            dependencies_str = ", ".join("{}:\n{}".format(str(d), ", ".join(d.availability_errors)) for d in unavailable_dependencies)
+            raise DependencyError("device type {} requires unavailable_dependencies: {}".format(self.device.type, dependencies_str))
 
     def apply(self):
         """ apply changes related to the action to the device(s) """
@@ -326,7 +326,7 @@ class ActionCreateDevice(DeviceAction):
         DeviceAction.__init__(self, device)
 
     def execute(self, callbacks=None):
-        super(ActionCreateDevice, self).execute(callbacks=callbacks)
+        super().execute(callbacks=callbacks)
         self.device.create()
 
     def requires(self, action):
@@ -340,7 +340,7 @@ class ActionCreateDevice(DeviceAction):
                   and this partition has a higher number
                 - the other action adds a member to this device's container
         """
-        rc = super(ActionCreateDevice, self).requires(action)
+        rc = super().requires(action)
         if self.device.depends_on(action.device):
             rc = True
         elif (action.is_create and action.is_device and
@@ -393,10 +393,10 @@ class ActionDestroyDevice(DeviceAction):
             unavailable_dependencies = LVMLogicalVolumeDevice.unavailable_type_dependencies()
             if unavailable_dependencies:
                 dependencies_str = ", ".join(str(d) for d in unavailable_dependencies)
-                raise DependencyError("device type %s requires unavailable_dependencies: %s" % (self.device.type, dependencies_str))
+                raise DependencyError("device type {} requires unavailable_dependencies: {}".format(self.device.type, dependencies_str))
             return
 
-        super(ActionDestroyDevice, self)._check_device_dependencies()
+        super()._check_device_dependencies()
 
     def apply(self):
         """ apply changes related to the action to the device(s) """
@@ -406,10 +406,10 @@ class ActionDestroyDevice(DeviceAction):
         if hasattr(self.device, 'ignore_skip_activation'):
             self.device.ignore_skip_activation += 1
 
-        super(ActionDestroyDevice, self).apply()
+        super().apply()
 
     def execute(self, callbacks=None):
-        super(ActionDestroyDevice, self).execute(callbacks=callbacks)
+        super().execute(callbacks=callbacks)
         self.device.destroy()
 
     def cancel(self):
@@ -419,7 +419,7 @@ class ActionDestroyDevice(DeviceAction):
         if hasattr(self.device, 'ignore_skip_activation'):
             self.device.ignore_skip_activation -= 1
 
-        super(ActionDestroyDevice, self).cancel()
+        super().cancel()
 
     def requires(self, action):
         """ Return True if self requires action.
@@ -432,7 +432,7 @@ class ActionDestroyDevice(DeviceAction):
                   and this partition has a lower number
                 - the other action removes this action's device from a container
         """
-        rc = super(ActionDestroyDevice, self).requires(action)
+        rc = super().requires(action)
         if action.device.depends_on(self.device) and action.is_destroy:
             rc = True
         elif (action.is_destroy and action.is_device and
@@ -519,10 +519,10 @@ class ActionResizeDevice(DeviceAction):
             return
 
         self.device.target_size = self._target_size
-        super(ActionResizeDevice, self).apply()
+        super().apply()
 
     def execute(self, callbacks=None):
-        super(ActionResizeDevice, self).execute(callbacks=callbacks)
+        super().execute(callbacks=callbacks)
         self.device.resize()
 
     def cancel(self):
@@ -530,7 +530,7 @@ class ActionResizeDevice(DeviceAction):
             return
 
         self.device.target_size = self.origsize
-        super(ActionResizeDevice, self).cancel()
+        super().cancel()
 
     def requires(self, action):
         """ Return True if self requires action.
@@ -549,7 +549,7 @@ class ActionResizeDevice(DeviceAction):
                 - the other action removes this action's device from a container
                 - the other action adds a member to this device's container
         """
-        retval = super(ActionResizeDevice, self).requires(action)
+        retval = super().requires(action)
         if action.is_resize:
             if self.device.id == action.device.id and \
                self.dir == action.dir and \
@@ -610,10 +610,10 @@ class ActionCreateFormat(DeviceAction):
             return
 
         self.device.format = self._format
-        super(ActionCreateFormat, self).apply()
+        super().apply()
 
     def execute(self, callbacks=None):
-        super(ActionCreateFormat, self).execute(callbacks=callbacks)
+        super().execute(callbacks=callbacks)
         if callbacks and callbacks.create_format_pre:
             msg = _("Creating %(type)s on %(device)s") % {"type": self.device.format.type, "device": self.device.path}
             callbacks.create_format_pre(CreateFormatPreData(msg))
@@ -693,7 +693,7 @@ class ActionCreateFormat(DeviceAction):
             return
 
         self.device.format = self.orig_format
-        super(ActionCreateFormat, self).cancel()
+        super().cancel()
 
     def requires(self, action):
         """ Return True if self requires action.
@@ -706,7 +706,7 @@ class ActionCreateFormat(DeviceAction):
                 - the other action is a create or resize of this action's
                   device
         """
-        return (super(ActionCreateFormat, self).requires(action) or
+        return (super().requires(action) or
                 (self.device.depends_on(action.device) and
                  not ((action.is_destroy and action.is_device) or
                       action.is_container)) or
@@ -752,12 +752,12 @@ class ActionDestroyFormat(DeviceAction):
         if hasattr(self.device, 'ignore_skip_activation'):
             self.device.ignore_skip_activation += 1
 
-        super(ActionDestroyFormat, self).apply()
+        super().apply()
 
     def execute(self, callbacks=None):
         """ wipe the filesystem signature from the device """
         # remove any flag if set
-        super(ActionDestroyFormat, self).execute(callbacks=callbacks)
+        super().execute(callbacks=callbacks)
         status = self.device.status
         self.device.setup(orig=True)
         if hasattr(self.device, 'set_rw'):
@@ -781,7 +781,7 @@ class ActionDestroyFormat(DeviceAction):
         self.device.format = self.orig_format
         if hasattr(self.device, 'ignore_skip_activation'):
             self.device.ignore_skip_activation -= 1
-        super(ActionDestroyFormat, self).cancel()
+        super().cancel()
 
     @property
     def format(self):
@@ -796,7 +796,7 @@ class ActionDestroyFormat(DeviceAction):
                   and the other action is a destroy action
                 - the other action removes this action's device from a container
         """
-        retval = super(ActionDestroyFormat, self).requires(action)
+        retval = super().requires(action)
         if action.device.depends_on(self.device) and action.is_destroy:
             retval = True
         elif (action.is_remove and action.device == self.device):
@@ -879,10 +879,10 @@ class ActionResizeFormat(DeviceAction):
         if hasattr(self.device, 'ignore_skip_activation'):
             self.device.ignore_skip_activation += 1
 
-        super(ActionResizeFormat, self).apply()
+        super().apply()
 
     def execute(self, callbacks=None):
-        super(ActionResizeFormat, self).execute(callbacks=callbacks)
+        super().execute(callbacks=callbacks)
         if callbacks and callbacks.resize_format_pre:
             msg = _("Resizing filesystem on %(device)s") % {"device": self.device.path}
             callbacks.resize_format_pre(ResizeFormatPreData(msg))
@@ -902,7 +902,7 @@ class ActionResizeFormat(DeviceAction):
         if hasattr(self.device, 'ignore_skip_activation'):
             self.device.ignore_skip_activation -= 1
 
-        super(ActionResizeFormat, self).cancel()
+        super().cancel()
 
     def requires(self, action):
         """ Return True if self requires action.
@@ -917,7 +917,7 @@ class ActionResizeFormat(DeviceAction):
                   action's device depends on
                 - the other action removes this action's device from a container
         """
-        retval = super(ActionResizeFormat, self).requires(action)
+        retval = super().requires(action)
         if action.is_resize:
             if self.device.id == action.device.id and \
                self.dir == action.dir and \
@@ -941,7 +941,7 @@ class ActionAddMember(DeviceAction):
     type_desc_str = N_("add container member")
 
     def __init__(self, container, device):
-        super(ActionAddMember, self).__init__(device)
+        super().__init__(device)
         self.container = container
 
     def apply(self):
@@ -949,17 +949,17 @@ class ActionAddMember(DeviceAction):
             return
 
         self.container.parents.append(self.device)
-        super(ActionAddMember, self).apply()
+        super().apply()
 
     def cancel(self):
         if not self._applied:
             return
 
         self.container.parents.remove(self.device)
-        super(ActionAddMember, self).cancel()
+        super().cancel()
 
     def execute(self, callbacks=None):
-        super(ActionAddMember, self).execute(callbacks=callbacks)
+        super().execute(callbacks=callbacks)
         self.container.add(self.device)
 
     def requires(self, action):
@@ -1006,7 +1006,7 @@ class ActionRemoveMember(DeviceAction):
     type_desc_str = N_("remove container member")
 
     def __init__(self, container, device):
-        super(ActionRemoveMember, self).__init__(device)
+        super().__init__(device)
         self.container = container
 
     def apply(self):
@@ -1014,17 +1014,17 @@ class ActionRemoveMember(DeviceAction):
             return
 
         self.container.parents.remove(self.device)
-        super(ActionRemoveMember, self).apply()
+        super().apply()
 
     def cancel(self):
         if not self._applied:
             return
 
         self.container.parents.append(self.device)
-        super(ActionRemoveMember, self).cancel()
+        super().cancel()
 
     def execute(self, callbacks=None):
-        super(ActionRemoveMember, self).execute(callbacks=callbacks)
+        super().execute(callbacks=callbacks)
         self.container.remove(self.device)
 
     def requires(self, action):
@@ -1076,7 +1076,7 @@ class ActionConfigureFormat(DeviceAction):
     type_desc_str = N_("configure format")
 
     def __init__(self, device, attr, new_value):
-        super(ActionConfigureFormat, self).__init__(device)
+        super().__init__(device)
 
         self.device = device
         self.attr = attr
@@ -1107,7 +1107,7 @@ class ActionConfigureFormat(DeviceAction):
         if hasattr(self.device, 'ignore_skip_activation'):
             self.device.ignore_skip_activation += 1
 
-        super(ActionConfigureFormat, self).apply()
+        super().apply()
 
     def cancel(self):
         if not self._applied:
@@ -1117,10 +1117,10 @@ class ActionConfigureFormat(DeviceAction):
         if hasattr(self.device, 'ignore_skip_activation'):
             self.device.ignore_skip_activation -= 1
 
-        super(ActionConfigureFormat, self).cancel()
+        super().cancel()
 
     def execute(self, callbacks=None):
-        super(ActionConfigureFormat, self).execute(callbacks=callbacks)
+        super().execute(callbacks=callbacks)
 
         if self._execute is not None:
             self.device.setup()
@@ -1147,7 +1147,7 @@ class ActionConfigureDevice(DeviceAction):
     type_desc_str = N_("configure device")
 
     def __init__(self, device, attr, new_value):
-        super(ActionConfigureDevice, self).__init__(device)
+        super().__init__(device)
 
         self.device = device
         self.attr = attr
@@ -1178,17 +1178,17 @@ class ActionConfigureDevice(DeviceAction):
             return
 
         setattr(self.device, self.attr, self.new_value)
-        super(ActionConfigureDevice, self).apply()
+        super().apply()
 
     def cancel(self):
         if not self._applied:
             return
 
         setattr(self.device, self.attr, self.old_value)
-        super(ActionConfigureDevice, self).cancel()
+        super().cancel()
 
     def execute(self, callbacks=None):
-        super(ActionConfigureDevice, self).execute(callbacks=callbacks)
+        super().execute(callbacks=callbacks)
 
         if self._execute is not None:
             kwargs = {"old_%s" % self.attr: self.old_value,

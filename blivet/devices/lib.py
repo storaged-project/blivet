@@ -138,7 +138,7 @@ def device_name_to_disk_by_path(device_name=None):
     raise errors.DeviceNotFoundError(device_name)
 
 
-class ParentList(object):
+class ParentList:
 
     """ A list with auditing and side-effects for additions and removals.
 

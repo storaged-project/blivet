@@ -35,7 +35,7 @@ HOSTNQN_FILE = ETC_NVME_PATH + "hostnqn"
 HOSTID_FILE = ETC_NVME_PATH + "hostid"
 
 
-class NVMe(object):
+class NVMe:
     """ NVMe utility class.
 
         .. warning::

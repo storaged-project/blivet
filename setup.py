@@ -80,7 +80,7 @@ data_files = [
 ]
 
 
-with open("README.md", "r") as f:
+with open("README.md") as f:
     long_description = f.read()
 
 
@@ -94,6 +94,7 @@ setup(name='blivet',
       url='http://github.com/storaged-project/blivet',
       data_files=data_files,
       packages=['blivet', 'blivet.dbus', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers'],
+      python_requires=">=3.8",
       install_requires=['pyudev'],
       classifiers=["Development Status :: 5 - Production/Stable",
                    "Intended Audience :: Developers",

@@ -21,7 +21,7 @@ class FSOverheadTestCase(unittest.TestCase):
 
         # only classes with FS parent will be used
         with self.assertRaises(ValueError):
-            class Dummy(object):
+            class Dummy:
                 pass
 
             FS.biggest_overhead_FS([Dummy])
