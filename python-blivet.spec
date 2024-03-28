@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.9.1
+Version: 3.9.2
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -110,6 +110,25 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 28 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.9.2-1
+- tests: Add a simple unit test for listing btrfs subvolumes (vtrefny)
+- Fix getting default subvolume ID for mounted btrfs volumes (vtrefny)
+- Do not try to get btrfs subvolumes without libblockdev (vtrefny)
+- Do not raise not implemented exception when checking if btrfs is empty
+  (vtrefny)
+- Try to start stratisd before checking its availability (vtrefny)
+- Fix creating Stratis filesystem without size specified (vtrefny)
+- Fix printing the partition type UUID (vtrefny)
+- Adjust check for btrfs filesystem being empty (vtrefny)
+- Fix util.detect_virt on Amazon (vtrefny)
+- misc: Vagrantfile update (vtrefny)
+- misc: Run pip with --break-system-packages (vtrefny)
+- misc: Add missing libmount build dependencies (vtrefny)
+- availability: Check for mpath friendly names availability (vtrefny)
+- Allow running blivet without libmount Python bindings (vtrefny)
+- Fstab cleanup fix (japokorn)
+- Fix getting subvolumes for mounted btrfs volumes (vtrefny)
+
 * Tue Feb 27 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.9.1-1
 - Try to assemble MD arrays during populate (#2236356) (vtrefny)
 - Fix UnboundLocalError in MD populator (vtrefny)
