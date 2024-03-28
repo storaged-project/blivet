@@ -39,7 +39,7 @@ log = logging.getLogger("blivet")
 CACHE_AVAILABILITY = True
 
 
-class ExternalResource(object):
+class ExternalResource:
 
     """ An external resource. """
 
@@ -92,7 +92,7 @@ class ExternalResource(object):
         return self.availability_errors == []
 
 
-class Method(object, metaclass=abc.ABCMeta):
+class Method(metaclass=abc.ABCMeta):
 
     """ Method for determining if external resource is available."""
 
@@ -131,7 +131,7 @@ class Path(Method):
 Path = Path()
 
 
-class AppVersionInfo(object):
+class AppVersionInfo:
 
     def __init__(self, app_name, required_version, version_opt, version_regex):
         """ Initializer.
@@ -149,7 +149,7 @@ class AppVersionInfo(object):
         self.version_regex = version_regex
 
     def __str__(self):
-        return "%s-%s" % (self.app_name, self.required_version)
+        return "{}-{}".format(self.app_name, self.required_version)
 
 
 class VersionMethod(Method):
@@ -184,13 +184,13 @@ class VersionMethod(Method):
                                                self.version_info.required_version)
                 self._availability_errors.append(err)
         except blockdev.UtilsError as e:
-            err = "failed to get installed version of %s: %s" % (self.version_info.app_name, e)
+            err = "failed to get installed version of {}: {}".format(self.version_info.app_name, e)
             self._availability_errors.append(err)
 
         return self._availability_errors[:]
 
 
-class BlockDevTechInfo(object):
+class BlockDevTechInfo:
 
     def __init__(self, plugin_name, check_fn, technologies):
         """ Initializer.
@@ -225,7 +225,7 @@ class BlockDevMethod(Method):
             try:
                 self._tech_info.check_fn(tech, mode)
             except GLib.GError as e:
-                errors.append("%s: %s" % (tech.value_name, e.message))
+                errors.append("{}: {}".format(tech.value_name, e.message))
         return errors
 
     def availability_errors(self, resource):

@@ -42,7 +42,7 @@ class StratisFormatPopulator(FormatPopulator):
 
     @classmethod
     def match(cls, data, device):  # pylint: disable=arguments-differ,unused-argument
-        if super(StratisFormatPopulator, cls).match(data, device):
+        if super().match(data, device):
             return True
 
         # locked stratis pools are managed here
@@ -69,7 +69,7 @@ class StratisFormatPopulator(FormatPopulator):
         return udev.device_get_uuid(self.data)
 
     def _get_kwargs(self):
-        kwargs = super(StratisFormatPopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
 
         name = udev.device_get_name(self.data)
         uuid = self._get_blockdev_uuid()
@@ -158,7 +158,7 @@ class StratisFormatPopulator(FormatPopulator):
 
     def run(self):
         log_method_call(self, pv=self.device.name)
-        super(StratisFormatPopulator, self).run()
+        super().run()
 
         if not self.device.format.locked_pool:
             self._add_pool_device()

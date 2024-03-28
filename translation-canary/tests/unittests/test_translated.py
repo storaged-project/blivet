@@ -191,7 +191,7 @@ class TestTestFile(unittest.TestCase):
             self.assertTrue(testFile(os.path.join(d, "test.po"), releaseMode=True))
             self.assertFalse(os.path.exists(os.path.join(d, "test.po")))
 
-            with open(os.path.join(d, "LINGUAS"), "r")  as linguas:
+            with open(os.path.join(d, "LINGUAS"))  as linguas:
                 self.assertEqual(linguas.read().strip(), "other")
 
     @unittest.mock.patch("translation_canary.translated._tests", [_false_test])
@@ -205,7 +205,7 @@ class TestTestFile(unittest.TestCase):
             self.assertTrue(testFile(os.path.join(d, "test.po"), releaseMode=True, modifyLinguas=False))
             self.assertFalse(os.path.exists(os.path.join(d, "test.po")))
 
-            with open(os.path.join(d, "LINGUAS"), "r") as linguas:
+            with open(os.path.join(d, "LINGUAS")) as linguas:
                 self.assertEqual(linguas.read().strip(), "test other")
 
 @unittest.mock.patch("translation_canary.translated._tests", [_picky_test])

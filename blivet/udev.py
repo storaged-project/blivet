@@ -327,7 +327,7 @@ def device_is_zfcp(info):
 
     while True:
         topdir = os.path.realpath(os.path.dirname(subsystem))
-        driver = "%s/driver" % (topdir,)
+        driver = "{}/driver".format(topdir)
 
         if os.path.islink(driver):
             subsystemname = os.path.basename(os.readlink(subsystem))
@@ -352,14 +352,14 @@ def device_get_zfcp_attribute(info, attr=None):
         log.debug("device_get_zfcp_attribute() called with attr=None")
         return None
 
-    attribute = "%s/device/%s" % (device_get_sysfs_path(info), attr)
+    attribute = "{}/device/{}".format(device_get_sysfs_path(info), attr)
     attribute = os.path.realpath(attribute)
 
     if not os.path.isfile(attribute):
         log.warning("%s is not a valid zfcp attribute", attribute)
         return None
 
-    return open(attribute, "r").read().strip()
+    return open(attribute).read().strip()
 
 
 def device_get_dasd_bus_id(info):
@@ -376,7 +376,7 @@ def device_get_dasd_flag(info, flag=None):
     if not os.path.isfile(path):
         return None
 
-    return open(path, 'r').read().strip()
+    return open(path).read().strip()
 
 
 def device_is_cdrom(info):
@@ -982,7 +982,7 @@ def _detect_broadcom_fcoe(info):
     match = re_pci_host.match(device_get_sysfs_path(info))
     if match:
         sysfs_pci, host = match.groups()
-        if os.access('%s/%s/fc_host' % (sysfs_pci, host), os.X_OK) and \
+        if os.access('{}/{}/fc_host'.format(sysfs_pci, host), os.X_OK) and \
                 'net' in sysfs_pci:
             return (sysfs_pci, host)
     return (None, None)

@@ -248,7 +248,7 @@ def create_filesystem(name, pool_uuid, fs_size=None):
                                                         "CreateFilesystems",
                                                         GLib.Variant("(a(s(bs)))", ([GLib.Variant("(s(bs))", (name, size_opt))],)))
     except safe_dbus.DBusCallError as e:
-        raise StratisError("Failed to create stratis filesystem on '%s': %s" % (pool_info.name, str(e)))
+        raise StratisError("Failed to create stratis filesystem on '{}': {}".format(pool_info.name, str(e)))
     else:
         if not succ:
             raise StratisError("Failed to create stratis filesystem on '%s': %s (%d)" % (pool_info.name, err, rc))

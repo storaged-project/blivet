@@ -38,7 +38,7 @@ class DBusObject(dbus.service.Object):
     # constructor from running during unit testing.
     def _init_dbus_object(self):
         """ Initialize superclass. """
-        super(DBusObject, self).__init__(bus_name=dbus.service.BusName(BUS_NAME, dbus.SystemBus()),
+        super().__init__(bus_name=dbus.service.BusName(BUS_NAME, dbus.SystemBus()),
                                          object_path=self.object_path)
 
     @property
@@ -52,7 +52,7 @@ class DBusObject(dbus.service.Object):
         self._present = state
 
     def remove_from_connection(self, connection=None, path=None):
-        super(DBusObject, self).remove_from_connection(connection=connection, path=path)
+        super().remove_from_connection(connection=connection, path=path)
         self._object_path = None
 
     @property

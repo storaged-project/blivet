@@ -70,7 +70,7 @@ class PPCPRePBoot(DeviceFormat):
                 If a device node path is passed to this method it will overwrite
                 any previously set value of this instance's "device" attribute.
         """
-        super(PPCPRePBoot, self)._create(**kwargs)
+        super()._create(**kwargs)
         try:
             fd = os.open(self.device, os.O_RDWR)
             length = os.lseek(fd, 0, os.SEEK_END)
@@ -96,7 +96,7 @@ class PPCPRePBoot(DeviceFormat):
 
     @property
     def supported(self):
-        return super(PPCPRePBoot, self).supported and arch.is_ipseries()
+        return super().supported and arch.is_ipseries()
 
 
 register_device_format(PPCPRePBoot)

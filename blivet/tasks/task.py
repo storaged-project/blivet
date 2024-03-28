@@ -22,7 +22,7 @@
 import abc
 
 
-class Task(object, metaclass=abc.ABCMeta):
+class Task(metaclass=abc.ABCMeta):
 
     """ An abstract class that represents some task. """
 
@@ -94,7 +94,7 @@ class BasicApplication(Task, metaclass=abc.ABCMeta):
     def _availability_errors(self):
         errors = self.ext.availability_errors
         if errors:
-            return ["application %s is not available: %s" % (self.ext, " and ".join(errors))]
+            return ["application {} is not available: {}".format(self.ext, " and ".join(errors))]
         else:
             return []
 

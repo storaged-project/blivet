@@ -364,7 +364,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
     factory_class = devicefactory.LVMFactory
 
     def _validate_factory_device(self, *args, **kwargs):
-        super(LVMFactoryTestCase, self)._validate_factory_device(*args, **kwargs)
+        super()._validate_factory_device(*args, **kwargs)
 
         device = args[0]
 
@@ -403,7 +403,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
     @patch("blivet.devices.md.MDRaidArrayDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.dm.DMDevice.type_external_dependencies", return_value=set())
     def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
-        super(LVMFactoryTestCase, self).test_device_factory()
+        super().test_device_factory()
 
         ##
         # New device
@@ -523,7 +523,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
     @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
     def test_factory_defaults(self, *args):  # pylint: disable=unused-argument
-        super(LVMFactoryTestCase, self).test_factory_defaults()
+        super().test_factory_defaults()
 
     def _get_size_delta(self, devices=None):
         if not devices:
@@ -566,7 +566,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
     @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
     def test_get_free_disk_space(self, *args):
-        super(LVMFactoryTestCase, self).test_get_free_disk_space()
+        super().test_get_free_disk_space()
 
     @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
     @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
@@ -574,7 +574,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
     @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
     def test_normalize_size(self, *args):  # pylint: disable=unused-argument
-        super(LVMFactoryTestCase, self).test_normalize_size()
+        super().test_normalize_size()
 
     @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
     @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
@@ -607,7 +607,7 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
     factory_class = devicefactory.LVMThinPFactory
 
     def _validate_factory_device(self, *args, **kwargs):
-        super(LVMThinPFactoryTestCase, self)._validate_factory_device(*args,
+        super()._validate_factory_device(*args,
                                                                       **kwargs)
         device = args[0]
 
@@ -621,7 +621,7 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
         return device
 
     def _get_size_delta(self, devices=None):
-        delta = super(LVMThinPFactoryTestCase, self)._get_size_delta(devices=devices)
+        delta = super()._get_size_delta(devices=devices)
         if devices:
             # we reserve 20% in the VG for pool to grow
             if sum(d.size for d in devices) * Decimal('0.20') > DEFAULT_THPOOL_RESERVE.min:
@@ -640,7 +640,7 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
     factory_class = devicefactory.LVMVDOFactory
 
     def _validate_factory_device(self, *args, **kwargs):
-        super(LVMVDOFactoryTestCase, self)._validate_factory_device(*args,
+        super()._validate_factory_device(*args,
                                                                     **kwargs)
         device = args[0]
 
@@ -749,7 +749,7 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
     @patch("blivet.devices.lvm.LVMVDOPoolMixin.type_external_dependencies", return_value=set())
     @patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin.type_external_dependencies", return_value=set())
     def test_factory_defaults(self, *args):  # pylint: disable=unused-argument
-        super(LVMVDOFactoryTestCase, self).test_factory_defaults()
+        super().test_factory_defaults()
 
     @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
     @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
@@ -759,7 +759,7 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
     @patch("blivet.devices.lvm.LVMVDOPoolMixin.type_external_dependencies", return_value=set())
     @patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin.type_external_dependencies", return_value=set())
     def test_get_free_disk_space(self, *args):
-        super(LVMVDOFactoryTestCase, self).test_get_free_disk_space()
+        super().test_get_free_disk_space()
 
     @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
     @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
@@ -769,7 +769,7 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
     @patch("blivet.devices.lvm.LVMVDOPoolMixin.type_external_dependencies", return_value=set())
     @patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin.type_external_dependencies", return_value=set())
     def test_normalize_size(self, *args):  # pylint: disable=unused-argument
-        super(LVMVDOFactoryTestCase, self).test_normalize_size()
+        super().test_normalize_size()
 
     @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
     @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
@@ -779,7 +779,7 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
     @patch("blivet.devices.lvm.LVMVDOPoolMixin.type_external_dependencies", return_value=set())
     @patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin.type_external_dependencies", return_value=set())
     def test_lv_unique_name(self, *args):  # pylint: disable=unused-argument,arguments-differ
-        super(LVMVDOFactoryTestCase, self).test_lv_unique_name()
+        super().test_lv_unique_name()
 
 
 @patch("blivet.formats.mdraid.MDRaidMember.formattable", return_value=True)
@@ -1029,7 +1029,7 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
     @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.stratis.StratisPoolDevice.type_external_dependencies", return_value=set())
     def test_normalize_size(self, *args):  # pylint: disable=unused-argument
-        super(StratisFactoryTestCase, self).test_normalize_size()
+        super().test_normalize_size()
 
     @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.stratis.StratisPoolDevice.type_external_dependencies", return_value=set())

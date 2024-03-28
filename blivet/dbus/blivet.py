@@ -49,7 +49,7 @@ class DBusBlivet(DBusObject):
     transient = False
 
     def __init__(self, manager):
-        super(DBusBlivet, self).__init__(manager)
+        super().__init__(manager)
         self._blivet = Blivet()
         self._id = ObjectID().id
         self._manager.add_object(self)
@@ -214,7 +214,7 @@ class DBusBlivet(DBusObject):
         try:
             self._blivet.do_it()
         except StorageError as e:
-            raise dbus.exceptions.DBusException('%s.%s' % (BUS_NAME, e.__class__.__name__),
+            raise dbus.exceptions.DBusException('{}.{}'.format(BUS_NAME, e.__class__.__name__),
                                                 "An error occured while committing the "
                                                 "changes to disk: %s" % str(e))
 
@@ -235,7 +235,7 @@ class DBusBlivet(DBusObject):
         try:
             device = self._blivet.factory_device(**kwargs)
         except StorageError as e:
-            raise dbus.exceptions.DBusException('%s.%s' % (BUS_NAME, e.__class__.__name__),
+            raise dbus.exceptions.DBusException('{}.{}'.format(BUS_NAME, e.__class__.__name__),
                                                 "An error occured while configuring the "
                                                 "device: %s" % str(e))
 

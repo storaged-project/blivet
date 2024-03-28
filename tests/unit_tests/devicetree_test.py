@@ -488,18 +488,18 @@ class DeviceTreeTestCase(unittest.TestCase):
         vg = LVMVolumeGroupDevice("relvg", parents=[sda, sdb])
         tree._add_device(vg)
 
-        self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
-        self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sda), {sda, sdb})
+        self.assertEqual(tree.get_related_disks(sdb), {sda, sdb})
         self.assertEqual(tree.get_related_disks(sdc), set())
         tree.hide(sda)
-        self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
-        self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sda), {sda, sdb})
+        self.assertEqual(tree.get_related_disks(sdb), {sda, sdb})
         tree.hide(sdb)
-        self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
-        self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sda), {sda, sdb})
+        self.assertEqual(tree.get_related_disks(sdb), {sda, sdb})
         tree.unhide(sda)
-        self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
-        self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
+        self.assertEqual(tree.get_related_disks(sda), {sda, sdb})
+        self.assertEqual(tree.get_related_disks(sdb), {sda, sdb})
 
     # XXX: the lvm_devices_* functions are decorated with needs_config_refresh decorator which
     #      at this point is already applied as a no-op because LVM libblockdev plugin is not available

@@ -75,7 +75,7 @@ class SynchronizedMeta(type):
 
             new_dct[n] = obj
 
-        return super(SynchronizedMeta, cls).__new__(cls, name, bases, new_dct)
+        return super().__new__(cls, name, bases, new_dct)
 
 
 class SynchronizedABCMeta(SynchronizedMeta, ABCMeta):

@@ -88,7 +88,7 @@ class LVMFormatPopulator(FormatPopulator):
     _type_specifier = "lvmpv"
 
     def _get_kwargs(self):
-        kwargs = super(LVMFormatPopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
 
         # new PV, add it to the LVM devices list and re-run pvs/lvs/vgs
         lvm.lvm_devices_add(self.device.path)
@@ -129,8 +129,8 @@ class LVMFormatPopulator(FormatPopulator):
             return
 
         vg_name = vg_device.name
-        lv_info = dict((k, v) for (k, v) in iter(lvs_info.cache.items())
-                       if v.vg_name == vg_name)
+        lv_info = {k: v for (k, v) in iter(lvs_info.cache.items())
+                       if v.vg_name == vg_name}
 
         for lv_device in vg_device.lvs[:]:
             if lv_device.name not in lv_info:
@@ -185,7 +185,7 @@ class LVMFormatPopulator(FormatPopulator):
 
             lv_parents = [vg_device]
             lv_kwargs = {}
-            name = "%s-%s" % (vg_name, lv_name)
+            name = "{}-{}".format(vg_name, lv_name)
 
             lv_device = self._devicetree.get_device_by_device_id("LVM-" + name)
             if lv_device is not None:
@@ -215,7 +215,7 @@ class LVMFormatPopulator(FormatPopulator):
                     lv_kwargs["vorigin"] = True
                     origin = None
                 else:
-                    origin_device_name = "%s-%s" % (vg_name, origin_name)
+                    origin_device_name = "{}-{}".format(vg_name, origin_name)
                     add_required_lv(origin_device_name,
                                     "failed to locate origin lv")
                     origin = self._devicetree.get_device_by_device_id("LVM-" + origin_device_name)
@@ -234,12 +234,12 @@ class LVMFormatPopulator(FormatPopulator):
             elif lv_attr[0] == 'V':
                 # thin volume
                 pool_name = blockdev.lvm.thlvpoolname(vg_name, lv_name)
-                pool_device_name = "%s-%s" % (vg_name, pool_name)
+                pool_device_name = "{}-{}".format(vg_name, pool_name)
                 add_required_lv(pool_device_name, "failed to look up thin pool")
 
                 origin_name = blockdev.lvm.lvorigin(vg_name, lv_name)
                 if origin_name:
-                    origin_device_name = "%s-%s" % (vg_name, origin_name)
+                    origin_device_name = "{}-{}".format(vg_name, origin_name)
                     add_required_lv(origin_device_name, "failed to locate origin lv")
                     origin = self._devicetree.get_device_by_device_id("LVM-" + origin_device_name)
                     lv_kwargs["origin"] = origin
@@ -259,7 +259,7 @@ class LVMFormatPopulator(FormatPopulator):
                     # skip vorigins
                     return
                 pool_name = blockdev.lvm.vdolvpoolname(vg_name, lv_name)
-                pool_device_name = "%s-%s" % (vg_name, pool_name)
+                pool_device_name = "{}-{}".format(vg_name, pool_name)
                 add_required_lv(pool_device_name, "failed to look up VDO pool")
 
                 lv_parents = [self._devicetree.get_device_by_device_id("LVM-" + pool_device_name)]
@@ -353,7 +353,7 @@ class LVMFormatPopulator(FormatPopulator):
         # create device instances for the internal LVs
         orphan_lvs = dict()
         for lv_name in internal_lvs:
-            full_name = "%s-%s" % (vg_name, lv_name)
+            full_name = "{}-{}".format(vg_name, lv_name)
             try:
                 new_lv = create_internal_lv(lv_info[full_name])
             except DeviceTreeError as e:
@@ -429,7 +429,7 @@ class LVMFormatPopulator(FormatPopulator):
 
     def run(self):
         log_method_call(self, pv=self.device.name)
-        super(LVMFormatPopulator, self).run()
+        super().run()
         self._add_vg_device()
         self._update_lvs()
 

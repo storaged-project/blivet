@@ -61,7 +61,7 @@ re_interface_sas = re.compile(r'^SAS\s*sas_address: (\S*)\s*lun: \(\S*\)\s*$')
 re_interface_unknown = re.compile(r'^(\S*)\s*unknown: (\S*) (\S*)\s*$')
 
 
-class EddEntry(object):
+class EddEntry:
 
     """ This object merely collects what the /sys/firmware/edd/* entries can
         provide.
@@ -265,7 +265,7 @@ class EddEntry(object):
         return self._fmt('\t', '\n')
 
     def __repr__(self):
-        return "<EddEntry%s>" % (self._fmt(' ', ''),)
+        return "<EddEntry{}>".format(self._fmt(' ', ''))
 
     def __getitem__(self, idx):
         return str(self)[idx]
@@ -353,7 +353,7 @@ class EddEntry(object):
                             self.sysfspath, hbus)
 
 
-class EddMatcher(object):
+class EddMatcher:
 
     """ This object tries to match given entry to a disk device name.
 
@@ -452,7 +452,7 @@ class EddMatcher(object):
             #
             # * When the kernel finally learns of these facts...
             #
-            if components[4] != '0000:%s' % (self.edd.pci_dev,):
+            if components[4] != '0000:{}'.format(self.edd.pci_dev):
                 continue
             if not components[5].startswith('ata'):
                 continue
@@ -650,7 +650,7 @@ def collect_edd_data(root=None):
     globstr = util.Path("/sys/firmware/edd/int13_dev*/", root=root)
     for path in globstr.glob():
         match = re_bios_device_number.match(path)
-        biosdev = int("0x%s" % (match.group(1),), base=16)
+        biosdev = int("0x{}".format(match.group(1)), base=16)
         log.debug("edd: found device 0x%x at %s", biosdev, path)
         edd_data_dict[biosdev] = EddEntry(path, root=root)
     return edd_data_dict
@@ -673,7 +673,7 @@ def collect_mbrs(devices, root=None):
             data = os.read(fd, 4)
             mbrsig = struct.unpack('I', data)
             sdata = struct.unpack("BBBB", data)
-            sdata = "".join(["%02x" % (x,) for x in sdata])
+            sdata = "".join(["{:02x}".format(x) for x in sdata])
             os.close(fd)
             testdata_log.debug("device %s data[440:443] = %s", path, sdata)
         except OSError as e:

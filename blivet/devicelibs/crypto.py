@@ -140,6 +140,6 @@ def is_fips_enabled():
         # if the file doesn't exist, we are definitely not in FIPS mode
         return False
 
-    with open("/proc/sys/crypto/fips_enabled", "r") as f:
+    with open("/proc/sys/crypto/fips_enabled") as f:
         enabled = f.read()
     return enabled.strip() == "1"

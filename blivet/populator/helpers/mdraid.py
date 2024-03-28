@@ -100,7 +100,7 @@ class MDFormatPopulator(FormatPopulator):
     _type_specifier = "mdmember"
 
     def _get_kwargs(self):
-        kwargs = super(MDFormatPopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
         kwargs["biosraid"] = udev.device_is_biosraid_member(self.data)
         if not kwargs["biosraid"]:
             try:
@@ -119,7 +119,7 @@ class MDFormatPopulator(FormatPopulator):
         return kwargs
 
     def run(self):
-        super(MDFormatPopulator, self).run()
+        super().run()
         try:
             md_info = blockdev.md.examine(self.device.path)
         except blockdev.MDRaidError as e:

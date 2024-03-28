@@ -116,13 +116,13 @@ class DiskDevice(StorageDevice):
             self.tags.add(Tags.removable)
 
     def _clear_local_tags(self):
-        local_tags = set([Tags.local, Tags.ssd, Tags.usb, Tags.removable])
+        local_tags = {Tags.local, Tags.ssd, Tags.usb, Tags.removable}
         self.tags = self.tags.difference(local_tags)
 
     def __repr__(self):
         s = StorageDevice.__repr__(self)
-        s += ("  removable = %(removable)s  wwn = %(wwn)s" % {"removable": self.removable,
-                                                              "wwn": self.wwn})
+        s += ("  removable = {removable}  wwn = {wwn}".format(removable=self.removable,
+                                                              wwn=self.wwn))
         return s
 
     @property
@@ -190,7 +190,7 @@ class DiskFile(DiskDevice):
         _name = os.path.basename(name)
         self._dev_dir = os.path.dirname(name)
 
-        super(DiskFile, self).__init__(_name, fmt=fmt, size=size,
+        super().__init__(_name, fmt=fmt, size=size,
                                        major=major, minor=minor, sysfs_path=sysfs_path,
                                        parents=parents, serial=serial, vendor=vendor,
                                        model=model, bus=bus, exists=exists)
@@ -277,12 +277,12 @@ class MultipathDevice(DMDevice):
             self.parents.append(parent)
 
     def _add_parent(self, parent):
-        super(MultipathDevice, self)._add_parent(parent)
+        super()._add_parent(parent)
         if Tags.remote not in self.tags and Tags.remote in parent.tags:
             self.tags.add(Tags.remote)
 
     def _remove_parent(self, parent):
-        super(MultipathDevice, self)._remove_parent(parent)
+        super()._remove_parent(parent)
         if Tags.remote in self.tags and Tags.remote in parent.tags and \
            not any(p for p in self.parents if Tags.remote in p.tags and p != parent):
             self.tags.remove(Tags.remote)
@@ -365,7 +365,7 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
 
     def dracut_setup_args(self):
         if self.ibft:
-            return set(["rd.iscsi.firmware"])
+            return {"rd.iscsi.firmware"}
 
         # qla4xxx partial offload
         if self.node is None:
@@ -378,14 +378,14 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
 
         netroot = "netroot=iscsi:"
         if self.node.username and self.node.password:
-            netroot += "%s:%s" % (self.node.username, self.node.password)
+            netroot += "{}:{}".format(self.node.username, self.node.password)
             if self.node.r_username and self.node.r_password:
-                netroot += ":%s:%s" % (self.node.r_username,
+                netroot += ":{}:{}".format(self.node.r_username,
                                        self.node.r_password)
 
         iface_spec = ""
         if self.nic != "default":
-            iface_spec = ":%s:%s" % (self.node.iface, self.nic)
+            iface_spec = ":{}:{}".format(self.node.iface, self.nic)
         netroot += "@%s::%d%s::%s" % (address,
                                       self.node.port,
                                       iface_spec,
@@ -393,7 +393,7 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
 
         initiator = "rd.iscsi.initiator=%s" % self.initiator
 
-        return set([netroot, initiator])
+        return {netroot, initiator}
 
 
 class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
@@ -443,9 +443,9 @@ class FcoeDiskDevice(DiskDevice, NetworkStorageDevice):
             dcb_opt = "nodcb"
 
         if self.nic in fcoe().added_nics:
-            return set(["fcoe=%s:%s" % (self.nic, dcb_opt)])
+            return {"fcoe={}:{}".format(self.nic, dcb_opt)}
         else:
-            return set(["fcoe=edd:%s" % dcb_opt])
+            return {"fcoe=edd:%s" % dcb_opt}
 
 
 class ZFCPDiskDevice(DiskDevice):
@@ -499,9 +499,9 @@ class ZFCPDiskDevice(DiskDevice):
 
         # zFCP auto LUN scan needs only the device ID
         if has_auto_lun_scan(self.hba_id):
-            dracut_args = set(["rd.zfcp=%s" % self.hba_id])
+            dracut_args = {"rd.zfcp=%s" % self.hba_id}
         else:
-            dracut_args = set(["rd.zfcp=%s,%s,%s" % (self.hba_id, self.wwpn, self.fcp_lun,)])
+            dracut_args = {"rd.zfcp={},{},{}".format(self.hba_id, self.wwpn, self.fcp_lun)}
 
         return dracut_args
 
@@ -537,7 +537,7 @@ class DASDDevice(DiskDevice):
         return "DASD device %s" % self.busid
 
     def get_opts(self):
-        return ["%s=%s" % (k, v) for k, v in self.opts.items() if v == '1']
+        return ["{}={}".format(k, v) for k, v in self.opts.items() if v == '1']
 
     def dracut_setup_args(self):
         conf = "/etc/dasd.conf"
@@ -582,10 +582,10 @@ class DASDDevice(DiskDevice):
                 log.warning("failed to parse dasd feature %s", chunk)
 
         if opts:
-            return set(["rd.dasd=%s(%s)" % (self.busid,
-                                            ":".join(opts))])
+            return {"rd.dasd={}({})".format(self.busid,
+                                            ":".join(opts))}
         else:
-            return set(["rd.dasd=%s" % self.busid])
+            return {"rd.dasd=%s" % self.busid}
 
 
 NVMeController = namedtuple("NVMeController", ["name", "serial", "nvme_ver", "id", "subsysnqn",

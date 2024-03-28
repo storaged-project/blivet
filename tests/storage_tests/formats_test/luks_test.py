@@ -13,7 +13,7 @@ from . import loopbackedtestcase
 class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='run_test'):
-        super(LUKSTestCase, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
+        super().__init__(methodName=methodName, device_spec=[Size("100 MiB")])
         self.fmt = LUKS(passphrase="password")
 
     def test_size(self):
@@ -123,7 +123,7 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
 class IntegrityTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def __init__(self, methodName='run_test'):
-        super(IntegrityTestCase, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
+        super().__init__(methodName=methodName, device_spec=[Size("100 MiB")])
 
     def test_integrity(self):
         fmt = Integrity(device=self.loop_devices[0])

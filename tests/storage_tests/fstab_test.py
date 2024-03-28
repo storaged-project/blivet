@@ -84,7 +84,7 @@ class FstabTestCase(StorageTestCase):
             self.storage.reset()
 
             # Check fstab contents for added device
-            with open(fstab_path, "r") as f:
+            with open(fstab_path) as f:
                 contents = f.read()
                 self.assertTrue("blivetTestLVMine" in contents)
                 self.assertTrue("54321" in contents)
@@ -98,7 +98,7 @@ class FstabTestCase(StorageTestCase):
             self.storage.reset()
 
             # Check that previously added device is no longer in fstab
-            with open(fstab_path, "r") as f:
+            with open(fstab_path) as f:
                 contents = f.read()
                 self.assertFalse("blivetTestLVMine" in contents)
                 self.assertFalse("/mnt/test2" in contents)
@@ -142,7 +142,7 @@ class FstabTestCase(StorageTestCase):
             self.storage.reset()
 
             # Check fstab contents for added device
-            with open(fstab_path, "r") as f:
+            with open(fstab_path) as f:
                 contents = f.read()
                 self.assertTrue("/mnt/test_fstab_luks_correct" in contents)
                 self.assertFalse("/mnt/test_fstab_luks_wrong" in contents)

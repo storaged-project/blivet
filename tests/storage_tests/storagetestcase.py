@@ -1,4 +1,3 @@
-
 import glob
 import os
 import re
@@ -117,7 +116,7 @@ def create_lio_device(fpath):
 
     # "register" the backing file as a fileio backstore
     store_name = os.path.basename(fpath)
-    status = subprocess.call(["targetcli", "/backstores/fileio/ create %s %s" % (store_name, fpath)], stdout=subprocess.DEVNULL)
+    status = subprocess.call(["targetcli", "/backstores/fileio/ create {} {}".format(store_name, fpath)], stdout=subprocess.DEVNULL)
     if status != 0:
         raise RuntimeError("Failed to register '%s' as a fileio backstore" % fpath)
 
@@ -147,10 +146,10 @@ def create_lio_device(fpath):
         raise RuntimeError("Failed to create a new loopback device")
 
     with udev_settle():
-        status = subprocess.call(["targetcli", "/loopback/%s/luns create /backstores/fileio/%s" % (tgt_wwn, store_name)], stdout=subprocess.DEVNULL)
+        status = subprocess.call(["targetcli", "/loopback/{}/luns create /backstores/fileio/{}".format(tgt_wwn, store_name)], stdout=subprocess.DEVNULL)
     if status != 0:
         _delete_target(tgt_wwn, store_name)
-        raise RuntimeError("Failed to create a new LUN for '%s' using '%s'" % (tgt_wwn, store_name))
+        raise RuntimeError("Failed to create a new LUN for '{}' using '{}'".format(tgt_wwn, store_name))
 
     dev_path = _get_lio_dev_path(store_wwn, tgt_wwn, store_name)
 

@@ -58,7 +58,7 @@ class MultipathMember(DeviceFormat):
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
-        s += ("  member = %(member)r" % {"member": self.member})
+        s += ("  member = {member!r}".format(member=self.member))
         return s
 
     def _get_member(self):

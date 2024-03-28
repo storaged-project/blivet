@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-from __future__ import print_function
 
 import argparse
 import csv
@@ -29,7 +28,7 @@ def run_command(command, cmd_input=None):
 def get_version_from_lsb():
     ret, out, err = run_command("lsb_release -rs")
     if ret != 0:
-        raise RuntimeError("Cannot get distro version from lsb_release output: '%s %s'" % (out, err))
+        raise RuntimeError("Cannot get distro version from lsb_release output: '{} {}'".format(out, err))
 
     return out.split(".")[0]
 
@@ -189,12 +188,12 @@ class DebugTestResult(unittest.TextTestResult):
     def addError(self, test, err):  # pylint: disable=redefined-outer-name
         traceback.print_exception(*err)
         pdb.post_mortem(err[2])
-        super(DebugTestResult, self).addError(test, err)
+        super().addError(test, err)
 
     def addFailure(self, test, err):  # pylint: disable=redefined-outer-name
         traceback.print_exception(*err)
         pdb.post_mortem(err[2])
-        super(DebugTestResult, self).addFailure(test, err)
+        super().addFailure(test, err)
 
 
 if __name__ == '__main__':
@@ -223,7 +222,7 @@ if __name__ == '__main__':
     testdir = os.path.abspath(os.path.dirname(__file__))
 
     import blivet
-    print("Running tests with Blivet %s from %s" % (blivet.__version__,
+    print("Running tests with Blivet {} from {}".format(blivet.__version__,
                                                     os.path.abspath(os.path.dirname(blivet.__file__))),
           file=sys.stderr)
 
@@ -251,7 +250,7 @@ if __name__ == '__main__':
         if skip_id:
             test_name, test_module = _split_test_id(test_id)
             reason_str = "not supported on this distribution in this version and arch: %s" % skipping[skip_id]
-            print("%s (%s)\n%s ... skipped '%s'" % (test_name, test_module,
+            print("{} ({})\n{} ... skipped '{}'".format(test_name, test_module,
                                                     test._testMethodDoc, reason_str),
                   file=sys.stderr)
             continue

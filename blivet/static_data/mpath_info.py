@@ -30,7 +30,7 @@ log = logging.getLogger("blivet")
 from ..tasks import availability
 
 
-class MpathMembers(object):
+class MpathMembers:
     """A cache for querying multipath member devices"""
 
     def __init__(self):

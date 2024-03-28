@@ -10,7 +10,7 @@ from blivet.devicelibs import edd
 from . import lib
 
 
-class FakeDevice(object):
+class FakeDevice:
 
     def __init__(self, name):
         self.name = name
@@ -27,7 +27,7 @@ class FakeEddEntry(edd.EddEntry):
         pass
 
     def __repr__(self):
-        return "<FakeEddEntry%s>" % (self._fmt(' ', ''),)
+        return "<FakeEddEntry{}>".format(self._fmt(' ', ''))
 
 
 @unittest.skipUnless(arch.get_arch() in ['x86', 'x86_64'],
@@ -35,7 +35,7 @@ class FakeEddEntry(edd.EddEntry):
 class EddTestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwds):
-        super(EddTestCase, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
         self._edd_logger = None
 
         # these don't follow PEP8 because unittest.TestCase expects them this way
@@ -43,12 +43,12 @@ class EddTestCase(unittest.TestCase):
         self.longMessage = True
 
     def setUp(self):
-        super(EddTestCase, self).setUp()
+        super().setUp()
         if 'WORKSPACE' in os.environ.keys():
             ws = os.environ['WORKSPACE']
         else:
             ws = "/tmp"
-        self.log_handler = logging.FileHandler("%s/%s" % (ws, "blivet-edd.log"))
+        self.log_handler = logging.FileHandler("{}/{}".format(ws, "blivet-edd.log"))
         self.log_handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
         self.log_handler.setFormatter(formatter)

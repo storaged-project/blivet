@@ -111,7 +111,7 @@ class FSMkfs(task.BasicApplication, FSMkfsTask, metaclass=abc.ABCMeta):
         if self.fs.label_format_ok(self.fs.label):
             return [self.label_option, self.fs.label]
         else:
-            raise FSWriteLabelError("Choosing not to apply label (%s) during creation of filesystem %s. Label format is unacceptable for this filesystem." % (self.fs.label, self.fs.type))
+            raise FSWriteLabelError("Choosing not to apply label ({}) during creation of filesystem {}. Label format is unacceptable for this filesystem.".format(self.fs.label, self.fs.type))
 
     @property
     def _nodiscard_option(self):

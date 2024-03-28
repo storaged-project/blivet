@@ -29,7 +29,7 @@ import logging
 log = logging.getLogger("blivet")
 
 
-class LVsInfo(object):
+class LVsInfo:
     """ Class to be used as a singleton.
         Maintains the LVs cache.
     """
@@ -47,7 +47,7 @@ class LVsInfo(object):
                 self._lvs_cache = dict()
                 return self._lvs_cache
 
-            self._lvs_cache = dict(("%s-%s" % (lv.vg_name, lv.lv_name), lv) for lv in lvs)
+            self._lvs_cache = {"{}-{}".format(lv.vg_name, lv.lv_name): lv for lv in lvs}
 
         return self._lvs_cache
 
@@ -58,7 +58,7 @@ class LVsInfo(object):
 lvs_info = LVsInfo()
 
 
-class PVsInfo(object):
+class PVsInfo:
     """ Class to be used as a singleton.
         Maintains the PVs cache.
     """
@@ -103,7 +103,7 @@ class PVsInfo(object):
 pvs_info = PVsInfo()
 
 
-class VGsInfo(object):
+class VGsInfo:
     """ Class to be used as a singleton.
         Maintains the VGs cache.
     """
@@ -121,7 +121,7 @@ class VGsInfo(object):
                 self._vgs_cache = dict()
                 return self._vgs_cache
 
-            self._vgs_cache = dict(("%s" % (vg.uuid), vg) for vg in vgs)
+            self._vgs_cache = {"%s" % (vg.uuid): vg for vg in vgs}
 
         return self._vgs_cache
 

@@ -4,7 +4,6 @@
 # installation of it.
 # Requires autopoint and bison packages to work.
 
-from __future__ import print_function
 
 import os
 import re
@@ -45,7 +44,7 @@ def main():
     tempname = tempfile.mkdtemp()
 
     # clone the repo
-    print("Cloning '%s' repository into '%s'... " % (LM_GIT, tempname), end='', flush=True)
+    print("Cloning '{}' repository into '{}'... ".format(LM_GIT, tempname), end='', flush=True)
     ret, out = run_command('git clone --depth 1 %s' % LM_GIT, tempname)
     if ret != 0:
         raise RuntimeError('Cloning libmount failed:\n%s' % out)
@@ -80,7 +79,7 @@ def main():
 
     ret, out = run_command('git checkout tags/%s -b tag_temp' % libmount_version, cwd=workpath)
     if ret != 0:
-        raise RuntimeError("Checking out tag '%s' failed:\n%s" % (libmount_version, out))
+        raise RuntimeError("Checking out tag '{}' failed:\n{}".format(libmount_version, out))
     print('Done')
 
     print("Running configure... ", end='', flush=True)
@@ -101,12 +100,12 @@ def main():
     target_dir = '/usr/lib/python%s/dist-packages/libmount' % python_ver
     target_dir_local = '/usr/local/lib/python%s/dist-packages/libmount' % python_ver
 
-    ret1, out1 = run_command('ln -fs %s %s' % (install_dir, target_dir))
-    ret2, out2 = run_command('ln -fs %s %s' % (install_dir, target_dir_local))
+    ret1, out1 = run_command('ln -fs {} {}'.format(install_dir, target_dir))
+    ret2, out2 = run_command('ln -fs {} {}'.format(install_dir, target_dir_local))
 
     # One can/will fail but not both
     if ret1 + ret2 > 1:
-        raise RuntimeError('Symlink creation for libmount failed:\n%s\n%s' % (out1, out2))
+        raise RuntimeError('Symlink creation for libmount failed:\n{}\n{}'.format(out1, out2))
     print('Done')
 
     shutil.rmtree(tempname)

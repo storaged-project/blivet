@@ -52,7 +52,7 @@ def with_flag(flag_attr):
     return run_func_with_flag_attr_set
 
 
-class ActionList(object, metaclass=SynchronizedMeta):
+class ActionList(metaclass=SynchronizedMeta):
     _unsynchronized_methods = ['process']
 
     def __init__(self, addfunc=None, removefunc=None):

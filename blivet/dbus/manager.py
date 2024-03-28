@@ -33,12 +33,12 @@ class ObjectManager(dbus.service.Object):
         self._objects = list()
         self._by_id = dict()
         self._by_path = dict()
-        super(ObjectManager, self).__init__(bus_name=dbus.service.BusName(BUS_NAME, dbus.SystemBus()),
+        super().__init__(bus_name=dbus.service.BusName(BUS_NAME, dbus.SystemBus()),
                                             object_path=OBJECT_MANAGER_PATH)
 
     @dbus.service.method(dbus_interface=OBJECT_MANAGER_INTERFACE, out_signature='a{oa{sa{sv}}}')
     def GetManagedObjects(self):
-        return dict((obj.object_path, {obj.interface: obj.properties}) for obj in self._objects)
+        return {obj.object_path: {obj.interface: obj.properties} for obj in self._objects}
 
     def remove_object(self, obj):
         self._objects.remove(obj)

@@ -61,7 +61,7 @@ def _is_port_in_npiv_mode(device_id):
     """
 
     port_in_npiv_mode = False
-    port_type_path = "/sys/bus/ccw/devices/{}/host*/fc_host/host*/port_type".format(device_id)
+    port_type_path = f"/sys/bus/ccw/devices/{device_id}/host*/fc_host/host*/port_type"
     port_type_paths = glob.glob(port_type_path)
     try:
         for filename in port_type_paths:
@@ -219,7 +219,7 @@ class ZFCPDeviceFullPath(ZFCPDeviceBase):
 
     # Force str and unicode types in case any of the properties are unicode
     def _to_string(self):
-        return "{} {} {}".format(self.devnum, self.wwpn, self.fcplun)
+        return f"{self.devnum} {self.wwpn} {self.fcplun}"
 
     def _is_associated_with_fcp(self, fcphbasysfs, fcpwwpnsysfs, fcplunsysfs):
         """Decide if the provided FCP addressing corresponds to the path stored in the zFCP device.
@@ -240,10 +240,10 @@ class ZFCPDeviceFullPath(ZFCPDeviceBase):
 
         super().online_device()
 
-        portadd = "%s/%s/port_add" % (zfcpsysfs, self.devnum)
-        portdir = "%s/%s/%s" % (zfcpsysfs, self.devnum, self.wwpn)
+        portadd = "{}/{}/port_add".format(zfcpsysfs, self.devnum)
+        portdir = "{}/{}/{}".format(zfcpsysfs, self.devnum, self.wwpn)
         unitadd = "%s/unit_add" % (portdir)
-        unitdir = "%s/%s" % (portdir, self.fcplun)
+        unitdir = "{}/{}".format(portdir, self.fcplun)
         failed = "%s/failed" % (unitdir)
 
         # Activating using devnum, WWPN, and LUN despite available zFCP auto LUN scan should still
@@ -299,7 +299,7 @@ class ZFCPDeviceFullPath(ZFCPDeviceBase):
         # check the state of the LUN
         fail = "0"
         try:
-            f = open(failed, "r")
+            f = open(failed)
             fail = f.readline().strip()
             f.close()
         except OSError as e:
@@ -323,11 +323,11 @@ class ZFCPDeviceFullPath(ZFCPDeviceBase):
     def offline_device(self):
         """Remove the zFCP device from the system."""
 
-        portadd = "%s/%s/port_add" % (zfcpsysfs, self.devnum)
-        portremove = "%s/%s/port_remove" % (zfcpsysfs, self.devnum)
-        unitremove = "%s/%s/%s/unit_remove" % (zfcpsysfs, self.devnum, self.wwpn)
-        portdir = "%s/%s/%s" % (zfcpsysfs, self.devnum, self.wwpn)
-        devdir = "%s/%s" % (zfcpsysfs, self.devnum)
+        portadd = "{}/{}/port_add".format(zfcpsysfs, self.devnum)
+        portremove = "{}/{}/port_remove".format(zfcpsysfs, self.devnum)
+        unitremove = "{}/{}/{}/unit_remove".format(zfcpsysfs, self.devnum, self.wwpn)
+        portdir = "{}/{}/{}".format(zfcpsysfs, self.devnum, self.wwpn)
+        devdir = "{}/{}".format(zfcpsysfs, self.devnum)
 
         try:
             self.offline_scsi_device()
@@ -470,7 +470,7 @@ class zFCP:
 
     def read_config(self):
         try:
-            f = open(zfcpconf, "r")
+            f = open(zfcpconf)
         except OSError:
             log.info("no %s; not configuring zfcp", zfcpconf)
             return
@@ -552,7 +552,7 @@ class zFCP:
             return
         f = open(root + zfcpconf, "w")
         for d in self.fcpdevs:
-            f.write("%s\n" % (d,))
+            f.write("{}\n".format(d))
         f.close()
 
         f = open(root + "/etc/modprobe.conf", "a")

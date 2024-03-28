@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Blivet documentation build configuration file, created by
 # sphinx-quickstart on Wed Sep 18 14:37:01 2013.

@@ -63,9 +63,9 @@ gi.require_version("BlockDev", "3.0")
 from gi.repository import GLib
 from gi.repository import BlockDev as blockdev
 if arch.is_s390():
-    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390", "nvme", "fs"))
+    _REQUESTED_PLUGIN_NAMES = {"lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "s390", "nvme", "fs"}
 else:
-    _REQUESTED_PLUGIN_NAMES = set(("lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "nvme", "fs"))
+    _REQUESTED_PLUGIN_NAMES = {"lvm", "btrfs", "swap", "crypto", "loop", "mdraid", "mpath", "dm", "nvme", "fs"}
 
 _requested_plugins = blockdev.plugin_specs_from_names(_REQUESTED_PLUGIN_NAMES)
 try:
@@ -80,7 +80,7 @@ for p in missing_plugs:
     log.info("Failed to load plugin %s", p)
 
 
-class _LazyImportObject(object):
+class _LazyImportObject:
 
     """
     A simple class that uses sys.modules and importlib to implement a
@@ -105,19 +105,19 @@ class _LazyImportObject(object):
     def __call__(self, *args, **kwargs):
         mod = importlib.import_module(__package__ + "." + self._real_mod)
         val = getattr(mod, self._name)
-        sys.modules["%s.%s" % (__package__, self._name)] = val
+        sys.modules["{}.{}".format(__package__, self._name)] = val
         return val(*args, **kwargs)
 
     def __getattr__(self, attr):
         mod = importlib.import_module(__package__ + "." + self._real_mod)
         val = getattr(mod, self._name)
-        sys.modules["%s.%s" % (__package__, self._name)] = val
+        sys.modules["{}.{}".format(__package__, self._name)] = val
         return getattr(val, attr)
 
     def __dir__(self):
         mod = importlib.import_module(__package__ + "." + self._real_mod)
         val = getattr(mod, self._name)
-        sys.modules["%s.%s" % (__package__, self._name)] = val
+        sys.modules["{}.{}".format(__package__, self._name)] = val
         return dir(val)
 
 

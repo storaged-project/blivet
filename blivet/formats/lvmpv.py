@@ -109,18 +109,18 @@ class LVMPhysicalVolume(DeviceFormat):
 
     @property
     def dict(self):
-        d = super(LVMPhysicalVolume, self).dict
+        d = super().dict
         d.update({"vg_name": self.vg_name, "vg_uuid": self.vg_uuid,
                   "pe_start": self.pe_start, "data_alignment": self.data_alignment})
         return d
 
     @property
     def formattable(self):
-        return super(LVMPhysicalVolume, self).formattable and self._plugin.available
+        return super().formattable and self._plugin.available
 
     @property
     def supported(self):
-        return super(LVMPhysicalVolume, self).supported and self._plugin.available
+        return super().supported and self._plugin.available
 
     def lvmdevices_add(self, force=True):
         """ Add this PV to the LVM system devices file

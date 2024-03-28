@@ -1026,7 +1026,7 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
         _part.parted_partition = disklabel.parted_disk.getPartitionByPath(_part.path)
 
 
-class Request(object):
+class Request:
 
     """ A partition request.
 
@@ -1082,7 +1082,7 @@ class PartitionRequest(Request):
             :param partition: the partition being requested
             :type partition: :class:`~.devices.PartitionDevice`
         """
-        super(PartitionRequest, self).__init__(partition)
+        super().__init__(partition)
         self.base = partition.parted_partition.geometry.length   # base sectors
 
         sector_size = Size(partition.parted_partition.disk.device.sectorSize)
@@ -1109,7 +1109,7 @@ class LVRequest(Request):
             :param lv: the logical volume being requested
             :type lv: :class:`~.devices.LVMLogicalVolumeDevice`
         """
-        super(LVRequest, self).__init__(lv)
+        super().__init__(lv)
 
         # Round up to nearest pe. For growable requests this will mean that
         # first growth is to fill the remainder of any unused extent.
@@ -1130,14 +1130,14 @@ class LVRequest(Request):
     @property
     def reserve_request(self):
         lv = self.device
-        reserve = super(LVRequest, self).reserve_request
+        reserve = super().reserve_request
         if lv.cached:
             reserve += int(lv.vg.align(lv.cache.size, roundup=True) / lv.vg.pe_size)
         reserve += int(lv.vg.align(lv.metadata_vg_space_used, roundup=True) / lv.vg.pe_size)
         return reserve
 
 
-class Chunk(object):
+class Chunk:
 
     """ A free region from which devices will be allocated """
 
@@ -1393,10 +1393,10 @@ class DiskChunk(Chunk):
         self.geometry = geometry            # parted.Geometry
         self.sector_size = Size(self.geometry.device.sectorSize)
         self.path = self.geometry.device.path
-        super(DiskChunk, self).__init__(self.geometry.length, requests=requests)
+        super().__init__(self.geometry.length, requests=requests)
 
     def __repr__(self):
-        s = super(DiskChunk, self).__str__()
+        s = super().__str__()
         s += (" start = %(start)d  end = %(end)d\n"
               "sector_size = %(sector_size)s\n" %
               {"start": self.geometry.start, "end": self.geometry.end,
@@ -1440,7 +1440,7 @@ class DiskChunk(Chunk):
                 log.debug("adjusting pool to %d based on disklabel limits", new_pool)
                 self.pool = new_pool
 
-        super(DiskChunk, self).add_request(req)
+        super().add_request(req)
 
     def max_growth(self, req):
         """ Return the maximum possible growth for a request.
@@ -1508,7 +1508,7 @@ class VGChunk(Chunk):
         self.vg = vg
         self.path = vg.path
         usable_extents = vg.extents - int(vg.align(vg.reserved_space, roundup=True) / vg.pe_size)
-        super(VGChunk, self).__init__(usable_extents, requests=requests)
+        super().__init__(usable_extents, requests=requests)
 
     def add_request(self, req):
         """ Add a request to this chunk.
@@ -1520,7 +1520,7 @@ class VGChunk(Chunk):
             raise ValueError(_("VGChunk requests must be of type "
                                "LVRequest"))
 
-        super(VGChunk, self).add_request(req)
+        super().add_request(req)
 
     def length_to_size(self, length):
         return self.vg.pe_size * length
@@ -1614,7 +1614,7 @@ def get_disk_chunks(disk, partitions, free):
     return chunks
 
 
-class TotalSizeSet(object):
+class TotalSizeSet:
 
     """ Set of device requests with a target combined size.
 
@@ -1652,7 +1652,7 @@ class TotalSizeSet(object):
         self.allocated -= amount
 
 
-class SameSizeSet(object):
+class SameSizeSet:
 
     """ Set of device requests with a common target size. """
 
@@ -1686,7 +1686,7 @@ def manage_size_sets(size_sets, chunks):
             growth_by_request[request] = 0
 
     for i in range(2):
-        reclaimed = dict([(chunk, 0) for chunk in chunks])
+        reclaimed = {chunk: 0 for chunk in chunks}
         for ss in size_sets:
             if isinstance(ss, TotalSizeSet):
                 # TotalSizeSet members are trimmed to achieve the requested

@@ -14,7 +14,7 @@ class FormatMethodsTestCase(unittest.TestCase):
     format_class = DeviceFormat
 
     def __init__(self, methodName='runTest'):
-        super(FormatMethodsTestCase, self).__init__(methodName=methodName)
+        super().__init__(methodName=methodName)
         self.patchers = dict()
         self.patches = dict()
 
@@ -278,7 +278,7 @@ class FSMethodsTestCase(FormatMethodsTestCase):
     format_class = None
 
     def set_patches(self):
-        super(FSMethodsTestCase, self).set_patches()
+        super().set_patches()
         self.patchers["udev"] = patch("blivet.formats.fs.udev")
         self.patchers["util"] = patch("blivet.formats.fs.util")
         self.patchers["system_mountpoint"] = patch.object(self.format_class,
@@ -290,10 +290,10 @@ class FSMethodsTestCase(FormatMethodsTestCase):
         if self.format_class is None:
             return unittest.skip('abstract base class')
 
-        super(FSMethodsTestCase, self).setUp()
+        super().setUp()
 
     def set_os_path_exists(self, value):
-        super(FSMethodsTestCase, self).set_os_path_exists(value)
+        super().set_os_path_exists(value)
         self.patches["fs_os"].path.exists.return_value = value
 
     def _test_create_backend(self):
@@ -322,24 +322,24 @@ class FSMethodsTestCase(FormatMethodsTestCase):
     def test_create(self):
         if self.format_class is None:
             return unittest.skip('abstract base class')
-        super(FSMethodsTestCase, self).test_create()
+        super().test_create()
 
     def test_destroy(self):
         if self.format_class is None:
             return unittest.skip('abstract base class')
-        super(FSMethodsTestCase, self).test_destroy()
+        super().test_destroy()
 
     def test_setup(self):
         if self.format_class is None:
             return unittest.skip('abstract base class')
         self.format.mountpoint = "/fake/mountpoint"
-        super(FSMethodsTestCase, self).test_setup()
+        super().test_setup()
 
     def test_teardown(self):
         if self.format_class is None:
             return unittest.skip('abstract base class')
 
-        super(FSMethodsTestCase, self).test_teardown()
+        super().test_teardown()
 
 
 class Ext4FSMethodsTestCase(FSMethodsTestCase):
@@ -354,7 +354,7 @@ class LUKSMethodsTestCase(FormatMethodsTestCase):
     format_class = LUKS
 
     def set_patches(self):
-        super(LUKSMethodsTestCase, self).set_patches()
+        super().set_patches()
         self.patchers["configured"] = patch.object(self.format_class, "configured", new=PropertyMock(return_value=True))
         self.patchers["has_key"] = patch.object(self.format_class, "has_key", new=PropertyMock(return_value=True))
         self.patchers["blockdev"] = patch("blivet.formats.luks.blockdev")
@@ -381,7 +381,7 @@ class LVMPhysicalVolumeMethodsTestCase(FormatMethodsTestCase):
     format_class = LVMPhysicalVolume
 
     def set_patches(self):
-        super(LVMPhysicalVolumeMethodsTestCase, self).set_patches()
+        super().set_patches()
         self.patchers["blockdev"] = patch("blivet.formats.lvmpv.blockdev")
         self.patchers["vgs_info"] = patch("blivet.formats.lvmpv.vgs_info")
 
@@ -404,7 +404,7 @@ class MDRaidMemberMethodsTestCase(FormatMethodsTestCase):
     format_class = MDRaidMember
 
     def set_patches(self):
-        super(MDRaidMemberMethodsTestCase, self).set_patches()
+        super().set_patches()
         self.patchers["blockdev"] = patch("blivet.formats.mdraid.blockdev")
 
     def _test_destroy_backend(self):
@@ -418,7 +418,7 @@ class SwapMethodsTestCase(FormatMethodsTestCase):
     format_class = SwapSpace
 
     def set_patches(self):
-        super(SwapMethodsTestCase, self).set_patches()
+        super().set_patches()
         self.patchers["blockdev"] = patch("blivet.formats.swap.blockdev")
 
     def _test_create_backend(self):

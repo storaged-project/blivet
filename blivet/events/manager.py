@@ -118,7 +118,7 @@ class EventMask(util.ObjectID):
 #
 # EventManager
 #
-class EventManager(object, metaclass=abc.ABCMeta):
+class EventManager(metaclass=abc.ABCMeta):
     def __init__(self, handler_cb=None, notify_cb=None, error_cb=None):
         self._handler_cb = None
         """ event handler (must accept 'event', 'notify_cb' kwargs """
@@ -286,7 +286,7 @@ class EventManager(object, metaclass=abc.ABCMeta):
 
 class UdevEventManager(EventManager):
     def __init__(self, handler_cb=None, notify_cb=None):
-        super(UdevEventManager, self).__init__(handler_cb=handler_cb, notify_cb=notify_cb)
+        super().__init__(handler_cb=handler_cb, notify_cb=notify_cb)
         self._pyudev_observer = None
 
     @property
@@ -295,7 +295,7 @@ class UdevEventManager(EventManager):
 
     def enable(self):
         """ Enable monitoring and handling of block device uevents. """
-        super(UdevEventManager, self).enable()
+        super().enable()
         monitor = pyudev.Monitor.from_netlink(udev.global_udev)
         monitor.filter_by("block")
         self._pyudev_observer = pyudev.MonitorObserver(monitor,
@@ -307,7 +307,7 @@ class UdevEventManager(EventManager):
 
     def disable(self):
         """ Disable monitoring and handling of block device uevents. """
-        super(UdevEventManager, self).disable()
+        super().disable()
         if self.enabled:
             self._pyudev_observer.stop()
 

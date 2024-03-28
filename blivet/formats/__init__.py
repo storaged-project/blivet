@@ -1,4 +1,3 @@
-
 # __init__.py
 # Entry point for anaconda storage formats subpackage.
 #
@@ -233,7 +232,7 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
         return str(self.type)
 
     def __str__(self):
-        return "%s %s" % (self._existence_str, self.desc)
+        return "{} {}".format(self._existence_str, self.desc)
 
     @property
     def dict(self):
@@ -377,10 +376,10 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
             raise DeviceFormatError("format is not resizable")
 
         if newsize < self.min_size:
-            raise ValueError("requested size %s must be at least minimum size %s" % (newsize, self.min_size))
+            raise ValueError("requested size {} must be at least minimum size {}".format(newsize, self.min_size))
 
         if self.max_size and newsize >= self.max_size:
-            raise ValueError("requested size %s must be less than maximum size %s" % (newsize, self.max_size))
+            raise ValueError("requested size {} must be less than maximum size {}".format(newsize, self.max_size))
 
         self._target_size = newsize
 
@@ -566,7 +565,7 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
         try:
             blockdev.fs.clean(self.device, force=True)
         except blockdev.FSError as e:
-            raise FormatDestroyError("error wiping old signatures from %s: %s" % (self.device, str(e)))
+            raise FormatDestroyError("error wiping old signatures from {}: {}".format(self.device, str(e)))
 
     def _post_destroy(self, **kwargs):
         udev.settle()

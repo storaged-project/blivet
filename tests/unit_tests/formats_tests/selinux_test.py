@@ -17,7 +17,7 @@ class SELinuxContextTestCase(unittest.TestCase):
             self.skipTest("SELinux disabled.")
         self.selinux_reset_fcon = blivet.flags.flags.selinux_reset_fcon
         self.selinux = blivet.flags.flags.selinux
-        super(SELinuxContextTestCase, self).setUp()
+        super().setUp()
         self.addCleanup(self._clean_up)
 
     @patch("blivet.tasks.fsmount.BlockDev.fs.mount", return_value=True)

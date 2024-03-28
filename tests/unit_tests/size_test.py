@@ -22,7 +22,6 @@
 # Red Hat Author(s): David Cantrell <dcantrell@redhat.com>
 
 # we need integer division to work the same with both Python 2 and 3
-from __future__ import division
 
 import locale
 import os
@@ -145,8 +144,8 @@ class SizeTestCase(unittest.TestCase):
 
     def test_partial_bytes(self):
         self.assertEqual(Size("1024.6"), Size(1024))
-        self.assertEqual(Size("%s KiB" % (1 / 1025.0,)), Size(0))
-        self.assertEqual(Size("%s KiB" % (1 / 1023.0,)), Size(1))
+        self.assertEqual(Size("{} KiB".format(1 / 1025.0)), Size(0))
+        self.assertEqual(Size("{} KiB".format(1 / 1023.0)), Size(1))
 
     def test_no_units_in_string(self):
         self.assertEqual(Size("1024"), Size("1 KiB"))
@@ -236,7 +235,7 @@ LANGS_AVAILABLE = all(os.path.exists("/usr/share/locale/%s/LC_MESSAGES/libbytesi
 class TranslationTestCase(unittest.TestCase):
 
     def __init__(self, methodName='runTest'):
-        super(TranslationTestCase, self).__init__(methodName=methodName)
+        super().__init__(methodName=methodName)
 
     def setUp(self):
         self.saved_lang = os.environ.get('LANG', 'en_US.UTF-8')
@@ -269,9 +268,9 @@ class TranslationTestCase(unittest.TestCase):
             radix = locale.nl_langinfo(locale.RADIXCHAR)
             if radix != '.':
                 self.assertEqual(s, Size("56%s19 MiB" % radix))
-                self.assertEqual(s, Size("56%s19 %s" % (radix, _BS("MiB"))))
-                self.assertEqual(s, Size(("56%s19 %s" % (radix, _BS("MiB"))).lower()))
-                self.assertEqual(s, Size(("56%s19 %s" % (radix, _BS("MiB"))).upper()))
+                self.assertEqual(s, Size("56{}19 {}".format(radix, _BS("MiB"))))
+                self.assertEqual(s, Size(("56{}19 {}".format(radix, _BS("MiB"))).lower()))
+                self.assertEqual(s, Size(("56{}19 {}".format(radix, _BS("MiB"))).upper()))
 
     def test_human_readable_translation(self):
         s = Size("56.19 MiB")

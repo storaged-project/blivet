@@ -41,6 +41,6 @@ def test_msgfmt(pofile):
         try:
             # Ignore the output on success
             subprocess.check_output(["msgfmt", "-c", "--verbose", "-o", mofile.name, pofile],
-                                    stderr=subprocess.STDOUT, universal_newlines=True)
+                                    stderr=subprocess.STDOUT, text=True)
         except subprocess.CalledProcessError as e:
-            raise AssertionError("Unable to compile %s: %s" % (pofile, e.output)) from e
+            raise AssertionError("Unable to compile {}: {}".format(pofile, e.output)) from e

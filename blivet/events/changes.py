@@ -62,17 +62,17 @@ class ActionCanceled(_ActionCanceled):
 
 class ParentAdded(_ParentAdded):
     def __str__(self):
-        return "add parent %s to %s" % (self.item.name, self.device.name)
+        return "add parent {} to {}".format(self.item.name, self.device.name)
 
 
 class ParentRemoved(_ParentRemoved):
     def __str__(self):
-        return "remove parent %s from %s" % (self.item.name, self.device.name)
+        return "remove parent {} from {}".format(self.item.name, self.device.name)
 
 
 class AttributeChanged(_AttributeChanged):
     def __str__(self):
-        return "change attribute %s of %s%s from '%s' to '%s'" % (self.attr,
+        return "change attribute {} of {}{} from '{}' to '{}'".format(self.attr,
                                                                   self.device.name,
                                                                   " format" if self.fmt else "",
                                                                   str(self.old),

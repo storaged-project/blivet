@@ -1,4 +1,3 @@
-# coding=utf-8
 # pvtask.py
 # Tasks for a LVMPV format.
 #

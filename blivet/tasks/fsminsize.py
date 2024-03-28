@@ -117,12 +117,12 @@ class Ext2FSMinSize(FSMinSize):
 
         block_size = self._extract_block_size()
         if block_size is None:
-            raise FSError("failed to get block size for %s filesystem on %s" % (self.fs.mount_type, self.fs.device))
+            raise FSError("failed to get block size for {} filesystem on {}".format(self.fs.mount_type, self.fs.device))
 
         resize_info = self._get_resize_info()
         num_blocks = self._extract_num_blocks(resize_info)
         if num_blocks is None:
-            raise FSError("failed to get minimum block number for %s filesystem on %s" % (self.fs.mount_type, self.fs.device))
+            raise FSError("failed to get minimum block number for {} filesystem on {}".format(self.fs.mount_type, self.fs.device))
 
         return block_size * num_blocks
 

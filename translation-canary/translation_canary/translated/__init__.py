@@ -42,7 +42,7 @@ for finder, mod_name, _ispkg in pkgutil.iter_modules(__path__):
         continue
 
     # Load the module
-    full_name = "{}.{}".format(__name__, mod_name)
+    full_name = f"{__name__}.{mod_name}"
     module = importlib.import_module(full_name)
 
     # Look for attributes that start with 'test_' and add them to the test list
@@ -52,7 +52,7 @@ for finder, mod_name, _ispkg in pkgutil.iter_modules(__path__):
 
 def _remove_lingua(linguas, language):
     # Read in the LINGUAS file
-    with open(linguas, "rt") as f:
+    with open(linguas) as f:
         lingua_lines = f.readlines()
 
     output_lines = []
@@ -69,7 +69,7 @@ def _remove_lingua(linguas, language):
         output_lines.append(" ".join(lingua_list))
 
     # Write LINGUAS back out
-    with open(linguas, "wt") as f:
+    with open(linguas, "w") as f:
         f.writelines(output_lines)
 
 def testFile(pofile, prefix=None, releaseMode=False, modifyLinguas=True):
@@ -99,9 +99,9 @@ def testFile(pofile, prefix=None, releaseMode=False, modifyLinguas=True):
 
                 # Print any warnings collected
                 for warn in w:
-                    print("%s warned on %s: %s" % (test.__name__, poerror, warn.message))
+                    print("{} warned on {}: {}".format(test.__name__, poerror, warn.message))
         except Exception as e: # pylint: disable=broad-except
-            print("%s failed on %s: %s" % (test.__name__, poerror, str(e)))
+            print("{} failed on {}: {}".format(test.__name__, poerror, str(e)))
             if releaseMode:
                 # Remove the po file and the .mo file built from it
                 print("Removing %s" % pofile)

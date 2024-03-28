@@ -1,4 +1,3 @@
-
 import unittest
 from blivet.devices import ParentList
 from blivet.devices import Device

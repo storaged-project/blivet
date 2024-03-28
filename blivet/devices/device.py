@@ -285,7 +285,7 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
     @property
     def ancestors(self):
         """ A list of all of this device's ancestors, including itself. """
-        ancestors = set([self])
+        ancestors = {self}
         for p in [d for d in self.parents if d not in ancestors]:
             ancestors.update(set(p.ancestors))
         return list(ancestors)
@@ -332,9 +332,9 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
             The external dependencies include the dependencies of this
             device type and of all superclass device types.
         """
-        return set(
+        return {
             d for p in cls.__mro__ if issubclass(p, Device) for d in p._external_dependencies
-        )
+        }
 
     @classmethod
     def unavailable_type_dependencies(cls):
@@ -343,7 +343,7 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
             :return: the unavailable external dependencies for this type
             :rtype: set of availability.ExternalResource
         """
-        return set(e for e in cls.type_external_dependencies() if not e.available)
+        return {e for e in cls.type_external_dependencies() if not e.available}
 
     @property
     def external_dependencies(self):
@@ -352,7 +352,7 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
             :returns: the external dependencies of this device and all parents.
             :rtype: set of availability.ExternalResource
         """
-        return set(d for p in self.ancestors for d in p.type_external_dependencies())
+        return {d for p in self.ancestors for d in p.type_external_dependencies()}
 
     @property
     def unavailable_dependencies(self):
@@ -362,7 +362,7 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
             :returns: A list of unavailable external dependencies.
             :rtype: set of availability.external_resource
         """
-        return set(e for e in self.external_dependencies if not e.available)
+        return {e for e in self.external_dependencies if not e.available}
 
     @property
     def unavailable_direct_dependencies(self):
@@ -371,4 +371,4 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
             :returns: A list of unavailable external dependencies.
             :rtype: set of availability.external_resource
         """
-        return set(e for e in self.type_external_dependencies() if not e.available)
+        return {e for e in self.type_external_dependencies() if not e.available}

@@ -5,7 +5,7 @@ gi.require_version("BlockDev", "3.0")
 from gi.repository import BlockDev
 
 
-class FSUUID(object, metaclass=abc.ABCMeta):
+class FSUUID(metaclass=abc.ABCMeta):
 
     """An abstract class that represents filesystem actions for setting the
        UUID.

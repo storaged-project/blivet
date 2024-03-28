@@ -186,7 +186,7 @@ class FS(DeviceFormat):
 
     @property
     def dict(self):
-        d = super(FS, self).dict
+        d = super().dict
         d.update({"mountpoint": self.mountpoint, "size": self._size,
                   "label": self.label, "target_size": self.target_size,
                   "mountable": self.mountable})
@@ -409,7 +409,7 @@ class FS(DeviceFormat):
         return max(Size(0), self.current_size - self.min_size)
 
     def _pre_create(self, **kwargs):
-        super(FS, self)._pre_create(**kwargs)
+        super()._pre_create(**kwargs)
         if not self._mkfs.available:
             return
 
@@ -425,7 +425,7 @@ class FS(DeviceFormat):
         if not self.formattable:
             return
 
-        super(FS, self)._create()
+        super()._create()
         try:
             self._mkfs.do_task(options=kwargs.get("options"),
                                label=not self.relabels(),
@@ -442,7 +442,7 @@ class FS(DeviceFormat):
             raise FormatCreateError(e)
 
     def _post_create(self, **kwargs):
-        super(FS, self)._post_create(**kwargs)
+        super()._post_create(**kwargs)
         if self.label is not None and self.relabels():
             try:
                 self.write_label()
@@ -469,12 +469,12 @@ class FS(DeviceFormat):
             # file systems need a check before being resized
             self.do_check()
 
-        super(FS, self)._pre_resize()
+        super()._pre_resize()
 
     def _post_resize(self):
         if not self.status:
             self.do_check()
-        super(FS, self)._post_resize()
+        super()._post_resize()
 
     def do_check(self):
         """ Run a filesystem check.
@@ -545,7 +545,7 @@ class FS(DeviceFormat):
             return True
 
         # create a temp dir
-        prefix = "%s.%s" % (os.path.basename(self.device), self.type)
+        prefix = "{}.{}".format(os.path.basename(self.device), self.type)
         mountpoint = tempfile.mkdtemp(prefix=prefix)
 
         # try the mount
@@ -625,7 +625,7 @@ class FS(DeviceFormat):
         if not isinstance(self, NoDevFS) and not os.path.exists(self.device):
             raise FSError("device %s does not exist" % self.device)
 
-        chrooted_mountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
+        chrooted_mountpoint = os.path.normpath("{}/{}".format(chroot, mountpoint))
         return self.system_mountpoint != chrooted_mountpoint
 
     def _setup(self, **kwargs):
@@ -646,7 +646,7 @@ class FS(DeviceFormat):
         #         os.path.join("/mnt/foo", "/") -> "/"
         #
         # mountpoint = os.path.join(chroot, mountpoint)
-        chrooted_mountpoint = os.path.normpath("%s/%s" % (chroot, mountpoint))
+        chrooted_mountpoint = os.path.normpath("{}/{}".format(chroot, mountpoint))
         self._mount.do_task(chrooted_mountpoint, options=options)
 
         if chroot != "/":
@@ -663,7 +663,7 @@ class FS(DeviceFormat):
                 log.warning("Failed to reset SElinux context for newly mounted filesystem root directory to default.")
 
     def _pre_teardown(self, **kwargs):
-        if not super(FS, self)._pre_teardown(**kwargs):
+        if not super()._pre_teardown(**kwargs):
             return False
 
         # Prefer the explicit mountpoint path, fall back to most recent mountpoint
@@ -817,11 +817,11 @@ class FS(DeviceFormat):
     @property
     def supported(self):
         log_method_call(self, supported=self._supported)
-        return super(FS, self).supported and self.utils_available
+        return super().supported and self.utils_available
 
     @property
     def controllable(self):
-        return super(FS, self).controllable and self.mountable
+        return super().controllable and self.mountable
 
     @property
     def mountable(self):
@@ -829,12 +829,12 @@ class FS(DeviceFormat):
 
     @property
     def formattable(self):
-        return super(FS, self).formattable and self._mkfs.available
+        return super().formattable and self._mkfs.available
 
     @property
     def resizable(self):
         """ Can formats of this filesystem type be resized? """
-        return super(FS, self).resizable and self._resize.available
+        return super().resizable and self._resize.available
 
     def _get_options(self):
         return self.mountopts or ",".join(self._mount.options)
@@ -903,7 +903,7 @@ class FS(DeviceFormat):
             log.error(e)
 
     def populate_ksdata(self, data):
-        super(FS, self).populate_ksdata(data)
+        super().populate_ksdata(data)
         data.mountpoint = self.mountpoint or "none"
         data.label = self.label or ""
         if self.options != "defaults":
@@ -945,7 +945,7 @@ class Ext2FS(FS):
     _system_dirs = ["lost+found"]
 
     def _post_setup(self, **kwargs):
-        super(Ext2FS, self)._post_setup(**kwargs)
+        super()._post_setup(**kwargs)
 
         options = kwargs.get("options", "")
         chroot = kwargs.get("chroot", "/")
@@ -1036,7 +1036,7 @@ class EFIFS(FATFS):
 
     @property
     def supported(self):
-        return super(EFIFS, self).supported and arch.is_efi()
+        return super().supported and arch.is_efi()
 
 
 register_device_format(EFIFS)
@@ -1060,7 +1060,7 @@ class BTRFS(FS):
     # parted_system = fileSystemType["btrfs"]
 
     def __init__(self, **kwargs):
-        super(BTRFS, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.vol_uuid = kwargs.pop("vol_uuid", None)
         self.subvolspec = kwargs.pop("subvolspec", None)
 
@@ -1199,7 +1199,7 @@ class XFS(FS):
         finally:
             os.rmdir(tmpdir)
 
-        super(XFS, self).write_uuid()
+        super().write_uuid()
 
 
 register_device_format(XFS)
@@ -1220,11 +1220,11 @@ class StratisXFS(XFS):
     _writeuuid_class = fswriteuuid.UnimplementedFSWriteUUID
 
     def __init__(self, **kwargs):
-        super(StratisXFS, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.pool_uuid = kwargs.pop("pool_uuid", None)
 
     def _get_options(self):
-        opts = super(StratisXFS, self)._get_options()
+        opts = super()._get_options()
         if self.mountpoint != "/":
             stratis_opts = "x-systemd.requires=stratis-fstab-setup@%s," \
                            "x-systemd.after=stratis-fstab-setup@%s" % (self.pool_uuid,
@@ -1281,12 +1281,12 @@ class MacEFIFS(HFSPlus):
 
     @property
     def supported(self):
-        return super(MacEFIFS, self).supported and arch.is_efi() and arch.is_mactel()
+        return super().supported and arch.is_efi() and arch.is_mactel()
 
     def __init__(self, **kwargs):
         if "label" not in kwargs:
             kwargs["label"] = self._name
-        super(MacEFIFS, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 register_device_format(MacEFIFS)
@@ -1517,7 +1517,7 @@ class TmpFS(NoDevFS):
         # The size option should be last, as the regular mount options may
         # also contain a size option, but the later size option supercedes
         # the earlier one.
-        opts = super(TmpFS, self)._get_options()
+        opts = super()._get_options()
         if self._accept_default_size:
             size_opt = None
         else:

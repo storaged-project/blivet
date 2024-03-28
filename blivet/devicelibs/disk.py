@@ -65,7 +65,7 @@ def _update_lsm_raid_levels():
     """ Build a mapping of lsm.RAID_TYPE->blivet.devicelibs.raid.RAIDLevel """
     global _raid_levels
     _raid_levels = dict()
-    lsm_raid_levels = dict((k, v) for (k, v) in lsm.Volume.__dict__.items() if k.startswith("RAID_TYPE_"))
+    lsm_raid_levels = {k: v for (k, v) in lsm.Volume.__dict__.items() if k.startswith("RAID_TYPE_")}
     for constant_name, value in lsm_raid_levels.items():
         name = constant_name[len("RAID_TYPE_"):]
         try:
@@ -93,7 +93,7 @@ def update_volume_info():
         except lsm.LsmError:
             continue
 
-        systems = dict((s.id, s) for s in client.systems())
+        systems = {s.id: s for s in client.systems()}
         for vol in client.volumes():
             nodes = lsm.LocalDisk.vpd83_search(vol.vpd83)
             system = systems[vol.system_id]

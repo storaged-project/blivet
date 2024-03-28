@@ -22,7 +22,7 @@
 from .lib import Tags
 
 
-class NetworkStorageDevice(object):
+class NetworkStorageDevice:
 
     """ Virtual base class for network backed storage devices """
 

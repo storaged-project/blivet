@@ -81,7 +81,7 @@ class DeviceStateTestCase(unittest.TestCase):
             "type": xform(lambda x, m: self.assertEqual(x, "mdarray", m)),
             "uuid": xform(self.assertIsNone)
         }
-        super(DeviceStateTestCase, self).__init__(methodName=methodName)
+        super().__init__(methodName=methodName)
 
     def state_check(self, device, **kwargs):
         """Checks the current state of a device by means of its
@@ -127,7 +127,7 @@ class MDRaidArrayDeviceTestCase(DeviceStateTestCase):
     """
 
     def __init__(self, methodName='run_test'):
-        super(MDRaidArrayDeviceTestCase, self).__init__(methodName=methodName)
+        super().__init__(methodName=methodName)
         state_functions = {
             "create_bitmap": xform(lambda d, a: self.assertFalse),
             "description": xform(self.assertIsNotNone),
@@ -585,7 +585,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
     """
 
     def __init__(self, methodName='run_test'):
-        super(BTRFSDeviceTestCase, self).__init__(methodName=methodName)
+        super().__init__(methodName=methodName)
         state_functions = {
             "data_level": lambda d, a: self.assertFalse(hasattr(d, a)),
             "fstab_spec": xform(self.assertIsNotNone),
@@ -750,7 +750,7 @@ class BTRFSDeviceTestCase(DeviceStateTestCase):
 class LVMLogicalVolumeDeviceTestCase(DeviceStateTestCase):
 
     def __init__(self, methodName="run_test"):
-        super(LVMLogicalVolumeDeviceTestCase, self).__init__(methodName=methodName)
+        super().__init__(methodName=methodName)
         state_functions = {
             "type": xform(lambda x, m: self.assertEqual(x, "lvmlv", m)),
             "parents": xform(lambda x, m: self.assertEqual(len(x), 1, m) and

@@ -29,7 +29,6 @@
 # import the "platform" module from the Python
 # standard library but not the local blivet module
 # that is also called "platform".
-from __future__ import absolute_import
 
 import os
 
@@ -79,7 +78,7 @@ def get_ppc_machine():
     machine = None
     platform = None
 
-    with open('/proc/cpuinfo', 'r') as f:
+    with open('/proc/cpuinfo') as f:
         for line in f:
             if 'machine' in line:
                 machine = line.split(':')[1]
@@ -110,7 +109,7 @@ def get_ppc_mac_id():
     if get_ppc_machine() != "PMac":
         return None
 
-    with open('/proc/cpuinfo', 'r') as f:
+    with open('/proc/cpuinfo') as f:
         for line in f:
             if 'machine' in line:
                 machine = line.split(':')[1]
@@ -136,7 +135,7 @@ def get_ppc_mac_gen():
         return None
 
     gen = None
-    with open('/proc/cpuinfo', 'r') as f:
+    with open('/proc/cpuinfo') as f:
         for line in f:
             if 'pmac-generation' in line:
                 gen = line.split(':')[1]
@@ -166,7 +165,7 @@ def get_ppc_mac_book():
         return False
 
     # @TBD - Search for 'book' anywhere in cpuinfo? Shouldn't this be more restrictive?
-    with open('/proc/cpuinfo', 'r') as f:
+    with open('/proc/cpuinfo') as f:
         for line in f:
             if 'book' in line.lower():
                 return True
@@ -192,7 +191,7 @@ def is_cell():
     if not is_ppc():
         return False
 
-    with open('/proc/cpuinfo', 'r') as f:
+    with open('/proc/cpuinfo') as f:
         for line in f:
             if 'Cell' in line:
                 return True

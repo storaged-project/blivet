@@ -269,7 +269,7 @@ class PartitionDevice(StorageDevice):
 
     @property
     def dict(self):
-        d = super(PartitionDevice, self).dict
+        d = super().dict
         d.update({"type": self.part_type})
         if not self.exists:
             d.update({"grow": self.req_grow, "maxsize": self.req_max_size,
@@ -322,7 +322,7 @@ class PartitionDevice(StorageDevice):
 
             # change this partition's geometry in-memory so that other
             # partitioning operations can complete (e.g., autopart)
-            super(PartitionDevice, self)._set_target_size(newsize)
+            super()._set_target_size(newsize)
             disk = self.disk.format.parted_disk
 
             # resize the partition's geometry in memory
@@ -338,7 +338,7 @@ class PartitionDevice(StorageDevice):
         else:
             dev_dir = self.parents[0]._dev_dir
 
-        return "%s/%s" % (dev_dir, self.name)
+        return "{}/{}".format(dev_dir, self.name)
 
     @property
     def part_type(self):
@@ -514,7 +514,7 @@ class PartitionDevice(StorageDevice):
     @property
     def isleaf(self):
         """ True if no other device depends on this one. """
-        no_kids = super(PartitionDevice, self).isleaf
+        no_kids = super().isleaf
         # it is possible that the disk that originally contained this partition
         # no longer contains a disklabel, in which case we can assume that this
         # device is a leaf
@@ -606,10 +606,10 @@ class PartitionDevice(StorageDevice):
 
             self.disk.format.remove_partition(self.parted_partition)
 
-        super(PartitionDevice, self).remove_hook(modparent=modparent)
+        super().remove_hook(modparent=modparent)
 
     def add_hook(self, new=True):
-        super(PartitionDevice, self).add_hook(new=new)
+        super().add_hook(new=new)
         if new:
             return
 
@@ -777,7 +777,7 @@ class PartitionDevice(StorageDevice):
 
     @property
     def protected(self):
-        protected = super(PartitionDevice, self).protected
+        protected = super().protected
 
         # extended partition is protected also when one of its logical partitions is protected
         if self.is_extended:
@@ -794,7 +794,7 @@ class PartitionDevice(StorageDevice):
         if self.disk:
             return self.disk.sector_size
 
-        return super(PartitionDevice, self).sector_size
+        return super().sector_size
 
     def _pre_resize(self):
         if not self.exists:
@@ -851,7 +851,7 @@ class PartitionDevice(StorageDevice):
         if not self.disklabel_supported:
             return
 
-        super(PartitionDevice, self)._post_destroy()
+        super()._post_destroy()
         if isinstance(self.disk, DMDevice):
             udev.settle()
             # self.exists has been unset, so don't use self.status
@@ -883,7 +883,7 @@ class PartitionDevice(StorageDevice):
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        super(PartitionDevice, self)._set_size(newsize)
+        super()._set_size(newsize)
         if not self.exists:
             # also update size fields used for partition allocation
             self.req_size = newsize
@@ -954,7 +954,7 @@ class PartitionDevice(StorageDevice):
                     size = Size(int(blocks) * LINUX_SECTOR_SIZE)
 
         else:
-            size = super(PartitionDevice, self).read_current_size()
+            size = super().read_current_size()
 
         return size
 
@@ -970,7 +970,7 @@ class PartitionDevice(StorageDevice):
                 min_size = self.align_target_size(max(Size("1 KiB"), self.disk.format.alignment.grainSize))
 
         else:
-            min_size = super(PartitionDevice, self).min_size
+            min_size = super().min_size
 
         if self.resizable and min_size:
             # Adjust the min size as needed so that aligning the end sector
@@ -1008,7 +1008,7 @@ class PartitionDevice(StorageDevice):
         elif self.is_extended:
             return True
         else:
-            return super(PartitionDevice, self).resizable
+            return super().resizable
 
     def check_size(self):
         """ Check to make sure the size of the device is allowed by the
@@ -1030,7 +1030,7 @@ class PartitionDevice(StorageDevice):
         return 0
 
     def populate_ksdata(self, data):
-        super(PartitionDevice, self).populate_ksdata(data)
+        super().populate_ksdata(data)
         data.resize = (self.exists and self.target_size and
                        self.target_size != self.current_size)
         if not self.exists:

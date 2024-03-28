@@ -70,7 +70,7 @@ class BTRFSDevice(StorageDevice):
             raise errors.BTRFSValueError("BTRFSDevice must have at least one parent")
 
         self.req_size = kwargs.pop("size", None)
-        super(BTRFSDevice, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def update_sysfs_path(self):
         """ Update this device's sysfs path. """
@@ -83,13 +83,13 @@ class BTRFSDevice(StorageDevice):
         pass
 
     def _post_create(self):
-        super(BTRFSDevice, self)._post_create()
+        super()._post_create()
         self.format.exists = True
         self.format.device = self.path
 
     def _pre_destroy(self):
         """ Preparation and precondition checking for device destruction. """
-        super(BTRFSDevice, self)._pre_destroy()
+        super()._pre_destroy()
         self.setup_parents(orig=True)
 
     def _get_size(self):
@@ -152,7 +152,7 @@ class BTRFSDevice(StorageDevice):
         if self.format.vol_uuid:
             spec = "UUID=%s" % self.format.vol_uuid
         else:
-            spec = super(BTRFSDevice, self).fstab_spec
+            spec = super().fstab_spec
         return spec
 
     def is_name_valid(self, name):
@@ -187,7 +187,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         metadata_level = kwargs.pop("metadata_level", None)
         create_options = kwargs.pop("create_options", None)
 
-        super(BTRFSVolumeDevice, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # avoid attribute-defined-outside-init pylint warning
         self._data_level = self._metadata_level = None
@@ -299,14 +299,14 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
     @property
     def format_immutable(self):
-        return super(BTRFSVolumeDevice, self).format_immutable or self.exists
+        return super().format_immutable or self.exists
 
     def _set_name(self, value):
         self._name = value  # name is not used outside of blivet
 
     def _set_format(self, fmt):
         """ Set the Device's format. """
-        super(BTRFSVolumeDevice, self)._set_format(fmt)
+        super()._set_format(fmt)
         self.name = "btrfs.%d" % self.id
         label = getattr(self.format, "label", None)
         if label:
@@ -329,7 +329,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             error_msg = self._validate_parent_removal(l, parent)
             if error_msg:
                 raise errors.DeviceError(error_msg)
-        super(BTRFSVolumeDevice, self)._remove_parent(parent)
+        super()._remove_parent(parent)
 
     def _add_subvolume(self, vol):
         if vol.name in [v.name for v in self.subvolumes]:
@@ -461,7 +461,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         if any(p.size < btrfs.MIN_MEMBER_SIZE for p in self.parents):
             raise errors.DeviceCreateError("All BTRFS member devices must have size at least %s." % btrfs.MIN_MEMBER_SIZE)
 
-        super(BTRFSVolumeDevice, self)._pre_create()
+        super()._pre_create()
 
     def _create(self):
         log_method_call(self, self.name, status=self.status)
@@ -487,7 +487,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             raise errors.BTRFSError(err)
 
     def _post_create(self):
-        super(BTRFSVolumeDevice, self)._post_create()
+        super()._post_create()
         info = udev.get_device(self.sysfs_path)
         if not info:
             log.error("failed to get updated udev info for new btrfs volume")
@@ -529,7 +529,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
                 raise errors.BTRFSError(err)
 
     def populate_ksdata(self, data):
-        super(BTRFSVolumeDevice, self).populate_ksdata(data)
+        super().populate_ksdata(data)
         data.dataLevel = self.data_level.name if self.data_level else None
         data.metaDataLevel = self.metadata_level.name if self.metadata_level else None
         data.devices = ["btrfs.%d" % p.id for p in self.parents]
@@ -554,7 +554,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
         """
         self.vol_id = kwargs.pop("vol_id", None)
 
-        super(BTRFSSubVolumeDevice, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if len(self.parents) != 1:
             raise errors.BTRFSValueError("%s must have exactly one parent." % self.type)
@@ -566,7 +566,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
     def _set_format(self, fmt):
         """ Set the Device's format. """
-        super(BTRFSSubVolumeDevice, self)._set_format(fmt)
+        super()._set_format(fmt)
         if self.exists:
             return
 
@@ -606,7 +606,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
             parent = parent.parents[0]
 
         if not isinstance(vol, BTRFSVolumeDevice):
-            raise errors.DeviceError("%s %s's first non subvolume ancestor must be a btrfs volume" % (self.type, self.name))
+            raise errors.DeviceError("{} {}'s first non subvolume ancestor must be a btrfs volume".format(self.type, self.name))
         return vol
 
     @property
@@ -616,7 +616,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
     @property
     def device_id(self):
         # BTRFS-<volume uuid>-<name>
-        return "BTRFS-%s-%s" % (self.volume.uuid, self.name)
+        return "BTRFS-{}-{}".format(self.volume.uuid, self.name)
 
     def setup_parents(self, orig=False):
         """ Run setup method of all parent devices. """
@@ -633,7 +633,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
                 raise errors.BTRFSError(err)
 
     def _post_create(self):
-        super(BTRFSSubVolumeDevice, self)._post_create()
+        super()._post_create()
         self.format.vol_uuid = self.volume.format.vol_uuid
 
     def _destroy(self):
@@ -653,10 +653,10 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
         if modparent:
             self.volume._remove_subvolume(self.name)
 
-        super(BTRFSSubVolumeDevice, self).remove_hook(modparent=modparent)
+        super().remove_hook(modparent=modparent)
 
     def add_hook(self, new=True):
-        super(BTRFSSubVolumeDevice, self).add_hook(new=new)
+        super().add_hook(new=new)
         if new:
             return
 
@@ -664,7 +664,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
             self.volume._add_subvolume(self)
 
     def populate_ksdata(self, data):
-        super(BTRFSSubVolumeDevice, self).populate_ksdata(data)
+        super().populate_ksdata(data)
         data.subvol = True
         data.name = self.name
         data.preexist = self.exists
@@ -719,7 +719,7 @@ class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
 
         self.read_only = kwargs.pop("read_only", False)
 
-        super(BTRFSSnapShotDevice, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if source and getattr(source, "volume", source) != self.volume:
             self.volume._remove_subvolume(self.name)
@@ -733,9 +733,9 @@ class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
             if isinstance(self.source, BTRFSVolumeDevice):
                 source_path = mountpoint
             else:
-                source_path = "%s/%s" % (mountpoint, self.source.name)
+                source_path = "{}/{}".format(mountpoint, self.source.name)
 
-            dest_path = "%s/%s" % (mountpoint, self.name)
+            dest_path = "{}/{}".format(mountpoint, self.name)
 
             try:
                 blockdev.btrfs.create_snapshot(source_path, dest_path, ro=self.read_only)
@@ -744,4 +744,4 @@ class BTRFSSnapShotDevice(BTRFSSubVolumeDevice):
 
     def depends_on(self, dep):
         return (dep == self.source or
-                super(BTRFSSnapShotDevice, self).depends_on(dep))
+                super().depends_on(dep))

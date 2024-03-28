@@ -76,17 +76,17 @@ class MDRaidMember(DeviceFormat):
 
     @property
     def dict(self):
-        d = super(MDRaidMember, self).dict
+        d = super().dict
         d.update({"md_uuid": self.md_uuid, "biosraid": self.biosraid})
         return d
 
     @property
     def formattable(self):
-        return super(MDRaidMember, self).formattable and self._plugin.available
+        return super().formattable and self._plugin.available
 
     @property
     def supported(self):
-        return super(MDRaidMember, self).supported and self._plugin.available
+        return super().supported and self._plugin.available
 
     def _destroy(self, **kwargs):
         try:
@@ -105,7 +105,7 @@ class MDRaidMember(DeviceFormat):
 
     @property
     def hidden(self):
-        return super(MDRaidMember, self).hidden or self.biosraid
+        return super().hidden or self.biosraid
 
     @property
     def container_uuid(self):

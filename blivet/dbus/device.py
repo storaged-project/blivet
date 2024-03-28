@@ -26,7 +26,7 @@ from .object import DBusObject
 class DBusDevice(DBusObject):
     def __init__(self, device, manager):
         self._device = device
-        super(DBusDevice, self).__init__(manager)
+        super().__init__(manager)
 
     @property
     def id(self):
@@ -39,7 +39,7 @@ class DBusDevice(DBusObject):
         else:
             base = DEVICE_REMOVED_OBJECT_PATH_BASE
 
-        return "%s/%s" % (base, self.id)
+        return "{}/{}".format(base, self.id)
 
     @property
     def interface(self):

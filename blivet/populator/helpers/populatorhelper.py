@@ -21,7 +21,7 @@
 #
 
 
-class PopulatorHelper(object):
+class PopulatorHelper:
     """ Class to hold type-specific code for populating the devicetree. """
 
     priority = 100

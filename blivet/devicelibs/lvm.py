@@ -209,7 +209,7 @@ def determine_parent_lv(internal_lv, lvs, lv_info):
         if info is None:
             # internal LVs look like "vg_name-[int_lv_name]" in lv_info so let's
             # try that too
-            info = lv_info.get("%s-%s" % (lv.vg.name, lv.display_lvname))
+            info = lv_info.get("{}-{}".format(lv.vg.name, lv.display_lvname))
         if info:
             # cache pools are internal LVs of cached LVs
             pool_name = info.pool_lv
@@ -238,7 +238,7 @@ def lvmetad_socket_exists():
 
 
 def ensure_lv_is_writable(vg_name, lv_name):
-    lv_info = lvs_info.cache.get("%s-%s" % (vg_name, lv_name))
+    lv_info = lvs_info.cache.get("{}-{}".format(vg_name, lv_name))
     if lv_info is None:
         return
 
@@ -246,7 +246,7 @@ def ensure_lv_is_writable(vg_name, lv_name):
         return
 
     try:
-        rc = run_program(['lvchange', '-prw', "%s/%s" % (vg_name, lv_name)])
+        rc = run_program(['lvchange', '-prw', "{}/{}".format(vg_name, lv_name)])
     except OSError:
         rc = -1
 

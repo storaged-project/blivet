@@ -42,7 +42,7 @@ import logging
 log = logging.getLogger("blivet")
 
 
-class LUKS2PBKDFArgs(object):
+class LUKS2PBKDFArgs:
     """ PBKDF arguments for LUKS 2 format """
 
     def __init__(self, type=None, max_memory_kb=0, iterations=0, time_ms=0, hash_fn=None):  # pylint: disable=redefined-builtin
@@ -188,7 +188,7 @@ class LUKS(DeviceFormat):
 
     @property
     def dict(self):
-        d = super(LUKS, self).dict
+        d = super().dict
         d.update({"cipher": self.cipher, "key_size": self.key_size,
                   "map_name": self.map_name, "version": self.luks_version,
                   "has_key": self.has_key, "escrow_cert": self.escrow_cert,
@@ -201,7 +201,7 @@ class LUKS(DeviceFormat):
         if self.has_key or not self.exists:
             name = _(self._name)
         else:
-            name = "%s (%s)" % (_(self._locked_name), _(self._name))
+            name = "{} ({})".format(_(self._locked_name), _(self._name))
         return name
 
     def _set_passphrase(self, passphrase):
@@ -217,15 +217,15 @@ class LUKS(DeviceFormat):
 
     @property
     def formattable(self):
-        return super(LUKS, self).formattable and self._plugin.available
+        return super().formattable and self._plugin.available
 
     @property
     def supported(self):
-        return super(LUKS, self).supported and self._plugin.available
+        return super().supported and self._plugin.available
 
     @property
     def controllable(self):
-        return super(LUKS, self).controllable and self._plugin.available
+        return super().controllable and self._plugin.available
 
     @property
     def configured(self):
@@ -257,7 +257,7 @@ class LUKS(DeviceFormat):
         if not self.configured:
             raise LUKSError("luks device not configured")
 
-        return super(LUKS, self)._pre_setup(**kwargs)
+        return super()._pre_setup(**kwargs)
 
     def _setup(self, **kwargs):
         log_method_call(self, device=self.device, map_name=self.map_name,
@@ -293,10 +293,10 @@ class LUKS(DeviceFormat):
         if self.luks_version == "luks2" and not self.has_key:
             raise LUKSError("Passphrase or key needs to be set before resizing LUKS2 format.")
 
-        super(LUKS, self)._pre_resize()
+        super()._pre_resize()
 
     def _pre_create(self, **kwargs):
-        super(LUKS, self)._pre_create(**kwargs)
+        super()._pre_create(**kwargs)
         self.map_name = None
         if not self.has_key:
             raise LUKSError("luks device has no key/passphrase")
@@ -304,7 +304,7 @@ class LUKS(DeviceFormat):
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        super(LUKS, self)._create(**kwargs)  # set up the event sync
+        super()._create(**kwargs)  # set up the event sync
 
         if not self.pbkdf_args and self.luks_version == "luks2":
             if luks_data.pbkdf_args:
@@ -362,12 +362,12 @@ class LUKS(DeviceFormat):
                 raise LUKSError(e)
 
     def _post_create(self, **kwargs):
-        super(LUKS, self)._post_create(**kwargs)
+        super()._post_create(**kwargs)
 
         try:
             info = blockdev.crypto.luks_info(self.device)
         except blockdev.CryptoError as e:
-            raise LUKSError("Failed to get UUID for the newly created LUKS device %s: %s" % (self.device, str(e)))
+            raise LUKSError("Failed to get UUID for the newly created LUKS device {}: {}".format(self.device, str(e)))
         else:
             self.uuid = info.uuid
 
@@ -447,7 +447,7 @@ class LUKS(DeviceFormat):
         log.debug("escrow: escrow_volume done for %s", repr(self.device))
 
     def populate_ksdata(self, data):
-        super(LUKS, self).populate_ksdata(data)
+        super().populate_ksdata(data)
         data.luks_version = self.luks_version
 
         if self.pbkdf_args:
@@ -503,7 +503,7 @@ class Integrity(DeviceFormat):
 
     @property
     def formattable(self):
-        return super(Integrity, self).formattable and self._plugin.available
+        return super().formattable and self._plugin.available
 
     @property
     def status(self):
@@ -515,7 +515,7 @@ class Integrity(DeviceFormat):
         if not self._plugin.available:
             raise IntegrityError("Integrity devices not fully supported: %s" % ",".join(self._plugin.availability_errors))
 
-        return super(Integrity, self)._pre_setup(**kwargs)
+        return super()._pre_setup(**kwargs)
 
     def _setup(self, **kwargs):
         log_method_call(self, device=self.device, map_name=self.map_name,
@@ -529,12 +529,12 @@ class Integrity(DeviceFormat):
         if not self.formattable:
             raise IntegrityError("Integrity devices not fully supported: %s" % ",".join(self._plugin.availability_errors))
 
-        return super(Integrity, self)._pre_create(**kwargs)
+        return super()._pre_create(**kwargs)
 
     def _create(self, **kwargs):
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
-        super(Integrity, self)._create(**kwargs)  # set up the event sync
+        super()._create(**kwargs)  # set up the event sync
 
         if self.sector_size:
             extra = blockdev.CryptoIntegrityExtra(sector_size=self.sector_size)
