@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, PropertyMock
 
 import blivet
 
@@ -7,6 +7,7 @@ from blivet.devices import StorageDevice
 from blivet.devices import BTRFSVolumeDevice
 from blivet.devices import BTRFSSubVolumeDevice
 from blivet.size import Size
+from blivet.formats.fs import BTRFS
 
 
 DEVICE_CLASSES = [
@@ -61,3 +62,28 @@ class BlivetNewBtrfsVolumeDeviceTest(unittest.TestCase):
 
         sub = BTRFSSubVolumeDevice("testsub", parents=[vol])
         self.assertEqual(sub.device_id, "BTRFS-" + vol.uuid + "-testsub")
+
+    def test_btrfs_list_subvolumes(self):
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("btrfs"),
+                           size=Size("2 GiB"), exists=True)
+
+        vol = BTRFSVolumeDevice("testvolume", parents=[bd])
+
+        with patch("blivet.devices.btrfs.blockdev.btrfs") as blockdev:
+            # not mounted and flags.auto_dev_updates is not set
+            vol.list_subvolumes()
+            blockdev.list_subvolumes.assert_not_called()
+            blockdev.get_default_subvolume_id.assert_not_called()
+
+            # mounted
+            with patch.object(BTRFS, "system_mountpoint", new=PropertyMock(return_value='/fake/mountpoint')):
+                vol.list_subvolumes()
+                blockdev.list_subvolumes.assert_called_with("/fake/mountpoint", snapshots_only=False)
+                blockdev.get_default_subvolume_id.assert_called_with("/fake/mountpoint")
+
+                # mounted but libblockdev btrfs plugin not available
+                blockdev.reset_mock()
+                with patch("blivet.devices.btrfs.missing_plugs", new={"btrfs"}):
+                    vol.list_subvolumes()
+                    blockdev.list_subvolumes.assert_not_called()
+                    blockdev.get_default_subvolume_id.assert_not_called()
