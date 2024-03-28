@@ -40,6 +40,7 @@ from .. import util
 from ..formats import get_format, DeviceFormat
 from ..size import Size
 from ..mounts import mounts_cache
+from .. import missing_plugs
 
 import logging
 log = logging.getLogger("blivet")
@@ -357,7 +358,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
         # now try every possible mountpoint with any subvolspec in our cache
         parents = [p.name for p in self.parents]
-        mount_spec = next(((dev, subvol) for dev, subvol in mounts_cache.mountpoints if dev in parents), None)
+        mount_spec = next(((dev, subvol) for dev, subvol in mounts_cache.mountpoints if udev.resolve_devspec(dev) in parents), None)
         if mount_spec:
             try:
                 return mounts_cache.get_mountpoints(devspec=mount_spec[0],
@@ -374,12 +375,17 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
         except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as e:
             log.debug("failed to list subvolumes: %s", e)
         else:
-            self._get_default_subvolume_id()
+            self._get_default_subvolume_id(mountpoint)
 
         return subvols
 
     def list_subvolumes(self, snapshots_only=False):
         subvols = []
+
+        if "btrfs" in missing_plugs:
+            log.debug("not listing btrfs subvolumes, libblockdev btrfs plugin is missing")
+            return subvols
+
         if flags.auto_dev_updates:
             self.setup(orig=True)
 
@@ -404,13 +410,16 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
     def remove_subvolume(self, name):
         raise NotImplementedError()
 
-    def _get_default_subvolume_id(self):
+    def _get_default_subvolume_id(self, mountpoint=None):
         subvolid = None
-        with self._do_temp_mount() as mountpoint:
-            try:
+
+        try:
+            if mountpoint:
                 subvolid = blockdev.btrfs.get_default_subvolume_id(mountpoint)
-            except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as e:
-                log.debug("failed to get default subvolume id: %s", e)
+            elif flags.auto_dev_updates:
+                subvolid = blockdev.btrfs.get_default_subvolume_id(mountpoint)
+        except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as e:
+            log.debug("failed to get default subvolume id: %s", e)
 
         self._default_subvolume_id = subvolid
 

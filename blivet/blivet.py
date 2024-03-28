@@ -40,7 +40,7 @@ from .devicelibs.crypto import LUKS_METADATA_SIZE
 from .errors import StorageError, DependencyError
 from .size import Size
 from .devicetree import DeviceTree
-from .fstab import FSTabManager
+from .fstab import FSTabManager, HAVE_LIBMOUNT
 from .formats import get_default_filesystem_type
 from .flags import flags
 from .formats import get_format
@@ -56,7 +56,10 @@ import logging
 log = logging.getLogger("blivet")
 
 
-FSTAB_PATH = "/etc/fstab"
+# Default path to fstab file. Left empty to prevent blivet from using
+# fstab functionality by default.
+# TODO Change to "/etc/fstab" at next major version
+FSTAB_PATH = ""
 
 
 @six.add_metaclass(SynchronizedMeta)
@@ -75,9 +78,13 @@ class Blivet(object):
         self.size_sets = []
         self.set_default_fstype(get_default_filesystem_type())
 
-        # fstab write location purposedly set to None. It has to be overriden
+        # fstab write location purposedly set to None. It has to be overridden
         # manually when using blivet.
-        self.fstab = FSTabManager(src_file=FSTAB_PATH, dest_file=None)
+        if HAVE_LIBMOUNT:
+            self.fstab = FSTabManager(src_file=FSTAB_PATH, dest_file=None)
+        else:
+            log.info("Python libmount bindings missing, fstab management is disabled")
+            self.fstab = None
 
         self._short_product_name = 'blivet'
 
@@ -120,7 +127,9 @@ class Blivet(object):
         """
 
         self.devicetree.actions.process(callbacks=callbacks, devices=self.devices, fstab=self.fstab)
-        self.fstab.read()
+
+        if self.fstab:
+            self.fstab.read()
 
     @property
     def next_id(self):
@@ -150,7 +159,8 @@ class Blivet(object):
         self.edd_dict = get_edd_dict(self.partitioned)
         self.devicetree.edd_dict = self.edd_dict
 
-        self.fstab.read()
+        if self.fstab:
+            self.fstab.read()
 
         if flags.include_nodev:
             self.devicetree.handle_nodev_filesystems()

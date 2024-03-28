@@ -26,6 +26,7 @@ from six import add_metaclass
 
 from .. import safe_dbus
 from ..devicelibs.stratis import STRATIS_SERVICE, STRATIS_PATH
+from .. import util
 
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -317,6 +318,11 @@ class DBusMethod(Method):
             :returns: [] if the name of the plugin is loaded
             :rtype: list of str
         """
+        # try to start the service first
+        ret = util.run_program(["systemctl", "start", resource.name])
+        if ret != 0:
+            return ["DBus service %s not available" % resource.name]
+
         try:
             avail = blockdev.utils.dbus_service_available(None, Gio.BusType.SYSTEM, self.dbus_name, self.dbus_path)
             avail = safe_dbus.check_object_available(self.dbus_name, self.dbus_path)
@@ -495,7 +501,8 @@ BLOCKDEV_MPATH_ALL_MODES = (blockdev.MpathTechMode.MODIFY |
                             blockdev.MpathTechMode.QUERY)
 BLOCKDEV_MPATH = BlockDevTechInfo(plugin_name="mpath",
                                   check_fn=blockdev.mpath_is_tech_avail,
-                                  technologies={blockdev.MpathTech.BASE: BLOCKDEV_MPATH_ALL_MODES})
+                                  technologies={blockdev.MpathTech.BASE: BLOCKDEV_MPATH_ALL_MODES,
+                                                blockdev.MpathTech.FRIENDLY_NAMES: blockdev.MpathTechMode.MODIFY})
 BLOCKDEV_MPATH_TECH = BlockDevMethod(BLOCKDEV_MPATH)
 
 # libblockdev swap plugin required technologies and modes
@@ -598,4 +605,4 @@ STRATISPREDICTUSAGE_APP = application("stratis-predict-usage")
 
 # dbus services
 STRATIS_SERVICE_METHOD = DBusMethod(STRATIS_SERVICE, STRATIS_PATH)
-STRATIS_DBUS = dbus_service("stratis", STRATIS_SERVICE_METHOD)
+STRATIS_DBUS = dbus_service("stratisd", STRATIS_SERVICE_METHOD)

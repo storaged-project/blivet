@@ -55,7 +55,7 @@ from ..errors import FSWriteLabelError, FSWriteUUIDError
 from . import DeviceFormat, register_device_format
 from .. import util
 from ..flags import flags
-from ..fstab import FSTabOptions
+from ..fstab import FSTabOptions, HAVE_LIBMOUNT
 from ..storage_log import log_exception_info, log_method_call
 from .. import arch
 from ..size import Size, ROUND_UP
@@ -702,10 +702,11 @@ class FS(DeviceFormat):
 
         udev.settle()
 
-    def change_mountpoint(self, dry_run=False):
+    def change_mountpoint(self, dry_run=False):  # pylint: disable=unused-argument
         # This function is intentionally left blank. Mountpoint change utilizes
         # only the generic part of this code branch
-        pass
+        if not HAVE_LIBMOUNT:
+            raise FSError("Fstab management is not supported on this system")
 
     def read_label(self):
         """Read this filesystem's label.
@@ -1094,9 +1095,15 @@ class BTRFS(FS):
                   to a temporary directory.
         """
 
+        def _pre_process_subvolnames(subvols):
+            # subvolumes without the subvolspec prefix (so names are relative to this subvolume)
+            if not self.subvolspec or self.subvolspec == 5:
+                return subvols
+            return [sub[sub.startswith(self.subvolspec + "/") and len(self.subvolspec) + 1:] for sub in subvols]
+
         with self._do_temp_mount() as mnt:
             content = os.listdir(mnt)
-            subvols = btrfs.get_mountpoint_subvolumes(mnt)
+            subvols = _pre_process_subvolnames(btrfs.get_mountpoint_subvolumes(mnt))
             if content and not all(c in self._system_dirs + subvols for c in content):
                 return False
             return True
