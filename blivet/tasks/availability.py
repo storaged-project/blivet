@@ -24,7 +24,6 @@ import shutil
 
 from six import add_metaclass
 
-from .. import safe_dbus
 from ..devicelibs.stratis import STRATIS_SERVICE, STRATIS_PATH
 from .. import util
 
@@ -309,6 +308,14 @@ class DBusMethod(Method):
         self.dbus_path = dbus_path
         self._availability_errors = None
 
+    def _service_available(self):
+        try:
+            avail = blockdev.utils.dbus_service_available(None, Gio.BusType.SYSTEM, self.dbus_name, self.dbus_path)
+        except blockdev.UtilsError:
+            return False
+        else:
+            return avail
+
     def availability_errors(self, resource):
         """ Returns [] if the service is available.
 
@@ -318,21 +325,16 @@ class DBusMethod(Method):
             :returns: [] if the name of the plugin is loaded
             :rtype: list of str
         """
-        # try to start the service first
-        ret = util.run_program(["systemctl", "start", resource.name])
-        if ret != 0:
-            return ["DBus service %s not available" % resource.name]
-
-        try:
-            avail = blockdev.utils.dbus_service_available(None, Gio.BusType.SYSTEM, self.dbus_name, self.dbus_path)
-            avail = safe_dbus.check_object_available(self.dbus_name, self.dbus_path)
-        except safe_dbus.DBusCallError:
-            return ["DBus service %s not available" % resource.name]
-        else:
-            if avail:
-                return []
-            else:
+        if not self._service_available():
+            # try to start the service first
+            ret = util.run_program(["systemctl", "start", resource.name])
+            if ret != 0:
                 return ["DBus service %s not available" % resource.name]
+            # try again now when the service should be started
+            else:
+                if not self._service_available():
+                    return ["DBus service %s not available" % resource.name]
+        return []
 
 
 class _UnavailableMethod(Method):
