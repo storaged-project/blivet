@@ -4,8 +4,9 @@ import unittest
 from unittest.mock import Mock
 
 from blivet.fstab import FSTabManager, FSTabEntry, HAVE_LIBMOUNT
-from blivet.devices import DiskDevice
+from blivet.devices import DiskDevice, StratisPoolDevice, StratisFilesystemDevice
 from blivet.formats import get_format
+from blivet.size import Size
 from blivet import Blivet
 
 FSTAB_WRITE_FILE = "/tmp/test-blivet-fstab2"
@@ -95,6 +96,15 @@ class FSTabTestCase(unittest.TestCase):
 
         _entry = self.fstab.entry_from_device(device)
         self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/media/fstab_test', 'ext4', None, 0, 0))
+
+    def test_entry_from_device_stratis(self):
+        pool = StratisPoolDevice("testpool", parents=[], exists=True)
+        device = StratisFilesystemDevice("testfs", parents=[pool], size=Size("1 GiB"), exists=True)
+        device.format = get_format("stratis xfs")
+        device.format.mountpoint = "/media/fstab_test"
+
+        _entry = self.fstab.entry_from_device(device)
+        self.assertEqual(_entry, FSTabEntry('/dev/stratis/testpool/testfs', '/media/fstab_test', 'xfs', None, 0, 0))
 
     def test_update(self):
 
