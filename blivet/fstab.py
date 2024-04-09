@@ -396,7 +396,11 @@ class FSTabManager(object):
         entry.spec = self._get_spec(device)
         if entry.spec is None:
             entry.spec = getattr(device, "fstab_spec", None)
-        entry.vfstype = device.format.type
+
+        if hasattr(device.format, "mount_type") and device.format.mount_type is not None:
+            entry.vfstype = device.format.mount_type
+        else:
+            entry.vfstype = device.format.type
 
         return entry
 
@@ -434,7 +438,10 @@ class FSTabManager(object):
         if entry.spec is None:
             entry.spec = getattr(action.device, "fstab_spec", None)
 
-        entry.vfstype = action.device.format.type
+        if hasattr(action.device.format, "mount_type") and action.device.format.mount_type is not None:
+            entry.vfstype = action.device.format.mount_type
+        else:
+            entry.vfstype = action.device.format.type
 
         return entry
 
