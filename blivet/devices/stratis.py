@@ -24,10 +24,12 @@ import os
 import logging
 log = logging.getLogger("blivet")
 
+from collections import defaultdict
+
 from .storage import StorageDevice
 from ..static_data import stratis_info
 from ..storage_log import log_method_call
-from ..errors import DeviceError, StratisError
+from ..errors import DeviceError, StratisError, InconsistentParentSectorSize
 from ..size import Size
 from ..tasks import availability
 from .. import devicelibs
@@ -165,6 +167,22 @@ class StratisPoolDevice(StorageDevice):
         for parent in self.parents:
             parent.format.pool_name = self.name
             parent.format.pool_uuid = self.uuid
+
+    def _add_parent(self, parent):
+        super(StratisPoolDevice, self)._add_parent(parent)
+
+        # we are creating new pool
+        if not self.exists:
+            sector_sizes = defaultdict(list)
+            for ss, name in [(p.sector_size, p.name) for p in self.blockdevs + [parent]]:  # pylint: disable=no-member
+                sector_sizes[ss].append(name)
+            if len(sector_sizes.keys()) != 1:
+                msg = "Cannot create pool '%s'. "\
+                      "The following disks have inconsistent sector size:\n" % self.name
+                for sector_size in sector_sizes.keys():
+                    msg += "%s: %d\n" % (", ".join(sector_sizes[sector_size]), sector_size)
+
+                raise InconsistentParentSectorSize(msg)
 
     def _destroy(self):
         """ Destroy the device. """

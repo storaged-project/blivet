@@ -67,6 +67,10 @@ class DeviceUserDeniedFormatError(DeviceError):
 class InconsistentPVSectorSize(DeviceError, ValueError):
     pass
 
+
+class InconsistentParentSectorSize(DeviceError, ValueError):
+    pass
+
 # DeviceFormat
 
 
