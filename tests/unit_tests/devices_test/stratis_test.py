@@ -2,16 +2,16 @@ import six
 import unittest
 
 try:
-    from unittest.mock import patch
+    from unittest.mock import patch, PropertyMock
 except ImportError:
-    from mock import patch
+    from mock import patch, PropertyMock
 
 import blivet
 
 from blivet.devices import StorageDevice
 from blivet.devices import StratisPoolDevice
 from blivet.devices import StratisFilesystemDevice
-from blivet.errors import StratisError
+from blivet.errors import StratisError, InconsistentParentSectorSize
 from blivet.size import Size
 
 
@@ -155,3 +155,13 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                       pool_uuid="c4fc9ebe-e173-4cab-8d81-cc6abddbe02d",
                                                                       fs_size=Size("1 TiB"))
 
+    def test_pool_inconsistent_sector_size(self):
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
+                           size=Size("2 GiB"), exists=False)
+        bd2 = StorageDevice("bd2", fmt=blivet.formats.get_format("stratis"),
+                            size=Size("2 GiB"), exists=False)
+
+        with patch("blivet.devices.StorageDevice.sector_size", new_callable=PropertyMock) as mock_property:
+            mock_property.__get__ = lambda _mock, bd, _class: 512 if bd.name == "bd1" else 4096
+            with self.assertRaisesRegex(InconsistentParentSectorSize, "Cannot create pool"):
+                StratisPoolDevice("testpool", parents=[bd, bd2])
