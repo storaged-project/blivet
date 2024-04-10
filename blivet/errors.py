@@ -68,7 +68,7 @@ class InconsistentPVSectorSize(DeviceError, ValueError):
     pass
 
 
-class InconsistentParentSectorSize(DeviceError, ValueError):
+class InconsistentParentSectorSize(InconsistentPVSectorSize, DeviceError, ValueError):
     pass
 
 # DeviceFormat
