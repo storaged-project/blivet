@@ -185,6 +185,15 @@ class StratisPoolDevice(ContainerDevice):
 
                 raise InconsistentParentSectorSize(msg)
 
+        parent.format.pool_name = self.name
+        parent.format.pool_uuid = self.uuid
+
+    def _add(self, member):
+        devicelibs.stratis.add_device(self.uuid, member.path)
+
+    def _remove(self, member):
+        raise DeviceError("Removing members from a Stratis pool is not supported")
+
     def _destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
