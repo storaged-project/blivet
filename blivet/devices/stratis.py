@@ -26,6 +26,7 @@ log = logging.getLogger("blivet")
 
 from collections import defaultdict
 
+from .container import ContainerDevice
 from .storage import StorageDevice
 from ..static_data import stratis_info
 from ..storage_log import log_method_call
@@ -35,7 +36,7 @@ from ..tasks import availability
 from .. import devicelibs
 
 
-class StratisPoolDevice(StorageDevice):
+class StratisPoolDevice(ContainerDevice):
     """ A stratis pool device """
 
     _type = "stratis pool"
