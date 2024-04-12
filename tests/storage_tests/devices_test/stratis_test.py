@@ -162,3 +162,46 @@ class StratisTestCase(StorageTestCase):
         self.assertIsNotNone(fs)
         self.assertIsInstance(fs, blivet.devices.StratisFilesystemDevice)
         self.assertAlmostEqual(fs.size, blivet.size.Size("2 GiB"), delta=blivet.size.Size("10 MiB"))
+
+    def test_stratis_add_device(self):
+        disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk1)
+        self.storage.initialize_disk(disk1)
+
+        bd1 = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="stratis",
+                                         parents=[disk1])
+        self.storage.create_device(bd1)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd1])
+        self.storage.create_device(pool)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        disk2 = self.storage.devicetree.get_device_by_path(self.vdevs[1])
+        self.assertIsNotNone(disk2)
+        self.storage.initialize_disk(disk2)
+
+        bd2 = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="stratis",
+                                         parents=[disk2])
+        self.storage.create_device(bd2)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+
+        ac = blivet.deviceaction.ActionAddMember(pool, bd2)
+        self.storage.devicetree.actions.add(ac)
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertEqual(len(pool.parents), 2)
+        self.assertCountEqual([p.path for p in pool.parents], [self.vdevs[0] + "1", self.vdevs[1] + "1"])
+
+        bd2 = self.storage.devicetree.get_device_by_path(self.vdevs[1] + "1")
+        self.assertEqual(bd2.format.pool_name, pool.name)
+        self.assertEqual(bd2.format.pool_uuid, pool.uuid)
