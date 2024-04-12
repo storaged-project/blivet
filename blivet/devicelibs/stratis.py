@@ -255,3 +255,28 @@ def create_filesystem(name, pool_uuid, fs_size=None):
 
     # repopulate the stratis info cache so the new filesystem will be added
     stratis_info.drop_cache()
+
+
+def add_device(pool_uuid, device):
+    if not availability.STRATIS_DBUS.available:
+        raise StratisError("Stratis DBus service not available")
+
+    # repopulate the stratis info cache just to be sure all values are still valid
+    stratis_info.drop_cache()
+
+    pool_info = stratis_info.pools[pool_uuid]
+
+    try:
+        ((succ, _paths), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
+                                                        pool_info.object_path,
+                                                        STRATIS_POOL_INTF,
+                                                        "AddDataDevs",
+                                                        GLib.Variant("(as)", ([device],)))
+    except safe_dbus.DBusCallError as e:
+        raise StratisError("Failed to create stratis filesystem on '%s': %s" % (pool_info.name, str(e)))
+    else:
+        if not succ:
+            raise StratisError("Failed to create stratis filesystem on '%s': %s (%d)" % (pool_info.name, err, rc))
+
+    # repopulate the stratis info cache so the new filesystem will be added
+    stratis_info.drop_cache()
