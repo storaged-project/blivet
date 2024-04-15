@@ -27,6 +27,8 @@ gi.require_version("GLib", "2.0")
 from gi.repository import BlockDev as blockdev
 from gi.repository import GLib
 
+import uuid
+
 from ... import udev
 from ... import util
 from ...devices import DASDDevice, DiskDevice, FcoeDiskDevice, iScsiDiskDevice
@@ -257,9 +259,13 @@ class NVMeNamespaceDevicePopulator(DiskDevicePopulator):
             log.debug("Failed to get namespace info for %s: %s", path, str(err))
         else:
             kwargs["nsid"] = ninfo.nsid
-            kwargs["uuid"] = ninfo.uuid
             kwargs["eui64"] = ninfo.eui64
             kwargs["nguid"] = ninfo.nguid
+
+            if ninfo.uuid and ninfo.uuid != uuid.UUID(int=0):
+                kwargs["uuid"] = ninfo.uuid
+            else:
+                kwargs["uuid"] = None
 
         log.info("%s is an NVMe local namespace device", udev.device_get_name(self.data))
         return kwargs

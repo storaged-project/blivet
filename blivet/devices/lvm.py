@@ -419,7 +419,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
                 else:
                     msg = "Disk %s cannot be added to this volume group. LVM doesn't " \
                           "allow using physical volumes with inconsistent (logical) sector sizes." % parent.name
-                raise errors.InconsistentPVSectorSize(msg)
+                raise errors.InconsistentParentSectorSize(msg)
 
         if (self.exists and parent.format.exists and
                 len(self.parents) + 1 == self.pv_count):
