@@ -26,6 +26,7 @@ log = logging.getLogger("blivet")
 
 from collections import defaultdict
 
+from .container import ContainerDevice
 from .storage import StorageDevice
 from ..static_data import stratis_info
 from ..storage_log import log_method_call
@@ -35,7 +36,7 @@ from ..tasks import availability
 from .. import devicelibs
 
 
-class StratisPoolDevice(StorageDevice):
+class StratisPoolDevice(ContainerDevice):
     """ A stratis pool device """
 
     _type = "stratis pool"
@@ -183,6 +184,15 @@ class StratisPoolDevice(StorageDevice):
                     msg += "%s: %d\n" % (", ".join(sector_sizes[sector_size]), sector_size)
 
                 raise InconsistentParentSectorSize(msg)
+
+        parent.format.pool_name = self.name
+        parent.format.pool_uuid = self.uuid
+
+    def _add(self, member):
+        devicelibs.stratis.add_device(self.uuid, member.path)
+
+    def _remove(self, member):
+        raise DeviceError("Removing members from a Stratis pool is not supported")
 
     def _destroy(self):
         """ Destroy the device. """
