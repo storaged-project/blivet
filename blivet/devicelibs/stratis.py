@@ -60,7 +60,7 @@ def pool_used(dev_sizes, encrypted=False):
     if encrypted:
         cmd.append("--encrypted")
 
-    rc, out = util.run_program_and_capture_output(cmd)
+    rc, out = util.run_program_and_capture_output(cmd, stderr_to_stdout=True)
     if rc:
         raise StratisError("Failed to predict usage for stratis pool")
 
@@ -78,7 +78,8 @@ def filesystem_md_size(fs_size):
 
     rc, out = util.run_program_and_capture_output([availability.STRATISPREDICTUSAGE_APP.name, "filesystem",
                                                    "--filesystem-size",
-                                                   str(fs_size.get_bytes())])
+                                                   str(fs_size.get_bytes())],
+                                                  stderr_to_stdout=True)
     if rc:
         raise StratisError("Failed to predict usage for stratis filesystem: %s" % out)
 
