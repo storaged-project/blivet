@@ -165,3 +165,12 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
             mock_property.__get__ = lambda _mock, bd, _class: 512 if bd.name == "bd1" else 4096
             with self.assertRaisesRegex(InconsistentParentSectorSize, "Cannot create pool"):
                 StratisPoolDevice("testpool", parents=[bd, bd2])
+
+    def test_filesystem_round_size(self):
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
+                           size=Size("2 GiB"), exists=False)
+        pool = StratisPoolDevice("testpool", parents=[bd])
+
+        fs = StratisFilesystemDevice("testfs", parents=[pool], size=Size("1 GiB") + Size(1))
+        # size should be rounded down to 1 GiB
+        self.assertEqual(fs.size, Size("1 GiB"))
