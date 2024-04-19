@@ -41,7 +41,7 @@ STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev.r0"
 STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
 
 
-StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "physical_used", "object_path", "encrypted"])
+StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "physical_used", "object_path", "encrypted", "clevis"])
 StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "used_size", "pool_name",
                                                              "pool_uuid", "object_path"])
 StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_name", "pool_uuid", "object_path"])
@@ -78,9 +78,16 @@ class StratisInfo(object):
                         properties["Name"], pool_used)
             pool_used = 0
 
+        clevis_info = properties.get("ClevisInfo", None)
+        if not clevis_info or not clevis_info[0] or not clevis_info[1][0]:
+            clevis = None
+        else:
+            clevis = clevis_info[1][1]
+
         return StratisPoolInfo(name=properties["Name"], uuid=properties["Uuid"],
                                physical_size=Size(pool_size), physical_used=Size(pool_used),
-                               object_path=pool_path, encrypted=properties["Encrypted"])
+                               object_path=pool_path, encrypted=properties["Encrypted"],
+                               clevis=clevis)
 
     def _get_filesystem_info(self, filesystem_path):
         try:

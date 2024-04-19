@@ -5,7 +5,7 @@ from ..storagetestcase import StorageTestCase
 
 import blivet
 
-from blivet.devices.stratis import StratisFilesystemDevice
+from blivet.devices.stratis import StratisFilesystemDevice, StratisClevisConfig
 
 
 class StratisTestCase(StorageTestCase):
@@ -126,6 +126,7 @@ class StratisTestCase(StorageTestCase):
         self.assertEqual(len(pool.parents), 1)
         self.assertEqual(pool.parents[0], bd)
         self.assertTrue(pool.encrypted)
+        self.assertIsNone(pool._clevis)
 
     def test_stratis_overprovision(self):
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
@@ -205,3 +206,69 @@ class StratisTestCase(StorageTestCase):
         bd2 = self.storage.devicetree.get_device_by_path(self.vdevs[1] + "1")
         self.assertEqual(bd2.format.pool_name, pool.name)
         self.assertEqual(bd2.format.pool_uuid, pool.uuid)
+
+
+@unittest.skip("Requires TPM or Tang configuration")
+class StratisTestCaseClevis(StorageTestCase):
+
+    # XXX: we don't have Tang server, this test will be always skipped
+    #      the test cases are kept here for manual testing
+    _tang_server = None
+
+    def test_stratis_encrypted_clevis_tang(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.storage.initialize_disk(disk)
+
+        bd = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="stratis",
+                                        parents=[disk])
+        self.storage.create_device(bd)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd],
+                                             encrypted=True, passphrase="abcde",
+                                             clevis=StratisClevisConfig(pin="tang",
+                                                                        tang_url=self._tang_server,
+                                                                        tang_thumbprint=None))
+        self.storage.create_device(pool)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertEqual(pool.type, "stratis pool")
+        self.assertTrue(pool.encrypted)
+        self.assertIsNotNone(pool._clevis)
+        self.assertEqual(pool._clevis.pin, "tang")
+        self.assertEqual(pool._clevis.tang_url, self._tang_server)
+        self.assertIsNotNone(pool._clevis.tang_thumbprint)
+
+    def test_stratis_encrypted_clevis_tpm(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.storage.initialize_disk(disk)
+
+        bd = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="stratis",
+                                        parents=[disk])
+        self.storage.create_device(bd)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd],
+                                             encrypted=True, passphrase="abcde",
+                                             clevis=StratisClevisConfig(pin="tpm2"))
+        self.storage.create_device(pool)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertEqual(pool.type, "stratis pool")
+        self.assertTrue(pool.encrypted)
+        self.assertIsNotNone(pool._clevis)
+        self.assertEqual(pool._clevis.pin, "tpm2")
+        self.assertIsNone(pool._clevis.tang_url)
+        self.assertIsNone(pool._clevis.tang_thumbprint)

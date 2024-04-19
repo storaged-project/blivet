@@ -190,7 +190,7 @@ def unlock_pool(pool_uuid):
             raise StratisError("Failed to unlock pool: %s" % err)
 
 
-def create_pool(name, devices, encrypted, passphrase, key_file):
+def create_pool(name, devices, encrypted, passphrase, key_file, clevis):
     if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
@@ -203,10 +203,18 @@ def create_pool(name, devices, encrypted, passphrase, key_file):
         key_desc = "blivet-%s" % name  # XXX what would be a good key description?
         set_key(key_desc, passphrase, key_file)
         key_opt = GLib.Variant("(bs)", (True, key_desc))
+        if clevis:
+            clevis_config = {"url": clevis.tang_url}
+            if clevis.tang_thumbprint:
+                clevis_config["thp"] = clevis.tang_thumbprint
+            else:
+                clevis_config["stratis:tang:trust_url"] = True
+            clevis_opt = GLib.Variant("(b(ss))", (True, (clevis.pin, json.dumps(clevis_config))))
+        else:
+            clevis_opt = GLib.Variant("(b(ss))", (False, ("", "")))
     else:
         key_opt = GLib.Variant("(bs)", (False, ""))
-
-    clevis_opt = GLib.Variant("(b(ss))", (False, ("", "")))
+        clevis_opt = GLib.Variant("(b(ss))", (False, ("", "")))
 
     try:
         ((succ, _paths), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
