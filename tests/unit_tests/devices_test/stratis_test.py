@@ -6,6 +6,7 @@ import blivet
 from blivet.devices import StorageDevice
 from blivet.devices import StratisPoolDevice
 from blivet.devices import StratisFilesystemDevice
+from blivet.devices.stratis import StratisClevisConfig
 from blivet.errors import StratisError, InconsistentParentSectorSize
 from blivet.size import Size
 
@@ -61,7 +62,8 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                 devices=['/dev/bd1'],
                                                                 encrypted=False,
                                                                 passphrase=None,
-                                                                key_file=None)
+                                                                key_file=None,
+                                                                clevis=None)
 
         # we would get this from pool._post_create
         pool.uuid = "c4fc9ebe-e173-4cab-8d81-cc6abddbe02d"
@@ -98,7 +100,36 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                 devices=['/dev/bd1'],
                                                                 encrypted=True,
                                                                 passphrase="secret",
-                                                                key_file=None)
+                                                                key_file=None,
+                                                                clevis=None)
+
+    def test_new_encrypted_stratis_clevis(self):
+        b = blivet.Blivet()
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
+                           size=Size("1 GiB"), exists=True)
+
+        b.devicetree._add_device(bd)
+
+        clevis = StratisClevisConfig(pin="tang", tang_url="xxx", tang_thumbprint="xxx")
+        with patch("blivet.devicetree.DeviceTree.names", []):
+            pool = b.new_stratis_pool(name="testpool", parents=[bd], passphrase="secret", encrypted=True, clevis=clevis)
+        self.assertEqual(pool.name, "testpool")
+        self.assertEqual(pool.size, bd.size)
+        self.assertTrue(pool.encrypted)
+        self.assertTrue(pool.has_key)
+
+        b.create_device(pool)
+
+        with patch("blivet.devicelibs.stratis") as stratis_dbus:
+            with patch.object(pool, "_pre_create"):
+                with patch.object(pool, "_post_create"):
+                    pool.create()
+                    stratis_dbus.create_pool.assert_called_with(name='testpool',
+                                                                devices=['/dev/bd1'],
+                                                                encrypted=True,
+                                                                passphrase="secret",
+                                                                key_file=None,
+                                                                clevis=clevis)
 
     def test_new_stratis_no_size(self):
         b = blivet.Blivet()
@@ -137,7 +168,8 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                 devices=['/dev/bd1'],
                                                                 encrypted=False,
                                                                 passphrase=None,
-                                                                key_file=None)
+                                                                key_file=None,
+                                                                clevis=None)
 
         # we would get this from pool._post_create
         pool.uuid = "c4fc9ebe-e173-4cab-8d81-cc6abddbe02d"
