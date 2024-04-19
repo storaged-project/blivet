@@ -34,7 +34,13 @@ from ..storage_log import log_method_call
 from ..errors import DeviceError, StratisError, InconsistentParentSectorSize
 from ..size import Size, ROUND_DOWN
 from ..tasks import availability
+from ..util import default_namedtuple
 from .. import devicelibs
+
+
+StratisClevisConfig = default_namedtuple("StratisClevisConfig", ["pin",
+                                                                 ("tang_url", None),
+                                                                 ("tang_thumbprint", None)])
 
 
 class StratisPoolDevice(ContainerDevice):
@@ -55,10 +61,13 @@ class StratisPoolDevice(ContainerDevice):
             :type passphrase: str
             :keyword key_file: path to a file containing a key
             :type key_file: str
+            :keyword clevis: clevis configuration
+            :type: StratisClevisConfig
         """
         self._encrypted = kwargs.pop("encrypted", False)
         self.__passphrase = kwargs.pop("passphrase", None)
         self._key_file = kwargs.pop("key_file", None)
+        self._clevis = kwargs.pop("clevis", None)
 
         super(StratisPoolDevice, self).__init__(*args, **kwargs)
 
@@ -150,7 +159,8 @@ class StratisPoolDevice(ContainerDevice):
                                        devices=bd_list,
                                        encrypted=self.encrypted,
                                        passphrase=self.__passphrase,
-                                       key_file=self._key_file)
+                                       key_file=self._key_file,
+                                       clevis=self._clevis)
 
     def _post_create(self):
         super(StratisPoolDevice, self)._post_create()
