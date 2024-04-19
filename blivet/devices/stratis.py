@@ -27,11 +27,12 @@ log = logging.getLogger("blivet")
 from collections import defaultdict
 
 from .container import ContainerDevice
+from .lib import LINUX_SECTOR_SIZE
 from .storage import StorageDevice
 from ..static_data import stratis_info
 from ..storage_log import log_method_call
 from ..errors import DeviceError, StratisError, InconsistentParentSectorSize
-from ..size import Size
+from ..size import Size, ROUND_DOWN
 from ..tasks import availability
 from .. import devicelibs
 
@@ -233,6 +234,12 @@ class StratisFilesystemDevice(StorageDevice):
     def __init__(self, name, parents=None, size=None, uuid=None, exists=False):
         if size is None:
             size = devicelibs.stratis.STRATIS_FS_SIZE
+
+        # round size down to the nearest sector
+        if not exists and size % LINUX_SECTOR_SIZE:
+            log.info("%s: rounding size %s down to the nearest sector", name, size)
+            size = size.round_to_nearest(LINUX_SECTOR_SIZE, ROUND_DOWN)
+
         if not exists and parents[0].free_space <= devicelibs.stratis.filesystem_md_size(size):
             raise StratisError("cannot create new stratis filesystem, not enough free space in the pool")
 
