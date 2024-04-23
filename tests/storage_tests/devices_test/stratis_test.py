@@ -209,7 +209,7 @@ class StratisTestCase(StorageTestCase):
 
 
 @unittest.skip("Requires TPM or Tang configuration")
-class StratisTestCaseClevis(StorageTestCase):
+class StratisTestCaseClevis(StratisTestCase):
 
     # XXX: we don't have Tang server, this test will be always skipped
     #      the test cases are kept here for manual testing

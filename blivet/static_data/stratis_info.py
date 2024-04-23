@@ -45,7 +45,7 @@ StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size"
 StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "used_size", "pool_name",
                                                              "pool_uuid", "object_path"])
 StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_name", "pool_uuid", "object_path"])
-StratisLockedPoolInfo = namedtuple("StratisLockedPoolInfo", ["uuid", "key_desc", "devices"])
+StratisLockedPoolInfo = namedtuple("StratisLockedPoolInfo", ["uuid", "key_desc", "clevis", "devices"])
 
 
 class StratisInfo(object):
@@ -165,8 +165,17 @@ class StratisInfo(object):
             if not valid:
                 log.info("Locked Stratis pool %s doesn't have a valid key description: %s", pool_uuid, description)
                 description = None
+            valid, (clevis_set, (pin, _options)) = pools_info[pool_uuid]["clevis_info"]
+            if not valid:
+                log.info("Locked Stratis pool %s doesn't have a valid clevis info", pool_uuid)
+                clevis = None
+            elif not clevis_set:
+                clevis = None
+            else:
+                clevis = pin
             info = StratisLockedPoolInfo(uuid=pool_uuid,
                                          key_desc=description,
+                                         clevis=clevis,
                                          devices=[d["devnode"] for d in pools_info[pool_uuid]["devs"]])
             locked_pools.append(info)
 

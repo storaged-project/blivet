@@ -62,6 +62,8 @@ class StratisBlockdev(DeviceFormat):
             :type passphrase: str
             :keyword key_file: path to a file containing a key
             :type key_file: str
+            :keyword locked_pool_clevis_pin: clevis PIN for locked pool (either 'tang' or 'tpm')
+            :type locked_pool_clevis_pin: str
 
             .. note::
 
@@ -78,6 +80,7 @@ class StratisBlockdev(DeviceFormat):
         self.pool_uuid = kwargs.get("pool_uuid")
         self.locked_pool = kwargs.get("locked_pool")
         self.locked_pool_key_desc = kwargs.get("locked_pool_key_desc")
+        self.locked_pool_clevis_pin = kwargs.get("locked_pool_clevis_pin")
 
         self.__passphrase = kwargs.get("passphrase")
         self._key_file = kwargs.get("key_file")
@@ -119,14 +122,17 @@ class StratisBlockdev(DeviceFormat):
         if not self.locked_pool:
             raise StratisError("This device doesn't contain a locked Stratis pool")
 
-        if not self.has_key:
+        if not self.has_key and not self.locked_pool_clevis_pin:
             raise StratisError("No passphrase/key file for the locked Stratis pool")
 
-        if not self.locked_pool_key_desc:
+        if not self.locked_pool_key_desc and not self.locked_pool_clevis_pin:
             raise StratisError("No key description for the locked Stratis pool")
 
-        stratis.set_key(self.locked_pool_key_desc, self.__passphrase, self.key_file)
-        stratis.unlock_pool(self.pool_uuid)
+        if self.has_key:
+            stratis.set_key(self.locked_pool_key_desc, self.__passphrase, self.key_file)
+            stratis.unlock_pool(self.pool_uuid, method="keyring")
+        else:
+            stratis.unlock_pool(self.pool_uuid, method="clevis")
 
 
 register_device_format(StratisBlockdev)
