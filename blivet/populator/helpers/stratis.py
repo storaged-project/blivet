@@ -83,6 +83,7 @@ class StratisFormatPopulator(FormatPopulator):
                 kwargs["locked_pool"] = True
                 kwargs["pool_uuid"] = pool.uuid
                 kwargs["locked_pool_key_desc"] = pool.key_desc
+                kwargs["locked_pool_clevis_pin"] = pool.clevis
                 return kwargs
 
         bd_info = stratis_info.blockdevs.get(uuid)

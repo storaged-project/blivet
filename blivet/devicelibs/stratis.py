@@ -173,7 +173,7 @@ def set_key(key_desc, passphrase, key_file):
             os.close(write)
 
 
-def unlock_pool(pool_uuid):
+def unlock_pool(pool_uuid, method):
     if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
@@ -182,7 +182,7 @@ def unlock_pool(pool_uuid):
                                                       STRATIS_PATH,
                                                       STRATIS_MANAGER_INTF,
                                                       "UnlockPool",
-                                                      GLib.Variant("(ss)", (pool_uuid, "keyring")))
+                                                      GLib.Variant("(ss)", (pool_uuid, method)))
     except safe_dbus.DBusCallError as e:
         raise StratisError("Failed to unlock pool: %s" % str(e))
     else:
