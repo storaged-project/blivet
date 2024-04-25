@@ -37,6 +37,9 @@ class LVMPVTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.fmt.update_size_info()
         self.assertTrue(self.fmt.resizable)
 
+        # save the pv maximum size
+        maxpvsize = self.fmt.current_size
+
         # resize the format
         new_size = Size("50 MiB")
         self.fmt.target_size = new_size
@@ -45,6 +48,13 @@ class LVMPVTestCase(loopbackedtestcase.LoopBackedTestCase):
         # get current size
         self.fmt.update_size_info()
         self.assertEqual(self.fmt.current_size, new_size)
+
+        # Test growing PV to fill all available space on the device
+        self.fmt.grow_to_fill = True
+        self.fmt.do_resize()
+
+        self.fmt.update_size_info()
+        self.assertEqual(self.fmt.current_size, maxpvsize)
 
     def _pvremove(self):
         self.fmt._destroy()
