@@ -33,7 +33,7 @@ from ..devicelibs import lvm
 from ..tasks import availability, pvtask
 from ..i18n import N_
 from ..size import Size
-from ..errors import PhysicalVolumeError
+from ..errors import DeviceFormatError, PhysicalVolumeError
 from . import DeviceFormat, register_device_format
 from .. import udev
 from ..static_data.lvm_info import pvs_info, vgs_info
@@ -98,6 +98,9 @@ class LVMPhysicalVolume(DeviceFormat):
 
         self.inconsistent_vg = False
 
+        # when set to True, blivet will try to resize the PV to fill all available space
+        self._grow_to_fill = False
+
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
         s += ("  vg_name = %(vg_name)s  vg_uuid = %(vg_uuid)s"
@@ -105,6 +108,24 @@ class LVMPhysicalVolume(DeviceFormat):
               {"vg_name": self.vg_name, "vg_uuid": self.vg_uuid,
                "pe_start": self.pe_start, "data_alignment": self.data_alignment})
         return s
+
+    @property
+    def grow_to_fill(self):
+        """
+            Can be set to True to mark format for resize so it matches size of its device.
+            (Main usecase is disk size increase on VM)
+            Uses blockdev/lvm for exact new size calculation.
+            ActionResizeFormat has to be executed to apply the change.
+            Format has to be resizable (i.e. run format.update_size_info() first) to allow this.
+        """
+        return self._grow_to_fill
+
+    @grow_to_fill.setter
+    def grow_to_fill(self, fill: bool):
+        if fill is True:
+            if not self.resizable:
+                raise DeviceFormatError("format is not resizable")
+        self._grow_to_fill = fill
 
     @property
     def dict(self):
