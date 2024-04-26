@@ -100,7 +100,7 @@ def get_new_session_connection():
 
 
 def call_sync(service, obj_path, iface, method, args,
-              connection=None, fds=None):
+              connection=None, fds=None, timeout=DEFAULT_DBUS_TIMEOUT):
     """
     Safely call a given method on a given object of a given service over DBus
     passing given arguments. If a connection is given, it is used, otherwise a
@@ -122,6 +122,8 @@ def call_sync(service, obj_path, iface, method, args,
     :type connection: Gio.DBusConnection
     :param fds: list of file descriptors for the call
     :type: Gio.UnixFDList
+    :param timeout: timeout in milliseconds for the call (-1 for default timeout)
+    :type timeout: int
     :return: unpacked value returned by the method
     :rtype: tuple with elements that depend on the method
     :raise DBusCallError: if some DBus related error appears
@@ -140,7 +142,7 @@ def call_sync(service, obj_path, iface, method, args,
     try:
         ret = connection.call_with_unix_fd_list_sync(service, obj_path, iface, method, args,
                                                      None, Gio.DBusCallFlags.NONE,
-                                                     DEFAULT_DBUS_TIMEOUT, fds, None)
+                                                     timeout, fds, None)
     except GLib.GError as gerr:
         msg = "Failed to call %s method on %s with %s arguments: %s" % \
               (method, obj_path, args, gerr.message)  # pylint: disable=no-member
