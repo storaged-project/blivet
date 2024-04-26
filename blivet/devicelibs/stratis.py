@@ -46,6 +46,8 @@ STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
 
 STRATIS_FS_SIZE = Size("1 TiB")
 
+STRATIS_CALL_TIMEOUT = 120 * 1000  # 120 s (used by stratis-cli by default) in ms
+
 
 safe_name_characters = "0-9a-zA-Z._-"
 
@@ -108,7 +110,8 @@ def remove_pool(pool_uuid):
                                                      STRATIS_PATH,
                                                      STRATIS_MANAGER_INTF,
                                                      "DestroyPool",
-                                                     GLib.Variant("(o)", (pool_info.object_path,)))
+                                                     GLib.Variant("(o)", (pool_info.object_path,)),
+                                                     timeout=STRATIS_CALL_TIMEOUT)
     except safe_dbus.DBusCallError as e:
         raise StratisError("Failed to remove stratis pool: %s" % str(e))
     else:
@@ -136,7 +139,8 @@ def remove_filesystem(pool_uuid, fs_uuid):
                                                      pool_info.object_path,
                                                      STRATIS_POOL_INTF,
                                                      "DestroyFilesystems",
-                                                     GLib.Variant("(ao)", ([fs_info.object_path],)))
+                                                     GLib.Variant("(ao)", ([fs_info.object_path],)),
+                                                     timeout=STRATIS_CALL_TIMEOUT)
     except safe_dbus.DBusCallError as e:
         raise StratisError("Failed to remove stratis filesystem: %s" % str(e))
     else:
@@ -173,7 +177,7 @@ def set_key(key_desc, passphrase, key_file):
             os.close(write)
 
 
-def unlock_pool(pool_uuid):
+def unlock_pool(pool_uuid, method):
     if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
@@ -182,7 +186,7 @@ def unlock_pool(pool_uuid):
                                                       STRATIS_PATH,
                                                       STRATIS_MANAGER_INTF,
                                                       "UnlockPool",
-                                                      GLib.Variant("(ss)", (pool_uuid, "keyring")))
+                                                      GLib.Variant("(ss)", (pool_uuid, method)))
     except safe_dbus.DBusCallError as e:
         raise StratisError("Failed to unlock pool: %s" % str(e))
     else:
@@ -190,7 +194,7 @@ def unlock_pool(pool_uuid):
             raise StratisError("Failed to unlock pool: %s" % err)
 
 
-def create_pool(name, devices, encrypted, passphrase, key_file):
+def create_pool(name, devices, encrypted, passphrase, key_file, clevis):
     if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
@@ -203,10 +207,18 @@ def create_pool(name, devices, encrypted, passphrase, key_file):
         key_desc = "blivet-%s" % name  # XXX what would be a good key description?
         set_key(key_desc, passphrase, key_file)
         key_opt = GLib.Variant("(bs)", (True, key_desc))
+        if clevis:
+            clevis_config = {"url": clevis.tang_url}
+            if clevis.tang_thumbprint:
+                clevis_config["thp"] = clevis.tang_thumbprint
+            else:
+                clevis_config["stratis:tang:trust_url"] = True
+            clevis_opt = GLib.Variant("(b(ss))", (True, (clevis.pin, json.dumps(clevis_config))))
+        else:
+            clevis_opt = GLib.Variant("(b(ss))", (False, ("", "")))
     else:
         key_opt = GLib.Variant("(bs)", (False, ""))
-
-    clevis_opt = GLib.Variant("(b(ss))", (False, ("", "")))
+        clevis_opt = GLib.Variant("(b(ss))", (False, ("", "")))
 
     try:
         ((succ, _paths), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
@@ -215,7 +227,8 @@ def create_pool(name, devices, encrypted, passphrase, key_file):
                                                         "CreatePool",
                                                         GLib.Variant("(s(bq)as(bs)(b(ss)))", (name, raid_opt,
                                                                                               devices, key_opt,
-                                                                                              clevis_opt)))
+                                                                                              clevis_opt)),
+                                                        timeout=STRATIS_CALL_TIMEOUT)
     except safe_dbus.DBusCallError as e:
         raise StratisError("Failed to create stratis pool: %s" % str(e))
     else:
@@ -247,7 +260,8 @@ def create_filesystem(name, pool_uuid, fs_size=None):
                                                         pool_info.object_path,
                                                         STRATIS_POOL_INTF,
                                                         "CreateFilesystems",
-                                                        GLib.Variant("(a(s(bs)))", ([GLib.Variant("(s(bs))", (name, size_opt))],)))
+                                                        GLib.Variant("(a(s(bs)))", ([GLib.Variant("(s(bs))", (name, size_opt))],)),
+                                                        timeout=STRATIS_CALL_TIMEOUT)
     except safe_dbus.DBusCallError as e:
         raise StratisError("Failed to create stratis filesystem on '%s': %s" % (pool_info.name, str(e)))
     else:
@@ -272,7 +286,8 @@ def add_device(pool_uuid, device):
                                                         pool_info.object_path,
                                                         STRATIS_POOL_INTF,
                                                         "AddDataDevs",
-                                                        GLib.Variant("(as)", ([device],)))
+                                                        GLib.Variant("(as)", ([device],)),
+                                                        timeout=STRATIS_CALL_TIMEOUT)
     except safe_dbus.DBusCallError as e:
         raise StratisError("Failed to create stratis filesystem on '%s': %s" % (pool_info.name, str(e)))
     else:
