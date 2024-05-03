@@ -558,13 +558,14 @@ class LVMDeviceTest(unittest.TestCase):
                             size=Size("1024 MiB"))
         pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
                             size=Size("1024 MiB"))
-        vg = LVMVolumeGroupDevice("testvg", parents=[pv1])
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv1], uuid="b0bf62ba-2a96-437e-8299-b0c5fffc43bb")
 
         vg._add_parent(pv2)
         self.assertEqual(pv2.format.vg_name, vg.name)
 
         vg._remove_parent(pv2)
         self.assertEqual(pv2.format.vg_name, None)
+        self.assertEqual(pv2.format.vg_uuid, None)
 
     def test_device_id(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
