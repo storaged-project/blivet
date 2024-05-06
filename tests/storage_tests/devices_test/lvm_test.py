@@ -81,6 +81,7 @@ class LVMTestCase(StorageTestCase):
         self.assertIsNotNone(vg.format)
         self.assertIsNone(vg.format.type)
         self.assertEqual(pv.format.vg_name, vg.name)
+        self.assertEqual(pv.format.vg_uuid, vg.uuid)
         self.assertEqual(len(vg.parents), 1)
         self.assertEqual(vg.parents[0], pv)
 
@@ -92,6 +93,13 @@ class LVMTestCase(StorageTestCase):
         self.assertEqual(lv.vg, vg)
         self.assertEqual(len(lv.parents), 1)
         self.assertEqual(lv.parents[0], vg)
+
+        self.storage.destroy_device(lv)
+        self.storage.destroy_device(vg)
+
+        pv = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "1")
+        self.assertIsNone(pv.format.vg_name)
+        self.assertIsNone(pv.format.vg_uuid)
 
     def test_lvm_thin(self):
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
@@ -398,6 +406,7 @@ class LVMTestCase(StorageTestCase):
         self.storage.devicetree.actions.add(ac)
 
         self.assertIsNone(pv1.format.vg_name)
+        self.assertIsNone(pv1.format.vg_uuid)
 
         # schedule also removing the lvmpv format from the PV
         ac = blivet.deviceaction.ActionDestroyFormat(pv1)
