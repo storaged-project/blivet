@@ -82,6 +82,11 @@ class PVResize(task.BasicApplication, dfresize.DFResizeTask):
     def do_task(self):  # pylint: disable=arguments-differ
         """ Resizes the LVMPV format. """
         try:
-            blockdev.lvm.pvresize(self.pv.device, self.pv.target_size.convert_to(self.unit))
+            if self.pv.grow_to_fill:
+                # resize PV to fill all available space on device by omitting
+                # the size parameter
+                blockdev.lvm.pvresize(self.pv.device, 0)
+            else:
+                blockdev.lvm.pvresize(self.pv.device, self.pv.target_size.convert_to(self.unit))
         except blockdev.LVMError as e:
             raise PhysicalVolumeError(e)
