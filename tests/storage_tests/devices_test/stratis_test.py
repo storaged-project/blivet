@@ -8,7 +8,7 @@ import blivet
 from blivet.devices.stratis import StratisFilesystemDevice, StratisClevisConfig
 
 
-class StratisTestCase(StorageTestCase):
+class StratisTestCaseBase(StorageTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -41,6 +41,9 @@ class StratisTestCase(StorageTestCase):
         self.storage.do_it()
 
         return super()._clean_up()
+
+
+class StratisTestCase(StratisTestCaseBase):
 
     def test_stratis_basic(self):
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
@@ -209,7 +212,7 @@ class StratisTestCase(StorageTestCase):
 
 
 @unittest.skip("Requires TPM or Tang configuration")
-class StratisTestCaseClevis(StratisTestCase):
+class StratisTestCaseClevis(StratisTestCaseBase):
 
     # XXX: we don't have Tang server, this test will be always skipped
     #      the test cases are kept here for manual testing
