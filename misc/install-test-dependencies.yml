@@ -55,6 +55,8 @@
         - targetcli
         - iscsi-initiator-utils
         - gfs2-utils
+        - stratisd
+        - stratis-cli
     when: ansible_distribution == 'Fedora' and test_dependencies|bool
 
 ####### CentOS 8/9
@@ -105,6 +107,8 @@
         - python3-pip
         - targetcli
         - iscsi-initiator-utils
+        - stratisd
+        - stratis-cli
     when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8' and test_dependencies|bool
 
   - name: Install paramiko using pip (not available in EPEL yet) (CentOS 9)
