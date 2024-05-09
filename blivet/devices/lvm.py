@@ -667,6 +667,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if modparent:
             for pv in self.pvs:
                 pv.format.vg_name = None
+                pv.format.vg_uuid = None
 
         super(LVMVolumeGroupDevice, self).remove_hook(modparent=modparent)
 
@@ -677,6 +678,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         for pv in self.pvs:
             pv.format.vg_name = self.name
+            pv.format.vg_uuid = self.uuid
 
     def populate_ksdata(self, data):
         super(LVMVolumeGroupDevice, self).populate_ksdata(data)

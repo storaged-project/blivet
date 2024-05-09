@@ -26,16 +26,24 @@ log = logging.getLogger("blivet")
 
 from collections import defaultdict
 
+from .container import ContainerDevice
+from .lib import LINUX_SECTOR_SIZE
 from .storage import StorageDevice
 from ..static_data import stratis_info
 from ..storage_log import log_method_call
 from ..errors import DeviceError, StratisError, InconsistentParentSectorSize
-from ..size import Size
+from ..size import Size, ROUND_DOWN
 from ..tasks import availability
+from ..util import default_namedtuple
 from .. import devicelibs
 
 
-class StratisPoolDevice(StorageDevice):
+StratisClevisConfig = default_namedtuple("StratisClevisConfig", ["pin",
+                                                                 ("tang_url", None),
+                                                                 ("tang_thumbprint", None)])
+
+
+class StratisPoolDevice(ContainerDevice):
     """ A stratis pool device """
 
     _type = "stratis pool"
@@ -53,10 +61,13 @@ class StratisPoolDevice(StorageDevice):
             :type passphrase: str
             :keyword key_file: path to a file containing a key
             :type key_file: str
+            :keyword clevis: clevis configuration
+            :type: StratisClevisConfig
         """
         self._encrypted = kwargs.pop("encrypted", False)
         self.__passphrase = kwargs.pop("passphrase", None)
         self._key_file = kwargs.pop("key_file", None)
+        self._clevis = kwargs.pop("clevis", None)
 
         super(StratisPoolDevice, self).__init__(*args, **kwargs)
 
@@ -153,7 +164,8 @@ class StratisPoolDevice(StorageDevice):
                                        devices=bd_list,
                                        encrypted=self.encrypted,
                                        passphrase=self.__passphrase,
-                                       key_file=self._key_file)
+                                       key_file=self._key_file,
+                                       clevis=self._clevis)
 
     def _post_create(self):
         super(StratisPoolDevice, self)._post_create()
@@ -183,6 +195,15 @@ class StratisPoolDevice(StorageDevice):
                     msg += "%s: %d\n" % (", ".join(sector_sizes[sector_size]), sector_size)
 
                 raise InconsistentParentSectorSize(msg)
+
+        parent.format.pool_name = self.name
+        parent.format.pool_uuid = self.uuid
+
+    def _add(self, member):
+        devicelibs.stratis.add_device(self.uuid, member.path)
+
+    def _remove(self, member):
+        raise DeviceError("Removing members from a Stratis pool is not supported")
 
     def _destroy(self):
         """ Destroy the device. """
@@ -223,6 +244,12 @@ class StratisFilesystemDevice(StorageDevice):
     def __init__(self, name, parents=None, size=None, uuid=None, exists=False):
         if size is None:
             size = devicelibs.stratis.STRATIS_FS_SIZE
+
+        # round size down to the nearest sector
+        if not exists and size % LINUX_SECTOR_SIZE:
+            log.info("%s: rounding size %s down to the nearest sector", name, size)
+            size = size.round_to_nearest(LINUX_SECTOR_SIZE, ROUND_DOWN)
+
         if not exists and parents[0].free_space <= devicelibs.stratis.filesystem_md_size(size):
             raise StratisError("cannot create new stratis filesystem, not enough free space in the pool")
 

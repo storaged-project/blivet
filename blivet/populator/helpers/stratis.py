@@ -21,11 +21,12 @@
 #
 
 import copy
+import json
 
 from ...callbacks import callbacks
 from ... import udev
 from ...formats import get_format
-from ...devices.stratis import StratisPoolDevice, StratisFilesystemDevice
+from ...devices.stratis import StratisPoolDevice, StratisFilesystemDevice, StratisClevisConfig
 from ...devicelibs.stratis import STRATIS_FS_SIZE
 from ...storage_log import log_method_call
 from .formatpopulator import FormatPopulator
@@ -82,6 +83,7 @@ class StratisFormatPopulator(FormatPopulator):
                 kwargs["locked_pool"] = True
                 kwargs["pool_uuid"] = pool.uuid
                 kwargs["locked_pool_key_desc"] = pool.key_desc
+                kwargs["locked_pool_clevis_pin"] = pool.clevis
                 return kwargs
 
         bd_info = stratis_info.blockdevs.get(uuid)
@@ -120,12 +122,30 @@ class StratisFormatPopulator(FormatPopulator):
         elif pool_device is None:
             # TODO: stratis duplicate pool name
 
+            if pool_info.clevis:
+                if pool_info.clevis[0] == "tang":
+                    try:
+                        data = json.loads(pool_info.clevis[1])
+                    except json.JSONDecodeError:
+                        log.warning("failed to decode tang configuration for stratis pool %s",
+                                    self.device.name)
+                        clevis_info = StratisClevisConfig(pin=pool_info.clevis[0])
+                    else:
+                        clevis_info = StratisClevisConfig(pin=pool_info.clevis[0],
+                                                          tang_url=data["url"],
+                                                          tang_thumbprint=data["thp"])
+                else:
+                    clevis_info = StratisClevisConfig(pin=pool_info.clevis[0])
+            else:
+                clevis_info = None
+
             pool_device = StratisPoolDevice(pool_info.name,
                                             parents=[self.device],
                                             uuid=pool_info.uuid,
                                             size=pool_info.physical_size,
                                             exists=True,
-                                            encrypted=pool_info.encrypted)
+                                            encrypted=pool_info.encrypted,
+                                            clevis=clevis_info)
             self._devicetree._add_device(pool_device)
 
         # now add filesystems on this pool
