@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.9.2
+Version: 3.10.0
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -109,6 +109,40 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Fri May 10 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.10.0-1
+- Added support for PV grow (japokorn)
+- misc: Add stratis-cli and stratisd to test dependencies (vtrefny)
+- tests: Add a base class for stratis tests (vtrefny)
+- Add a Stratis example with pool encryption using Clevis/Tang (vtrefny)
+- Clear VG UUID from PVs after removing the PV (#2278058) (vtrefny)
+- Use longer timeout for Stratis DBus calls (vtrefny)
+- safe-dbus: Allow using custom timeouts for the DBus calls (vtrefny)
+- Catch JSONDecodeError when parsing Stratis Clevis info (vtrefny)
+- Add support for unlocking locked Stratis pools with Clevis (vtrefny)
+- Add support for creating encrypted Stratis pool with Clevis (vtrefny)
+- Round Stratis Filesystem size down to the nearest sector (vtrefny)
+- Make sure to include stderr when gathering output of stratis tools (vtrefny)
+- Add support for adding new members to existing Stratis pool (vtrefny)
+- Base StratisPoolDevice on ContainerDevice instead of StorageDevice (vtrefny)
+- Ignore invalid/empty UUIDs for NVMe namespaces (vtrefny)
+- lvm: Use more generic exception for inconsistent PV sector sizes (vtrefny)
+- Do not allow creating stratis pools with different sector sizes (vtrefny)
+- availability: Fix starting DBus services (vtrefny)
+- fstab: Use 'mount_type' when writing filesystem type to fstab (vtrefny)
+- Add basic support for BitLocker devices (vtrefny)
+- nvme: Skip startup/write when NVMe plugin isn't available (vtrefny)
+- Fix scanning partitions on RAID arrays (#2269133) (vtrefny)
+- Add a test case with DDF BIOS RAID array (vtrefny)
+- tests: Try to get distro and version from /etc/os-release (vtrefny)
+- availability: Fix checking for DBus service availability (vtrefny)
+- ci: Update packit configuration for 3.10-devel (vtrefny)
+- Remove vim formatting comments (vtrefny)
+- tests: Do not ignore entire test files in pylint (vtrefny)
+- tests: Do not try to import mock and patch from mock (vtrefny)
+- Remove util.stringize and unicodeize functions (vtrefny)
+- Remove Python SIX usage (vtrefny)
+- Remove unused flags and do not read flags from boot command line (vtrefny)
+
 * Thu Mar 28 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.9.2-1
 - tests: Add a simple unit test for listing btrfs subvolumes (vtrefny)
 - Fix getting default subvolume ID for mounted btrfs volumes (vtrefny)

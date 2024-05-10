@@ -1,3 +1,26 @@
+3.10.0
+=======
+* `Support for creating Stratis Pools encrypted with Clevis/Tang`
+* `Support for adding new block devices to existing Stratis Pools`
+* `Automatic PV grow support`
+
+Support for creating Stratis Pools encrypted with Clevis/Tang
+--------------------------------------------------------------
+Encrypted Stratis Pools can now be created with Clevis/Tang or
+TPM2 configured.
+
+Support for adding new block devices to existing Stratis Pools
+---------------------------------------------------------------
+New block devices can now be added to existing Stratis Pools
+using the `ActionAddMember` action.
+
+
+Automatic PV grow support
+--------------------------
+LVM PVs can now be automatically grown to the size of the underlying
+block device with `ActionResizeFormat` using the new `grow_to_fill`
+property.
+
 3.9.0
 ======
 * `Fstab support`_
