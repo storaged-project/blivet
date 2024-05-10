@@ -1,18 +1,17 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>LVM VDO support &#8212; Blivet 3.9.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <title>LVM VDO support &#8212; Blivet 3.10.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/documentation_options.js?v=f8d09eac"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -30,7 +29,7 @@
         <li class="right" >
           <a href="blivet/blivet.tasks.html" title="blivet.tasks package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.9.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.10.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">LVM VDO support</a></li> 
       </ul>
     </div>  
@@ -41,12 +40,12 @@
           <div class="body" role="main">
             
   <section id="lvm-vdo-support">
-<h1>LVM VDO support<a class="headerlink" href="#lvm-vdo-support" title="Permalink to this heading">¶</a></h1>
+<h1>LVM VDO support<a class="headerlink" href="#lvm-vdo-support" title="Link to this heading">¶</a></h1>
 <p>Support for creating LVM VDO devices has been added in Blivet 3.4.</p>
 <p>These devices are similar to LVM thinly provisioned volumes, but there are some special steps
 and limitations when creating these devices which this document describes.</p>
 <section id="lvm-vdo-in-blivet">
-<h2>LVM VDO in Blivet<a class="headerlink" href="#lvm-vdo-in-blivet" title="Permalink to this heading">¶</a></h2>
+<h2>LVM VDO in Blivet<a class="headerlink" href="#lvm-vdo-in-blivet" title="Link to this heading">¶</a></h2>
 <p>LVM VDO devices are represented by two <code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice</span></code> devices:</p>
 <ul class="simple">
 <li><p>VDO Pool logical volume with type ‘lvmvdopool’</p></li>
@@ -97,7 +96,7 @@ logical volume must be removed first (<code class="docutils literal notranslate"
 <p>Managing of existing LVM VDO devices is currently not supported.</p>
 </section>
 <section id="lvm-vdo-in-devicefactory">
-<h2>LVM VDO in Devicefactory<a class="headerlink" href="#lvm-vdo-in-devicefactory" title="Permalink to this heading">¶</a></h2>
+<h2>LVM VDO in Devicefactory<a class="headerlink" href="#lvm-vdo-in-devicefactory" title="Link to this heading">¶</a></h2>
 <p>For the top-down specified creation using device factories a new <code class="docutils literal notranslate"><span class="pre">LVMVDOFactory</span></code> factory has been
 added. Factory device in this case is the VDO logical volume and is again automatically created
 together with the VDO pool.</p>
@@ -188,13 +187,13 @@ can be added by repeating the steps to create the first one.</p>
         <li class="right" >
           <a href="blivet/blivet.tasks.html" title="blivet.tasks package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.9.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.10.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">LVM VDO support</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2013-2024, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+    &#169; Copyright 2013-2024, Red Hat, Inc..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>
