@@ -1,12 +1,9 @@
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-
-import unittest
-import os
-import logging
 import copy
+import logging
+import os
+import unittest
+
+from unittest import mock
 
 from blivet import arch
 from blivet.devicelibs import edd

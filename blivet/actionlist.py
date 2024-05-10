@@ -22,7 +22,6 @@
 
 import copy
 from functools import wraps
-from six import add_metaclass
 
 from .callbacks import callbacks as _callbacks
 from .deviceaction import ActionCreateDevice
@@ -53,8 +52,7 @@ def with_flag(flag_attr):
     return run_func_with_flag_attr_set
 
 
-@add_metaclass(SynchronizedMeta)
-class ActionList(object):
+class ActionList(object, metaclass=SynchronizedMeta):
     _unsynchronized_methods = ['process']
 
     def __init__(self, addfunc=None, removefunc=None):

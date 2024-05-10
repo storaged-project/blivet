@@ -28,7 +28,6 @@ import time
 from collections import namedtuple, defaultdict
 from functools import wraps
 from enum import Enum
-import six
 
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -420,7 +419,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
                 else:
                     msg = "Disk %s cannot be added to this volume group. LVM doesn't " \
                           "allow using physical volumes with inconsistent (logical) sector sizes." % parent.name
-                raise errors.InconsistentPVSectorSize(msg)
+                raise errors.InconsistentParentSectorSize(msg)
 
         if (self.exists and parent.format.exists and
                 len(self.parents) + 1 == self.pv_count):
@@ -668,6 +667,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
         if modparent:
             for pv in self.pvs:
                 pv.format.vg_name = None
+                pv.format.vg_uuid = None
 
         super(LVMVolumeGroupDevice, self).remove_hook(modparent=modparent)
 
@@ -678,6 +678,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         for pv in self.pvs:
             pv.format.vg_name = self.name
+            pv.format.vg_uuid = self.uuid
 
     def populate_ksdata(self, data):
         super(LVMVolumeGroupDevice, self).populate_ksdata(data)
@@ -1825,8 +1826,8 @@ class LVMThinPoolMixin(object):
                 extra["profile"] = profile_name
             if self.chunk_size:
                 extra["chunksize"] = str(int(self.chunk_size))
-            data_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.data)
-            meta_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.meta)
+            data_lv = next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.data)
+            meta_lv = next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.meta)
             try:
                 blockdev.lvm.thpool_convert(self.vg.name, data_lv.lvname, meta_lv.lvname, self.lvname, **extra)
             except blockdev.LVMError as err:
@@ -2346,8 +2347,8 @@ class LVMCachePoolMixin(object):
             if self.mode:
                 # we need the string here, it will be passed directly to he lvm command
                 extra["cachemode"] = self._cache_mode
-            data_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.data)
-            meta_lv = six.next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.meta)
+            data_lv = next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.data)
+            meta_lv = next(lv for lv in self._internal_lvs if lv.int_lv_type == LVMInternalLVtype.meta)
             try:
                 blockdev.lvm.cache_pool_convert(self.vg.name, data_lv.lvname, meta_lv.lvname, self.lvname, **extra)
             except blockdev.LVMError as err:

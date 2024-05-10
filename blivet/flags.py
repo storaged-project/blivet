@@ -19,9 +19,6 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-import shlex
-
-
 class Flags(object):
 
     def __init__(self):
@@ -47,7 +44,6 @@ class Flags(object):
             self.selinux = selinux.is_selinux_enabled()
 
         self.ibft = True
-        self.noiswmd = False
 
         self.gfs2 = True
 
@@ -81,9 +77,6 @@ class Flags(object):
         # (so far only for LUKS)
         self.discard_new = False
 
-        self.boot_cmdline = {}
-
-        self.update_from_boot_cmdline()
         self.allow_imperfect_devices = True
 
         # compression option for btrfs filesystems
@@ -98,21 +91,6 @@ class Flags(object):
 
         # Allow online filesystem resizes
         self.allow_online_fs_resize = False
-
-    def get_boot_cmdline(self):
-        with open("/proc/cmdline") as f:
-            buf = f.read().strip()
-            args = shlex.split(buf)
-            for arg in args:
-                (opt, _equals, val) = arg.partition("=")
-                if val:
-                    self.boot_cmdline[opt] = val
-
-    def update_from_boot_cmdline(self):
-        self.get_boot_cmdline()
-        self.multipath = "nompath" not in self.boot_cmdline
-        self.noiswmd = "noiswmd" in self.boot_cmdline
-        self.gfs2 = "gfs2" in self.boot_cmdline
 
 
 flags = Flags()

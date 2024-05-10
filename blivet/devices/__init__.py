@@ -25,7 +25,7 @@ from .storage import StorageDevice
 from .disk import DiskDevice, DiskFile, MultipathDevice, iScsiDiskDevice, FcoeDiskDevice, DASDDevice, ZFCPDiskDevice, NVMeNamespaceDevice, NVMeFabricsNamespaceDevice
 from .partition import PartitionDevice
 from .dm import DMDevice, DMLinearDevice, DMCryptDevice, DMIntegrityDevice, DM_MAJORS
-from .luks import LUKSDevice, IntegrityDevice
+from .luks import LUKSDevice, IntegrityDevice, BITLKDevice
 from .lvm import LVMVolumeGroupDevice, LVMLogicalVolumeDevice
 from .md import MDBiosRaidArrayDevice, MDContainerDevice, MDRaidArrayDevice, MD_MAJORS
 from .btrfs import BTRFSDevice, BTRFSVolumeDevice, BTRFSSubVolumeDevice, BTRFSSnapShotDevice

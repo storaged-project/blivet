@@ -1,12 +1,7 @@
-try:
-    from unittest.mock import call, patch, sentinel, Mock, PropertyMock
-except ImportError:
-    from mock import call, patch, sentinel, Mock, PropertyMock
+import unittest
+from unittest.mock import call, patch, sentinel, Mock, PropertyMock
 
 import gi
-import six
-import unittest
-
 gi.require_version("BlockDev", "3.0")
 from gi.repository import BlockDev as blockdev
 
@@ -39,6 +34,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
 
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
     @patch("blivet.udev.device_is_dm_integrity", return_value=False)
+    @patch("blivet.udev.device_is_dm_bitlk", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=False)
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
@@ -60,6 +56,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
 
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
     @patch("blivet.udev.device_is_dm_integrity", return_value=False)
+    @patch("blivet.udev.device_is_dm_bitlk", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=False)
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
@@ -137,6 +134,7 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch("blivet.udev.device_is_dm", return_value=False)
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
     @patch("blivet.udev.device_is_dm_integrity", return_value=False)
+    @patch("blivet.udev.device_is_dm_bitlk", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=False)
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_md", return_value=False)
@@ -220,6 +218,7 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch("blivet.udev.device_is_md", return_value=False)
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
     @patch("blivet.udev.device_is_dm_integrity", return_value=False)
+    @patch("blivet.udev.device_is_dm_bitlk", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=True)
     def test_get_helper(self, *args):
         """Test get_device_helper for lvm devices."""
@@ -294,6 +293,7 @@ class OpticalDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch("blivet.udev.device_is_dm_lvm", return_value=False)
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
     @patch("blivet.udev.device_is_dm_integrity", return_value=False)
+    @patch("blivet.udev.device_is_dm_bitlk", return_value=False)
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_loop", return_value=False)
     @patch("blivet.udev.device_is_md", return_value=False)
@@ -356,6 +356,7 @@ class PartitionDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch("blivet.udev.device_is_dm", return_value=False)
     @patch("blivet.udev.device_is_dm_luks", return_value=False)
     @patch("blivet.udev.device_is_dm_integrity", return_value=False)
+    @patch("blivet.udev.device_is_dm_bitlk", return_value=False)
     @patch("blivet.udev.device_is_dm_lvm", return_value=False)
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
@@ -1061,7 +1062,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         def gdbu(uuid, **kwargs):  # pylint: disable=unused-argument
             # This version doesn't check format UUIDs
-            return six.next((d for d in devicetree.devices if d.uuid == uuid), None)
+            return next((d for d in devicetree.devices if d.uuid == uuid), None)
         get_device_by_uuid.side_effect = gdbu
 
         with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:

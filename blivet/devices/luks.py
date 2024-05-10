@@ -258,3 +258,11 @@ class IntegrityDevice(DMIntegrityDevice):
     def _post_create(self):
         self.name = self.raw_device.format.map_name
         StorageDevice._post_create(self)
+
+
+class BITLKDevice(DMCryptDevice):
+
+    """ A mapped BITLK device. """
+    _type = "bitlk/dm-crypt"
+    _resizable = False
+    _packages = ["cryptsetup"]

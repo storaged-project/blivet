@@ -41,11 +41,11 @@ STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev.r0"
 STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
 
 
-StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "physical_used", "object_path", "encrypted"])
+StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "physical_used", "object_path", "encrypted", "clevis"])
 StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "used_size", "pool_name",
                                                              "pool_uuid", "object_path"])
 StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_name", "pool_uuid", "object_path"])
-StratisLockedPoolInfo = namedtuple("StratisLockedPoolInfo", ["uuid", "key_desc", "devices"])
+StratisLockedPoolInfo = namedtuple("StratisLockedPoolInfo", ["uuid", "key_desc", "clevis", "devices"])
 
 
 class StratisInfo(object):
@@ -78,9 +78,16 @@ class StratisInfo(object):
                         properties["Name"], pool_used)
             pool_used = 0
 
+        clevis_info = properties.get("ClevisInfo", None)
+        if not clevis_info or not clevis_info[0] or not clevis_info[1][0]:
+            clevis = None
+        else:
+            clevis = clevis_info[1][1]
+
         return StratisPoolInfo(name=properties["Name"], uuid=properties["Uuid"],
                                physical_size=Size(pool_size), physical_used=Size(pool_used),
-                               object_path=pool_path, encrypted=properties["Encrypted"])
+                               object_path=pool_path, encrypted=properties["Encrypted"],
+                               clevis=clevis)
 
     def _get_filesystem_info(self, filesystem_path):
         try:
@@ -158,8 +165,17 @@ class StratisInfo(object):
             if not valid:
                 log.info("Locked Stratis pool %s doesn't have a valid key description: %s", pool_uuid, description)
                 description = None
+            valid, (clevis_set, (pin, _options)) = pools_info[pool_uuid]["clevis_info"]
+            if not valid:
+                log.info("Locked Stratis pool %s doesn't have a valid clevis info", pool_uuid)
+                clevis = None
+            elif not clevis_set:
+                clevis = None
+            else:
+                clevis = pin
             info = StratisLockedPoolInfo(uuid=pool_uuid,
                                          key_desc=description,
+                                         clevis=clevis,
                                          devices=[d["devnode"] for d in pools_info[pool_uuid]["devs"]])
             locked_pools.append(info)
 

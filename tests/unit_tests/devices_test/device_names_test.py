@@ -1,11 +1,5 @@
-# vim:set fileencoding=utf-8
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
-
-import six
 import unittest
+from unittest.mock import patch
 
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
@@ -53,7 +47,7 @@ class DeviceNameTestCase(unittest.TestCase):
                 if ' is not a valid name for this device' in str(e):
                     self.fail("Device name checked on already existing device")
 
-            with six.assertRaisesRegex(self, ValueError, ' is not a valid name for this device'):
+            with self.assertRaisesRegex(ValueError, ' is not a valid name for this device'):
                 StorageDevice(name, exists=False)
 
     def test_volume_group(self):

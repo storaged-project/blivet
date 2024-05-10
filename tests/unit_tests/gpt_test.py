@@ -20,11 +20,7 @@
 
 import unittest
 from uuid import UUID
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 from blivet.devicelibs import gpt
 from blivet.errors import GPTVolUUIDError

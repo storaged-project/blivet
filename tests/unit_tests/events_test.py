@@ -1,10 +1,6 @@
-try:
-    from unittest.mock import patch, Mock
-except ImportError:
-    from mock import patch, Mock
-
 import time
 from unittest import TestCase
+from unittest.mock import patch, Mock
 
 from blivet.events.manager import Event, EventManager
 

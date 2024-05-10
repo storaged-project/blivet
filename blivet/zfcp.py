@@ -26,7 +26,6 @@ import glob
 from . import udev
 from . import util
 from .i18n import _
-from .util import stringize, unicodeize
 
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -112,10 +111,7 @@ class ZFCPDeviceBase(ABC):
         return str(self.devnum)
 
     def __str__(self):
-        return stringize(self._to_string())
-
-    def __unicode__(self):
-        return unicodeize(self._to_string())
+        return self._to_string()
 
     def _free_device(self):
         """Remove the device from the I/O ignore list to make it visible to the system.
@@ -566,5 +562,3 @@ class zFCP:
 
 # Create ZFCP singleton
 zfcp = zFCP()
-
-# vim:tw=78:ts=4:et:sw=4

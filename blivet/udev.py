@@ -718,6 +718,17 @@ def device_is_dm_integrity(info):
     return _type.startswith("integrity")
 
 
+def device_is_dm_bitlk(info):
+    """ Return True if the device is a mapped BITLK device. """
+    is_crypt = device_dm_subsystem_match(info, "crypt")
+    try:
+        _type = info.get("DM_UUID", "").split("-")[1].lower()
+    except IndexError:
+        _type = ""
+
+    return is_crypt and _type.startswith("bitlk")
+
+
 def device_is_dm_raid(info):
     """ Return True if the device is a dmraid array device. """
     return device_dm_subsystem_match(info, "dmraid")

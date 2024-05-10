@@ -23,7 +23,6 @@
 
 import os
 import importlib
-from six import add_metaclass
 
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -135,8 +134,7 @@ def get_device_format_class(fmt_type):
     return fmt
 
 
-@add_metaclass(SynchronizedMeta)
-class DeviceFormat(ObjectID):
+class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
 
     """ Generic device format.
 
@@ -424,7 +422,9 @@ class DeviceFormat(ObjectID):
         if not self.resizable:
             raise FormatResizeError("format not resizable", self.device)
 
-        if self.target_size == self.current_size:
+        # skip if sizes are equal unless grow to fill on lvmpv is requested
+        if (self.target_size == self.current_size and
+                (self.type != "lvmpv" or not self.grow_to_fill)):  # pylint: disable=no-member
             return
 
         if not self._resize.available:

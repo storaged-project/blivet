@@ -44,7 +44,6 @@
         - python3-coverage
         - python3-pocketlint
         - python3-pycodestyle
-        - python3-six
         - python3-pyudev
         - python3-pyparted
         - libselinux-python3
@@ -56,6 +55,8 @@
         - targetcli
         - iscsi-initiator-utils
         - gfs2-utils
+        - stratisd
+        - stratis-cli
     when: ansible_distribution == 'Fedora' and test_dependencies|bool
 
 ####### CentOS 8/9
@@ -96,7 +97,6 @@
         - xfsprogs
         - python3-coverage
         - python3-pycodestyle
-        - python3-six
         - python3-pyudev
         - python3-pyparted
         - libselinux-python3
@@ -107,6 +107,8 @@
         - python3-pip
         - targetcli
         - iscsi-initiator-utils
+        - stratisd
+        - stratis-cli
     when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8' and test_dependencies|bool
 
   - name: Install paramiko using pip (not available in EPEL yet) (CentOS 9)

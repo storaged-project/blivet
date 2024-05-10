@@ -21,13 +21,11 @@
 
 import abc
 
-from six import add_metaclass
 
 from . import task
 
 
-@add_metaclass(abc.ABCMeta)
-class FSTask(task.Task):
+class FSTask(task.Task, metaclass=abc.ABCMeta):
 
     """ An abstract class that encapsulates the fact that all FSTasks
         have a single master object: the filesystem that they belong to.

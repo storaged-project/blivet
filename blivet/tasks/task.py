@@ -21,11 +21,8 @@
 
 import abc
 
-from six import add_metaclass
 
-
-@add_metaclass(abc.ABCMeta)
-class Task(object):
+class Task(object, metaclass=abc.ABCMeta):
 
     """ An abstract class that represents some task. """
 
@@ -82,8 +79,7 @@ class UnimplementedTask(Task):
         raise NotImplementedError()
 
 
-@add_metaclass(abc.ABCMeta)
-class BasicApplication(Task):
+class BasicApplication(Task, metaclass=abc.ABCMeta):
 
     """ A task representing an application. """
 

@@ -1,10 +1,5 @@
-try:
-    from unittest.mock import patch, sentinel, DEFAULT
-except ImportError:
-    from mock import patch, sentinel, DEFAULT
-
-import six
 import unittest
+from unittest.mock import patch, sentinel, DEFAULT
 
 from blivet.actionlist import ActionList
 from blivet.deviceaction import ActionDestroyFormat
@@ -25,23 +20,15 @@ class UnsupportedDiskLabelTestCase(unittest.TestCase):
                            fmt=get_format("disklabel", exists=True))
         disk1.format._supported = False
 
-        if six.PY3:
-            with self.assertLogs("blivet", level="INFO") as cm:
-                partition1 = PartitionDevice("testpart1", size=Size("150 GiB"), exists=True,
-                                             parents=[disk1], fmt=get_format("ext4", exists=True))
-            self.assertTrue("disklabel is unsupported" in "\n".join(cm.output))
-        else:
+        with self.assertLogs("blivet", level="INFO") as cm:
             partition1 = PartitionDevice("testpart1", size=Size("150 GiB"), exists=True,
                                          parents=[disk1], fmt=get_format("ext4", exists=True))
+        self.assertTrue("disklabel is unsupported" in "\n".join(cm.output))
 
-        if six.PY3:
-            with self.assertLogs("blivet", level="INFO") as cm:
-                partition2 = PartitionDevice("testpart2", size=Size("100 GiB"), exists=True,
-                                             parents=[disk1], fmt=get_format("lvmpv", exists=True))
-            self.assertTrue("disklabel is unsupported" in "\n".join(cm.output))
-        else:
+        with self.assertLogs("blivet", level="INFO") as cm:
             partition2 = PartitionDevice("testpart2", size=Size("100 GiB"), exists=True,
                                          parents=[disk1], fmt=get_format("lvmpv", exists=True))
+        self.assertTrue("disklabel is unsupported" in "\n".join(cm.output))
 
         # To be supported, all of a devices ancestors must be supported.
         disk2 = DiskDevice("testdisk2", size=Size("300 GiB"), exists=True,

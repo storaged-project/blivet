@@ -1,10 +1,5 @@
-try:
-    from unittest.mock import patch, PropertyMock
-except ImportError:
-    from mock import patch, PropertyMock
-
-import six
 import unittest
+from unittest.mock import patch, PropertyMock
 
 import blivet
 
@@ -32,10 +27,10 @@ class LVMDeviceTest(unittest.TestCase):
         lv = LVMLogicalVolumeDevice("testlv", parents=[vg],
                                     fmt=blivet.formats.get_format("xfs"))
 
-        with six.assertRaisesRegex(self, errors.DeviceError, "lvm snapshot origin must be a logical volume"):
+        with self.assertRaisesRegex(errors.DeviceError, "lvm snapshot origin must be a logical volume"):
             LVMLogicalVolumeDevice("snap1", parents=[vg], origin=pv)
 
-        with six.assertRaisesRegex(self, errors.DeviceError, "only existing vorigin snapshots are supported"):
+        with self.assertRaisesRegex(errors.DeviceError, "only existing vorigin snapshots are supported"):
             LVMLogicalVolumeDevice("snap1", parents=[vg], vorigin=True)
 
         lv.exists = True
@@ -60,7 +55,7 @@ class LVMDeviceTest(unittest.TestCase):
         pool = LVMLogicalVolumeDevice("pool1", parents=[vg], size=Size("500 MiB"), seg_type="thin-pool")
         thinlv = LVMLogicalVolumeDevice("thinlv", parents=[pool], size=Size("200 MiB"), seg_type="thin")
 
-        with six.assertRaisesRegex(self, errors.DeviceError, "lvm snapshot origin must be a logical volume"):
+        with self.assertRaisesRegex(errors.DeviceError, "lvm snapshot origin must be a logical volume"):
             LVMLogicalVolumeDevice("snap1", parents=[pool], origin=pv, seg_type="thin")
 
         # now make the constructor succeed so we can test some properties
@@ -411,16 +406,16 @@ class LVMDeviceTest(unittest.TestCase):
         self.assertEqual(lv.size, orig_size)
 
         # ValueError if size smaller than min_size
-        with six.assertRaisesRegex(self, ValueError,
-                                   "size.*smaller than the minimum"):
+        with self.assertRaisesRegex(ValueError,
+                                    "size.*smaller than the minimum"):
             lv.target_size = Size("1 MiB")
 
         # target size should be unchanged
         self.assertEqual(lv.target_size, orig_size)
 
         # ValueError if size larger than max_size
-        with six.assertRaisesRegex(self, ValueError,
-                                   "size.*larger than the maximum"):
+        with self.assertRaisesRegex(ValueError,
+                                    "size.*larger than the maximum"):
             lv.target_size = Size("1 GiB")
 
         # target size should be unchanged
@@ -445,7 +440,7 @@ class LVMDeviceTest(unittest.TestCase):
 
         with patch("blivet.devices.StorageDevice.sector_size", new_callable=PropertyMock) as mock_property:
             mock_property.__get__ = lambda _mock, pv, _class: 512 if pv.name == "pv1" else 4096
-            with six.assertRaisesRegex(self, ValueError, "Cannot create volume group"):
+            with self.assertRaisesRegex(errors.InconsistentParentSectorSize, "Cannot create volume group"):
                 LVMVolumeGroupDevice("testvg", parents=[pv, pv2])
 
     def test_skip_activate(self):
@@ -563,13 +558,14 @@ class LVMDeviceTest(unittest.TestCase):
                             size=Size("1024 MiB"))
         pv2 = StorageDevice("pv2", fmt=blivet.formats.get_format("lvmpv"),
                             size=Size("1024 MiB"))
-        vg = LVMVolumeGroupDevice("testvg", parents=[pv1])
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv1], uuid="b0bf62ba-2a96-437e-8299-b0c5fffc43bb")
 
         vg._add_parent(pv2)
         self.assertEqual(pv2.format.vg_name, vg.name)
 
         vg._remove_parent(pv2)
         self.assertEqual(pv2.format.vg_name, None)
+        self.assertEqual(pv2.format.vg_uuid, None)
 
     def test_device_id(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
@@ -920,17 +916,17 @@ class BlivetLVMVDODependenciesTest(BlivetLVMUnitTest):
                                 "libblockdev lvm plugin",
                                 "libblockdev lvm plugin (vdo technology)"]
         pool_deps = [d.name for d in vdopool.external_dependencies]
-        six.assertCountEqual(self, pool_deps, lvm_vdo_dependencies)
+        self.assertCountEqual(pool_deps, lvm_vdo_dependencies)
 
         vdolv_deps = [d.name for d in vdolv.external_dependencies]
-        six.assertCountEqual(self, vdolv_deps, lvm_vdo_dependencies)
+        self.assertCountEqual(vdolv_deps, lvm_vdo_dependencies)
 
         # same dependencies should be returned when checking with class not instance
         pool_type_deps = [d.name for d in LVMVDOPoolMixin.type_external_dependencies()]
-        six.assertCountEqual(self, pool_type_deps, lvm_vdo_dependencies)
+        self.assertCountEqual(pool_type_deps, lvm_vdo_dependencies)
 
         vdolv_type_deps = [d.name for d in LVMVDOLogicalVolumeMixin.type_external_dependencies()]
-        six.assertCountEqual(self, vdolv_type_deps, lvm_vdo_dependencies)
+        self.assertCountEqual(vdolv_type_deps, lvm_vdo_dependencies)
 
         with patch("blivet.blivet.Blivet.names", new=[]):
             # just to be sure LVM VDO specific code didn't break "normal" LVs
@@ -939,8 +935,7 @@ class BlivetLVMVDODependenciesTest(BlivetLVMUnitTest):
                                      size=blivet.size.Size("1 GiB"))
 
         normalvl_deps = [d.name for d in normallv.external_dependencies]
-        six.assertCountEqual(self, normalvl_deps, ["libblockdev dm plugin",
-                                                   "libblockdev lvm plugin"])
+        self.assertCountEqual(normalvl_deps, ["libblockdev dm plugin", "libblockdev lvm plugin"])
 
         with patch("blivet.devices.lvm.LVMVDOPoolMixin._external_dependencies",
                    new=[blivet.tasks.availability.unavailable_resource("VDO unavailability test")]):
@@ -951,22 +946,22 @@ class BlivetLVMVDODependenciesTest(BlivetLVMUnitTest):
                 lvm_type_deps = [d.name for d in LVMLogicalVolumeDevice.unavailable_type_dependencies()]
 
                 pool_deps = [d.name for d in vdopool.unavailable_dependencies]
-                six.assertCountEqual(self, pool_deps, ["VDO unavailability test"] + lvm_type_deps)
+                self.assertCountEqual(pool_deps, ["VDO unavailability test"] + lvm_type_deps)
 
                 vdolv_deps = [d.name for d in vdolv.unavailable_dependencies]
-                six.assertCountEqual(self, vdolv_deps, ["VDO unavailability test"] + lvm_type_deps)
+                self.assertCountEqual(vdolv_deps, ["VDO unavailability test"] + lvm_type_deps)
 
                 # same dependencies should be returned when checking with class not instance
                 pool_type_deps = [d.name for d in LVMVDOPoolMixin.unavailable_type_dependencies()]
-                six.assertCountEqual(self, pool_type_deps,
-                                     ["VDO unavailability test"] + lvm_type_deps)
+                self.assertCountEqual(pool_type_deps,
+                                      ["VDO unavailability test"] + lvm_type_deps)
 
                 vdolv_type_deps = [d.name for d in LVMVDOLogicalVolumeMixin.unavailable_type_dependencies()]
-                six.assertCountEqual(self, vdolv_type_deps,
-                                     ["VDO unavailability test"] + lvm_type_deps)
+                self.assertCountEqual(vdolv_type_deps,
+                                      ["VDO unavailability test"] + lvm_type_deps)
 
                 normallv_deps = [d.name for d in normallv.unavailable_dependencies]
-                six.assertCountEqual(self, normallv_deps, lvm_type_deps)
+                self.assertCountEqual(normallv_deps, lvm_type_deps)
 
                 with self.assertRaises(errors.DependencyError):
                     self.b.create_device(vdopool)

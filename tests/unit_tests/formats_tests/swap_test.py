@@ -1,4 +1,3 @@
-import six
 import unittest
 
 from blivet.devices.storage import StorageDevice
@@ -17,7 +16,7 @@ class SwapNodevTestCase(unittest.TestCase):
         StorageDevice("dev", size=Size("15 TiB"),
                       fmt=get_format("swap"))
 
-        with six.assertRaisesRegex(self, DeviceError, "device is too large for new format"):
+        with self.assertRaisesRegex(DeviceError, "device is too large for new format"):
             StorageDevice("dev", size=Size("17 TiB"),
                           fmt=get_format("swap"))
 
