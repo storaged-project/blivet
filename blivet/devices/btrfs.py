@@ -40,7 +40,7 @@ from .. import util
 from ..formats import get_format, DeviceFormat
 from ..size import Size
 from ..mounts import mounts_cache
-from .. import missing_plugs
+from .. import avail_plugs
 
 import logging
 log = logging.getLogger("blivet")
@@ -382,7 +382,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
     def list_subvolumes(self, snapshots_only=False):
         subvols = []
 
-        if "btrfs" in missing_plugs:
+        if "btrfs" not in avail_plugs:
             log.debug("not listing btrfs subvolumes, libblockdev btrfs plugin is missing")
             return subvols
 

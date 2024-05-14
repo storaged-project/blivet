@@ -83,7 +83,7 @@ class BlivetNewBtrfsVolumeDeviceTest(unittest.TestCase):
 
                 # mounted but libblockdev btrfs plugin not available
                 blockdev.reset_mock()
-                with patch("blivet.devices.btrfs.missing_plugs", new={"btrfs"}):
+                with patch("blivet.devices.btrfs.avail_plugs", new={"lvm"}):
                     vol.list_subvolumes()
                     blockdev.list_subvolumes.assert_not_called()
                     blockdev.get_default_subvolume_id.assert_not_called()
