@@ -155,6 +155,8 @@ def set_key(key_desc, passphrase, key_file):
         fd = read
     elif key_file:
         fd = os.open(key_file, os.O_RDONLY)
+    else:
+        raise RuntimeError("Passphrase or key file must be provided")
 
     fd_list = Gio.UnixFDList()
     fd_list.append(fd)
