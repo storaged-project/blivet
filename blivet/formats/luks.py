@@ -400,6 +400,8 @@ class LUKS(DeviceFormat):
             context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
         elif self._key_file:
             context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
+        else:
+            raise LUKSError("luks device not configured")
 
         ncontext = blockdev.CryptoKeyslotContext(passphrase=passphrase)
 

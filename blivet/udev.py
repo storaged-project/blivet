@@ -86,6 +86,8 @@ def get_device(sysfs_path=None, device_node=None):
             device = pyudev.Devices.from_sys_path(global_udev, sysfs_path)
         elif device_node is not None:
             device = pyudev.Devices.from_device_file(global_udev, device_node)
+        else:
+            raise RuntimeError("At least one of 'sysfs_path' and 'device_node' must be specified")
     except pyudev.DeviceNotFoundError as e:
         log.error(e)
         result = None
