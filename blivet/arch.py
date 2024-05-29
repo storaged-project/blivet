@@ -218,8 +218,11 @@ def is_t2mac():
     elif not os.path.isfile(DMI_PRODUCT_NAME):
         t2_mac = False
     else:
-        buf = read_file(DMI_PRODUCT_NAME).strip()
-        t2_mac = (buf in APPLE_T2_PRODUCT_NAMES)
+        try:
+            buf = read_file(DMI_PRODUCT_NAME).strip()
+            t2_mac = (buf in APPLE_T2_PRODUCT_NAMES)
+        except UnicodeDecodeError:
+            t2_mac = False
     return t2_mac
 
 
