@@ -26,7 +26,7 @@ from .object import DBusObject
 class DBusFormat(DBusObject):
     def __init__(self, fmt, manager):
         self._format = fmt
-        super(DBusFormat, self).__init__(manager)
+        super().__init__(manager)
 
     @property
     def id(self):
@@ -39,7 +39,7 @@ class DBusFormat(DBusObject):
         else:
             base = FORMAT_REMOVED_OBJECT_PATH_BASE
 
-        return "%s/%s" % (base, self.id)
+        return "{}/{}".format(base, self.id)
 
     @property
     def interface(self):

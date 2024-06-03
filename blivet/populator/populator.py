@@ -69,7 +69,7 @@ def parted_exn_handler(exn_type, exn_options, exn_msg):
     return ret
 
 
-class PopulatorMixin(object, metaclass=SynchronizedMeta):
+class PopulatorMixin(metaclass=SynchronizedMeta):
     def __init__(self, disk_images=None):
         """
             :keyword disk_images: dictoinary of disk images
@@ -109,7 +109,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             raise NoParentsError("no parents found for device %s" % name)
 
         for parent_name in parent_names:
-            path = os.path.normpath("%s/%s" % (parent_dir, parent_name))
+            path = os.path.normpath("{}/{}".format(parent_dir, parent_name))
             parent_info = udev.get_device(os.path.realpath(path))
 
             if not parent_info:
@@ -133,7 +133,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
                     # if the current parent is still not in
                     # the tree, something has gone wrong
                     log.error("failure scanning device %s: could not add parent %s", name, parent_name)
-                    msg = "failed to add parent %s of device %s" % (parent_name, name)
+                    msg = "failed to add parent {} of device {}".format(parent_name, name)
                     raise DeviceTreeError(msg)
 
             parent_devices.append(parent_dev)

@@ -19,7 +19,7 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-class Flags(object):
+class Flags:
 
     def __init__(self):
         #

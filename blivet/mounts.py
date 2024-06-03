@@ -30,7 +30,7 @@ log = logging.getLogger("blivet")
 import os
 
 
-class _MountinfoCache(object):
+class _MountinfoCache:
 
     """ Cache for info from /proc/self/mountinfo. Looks up the root of the
         mount within the filesystem using a pair of mountpoint, mount
@@ -84,7 +84,7 @@ class _MountinfoCache(object):
         return self._cache.get((devspec, mountpoint))
 
 
-class MountsCache(object):
+class MountsCache:
 
     """ Cache object for system mountpoints; checks /proc/mounts and
         /proc/self/mountinfo for up-to-date information.

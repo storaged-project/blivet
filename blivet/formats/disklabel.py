@@ -118,11 +118,11 @@ class DiskLabel(DeviceFormat):
 
     @property
     def desc(self):
-        return "%s %s" % (self.label_type, self.type)
+        return "{} {}".format(self.label_type, self.type)
 
     @property
     def dict(self):
-        d = super(DiskLabel, self).dict
+        d = super().dict
         if flags.testing:
             return d
 
@@ -314,10 +314,10 @@ class DiskLabel(DeviceFormat):
     @property
     def name(self):
         if not self.label_type:
-            return "%(name)s" % {"name": _(self._name)}
+            return "{name}".format(name=_(self._name))
 
         if self.supported:
-            return "%(name)s (%(type)s)" % {"name": _(self._name), "type": self.label_type.upper()}
+            return "{name} ({type})".format(name=_(self._name), type=self.label_type.upper())
         else:
             # Translators: Name for an unsupported disklabel; e.g. "Unsupported partition table"
             return _("Unsupported %(name)s") % {"name": _(self._name)}

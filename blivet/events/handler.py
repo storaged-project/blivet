@@ -35,7 +35,7 @@ log = logging.getLogger("blivet")
 event_log = logging.getLogger("blivet.event")
 
 
-class EventHandlerMixin(object, metaclass=SynchronizedMeta):
+class EventHandlerMixin(metaclass=SynchronizedMeta):
     def __init__(self):
         event_manager.handler_cb = self.handle_event
 

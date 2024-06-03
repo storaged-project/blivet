@@ -116,7 +116,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         # avoid attribute-defined-outside-init pylint warning
         self._level = None
 
-        super(MDRaidArrayDevice, self).__init__(name, uuid=uuid,
+        super().__init__(name, uuid=uuid,
                                                 exists=exists, size=size,
                                                 parents=parents,
                                                 sysfs_path=sysfs_path)
@@ -207,7 +207,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             # Least common multiple of parents' sector sizes
             return reduce(lambda a, b: a * b // math.gcd(a, b), (int(p.sector_size) for p in self.parents))
 
-        return super(MDRaidArrayDevice, self).sector_size
+        return super().sector_size
 
     @property
     def chunk_size(self):
@@ -325,7 +325,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
 
     @property
     def dict(self):
-        d = super(MDRaidArrayDevice, self).dict
+        d = super().dict
         d.update({"level": str(self.level),
                   "spares": self.spares, "member_devices": self.member_devices,
                   "total_devices": self.total_devices,
@@ -389,7 +389,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
     spares = property(_get_spares, _set_spares)
 
     def _add_parent(self, parent):
-        super(MDRaidArrayDevice, self)._add_parent(parent)
+        super()._add_parent(parent)
 
         if self.status and parent.format.exists:
             # we always probe since the device may not be set up when we want
@@ -417,7 +417,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         if error_msg:
             raise errors.DeviceError(error_msg)
 
-        super(MDRaidArrayDevice, self)._remove_parent(parent)
+        super()._remove_parent(parent)
         self.member_devices -= 1
 
     @property
@@ -466,7 +466,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             return
 
         member_name = os.path.basename(member.sysfs_path)
-        path = "/sys/%s/md/dev-%s/state" % (self.sysfs_path, member_name)
+        path = "/sys/{}/md/dev-{}/state".format(self.sysfs_path, member_name)
         try:
             state = util.read_file(path).strip()
         except OSError:
@@ -508,7 +508,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                 all(getattr(p, "bootable", False) for p in self.parents))
 
     def _post_setup(self):
-        super(MDRaidArrayDevice, self)._post_setup()
+        super()._post_setup()
         self.update_sysfs_path()
 
     def _setup(self, orig=False):
@@ -526,7 +526,7 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
             raise errors.MDRaidError(err)
 
     def _post_teardown(self, recursive=False):
-        super(MDRaidArrayDevice, self)._post_teardown(recursive=recursive)
+        super()._post_teardown(recursive=recursive)
         # mdadm reuses minors indiscriminantly when there is no mdadm.conf, so
         # we need to clear the sysfs path now so our status method continues to
         # give valid results
@@ -686,13 +686,13 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         return self.exists and self.parents and all(p.is_disk for p in self.members)
 
     def dracut_setup_args(self):
-        return set(["rd.md.uuid=%s" % self.mdadm_format_uuid])
+        return {"rd.md.uuid=%s" % self.mdadm_format_uuid}
 
     def populate_ksdata(self, data):
         if self.is_disk:
             return
 
-        super(MDRaidArrayDevice, self).populate_ksdata(data)
+        super().populate_ksdata(data)
         data.level = self.level.name
         data.spares = self.spares
         data.members = ["raid.%d" % p.id for p in self.parents]
@@ -712,7 +712,7 @@ class MDContainerDevice(MDRaidArrayDevice):
 
     def __init__(self, name, **kwargs):
         kwargs['level'] = raid.Container
-        super(MDContainerDevice, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
 
     @property
     def _levels(self):
@@ -728,7 +728,7 @@ class MDContainerDevice(MDRaidArrayDevice):
         if not uuid:
             raise errors.DeviceError("array %s is not fully defined" % self.name)
 
-        return "ARRAY %s UUID=%s\n" % (self.path, uuid)
+        return "ARRAY {} UUID={}\n".format(self.path, uuid)
 
     @property
     def _true_status_strings(self):
@@ -769,7 +769,7 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
     _partitionable = True
 
     def __init__(self, name, **kwargs):
-        super(MDBiosRaidArrayDevice, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
 
         # For container members probe size now, as we cannot determine it
         # when teared down.
@@ -804,7 +804,7 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
         if not uuid:
             raise errors.DeviceError("array %s is not fully defined" % self.name)
 
-        return "ARRAY %s UUID=%s\n" % (self.path, uuid)
+        return "ARRAY {} UUID={}\n".format(self.path, uuid)
 
     @property
     def members(self):

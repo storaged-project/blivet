@@ -54,7 +54,7 @@ def create_iscsi_target(fpath, initiator_name=None):
 
     # "register" the backing file as a fileio backstore
     store_name = os.path.basename(fpath)
-    status = subprocess.call(["targetcli", "/backstores/fileio/ create %s %s" % (store_name, fpath)], stdout=subprocess.DEVNULL)
+    status = subprocess.call(["targetcli", "/backstores/fileio/ create {} {}".format(store_name, fpath)], stdout=subprocess.DEVNULL)
     if status != 0:
         raise RuntimeError("Failed to register '%s' as a fileio backstore" % fpath)
 
@@ -78,13 +78,13 @@ def create_iscsi_target(fpath, initiator_name=None):
         raise RuntimeError("Failed to create a new iscsi target")
 
     with udev_settle():
-        status = subprocess.call(["targetcli", "/iscsi/%s/tpg1/luns create /backstores/fileio/%s" % (iqn, store_name)], stdout=subprocess.DEVNULL)
+        status = subprocess.call(["targetcli", "/iscsi/{}/tpg1/luns create /backstores/fileio/{}".format(iqn, store_name)], stdout=subprocess.DEVNULL)
     if status != 0:
         delete_iscsi_target(iqn, store_name)
-        raise RuntimeError("Failed to create a new LUN for '%s' using '%s'" % (iqn, store_name))
+        raise RuntimeError("Failed to create a new LUN for '{}' using '{}'".format(iqn, store_name))
 
     if initiator_name:
-        status = subprocess.call(["targetcli", "/iscsi/%s/tpg1/acls create %s" % (iqn, initiator_name)], stdout=subprocess.DEVNULL)
+        status = subprocess.call(["targetcli", "/iscsi/{}/tpg1/acls create {}".format(iqn, initiator_name)], stdout=subprocess.DEVNULL)
         if status != 0:
             delete_iscsi_target(iqn, store_name)
             raise RuntimeError("Failed to set ACLs for '%s'" % iqn)

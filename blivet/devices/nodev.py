@@ -109,7 +109,7 @@ class TmpFSDevice(NoDevice):
         return self._type
 
     def populate_ksdata(self, data):
-        super(TmpFSDevice, self).populate_ksdata(data)
+        super().populate_ksdata(data)
         # we need to supply a format to ksdata, otherwise the kickstart line
         # would include --noformat, resulting in an invalid command combination
         data.format = self.format

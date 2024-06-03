@@ -98,7 +98,7 @@ class LUKSFormatPopulator(FormatPopulator):
 
     @classmethod
     def match(cls, data, device):  # pylint: disable=arguments-differ,unused-argument
-        if not super(LUKSFormatPopulator, cls).match(data, device):
+        if not super().match(data, device):
             return False
 
         # locked stratis pools are managed in the StratisFormatPopulator
@@ -118,7 +118,7 @@ class LUKSFormatPopulator(FormatPopulator):
         return True
 
     def _get_kwargs(self):
-        kwargs = super(LUKSFormatPopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
 
         holders = udev.device_get_holders(self.data)
         if holders:
@@ -130,7 +130,7 @@ class LUKSFormatPopulator(FormatPopulator):
         return kwargs
 
     def run(self):
-        super(LUKSFormatPopulator, self).run()
+        super().run()
         if not self.device.format.uuid:
             log.info("luks device %s has no uuid", self.device.path)
             return
@@ -182,7 +182,7 @@ class IntegrityFormatPopulator(FormatPopulator):
     _type_specifier = "integrity"
 
     def _get_kwargs(self):
-        kwargs = super(IntegrityFormatPopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
 
         holders = udev.device_get_holders(self.data)
         if holders:

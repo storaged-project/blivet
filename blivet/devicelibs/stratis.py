@@ -291,7 +291,7 @@ def add_device(pool_uuid, device):
                                                         GLib.Variant("(as)", ([device],)),
                                                         timeout=STRATIS_CALL_TIMEOUT)
     except safe_dbus.DBusCallError as e:
-        raise StratisError("Failed to create stratis filesystem on '%s': %s" % (pool_info.name, str(e)))
+        raise StratisError("Failed to create stratis filesystem on '{}': {}".format(pool_info.name, str(e)))
     else:
         if not succ:
             raise StratisError("Failed to create stratis filesystem on '%s': %s (%d)" % (pool_info.name, err, rc))

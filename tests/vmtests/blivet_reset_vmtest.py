@@ -52,7 +52,7 @@ class BlivetResetTestCase(VMBackedTestCase):
             self.device_attr_dicts.append(attr_dict)
 
     def setUp(self):
-        super(BlivetResetTestCase, self).setUp()
+        super().setUp()
 
         trigger(subsystem="block", action="change")
 

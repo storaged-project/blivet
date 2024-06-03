@@ -21,7 +21,7 @@
 #
 
 
-class LUKS_Data(object):
+class LUKS_Data:
     """ Class to be used as a singleton.
         Maintains the LUKS data.
     """

@@ -61,7 +61,7 @@ log = logging.getLogger("blivet")
 FSTAB_PATH = ""
 
 
-class Blivet(object, metaclass=SynchronizedMeta):
+class Blivet(metaclass=SynchronizedMeta):
 
     """ Top-level class for managing storage configuration. """
 
@@ -661,7 +661,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         if name:
             # make sure the specified name is sensible
             safe_vg_name = self.safe_device_name(vg.name, devicefactory.DEVICE_TYPE_LVM)
-            full_name = "%s-%s" % (safe_vg_name, name)
+            full_name = "{}-{}".format(safe_vg_name, name)
             safe_name = self.safe_device_name(full_name, devicefactory.DEVICE_TYPE_LVM)
             if safe_name != full_name:
                 new_name = safe_name[len(safe_vg_name) + 1:]
@@ -683,7 +683,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
                                             mountpoint=mountpoint,
                                             prefix=prefix)
 
-        if "%s-%s" % (vg.name, name) in self.names:
+        if "{}-{}".format(vg.name, name) in self.names:
             raise ValueError("name '%s' is already in use" % name)
 
         if thin_pool or thin_volume or vdo_pool or vdo_lv or cache_pool:
@@ -854,7 +854,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         name = kwargs.pop("name", None)
         if name:
             # make sure the specified name is sensible
-            full_name = "%s/%s" % (pool.name, name)
+            full_name = "{}/{}".format(pool.name, name)
             safe_name = self.safe_device_name(full_name, devicefactory.DEVICE_TYPE_STRATIS)
             if safe_name != full_name:
                 new_name = safe_name[len(pool.name) + 1:]
@@ -866,7 +866,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
                                             mountpoint=mountpoint,
                                             device_type=devicefactory.DEVICE_TYPE_STRATIS)
 
-        if "%s/%s" % (pool.name, name) in self.names:
+        if "{}/{}".format(pool.name, name) in self.names:
             raise ValueError("name '%s' is already in use" % name)
 
         device = StratisFilesystemDevice(name, *args, **kwargs)
@@ -1057,7 +1057,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             parent_separator = "-"
 
         if name_set:
-            if parent and "%s%s%s" % (parent.name, parent_separator, name) not in self.names:
+            if parent and "{}{}{}".format(parent.name, parent_separator, name) not in self.names:
                 return name
             elif not parent and name not in self.names:
                 return name
@@ -1130,7 +1130,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         else:
             parent_separator = "-"
 
-        full_name = "%s%s%s" % (parent.name, parent_separator, name) if parent else name
+        full_name = "{}{}{}".format(parent.name, parent_separator, name) if parent else name
 
         if full_name in self.names or not body:
             try:

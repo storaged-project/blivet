@@ -23,7 +23,7 @@ class GPTTestBase(VMBackedTestCase):
     LINUX_DATA_GUID = UUID("0fc63daf-8483-4772-8e79-3d69d8477de4")
 
     def __init__(self, *args, **kwargs):
-        super(GPTTestBase, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.root = None
         self.home = None
@@ -38,7 +38,7 @@ class GPTTestBase(VMBackedTestCase):
         disklabel.DiskLabel.set_default_label_type("gpt")
 
     def _clean_up(self):
-        super(GPTTestBase, self)._clean_up()
+        super()._clean_up()
 
         disklabel.DiskLabel.set_default_label_type(None)
 
@@ -104,7 +104,7 @@ class GPTDiscoverableTestCase(GPTTestBase):
     def setUp(self):
         olddisc = flags.gpt_discoverable_partitions
         flags.gpt_discoverable_partitions = True
-        super(GPTDiscoverableTestCase, self).setUp()
+        super().setUp()
         flags.gpt_discoverable_partitions = olddisc
 
     @unittest.skipUnless(hasattr(parted.Partition, "type_uuid"),
@@ -143,7 +143,7 @@ class GPTNonDiscoverableTestCase(GPTTestBase):
     def setUp(self):
         olddisc = flags.gpt_discoverable_partitions
         flags.gpt_discoverable_partitions = False
-        super(GPTNonDiscoverableTestCase, self).setUp()
+        super().setUp()
         flags.gpt_discoverable_partitions = olddisc
 
     @unittest.skipUnless(hasattr(parted.Partition, "type_uuid"),

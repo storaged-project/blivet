@@ -1,4 +1,3 @@
-
 import abc
 
 from . import loopbackedtestcase
@@ -22,7 +21,7 @@ class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase, metaclass=abc.ABCMet
     _DEVICE_SIZE = Size("100 MiB")
 
     def __init__(self, methodName='run_test'):
-        super(LabelingAsRoot, self).__init__(methodName=methodName, device_spec=[self._DEVICE_SIZE])
+        super().__init__(methodName=methodName, device_spec=[self._DEVICE_SIZE])
 
     def setUp(self):
         an_fs = self._fs_class()
@@ -30,7 +29,7 @@ class LabelingAsRoot(loopbackedtestcase.LoopBackedTestCase, metaclass=abc.ABCMet
             self.skipTest("can not create filesystem %s" % an_fs.name)
         if not an_fs.labeling():
             self.skipTest("can not label filesystem %s" % an_fs.name)
-        super(LabelingAsRoot, self).setUp()
+        super().setUp()
 
     def test_labeling(self):
         """A sequence of tests of filesystem labeling.

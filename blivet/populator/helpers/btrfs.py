@@ -35,7 +35,7 @@ class BTRFSFormatPopulator(FormatPopulator):
     _type_specifier = "btrfs"
 
     def _get_kwargs(self):
-        kwargs = super(BTRFSFormatPopulator, self)._get_kwargs()
+        kwargs = super()._get_kwargs()
         # the format's uuid attr will contain the UUID_SUB, while the
         # overarching volume UUID will be stored as vol_uuid
         kwargs["uuid"] = self.data["ID_FS_UUID_SUB"]
@@ -43,7 +43,7 @@ class BTRFSFormatPopulator(FormatPopulator):
         return kwargs
 
     def run(self):
-        super(BTRFSFormatPopulator, self).run()
+        super().run()
         uuid = udev.device_get_uuid(self.data)
 
         btrfs_dev = None

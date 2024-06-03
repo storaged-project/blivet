@@ -36,7 +36,7 @@ def div_up(a, b):
     return (a + (b - 1)) // b
 
 
-class RAIDLevel(object, metaclass=abc.ABCMeta):
+class RAIDLevel(metaclass=abc.ABCMeta):
 
     """An abstract class which is the parent of all classes which represent
        a RAID level.
@@ -308,7 +308,7 @@ class RAIDn(RAIDLevel, metaclass=abc.ABCMeta):
         return size_per_member * num_members
 
 
-class RAIDLevels(object):
+class RAIDLevels:
 
     """A class which keeps track of registered RAID levels. This class
        may be extended, overriding the is_raid method to include any

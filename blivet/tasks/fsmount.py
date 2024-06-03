@@ -55,12 +55,12 @@ class FSMount(task.BasicApplication, fstask.FSTask):
     @property
     def _can_mount(self):
         return (self.mount_type in fslib.kernel_filesystems) or \
-            (os.access("/sbin/mount.%s" % (self.mount_type,), os.X_OK)) or \
+            (os.access("/sbin/mount.{}".format(self.mount_type), os.X_OK)) or \
             self._has_driver
 
     @property
     def _availability_errors(self):
-        errors = super(FSMount, self)._availability_errors
+        errors = super()._availability_errors
 
         if not self._can_mount:
             errors.append("mounting filesystem %s is not supported" % self.mount_type)
@@ -184,7 +184,7 @@ class SELinuxFSMount(NoDevFSMount):
 
     @property
     def _availability_errors(self):
-        errors = super(SELinuxFSMount, self)._availability_errors
+        errors = super()._availability_errors
         if not flags.selinux:
             errors.append("selinux not enabled")
         return errors

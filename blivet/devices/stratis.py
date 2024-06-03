@@ -69,7 +69,7 @@ class StratisPoolDevice(ContainerDevice):
         self._key_file = kwargs.pop("key_file", None)
         self._clevis = kwargs.pop("clevis", None)
 
-        super(StratisPoolDevice, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def device_id(self):
@@ -151,7 +151,7 @@ class StratisPoolDevice(ContainerDevice):
                     (self._key_file and os.access(self._key_file, os.R_OK)))
 
     def _pre_create(self):
-        super(StratisPoolDevice, self)._pre_create()
+        super()._pre_create()
 
         if self.encrypted and not self.has_key:
             raise StratisError("cannot create encrypted stratis pool without key")
@@ -168,7 +168,7 @@ class StratisPoolDevice(ContainerDevice):
                                        clevis=self._clevis)
 
     def _post_create(self):
-        super(StratisPoolDevice, self)._post_create()
+        super()._post_create()
         self.format.exists = True
 
         pool_info = stratis_info.get_pool_info(self.name)
@@ -211,7 +211,7 @@ class StratisPoolDevice(ContainerDevice):
         devicelibs.stratis.remove_pool(self.uuid)
 
     def add_hook(self, new=True):
-        super(StratisPoolDevice, self).add_hook(new=new)
+        super().add_hook(new=new)
         if new:
             return
 
@@ -225,10 +225,10 @@ class StratisPoolDevice(ContainerDevice):
                 parent.format.pool_name = None
                 parent.format.pool_uuid = None
 
-        super(StratisPoolDevice, self).remove_hook(modparent=modparent)
+        super().remove_hook(modparent=modparent)
 
     def dracut_setup_args(self):
-        return set(["stratis.rootfs.pool_uuid=%s" % self.uuid])
+        return {"stratis.rootfs.pool_uuid=%s" % self.uuid}
 
 
 class StratisFilesystemDevice(StorageDevice):
@@ -253,15 +253,15 @@ class StratisFilesystemDevice(StorageDevice):
         if not exists and parents[0].free_space <= devicelibs.stratis.filesystem_md_size(size):
             raise StratisError("cannot create new stratis filesystem, not enough free space in the pool")
 
-        super(StratisFilesystemDevice, self).__init__(name=name, size=size, uuid=uuid,
+        super().__init__(name=name, size=size, uuid=uuid,
                                                       parents=parents, exists=exists)
 
     def _get_name(self):
         """ This device's name. """
         if self.pool is not None:
-            return "%s/%s" % (self.pool.name, self._name)
+            return "{}/{}".format(self.pool.name, self._name)
         else:
-            return super(StratisFilesystemDevice, self)._get_name()
+            return super()._get_name()
 
     @property
     def fsname(self):
@@ -271,7 +271,7 @@ class StratisFilesystemDevice(StorageDevice):
     @property
     def device_id(self):
         # STRATIS-<pool name>/<fsname>
-        return "STRATIS-%s/%s" % (self.pool.name, self.fsname)
+        return "STRATIS-{}/{}".format(self.pool.name, self.fsname)
 
     @property
     def pool(self):
@@ -303,7 +303,7 @@ class StratisFilesystemDevice(StorageDevice):
             if md_size > self.pool.free_space:
                 raise DeviceError("not enough free space in pool")
 
-        super(StratisFilesystemDevice, self)._set_size(newsize)
+        super()._set_size(newsize)
 
     def _create(self):
         """ Create the device. """
@@ -312,7 +312,7 @@ class StratisFilesystemDevice(StorageDevice):
                                              fs_size=self.size)
 
     def _post_create(self):
-        super(StratisFilesystemDevice, self)._post_create()
+        super()._post_create()
 
         fs_info = stratis_info.get_filesystem_info(self.pool.name, self.fsname)
         if not fs_info:
@@ -327,4 +327,4 @@ class StratisFilesystemDevice(StorageDevice):
         devicelibs.stratis.remove_filesystem(self.pool.uuid, self.uuid)
 
     def dracut_setup_args(self):
-        return set(["root=%s" % self.path])
+        return {"root=%s" % self.path}

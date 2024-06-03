@@ -24,14 +24,14 @@ class SetUUID(loopbackedtestcase.LoopBackedTestCase, metaclass=abc.ABCMeta):
     _DEVICE_SIZE = Size("100 MiB")
 
     def __init__(self, methodName='run_test'):
-        super(SetUUID, self).__init__(methodName=methodName,
+        super().__init__(methodName=methodName,
                                       device_spec=[self._DEVICE_SIZE])
 
     def setUp(self):
         an_fs = self._fs_class()
         if not an_fs.formattable:
             self.skipTest("can not create filesystem %s" % an_fs.name)
-        super(SetUUID, self).setUp()
+        super().setUp()
 
 
 class SetUUIDWithMkFs(SetUUID):
@@ -74,7 +74,7 @@ class SetUUIDAfterMkFs(SetUUID):
         an_fs = self._fs_class()
         if an_fs._writeuuid.availability_errors:
             self.skipTest("can not write UUID for filesystem %s" % an_fs.name)
-        super(SetUUIDAfterMkFs, self).setUp()
+        super().setUp()
 
     def test_set_uuid_later(self):
         """Create the filesystem with random UUID and reassign later."""

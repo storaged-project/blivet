@@ -60,7 +60,7 @@ class ContainerDevice(StorageDevice, metaclass=SynchronizedABCMeta):
         if not self.format_class:
             raise errors.StorageError("cannot find '%s' class" % self._format_class_name)
 
-        super(ContainerDevice, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _verify_member_uuid(self, member, expect_equality=True, require_existence=True):
         """ Whether the member's array UUID has the proper relationship
@@ -97,10 +97,10 @@ class ContainerDevice(StorageDevice, metaclass=SynchronizedABCMeta):
         uuids_equal = member_fmt_uuid == self.uuid
 
         if expect_equality and not uuids_equal:
-            return "Member format's UUID %s does not match expected UUID %s." % (member_fmt_uuid, self.uuid)
+            return "Member format's UUID {} does not match expected UUID {}.".format(member_fmt_uuid, self.uuid)
 
         if not expect_equality and uuids_equal:
-            return "Member format's UUID %s matches expected UUID %s." % (member_fmt_uuid, self.uuid)
+            return "Member format's UUID {} matches expected UUID {}.".format(member_fmt_uuid, self.uuid)
 
         return None
 
@@ -121,7 +121,7 @@ class ContainerDevice(StorageDevice, metaclass=SynchronizedABCMeta):
         if error:
             raise ValueError("cannot add parent with mismatched UUID")
 
-        super(ContainerDevice, self)._add_parent(parent)
+        super()._add_parent(parent)
 
     @abc.abstractmethod
     def _add(self, member):
