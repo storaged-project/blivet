@@ -16,6 +16,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase, metaclass=abc.ABCMeta):
         doc="The class of the filesystem being tested on.")
 
     _DEVICE_SIZE = Size("100 MiB")
+    _valid_label = "label"
 
     def __init__(self, methodName='run_test'):
         super(FSAsRoot, self).__init__(methodName=methodName, device_spec=[self._DEVICE_SIZE])
@@ -125,15 +126,15 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase, metaclass=abc.ABCMeta):
         if not an_fs.formattable or not an_fs.labeling():
             self.skipTest("can not label filesystem %s" % an_fs.name)
         an_fs.device = self.loop_devices[0]
-        an_fs.label = "label"
-        self.assertTrue(an_fs.label_format_ok("label"))
+        an_fs.label = self._valid_label
+        self.assertTrue(an_fs.label_format_ok(self._valid_label))
         self.assertIsNone(an_fs.create())
         try:
             label = an_fs.read_label()
             if an_fs.type in ("vfat", "efi"):
-                self.assertEqual(label, "LABEL")
+                self.assertEqual(label, self._valid_label.upper())
             else:
-                self.assertEqual(label, "label")
+                self.assertEqual(label, self._valid_label)
         except FSError:
             pass
 
@@ -144,7 +145,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase, metaclass=abc.ABCMeta):
         an_fs.device = self.loop_devices[0]
         self.assertIsNone(an_fs.create())
         an_fs.label = "label"
-        self.assertTrue(an_fs.label_format_ok("label"))
+        self.assertTrue(an_fs.label_format_ok(self._valid_label))
         if an_fs.relabels():
             self.assertIsNone(an_fs.write_label())
         else:

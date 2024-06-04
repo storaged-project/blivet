@@ -69,6 +69,14 @@ class InitializationTestCase(unittest.TestCase):
         self.assertFalse(formats.fs.NTFS().label_format_ok("n" * 129))
         self.assertTrue(formats.fs.NTFS().label_format_ok("n" * 128))
 
+        # GFS2 has special format: two parts, limited lengths and characters
+        self.assertFalse(formats.fs.GFS2().label_format_ok("label"))
+        self.assertFalse(formats.fs.GFS2().label_format_ok("label:label:label"))
+        self.assertFalse(formats.fs.GFS2().label_format_ok("n" * 33 + ":label"))
+        self.assertFalse(formats.fs.GFS2().label_format_ok("label:" + "n" * 31))
+        self.assertFalse(formats.fs.GFS2().label_format_ok("label:label*"))
+        self.assertTrue(formats.fs.GFS2().label_format_ok("label:label"))
+
         # all devices are permitted to be passed a label argument of None
         # some will ignore it completely
         for _k, v in formats.device_formats.items():
