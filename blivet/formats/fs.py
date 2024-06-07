@@ -1123,6 +1123,7 @@ class GFS2(FS):
     _check = True
     _packages = ["gfs2-utils"]
     _mkfs_class = fsmkfs.GFS2Mkfs
+    _labelfs = fslabeling.GFS2Labeling()
     # FIXME parted needs to be thaught about btrfs so that we can set the
     # partition table type correctly for btrfs partitions
     # parted_system = fileSystemType["gfs2"]

@@ -262,7 +262,7 @@ class NVMeNamespaceDevicePopulator(DiskDevicePopulator):
             kwargs["eui64"] = ninfo.eui64
             kwargs["nguid"] = ninfo.nguid
 
-            if ninfo.uuid and ninfo.uuid != uuid.UUID(int=0):
+            if ninfo.uuid and str(ninfo.uuid) != str(uuid.UUID(int=0)):
                 kwargs["uuid"] = ninfo.uuid
             else:
                 kwargs["uuid"] = None
