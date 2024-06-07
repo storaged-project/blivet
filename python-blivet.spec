@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.10.0
+Version: 3.10.1
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -109,6 +109,18 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Fri Jun 07 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.10.1-1
+- tests: Add a test case with MD array on LUKS (vtrefny)
+- Add support for setting label when creating GFS2 format (vtrefny)
+- tests: add dbus example to traverse the devices and call test the factory()
+  (tgill)
+- fix issue #1239 (koito_coco)
+- fix compare uuid fail (iasunsea)
+- Remove support for the MD linear RAID level (vtrefny)
+- ci: Fix repository name in job name in check.yml (vtrefny)
+- Fix pylint 'possibly-used-before-assignment' warnings (vtrefny)
+- Fix skipping btrfs calls when libblockdev btrfs plugin is missing (vtrefny)
+
 * Fri May 10 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.10.0-1
 - Added support for PV grow (japokorn)
 - misc: Add stratis-cli and stratisd to test dependencies (vtrefny)
