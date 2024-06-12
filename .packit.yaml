@@ -33,6 +33,11 @@ jobs:
   branch: 3.10-devel
   preserve_project: true
 
+- job: tests
+  trigger: pull_request
+  targets:
+  - fedora-latest-stable
+
 # run tests for udisks consumers, see plans/ with `revdeps == yes`
 - job: tests
   identifier: revdeps
