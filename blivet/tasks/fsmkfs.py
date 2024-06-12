@@ -241,6 +241,7 @@ class FSBlockDevMkfs(task.BasicApplication, FSMkfsTask, metaclass=abc.ABCMeta):
     can_set_uuid = False
     can_label = False
     fstype = None
+    force = False
 
     def do_task(self, options=None, label=False, set_uuid=False, nodiscard=False):
         """Create the format on the device and label if possible and desired.
@@ -277,7 +278,8 @@ class FSBlockDevMkfs(task.BasicApplication, FSMkfsTask, metaclass=abc.ABCMeta):
         try:
             bd_options = BlockDev.FSMkfsOptions(label=self.fs.label if label else None,
                                                 uuid=self.fs.uuid if set_uuid else None,
-                                                no_discard=self.fs._mkfs_nodiscard if nodiscard else False)
+                                                no_discard=self.fs._mkfs_nodiscard if nodiscard else False,
+                                                force=self.force)
             BlockDev.fs.mkfs(self.fs.device, self.fstype, bd_options, extra={k: '' for k in create_options})
         except BlockDev.FSError as e:
             raise FSError(str(e))
@@ -331,6 +333,7 @@ class XFSMkfs(FSBlockDevMkfs):
     can_nodiscard = True
     can_set_uuid = True
     can_label = True
+    force = True
 
 
 class F2FSMkfs(FSBlockDevMkfs):
