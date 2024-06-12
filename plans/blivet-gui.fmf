@@ -1,5 +1,5 @@
 # reverse dependency test for blivet-gui
-# enabled: false
+enabled: false
 
 adjust+:
   when: revdeps == yes
