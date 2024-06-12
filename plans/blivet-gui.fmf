@@ -1,0 +1,22 @@
+# reverse dependency test for blivet-gui
+# enabled: false
+
+adjust+:
+  when: revdeps == yes
+  enabled: true
+
+prepare:
+    how: ansible
+    playbook:
+        - https://raw.githubusercontent.com/storaged-project/blivet-gui/main/misc/install-test-dependencies.yml
+
+discover:
+    how: shell
+    url: https://github.com/storaged-project/blivet-gui
+    ref: main
+    tests:
+      - name: all
+        test: make test
+
+execute:
+    how: tmt
