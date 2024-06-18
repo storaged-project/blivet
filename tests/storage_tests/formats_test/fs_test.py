@@ -10,6 +10,7 @@ from blivet.errors import DeviceFormatError, FSError
 from blivet.formats import get_format
 from blivet.devices import PartitionDevice, DiskDevice
 from blivet.flags import flags
+from blivet import udev
 
 from .loopbackedtestcase import LoopBackedTestCase
 
@@ -107,6 +108,7 @@ class XFSTestCase(fstesting.FSAsRoot):
         pend = pstart + int(Size(size) / disk.format.parted_device.sectorSize)
         disk.format.add_partition(pstart, pend, parted.PARTITION_NORMAL)
         disk.format.parted_disk.commit()
+        udev.settle()
         part = disk.format.parted_disk.getPartitionBySector(pstart)
 
         device = PartitionDevice(os.path.basename(part.path))
