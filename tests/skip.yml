@@ -24,7 +24,7 @@
 
 ---
 
-- test: storage_tests.devices_test.md_test.MDTestCase
+- test: storage_tests.devices_test.md_test.(MDTestCase|MDLUKSTestCase)
   skip_on:
     - distro: "centos"
       version: "9"
