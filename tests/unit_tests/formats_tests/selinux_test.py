@@ -23,6 +23,7 @@ class SELinuxContextTestCase(unittest.TestCase):
     @patch("blivet.tasks.fsmount.BlockDev.fs.mount", return_value=True)
     @patch.object(fs.FS, "_pre_setup", return_value=True)
     @patch("os.access", return_value=True)
+    @patch("os.path.isdir", return_value=True)
     # pylint: disable=unused-argument
     def exec_mount_selinux_format(self, formt, *args):
         """ Test of correct selinux context parameter value when mounting """
