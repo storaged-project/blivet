@@ -960,7 +960,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
     def _disk_in_taglist(self, disk, taglist):
         # Taglist is a list containing mix of disk names and tags into which disk may belong.
         # Check if it does. Raise ValueError if unknown tag is encountered.
-        if disk.name in taglist:
+        if disk.name in taglist or disk.device_id in taglist:
             return True
         tags = [t[1:] for t in taglist if t.startswith("@")]
         for tag in tags:
