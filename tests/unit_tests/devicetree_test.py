@@ -11,6 +11,7 @@ from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import StorageDevice
 from blivet.devices import MultipathDevice
+from blivet.devices import MDRaidArrayDevice
 from blivet.devices.lib import Tags
 from blivet.devicetree import DeviceTree
 from blivet.formats import get_format
@@ -449,6 +450,27 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertTrue(sdb in tree.devices)
         self.assertTrue(sdc in tree.devices)
 
+        # now test with multipath and device ID
+        sda.format = get_format("mdmember", exists=True)
+        sdb.format = get_format("mdmember", exists=True)
+        array = MDRaidArrayDevice("array", parents=[sda, sdb], level="raid1", exists=True)
+
+        tree._add_device(array)
+
+        tree.ignored_disks = ["MDRAID-array"]
+
+        # verify hide is called as expected
+        with patch.object(tree, "hide") as hide:
+            tree._hide_ignored_disks()
+            hide.assert_called_with(array)
+
+        # unhide sdb and make sure it works
+        tree.unhide(array)
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+        self.assertTrue(sdc in tree.devices)
+        self.assertTrue(array in tree.devices)
+
         # test exclusive_disks
         tree.ignored_disks = []
         tree.exclusive_disks = ["test_sdc"]
@@ -461,12 +483,15 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertFalse(sda in tree.devices)
         self.assertFalse(sdb in tree.devices)
         self.assertTrue(sdc in tree.devices)
+        self.assertFalse(array in tree.devices)
 
         tree.unhide(sda)
         tree.unhide(sdb)
+        tree.unhide(array)
         self.assertTrue(sda in tree.devices)
         self.assertTrue(sdb in tree.devices)
         self.assertTrue(sdc in tree.devices)
+        self.assertTrue(array in tree.devices)
 
     def test_get_related_disks(self):
         tree = DeviceTree()
