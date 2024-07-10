@@ -57,6 +57,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertEqual(dt.resolve_device("LABEL=%s" % dev1_label), dev1)
         self.assertEqual(dt.resolve_device("UUID=%s" % dev1_label), None)
         self.assertEqual(dt.resolve_device("UUID=%s" % dev1_uuid), dev1)
+        self.assertEqual(dt.resolve_device("PARTUUID=%s" % dev1_uuid), dev1)
         self.assertEqual(dt.resolve_device("/dev/dev1"), dev1)
 
         self.assertEqual(dt.resolve_device("dev2"), dev2)

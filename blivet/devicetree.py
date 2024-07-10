@@ -634,7 +634,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         """
         # find device in the tree
         device = None
-        if devspec.startswith("UUID="):
+        if devspec.startswith("UUID=") or devspec.startswith("PARTUUID="):
             # device-by-uuid
             uuid = devspec.partition("=")[2]
             if ((uuid.startswith('"') and uuid.endswith('"')) or
