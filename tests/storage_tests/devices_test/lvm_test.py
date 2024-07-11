@@ -298,7 +298,6 @@ class LVMTestCase(StorageTestCase):
         self.assertIsNotNone(cachepool)
 
     def test_lvm_cache_create_and_attach(self):
-        blivet.util.set_up_logging()
         disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
         self.assertIsNotNone(disk1)
         self.storage.initialize_disk(disk1)
