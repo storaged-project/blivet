@@ -39,11 +39,18 @@ class BlivetNewBtrfsVolumeDeviceTest(unittest.TestCase):
             with patch.object(vol, "_pre_create"):
                 with patch.object(vol, "_post_create"):
                     vol.create()
-                    blockdev.create_volume.assert_called_with(['/dev/bd1'],
-                                                              label='testvolume',
-                                                              data_level=None,
-                                                              md_level=None,
-                                                              extra={'-U': vol.uuid})
+                    blockdev.create_volume.assert_called()
+                    args = blockdev.create_volume.call_args.args
+                    self.assertEqual(args, (['/dev/bd1'],))
+                    kwargs = blockdev.create_volume.call_args.kwargs
+                    self.assertEqual(kwargs['label'], 'testvolume')
+                    self.assertEqual(kwargs['data_level'], None)
+                    self.assertEqual(kwargs['md_level'], None)
+
+                    extra = kwargs['extra']
+                    self.assertTrue(extra)
+                    self.assertEqual(extra[0].opt, "-U")
+                    self.assertEqual(extra[0].val, vol.uuid)
 
         with patch("blivet.devicetree.DeviceTree.names", []):
             sub = b.new_btrfs_sub_volume(name="testsub", parents=[vol])
@@ -52,6 +59,37 @@ class BlivetNewBtrfsVolumeDeviceTest(unittest.TestCase):
         self.assertEqual(sub.format.type, "btrfs")
         self.assertEqual(sub.size, vol.size)
         self.assertEqual(sub.volume, vol)
+
+    def test_new_btrfs_options(self):
+        b = blivet.Blivet()
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("btrfs"),
+                           size=Size("2 GiB"), exists=False)
+
+        b.devicetree._add_device(bd)
+
+        with patch("blivet.devicetree.DeviceTree.names", []):
+            vol = b.new_btrfs(name="testvolume", parents=[bd], create_options="--csum xxhash")
+
+        b.create_device(vol)
+
+        with patch("blivet.devices.btrfs.blockdev.btrfs") as blockdev:
+            with patch.object(vol, "_pre_create"):
+                with patch.object(vol, "_post_create"):
+                    vol.create()
+                    blockdev.create_volume.assert_called()
+                    args = blockdev.create_volume.call_args.args
+                    self.assertEqual(args, (['/dev/bd1'],))
+                    kwargs = blockdev.create_volume.call_args.kwargs
+                    self.assertEqual(kwargs['label'], 'testvolume')
+                    self.assertEqual(kwargs['data_level'], None)
+                    self.assertEqual(kwargs['md_level'], None)
+
+                    extra = kwargs['extra']
+                    self.assertTrue(extra)
+                    self.assertEqual(extra[0].opt, "-U")
+                    self.assertEqual(extra[0].val, vol.uuid)
+                    self.assertEqual(extra[1].opt, "--csum")
+                    self.assertEqual(extra[2].opt, "xxhash")
 
     def test_device_id(self):
         bd = StorageDevice("bd1", fmt=blivet.formats.get_format("btrfs"),

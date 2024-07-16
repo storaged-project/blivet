@@ -753,6 +753,9 @@ class Blivet(object, metaclass=SynchronizedMeta):
         fmt_args = kwargs.pop("fmt_args", {})
         fmt_args.update({"mountpoint": mountpoint})
 
+        create_options = kwargs.get("create_options", None)
+        fmt_args.update({"create_options": create_options})
+
         if kwargs.pop("subvol", False):
             dev_class = BTRFSSubVolumeDevice
 
