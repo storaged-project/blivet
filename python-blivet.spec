@@ -25,6 +25,7 @@ Patch0: 0001-remove-btrfs-plugin.patch
 %global libblockdevver 3.2.0
 %global libbytesizever 0.3
 %global pyudevver 0.18
+%global s390utilscorever 2.31.0
 
 BuildArch: noarch
 
@@ -73,8 +74,7 @@ Recommends: libblockdev-nvme >= %{libblockdevver}
 Recommends: libblockdev-part >= %{libblockdevver}
 Recommends: libblockdev-swap >= %{libblockdevver}
 Recommends: libblockdev-s390 >= %{libblockdevver}
-Recommends: s390utils-core
-%endif
+Recommends: s390utils-core >= %{s390utilscorever}
 
 Requires: python3-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}

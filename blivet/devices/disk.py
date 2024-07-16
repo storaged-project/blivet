@@ -530,67 +530,19 @@ class DASDDevice(DiskDevice):
             :type format: :class:`~.formats.DeviceFormat` or a subclass of it
             :keyword str wwn: the disk's WWN
             :keyword busid: bus ID
-            :keyword opts: options
-            :type opts: dict with option name keys and option value values
         """
         self.busid = kwargs.pop('busid')
-        self.opts = kwargs.pop('opts')
         DiskDevice.__init__(self, device, **kwargs)
 
     @property
     def description(self):
         return "DASD device %s" % self.busid
 
-    def get_opts(self):
-        return ["%s=%s" % (k, v) for k, v in self.opts.items() if v == '1']
-
     def dracut_setup_args(self):
-        conf = "/etc/dasd.conf"
-        line = None
-        if os.path.isfile(conf):
-            f = open(conf)
-            # grab the first line that starts with our bus_id
-            for l in f.readlines():
-                if l.startswith(self.busid):
-                    line = l.rstrip()
-                    break
-
-            f.close()
-
-        # See if we got a line.  If not, grab our get_opts
-        if not line:
-            line = self.busid
-            for devopt in self.get_opts():
-                line += " %s" % devopt
-
-        # Create a translation mapping from dasd.conf format to module format
-        translate = {'use_diag': 'diag',
-                     'readonly': 'ro',
-                     'erplog': 'erplog',
-                     'failfast': 'failfast'}
-
-        # this is a really awkward way of determining if the
-        # feature found is actually desired (1, not 0), plus
-        # translating that feature into the actual kernel module
-        # value
-        opts = []
-        parts = line.split()
-        for chunk in parts[1:]:
-            try:
-                feat, val = chunk.split('=')
-                if int(val):
-                    opts.append(translate[feat])
-            except (ValueError, KeyError):
-                # If we don't know what the feature is (feat not in translate
-                # or if we get a val that doesn't cleanly convert to an int
-                # we can't do anything with it.
-                log.warning("failed to parse dasd feature %s", chunk)
-
-        if opts:
-            return set(["rd.dasd=%s(%s)" % (self.busid,
-                                            ":".join(opts))])
-        else:
-            return set(["rd.dasd=%s" % self.busid])
+        devspec = util.capture_output(["/lib/s390-tools/zdev-to-dasd_mod.dasd",
+                                       "persistent", self.busid]).strip()
+        # strip to remove trailing newline, which must not appear in zipl BLS
+        return set(["rd.dasd=%s" % devspec])
 
 
 NVMeController = namedtuple("NVMeController", ["name", "serial", "nvme_ver", "id", "subsysnqn",
