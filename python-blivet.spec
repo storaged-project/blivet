@@ -73,6 +73,8 @@ Recommends: libblockdev-nvme >= %{libblockdevver}
 Recommends: libblockdev-part >= %{libblockdevver}
 Recommends: libblockdev-swap >= %{libblockdevver}
 Recommends: libblockdev-s390 >= %{libblockdevver}
+Recommends: s390utils-core
+%endif
 
 Requires: python3-bytesize >= %{libbytesizever}
 Requires: util-linux >= %{utillinuxver}
