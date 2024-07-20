@@ -21,6 +21,7 @@
 
 import os
 import copy
+import shlex
 import tempfile
 import uuid
 
@@ -473,10 +474,12 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             md_level = str(self.metadata_level)
         else:
             md_level = None
+
+        extra = []
         if self.uuid:
-            extra = {"-U": self.uuid}
-        else:
-            extra = None
+            extra.append(blockdev.ExtraArg("-U", self.uuid))
+        if self.format and self.format._create_options:
+            extra.extend(blockdev.ExtraArg(arg) for arg in shlex.split(self.format._create_options))
         try:
             blockdev.btrfs.create_volume([d.path for d in self.parents],
                                          label=self.format.label,
