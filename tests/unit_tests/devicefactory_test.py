@@ -8,6 +8,7 @@ import blivet
 
 from blivet import devicefactory
 from blivet.devicelibs import raid, crypto
+from blivet.devices import BTRFSVolumeDevice
 from blivet.devices import DiskDevice
 from blivet.devices import DiskFile
 from blivet.devices import LUKSDevice
@@ -17,6 +18,7 @@ from blivet.devices import PartitionDevice
 from blivet.devices import StratisFilesystemDevice
 from blivet.devices.lvm import DEFAULT_THPOOL_RESERVE
 from blivet.errors import RaidError
+import blivet.flags
 from blivet.formats import get_format
 from blivet.size import Size
 from blivet.util import create_sparse_tempfile
@@ -1056,3 +1058,136 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
         self.assertAlmostEqual(factory._get_free_disk_space(),
                                Size("2 MiB"),
                                delta=self._get_size_delta())
+
+
+class BlivetFactoryTestCase(DeviceFactoryTestCase):
+    device_class = BTRFSVolumeDevice
+    device_type = devicefactory.DEVICE_TYPE_BTRFS
+    encryption_supported = False
+    factory_class = devicefactory.BTRFSFactory
+
+    def tearDown(self):
+        blivet.flags.flags.btrfs_compression = None
+        return super().tearDown()
+
+    # pylint: disable=unused-argument
+    def _get_size_delta(self, devices=None):
+        """ Return size delta for a specific factory type.
+
+            :keyword devices: list of factory-managed devices or None
+            :type devices: list(:class:`blivet.devices.StorageDevice`) or NoneType
+        """
+        return Size("16 MiB")
+
+    def _get_test_factory_args(self):
+        return {"container_raid_level": "single"}
+
+    def _validate_factory_device(self, *args, **kwargs):
+        device = args[0]
+
+        self.assertEqual(device.type, "btrfs subvolume")
+        self.assertLessEqual(device.size, kwargs.get("size"))
+        self.assertIsNotNone(device.format)
+        self.assertEqual(device.format.type, "btrfs")
+        self.assertEqual(device.format.mountpoint, kwargs.get("mountpoint"))
+
+        if kwargs.get("name"):
+            self.assertEqual(device.name, kwargs.get("name"))
+
+        self.assertTrue(set(device.disks).issubset(kwargs["disks"]))
+
+        self.assertEqual(device.volume.encrypted, kwargs.get("container_encrypted", False))
+
+        if blivet.flags.flags.btrfs_compression:
+            self.assertIn("compress=%s" % blivet.flags.flags.btrfs_compression,
+                          device.format.mountopts)
+
+        return device
+
+    @patch("blivet.devices.btrfs.BTRFSVolumeDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.btrfs.BTRFSSubVolumeDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.BTRFS.formattable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_device_factory(self, *args):  # pylint: disable=unused-argument,arguments-differ
+
+        device_type = self.device_type
+        kwargs = {"disks": self.b.disks,
+                  "mountpoint": "/factorytest",
+                  "size": Size("2.5 GiB")}
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # rename the device
+        kwargs["name"] = "btrfsroot"
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # new mountpoint
+        kwargs["mountpoint"] = "/a/different/dir"
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # resize the device
+        kwargs["size"] = Size("4 GiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # resize the device down
+        kwargs["size"] = Size("3 GiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # enable encryption on the container
+        kwargs["container_encrypted"] = True
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # disable encryption on the container
+        kwargs["container_encrypted"] = False
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+    @patch("blivet.devices.btrfs.BTRFSVolumeDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.btrfs.BTRFSSubVolumeDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.BTRFS.formattable", return_value=True)
+    def test_normalize_size(self, *args):  # pylint: disable=unused-argument
+        super(BlivetFactoryTestCase, self).test_normalize_size()
+
+    @patch("blivet.devices.btrfs.BTRFSVolumeDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.btrfs.BTRFSSubVolumeDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.BTRFS.formattable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_get_free_disk_space(self, *args):  # pylint: disable=unused-argument
+        super(BlivetFactoryTestCase, self).test_get_free_disk_space()
+
+    @patch("blivet.devices.btrfs.BTRFSVolumeDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.btrfs.BTRFSSubVolumeDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.BTRFS.formattable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    def test_btrfs_mount_opts(self, *args):  # pylint: disable=unused-argument,arguments-differ
+        blivet.flags.flags.btrfs_compression = "zstd:1"
+
+        device_type = self.device_type
+        kwargs = {"disks": self.b.disks,
+                  "mountpoint": "/factorytest",
+                  "size": Size("2.5 GiB")}
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # rename the device
+        kwargs["name"] = "btrfsroot"
+        kwargs["device"] = device
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # new mountpoint
+        kwargs["mountpoint"] = "/a/different/dir"
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+    @patch("blivet.devices.btrfs.BTRFSVolumeDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.btrfs.BTRFSSubVolumeDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.BTRFS.formattable", return_value=True)
+    def test_factory_defaults(self, *args):
+        super(BlivetFactoryTestCase, self).test_factory_defaults()
