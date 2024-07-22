@@ -2027,7 +2027,9 @@ class BTRFSFactory(DeviceFactory):
 
     def _set_name(self):
         super(BTRFSFactory, self)._set_name()
-        self.device.format.options = "subvol=" + self.device.name
+
+        # we need to update the mount options with the new name
+        self.device._set_mountopts()
 
     def _reconfigure_device(self):
         if self.device == self.container:
