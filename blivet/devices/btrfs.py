@@ -567,12 +567,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
         self.volume._add_subvolume(self)
 
-    def _set_format(self, fmt):
-        """ Set the Device's format. """
-        super(BTRFSSubVolumeDevice, self)._set_format(fmt)
-        if self.exists:
-            return
-
+    def _set_mountopts(self):
         # propagate mount options specified for members via kickstart
         opts = "subvol=%s" % self.name
         has_compress = False
@@ -589,6 +584,14 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
             opts += ",compress=%s" % flags.btrfs_compression
 
         self.format.mountopts = opts
+
+    def _set_format(self, fmt):
+        """ Set the Device's format. """
+        super(BTRFSSubVolumeDevice, self)._set_format(fmt)
+        if self.exists:
+            return
+
+        self._set_mountopts()
 
     @property
     def volume(self):
