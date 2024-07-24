@@ -35,7 +35,9 @@ from ..util import total_memory, available_memory, run_program_and_capture_outpu
 import logging
 log = logging.getLogger("blivet")
 
-LUKS_METADATA_SIZE = Size("2 MiB")
+LUKS1_METADATA_SIZE = Size("2 MiB")
+LUKS2_METADATA_SIZE = Size("16 MiB")
+LUKS_METADATA_SIZE = LUKS2_METADATA_SIZE  # luks2 is default
 MIN_CREATE_ENTROPY = 256  # bits
 SECTOR_SIZE = Size("512 B")
 

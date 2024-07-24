@@ -77,7 +77,7 @@ class LUKSDevice(DMCryptDevice):
 
     def _get_size(self):
         if not self.exists:
-            size = self.raw_device.size - crypto.LUKS_METADATA_SIZE
+            size = self.raw_device.size - self.raw_device.format._header_size
         elif self.resizable and self.target_size != Size(0):
             size = self.target_size
         else:
@@ -86,10 +86,10 @@ class LUKSDevice(DMCryptDevice):
 
     def _set_size(self, newsize):
         if not self.exists and not self.raw_device.exists:
-            self.raw_device.size = newsize + crypto.LUKS_METADATA_SIZE
+            self.raw_device.size = newsize + self.raw_device.format._header_size
 
             # just run the StorageDevice._set_size to make sure we are in the format limits
-            super(LUKSDevice, self)._set_size(newsize - crypto.LUKS_METADATA_SIZE)
+            super(LUKSDevice, self)._set_size(newsize - self.raw_device.format._header_size)
         else:
             raise DeviceError("Cannot set size for an existing LUKS device")
 
@@ -113,7 +113,7 @@ class LUKSDevice(DMCryptDevice):
             raise ValueError("size is smaller than the minimum for this device")
 
         # don't allow larger luks than size (or target size) of backing device
-        if newsize > (self.raw_device.size - crypto.LUKS_METADATA_SIZE):
+        if newsize > (self.raw_device.size - self.raw_device.format._header_size):
             log.error("requested size %s is larger than size of the backing device %s",
                       newsize, self.raw_device.size)
             raise ValueError("size is larger than the size of the backing device")
@@ -128,7 +128,7 @@ class LUKSDevice(DMCryptDevice):
     def max_size(self):
         """ The maximum size this luks device can be. Maximum is based on the
             maximum size of the backing device. """
-        max_luks = self.raw_device.max_size - crypto.LUKS_METADATA_SIZE
+        max_luks = self.raw_device.max_size - self.raw_device.format._header_size
         max_format = self.format.max_size
         return min(max_luks, max_format) if max_format else max_luks
 
