@@ -425,9 +425,9 @@ class DeviceFactory(object):
     def encrypted(self, value):
         if not self.encrypted and value and self.size:
             # encrypted, bump size up with LUKS metadata size
-            self.size += get_format("luks").min_size
+            self.size += get_format("luks", luks_version=self.luks_version).min_size
         elif self.encrypted and not value and self.size:
-            self.size -= get_format("luks").min_size
+            self.size -= get_format("luks", luks_version=self.luks_version).min_size
 
         self._encrypted = value
 

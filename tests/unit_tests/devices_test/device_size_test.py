@@ -5,6 +5,7 @@ from blivet.devicelibs import crypto
 from blivet.devices import StorageDevice, LUKSDevice
 from blivet import errors
 from blivet.formats import get_format
+from blivet.formats.luks import LUKS
 from blivet.size import Size
 
 
@@ -108,6 +109,7 @@ class LUKSDeviceSizeTest(StorageDeviceSizeTest):
     def _get_device(self, *args, **kwargs):
         exists = kwargs.get("exists", False)
         parent = StorageDevice(*args, size=kwargs["size"] + crypto.LUKS_METADATA_SIZE, exists=exists)
+        parent.format = LUKS()
         return LUKSDevice(*args, **kwargs, parents=[parent])
 
     def test_size_getter(self):
