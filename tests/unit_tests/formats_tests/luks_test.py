@@ -114,3 +114,17 @@ class LUKSNodevTestCase(unittest.TestCase):
                     fmt._create()
                     crypto.luks_format.assert_called()
                     self.assertIsNone(crypto.luks_format.call_args[1]["extra"])
+
+    def test_header_size(self):
+        fmt = LUKS(luks_version="luks2")
+        self.assertEqual(fmt._header_size, Size("16 MiB"))
+        self.assertEqual(fmt._min_size, Size("16 MiB"))
+
+        fmt = LUKS(luks_version="luks1")
+        self.assertEqual(fmt._header_size, Size("2 MiB"))
+        self.assertEqual(fmt._min_size, Size("2 MiB"))
+
+        # default is luks2
+        fmt = LUKS()
+        self.assertEqual(fmt._header_size, Size("16 MiB"))
+        self.assertEqual(fmt._min_size, Size("16 MiB"))

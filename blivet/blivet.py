@@ -35,7 +35,6 @@ from .deviceaction import ActionCreateDevice, ActionCreateFormat, ActionDestroyD
 from .deviceaction import ActionDestroyFormat, ActionResizeDevice, ActionResizeFormat
 from .devicelibs.edd import get_edd_dict
 from .devicelibs.btrfs import MAIN_VOLUME_ID
-from .devicelibs.crypto import LUKS_METADATA_SIZE
 from .errors import StorageError, DependencyError
 from .size import Size
 from .devicetree import DeviceTree
@@ -753,6 +752,9 @@ class Blivet(object, metaclass=SynchronizedMeta):
         fmt_args = kwargs.pop("fmt_args", {})
         fmt_args.update({"mountpoint": mountpoint})
 
+        create_options = kwargs.get("create_options", None)
+        fmt_args.update({"create_options": create_options})
+
         if kwargs.pop("subvol", False):
             dev_class = BTRFSSubVolumeDevice
 
@@ -985,16 +987,16 @@ class Blivet(object, metaclass=SynchronizedMeta):
         if device.format.resizable:
             if device.format.type == "luks" and device.children:
                 # resize the luks format
-                actions.append(ActionResizeFormat(device, new_size - LUKS_METADATA_SIZE))
+                actions.append(ActionResizeFormat(device, new_size - device.format._header_size))
 
                 luks_dev = device.children[0]
                 if luks_dev.resizable:
                     # resize the luks device
-                    actions.append(ActionResizeDevice(luks_dev, new_size - LUKS_METADATA_SIZE))
+                    actions.append(ActionResizeDevice(luks_dev, new_size - device.format._header_size))
 
                 if luks_dev.format.resizable:
                     # resize the format on the luks device
-                    actions.append(ActionResizeFormat(luks_dev, new_size - LUKS_METADATA_SIZE))
+                    actions.append(ActionResizeFormat(luks_dev, new_size - device.format._header_size))
             else:
                 actions.append(ActionResizeFormat(device, new_size))
 

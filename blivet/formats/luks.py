@@ -120,6 +120,12 @@ class LUKS(DeviceFormat):
         self.map_name = kwargs.get("name")
         self.luks_version = kwargs.get("luks_version") or crypto.DEFAULT_LUKS_VERSION
 
+        if self.luks_version == "luks2":
+            self._header_size = crypto.LUKS2_METADATA_SIZE
+        else:
+            self._header_size = crypto.LUKS1_METADATA_SIZE
+        self._min_size = self._header_size
+
         if not self.exists and self.luks_version not in crypto.LUKS_VERSIONS.keys():
             raise ValueError("Unknown or unsupported LUKS version '%s'" % self.luks_version)
 

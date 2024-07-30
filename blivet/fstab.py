@@ -464,12 +464,12 @@ class FSTabManager(object):
 
         self._table.parse_fstab(self.src_file)
 
-    def find_device(self, blivet, spec=None, mntops=None, blkid_tab=None, crypt_tab=None, *, entry=None):
+    def find_device(self, devicetree, spec=None, mntops=None, blkid_tab=None, crypt_tab=None, *, entry=None):
         """ Find a blivet device, based on spec or entry. Mount options can be used to refine the search.
             If both entry and spec/mntops are given, spec/mntops are prioritized over entry values.
 
-            :param blivet: Blivet instance with populated devicetree
-            :type blivet: :class: `Blivet`
+            :param devicetree: populated blivet.Devicetree instance
+            :type devicetree: :class: `blivet.Devicetree`
             :keyword spec: searched device specs (see man fstab(5) fs_spec)
             :type spec: str
             :keyword mntops: list of mount option strings (see man fstab(5) fs_mntops)
@@ -488,16 +488,16 @@ class FSTabManager(object):
         _mntops = mntops or (entry.mntops if entry is not None else None)
         _mntops_str = ",".join(_mntops) if mntops is not None else None
 
-        return blivet.devicetree.resolve_device(_spec, options=_mntops_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
+        return devicetree.resolve_device(_spec, options=_mntops_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
 
-    def get_device(self, blivet, spec=None, file=None, vfstype=None,
+    def get_device(self, devicetree, spec=None, file=None, vfstype=None,
                    mntops=None, blkid_tab=None, crypt_tab=None, *, entry=None):
         """ Parse an fstab entry for a device and return the corresponding device from the devicetree.
             If not found, try to create a new device based on given values.
             Raises UnrecognizedFSTabError in case of invalid or incomplete data.
 
-            :param blivet: Blivet instance with populated devicetree
-            :type blivet: :class: `Blivet`
+            :param devicetree: populated blivet.Devicetree instance
+            :type devicetree: :class: `blivet.Devicetree`
             :keyword spec: searched device specs (see man fstab(5) fs_spec)
             :type spec: str
             :keyword mntops: list of mount option strings (see man fstab(5) fs_mntops)
@@ -521,13 +521,13 @@ class FSTabManager(object):
         _mntops_str = ",".join(_mntops) if mntops is not None else None
 
         # find device in the tree
-        device = blivet.devicetree.resolve_device(_spec, options=_mntops_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
+        device = devicetree.resolve_device(_spec, options=_mntops_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
 
         if device is None:
             if vfstype == "swap":
                 # swap file
                 device = FileDevice(_spec,
-                                    parents=blivet.devicetree.resolve_device(_spec),
+                                    parents=devicetree.resolve_device(_spec),
                                     fmt=get_format(vfstype, device=_spec, exists=True),
                                     exists=True)
             elif vfstype == "bind" or (_mntops is not None and "bind" in _mntops):
@@ -535,7 +535,7 @@ class FSTabManager(object):
                 # turn up false positives
                 vfstype = "bind"
 
-                parents = blivet.devicetree.resolve_device(_spec)
+                parents = devicetree.resolve_device(_spec)
                 device = DirectoryDevice(_spec, parents=parents, exists=True)
                 device.format = get_format("bind", device=device.path, exists=True)
 

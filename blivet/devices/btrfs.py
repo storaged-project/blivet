@@ -21,6 +21,7 @@
 
 import os
 import copy
+import shlex
 import tempfile
 import uuid
 
@@ -473,10 +474,12 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             md_level = str(self.metadata_level)
         else:
             md_level = None
+
+        extra = []
         if self.uuid:
-            extra = {"-U": self.uuid}
-        else:
-            extra = None
+            extra.append(blockdev.ExtraArg("-U", self.uuid))
+        if self.format and self.format._create_options:
+            extra.extend(blockdev.ExtraArg(arg) for arg in shlex.split(self.format._create_options))
         try:
             blockdev.btrfs.create_volume([d.path for d in self.parents],
                                          label=self.format.label,
@@ -564,12 +567,7 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
         self.volume._add_subvolume(self)
 
-    def _set_format(self, fmt):
-        """ Set the Device's format. """
-        super(BTRFSSubVolumeDevice, self)._set_format(fmt)
-        if self.exists:
-            return
-
+    def _set_mountopts(self):
         # propagate mount options specified for members via kickstart
         opts = "subvol=%s" % self.name
         has_compress = False
@@ -586,6 +584,14 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
             opts += ",compress=%s" % flags.btrfs_compression
 
         self.format.mountopts = opts
+
+    def _set_format(self, fmt):
+        """ Set the Device's format. """
+        super(BTRFSSubVolumeDevice, self)._set_format(fmt)
+        if self.exists:
+            return
+
+        self._set_mountopts()
 
     @property
     def volume(self):

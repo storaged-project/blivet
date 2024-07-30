@@ -174,7 +174,7 @@ class FSTabTestCase(unittest.TestCase):
         dev1.format.mountpoint = "/mnt/mountpath"
         b.devicetree._add_device(dev1)
 
-        dev2 = self.fstab.find_device(b, "/dev/sda_dummy")
+        dev2 = self.fstab.find_device(b.devicetree, "/dev/sda_dummy")
 
         self.assertEqual(dev1, dev2)
 
@@ -190,6 +190,6 @@ class FSTabTestCase(unittest.TestCase):
         dev1.format.mountpoint = "/mnt/mountpath"
         b.devicetree._add_device(dev1)
 
-        dev2 = self.fstab.get_device(b, "/dev/sda_dummy", "/mnt/mountpath", "xfs", ["defaults"])
+        dev2 = self.fstab.get_device(b.devicetree, "/dev/sda_dummy", "/mnt/mountpath", "xfs", ["defaults"])
 
         self.assertEqual(dev1, dev2)

@@ -277,7 +277,7 @@ class BlockDevFSMethod(Method):
             return ["libblockdev fs plugin not loaded"]
         else:
             try:
-                if self.operation in (FSOperation.UUID, FSOperation.LABEL, FSOperation.INFO):
+                if self.operation in (FSOperation.UUID, FSOperation.LABEL, FSOperation.INFO, FSOperation.MIN_SIZE):
                     avail, utility = self.check_fn(self.fstype)
                 elif self.operation == FSOperation.RESIZE:
                     avail, _mode, utility = self.check_fn(self.fstype)
@@ -538,6 +538,7 @@ class FSOperation():
     RESIZE = 2
     INFO = 3
     MKFS = 4
+    MIN_SIZE = 5
 
 
 BLOCKDEV_EXT_UUID = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.UUID, blockdev.fs.can_set_uuid, "ext2"))
@@ -565,6 +566,9 @@ BLOCKDEV_NTFS_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.M
 BLOCKDEV_VFAT_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "vfat"))
 BLOCKDEV_F2FS_MKFS = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MKFS, blockdev.fs.can_mkfs, "f2fs"))
 
+BLOCKDEV_EXT_MIN_SIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MIN_SIZE, blockdev.fs.can_get_min_size, "ext2"))
+BLOCKDEV_NTFS_MIN_SIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.MIN_SIZE, blockdev.fs.can_get_min_size, "ntfs"))
+
 # libblockdev plugins
 # we can't just check if the plugin is loaded, we also need to make sure
 # that all technologies required by us our supported (some may be missing
@@ -590,10 +594,7 @@ E2FSCK_APP = application("e2fsck")
 FSCK_HFSPLUS_APP = application("fsck.hfsplus")
 XFSREPAIR_APP = application("xfs_repair")
 FSCK_F2FS_APP = application("fsck.f2fs")
-
-# resize (for min size)
 NTFSRESIZE_APP = application("ntfsresize")
-RESIZE2FS_APP = application("resize2fs")
 
 # mkfs
 MKFS_GFS2_APP = application("mkfs.gfs2")
