@@ -27,7 +27,7 @@ Daily builds of _libblockdev_ and _libbytesize_ are also in this repo.
 
 #### OBS repository for Ubuntu and Debian
 
-Packages for Debian (testing and unstable) and Ubuntu (19.04 and newer) are available through the Open Build Service.
+Packages for Debian and Ubuntu are available through the Open Build Service.
 Instructions for adding the repository are available [here](https://software.opensuse.org/download.html?project=home:vtrefny&package=python3-blivet).
 
 #### Copr repository for openSUSE, Mageia and OpenMandriva
