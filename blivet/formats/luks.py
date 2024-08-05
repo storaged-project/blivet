@@ -259,6 +259,13 @@ class LUKS(DeviceFormat):
             return False
         return super(LUKS, self).resizable
 
+    @property
+    def protected(self):
+        if self.is_opal and self.exists:
+            # cannot remove LUKS HW-OPAL without admin password
+            return True
+        return False
+
     def update_size_info(self):
         """ Update this format's current size. """
 

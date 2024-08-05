@@ -128,3 +128,12 @@ class LUKSNodevTestCase(unittest.TestCase):
         fmt = LUKS()
         self.assertEqual(fmt._header_size, Size("16 MiB"))
         self.assertEqual(fmt._min_size, Size("16 MiB"))
+
+    def test_luks_opal(self):
+        fmt = LUKS(exists=True)
+        self.assertFalse(fmt.is_opal)
+        self.assertFalse(fmt.protected)
+
+        fmt = LUKS(subsystem="HW-OPAL")
+        self.assertTrue(fmt.is_opal)
+        self.assertTrue(fmt.protected)
