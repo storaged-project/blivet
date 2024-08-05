@@ -127,6 +127,15 @@ class LUKSFormatPopulator(FormatPopulator):
             kwargs["name"] = "luks-%s" % udev.device_get_uuid(self.data)
 
         kwargs["luks_version"] = "luks%s" % udev.device_get_format_version(self.data)
+        kwargs["label"] = udev.device_get_label(self.data)
+
+        try:
+            info = blockdev.crypto.luks_info(self.device.path)
+        except blockdev.CryptoError as e:
+            log.warning("Failed to get information about LUKS format on %s: %s", self.device, str(e))
+        else:
+            kwargs["subsystem"] = info.subsystem
+
         return kwargs
 
     def run(self):

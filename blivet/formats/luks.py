@@ -100,6 +100,8 @@ class LUKS(DeviceFormat):
             :type pbkdf_args: :class:`LUKS2PBKDFArgs`
             :keyword luks_sector_size: encryption sector size (use only with LUKS version 2)
             :type luks_sector_size: int
+            :keyword subsystem: LUKS subsystem
+            :type subsystem: str
 
             .. note::
 
@@ -119,6 +121,11 @@ class LUKS(DeviceFormat):
         self.key_size = kwargs.get("key_size") or 0
         self.map_name = kwargs.get("name")
         self.luks_version = kwargs.get("luks_version") or crypto.DEFAULT_LUKS_VERSION
+
+        self.label = kwargs.get("label") or None
+        self.subsystem = kwargs.get("subsystem") or None
+
+        self.is_opal = self.subsystem == "HW-OPAL"
 
         if self.luks_version == "luks2":
             self._header_size = crypto.LUKS2_METADATA_SIZE
@@ -185,11 +192,13 @@ class LUKS(DeviceFormat):
         s += ("  cipher = %(cipher)s  key_size = %(key_size)s"
               "  map_name = %(map_name)s\n version = %(luks_version)s"
               "  key_file = %(key_file)s  passphrase = %(passphrase)s\n"
-              "  escrow_cert = %(escrow_cert)s  add_backup = %(backup)s" %
+              "  escrow_cert = %(escrow_cert)s  add_backup = %(backup)s\n"
+              "  label = %(label)s  subsystem = %(subsystem)s" %
               {"cipher": self.cipher, "key_size": self.key_size,
                "map_name": self.map_name, "luks_version": self.luks_version,
                "key_file": self._key_file, "passphrase": passphrase,
-               "escrow_cert": self.escrow_cert, "backup": self.add_backup_passphrase})
+               "escrow_cert": self.escrow_cert, "backup": self.add_backup_passphrase,
+               "label": self.label, "subsystem": self.subsystem})
         return s
 
     @property
@@ -244,6 +253,12 @@ class LUKS(DeviceFormat):
             return False
         return os.path.exists("/dev/mapper/%s" % self.map_name)
 
+    @property
+    def resizable(self):
+        if self.is_opal:
+            return False
+        return super(LUKS, self).resizable
+
     def update_size_info(self):
         """ Update this format's current size. """
 
@@ -295,9 +310,18 @@ class LUKS(DeviceFormat):
 
         udev.settle()
 
+    # pylint: disable=unused-argument
+    def _pre_destroy(self, **kwargs):
+        if self.is_opal:
+            raise LUKSError("HW-OPAL LUKS devices cannot be destroyed.")
+        return super(LUKS, self)._pre_destroy()
+
     def _pre_resize(self):
         if self.luks_version == "luks2" and not self.has_key:
             raise LUKSError("Passphrase or key needs to be set before resizing LUKS2 format.")
+
+        if self.is_opal:
+            raise LUKSError("HW-OPAL LUKS devices cannot be resized.")
 
         super(LUKS, self)._pre_resize()
 
@@ -382,6 +406,8 @@ class LUKS(DeviceFormat):
 
     @property
     def destroyable(self):
+        if self.is_opal:
+            return False
         return self._plugin.available
 
     @property
