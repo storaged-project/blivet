@@ -102,6 +102,8 @@ class LUKS(DeviceFormat):
             :type luks_sector_size: int
             :keyword subsystem: LUKS subsystem
             :type subsystem: str
+            :keyword opal_passphrase: OPAL admin passphrase
+            :type opal_passphrase: str
 
             .. note::
 
@@ -125,15 +127,15 @@ class LUKS(DeviceFormat):
         self.label = kwargs.get("label") or None
         self.subsystem = kwargs.get("subsystem") or None
 
-        self.is_opal = self.subsystem == "HW-OPAL"
+        self.is_opal = self.luks_version in crypto.OPAL_TYPES.keys()
 
-        if self.luks_version == "luks2":
+        if self.luks_version.startswith("luks2"):
             self._header_size = crypto.LUKS2_METADATA_SIZE
         else:
             self._header_size = crypto.LUKS1_METADATA_SIZE
         self._min_size = self._header_size
 
-        if not self.exists and self.luks_version not in crypto.LUKS_VERSIONS.keys():
+        if not self.exists and self.luks_version not in list(crypto.LUKS_VERSIONS.keys()) + list(crypto.OPAL_TYPES.keys()):
             raise ValueError("Unknown or unsupported LUKS version '%s'" % self.luks_version)
 
         if not self.exists:
@@ -183,6 +185,8 @@ class LUKS(DeviceFormat):
         if self.luks_sector_size and self.luks_version != "luks2":
             raise ValueError("Sector size argument is valid only for LUKS version 2.")
 
+        self.__opal_passphrase = kwargs.get("opal_passphrase")
+
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
         if self.__passphrase:
@@ -224,6 +228,12 @@ class LUKS(DeviceFormat):
         self.__passphrase = passphrase
 
     passphrase = property(fset=_set_passphrase)
+
+    def _set_opal_passphrase(self, opal_passphrase):
+        """ Set the OPAL admin passphrase for this device. """
+        self.__opal_passphrase = opal_passphrase
+
+    opal_passphrase = property(fset=_set_opal_passphrase)
 
     @property
     def has_key(self):
@@ -343,7 +353,7 @@ class LUKS(DeviceFormat):
                         type=self.type, status=self.status)
         super(LUKS, self)._create(**kwargs)  # set up the event sync
 
-        if not self.pbkdf_args and self.luks_version == "luks2":
+        if not self.pbkdf_args and self.luks_version.startswith("luks2"):
             if luks_data.pbkdf_args:
                 self.pbkdf_args = luks_data.pbkdf_args
             else:
@@ -355,7 +365,7 @@ class LUKS(DeviceFormat):
                         luks_data.pbkdf_args = self.pbkdf_args
                         log.info("PBKDF arguments for LUKS2 not specified, using defaults with memory limit %s", mem_limit)
 
-        if not self.luks_sector_size and self.luks_version == "luks2":
+        if not self.luks_sector_size and self.luks_version.startswith("luks2"):
             self.luks_sector_size = crypto.get_optimal_luks_sector_size(self.device)
 
         if self.pbkdf_args:
@@ -379,14 +389,29 @@ class LUKS(DeviceFormat):
         else:
             raise LUKSError("Passphrase or key file must be set for LUKS create")
 
+        if self.is_opal:
+            if not self.__opal_passphrase:
+                raise LUKSError("OPAL admin passphrase must be specified when creating LUKS HW-OPAL format")
+            opal_context = blockdev.CryptoKeyslotContext(passphrase=self.__opal_passphrase)
+
         try:
-            blockdev.crypto.luks_format(self.device,
-                                        context=context,
-                                        cipher=self.cipher,
-                                        key_size=self.key_size,
-                                        min_entropy=self.min_luks_entropy,
-                                        luks_version=crypto.LUKS_VERSIONS[self.luks_version],
-                                        extra=extra)
+            if self.is_opal:
+                blockdev.crypto.opal_format(self.device,
+                                            context=context,
+                                            cipher=self.cipher if self.luks_version == "luks2-hw-opal" else None,
+                                            key_size=self.key_size if self.luks_version == "luks2-hw-opal" else 0,
+                                            min_entropy=self.min_luks_entropy,
+                                            opal_context=opal_context,
+                                            hw_encryption=crypto.OPAL_TYPES[self.luks_version],
+                                            extra=extra)
+            else:
+                blockdev.crypto.luks_format(self.device,
+                                            context=context,
+                                            cipher=self.cipher,
+                                            key_size=self.key_size,
+                                            min_entropy=self.min_luks_entropy,
+                                            luks_version=crypto.LUKS_VERSIONS[self.luks_version],
+                                            extra=extra)
         except blockdev.CryptoError as e:
             raise LUKSError(e)
 

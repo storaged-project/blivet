@@ -134,7 +134,10 @@ class LUKSFormatPopulator(FormatPopulator):
         except blockdev.CryptoError as e:
             log.warning("Failed to get information about LUKS format on %s: %s", self.device, str(e))
         else:
-            kwargs["subsystem"] = info.subsystem
+            if info.hw_encryption == blockdev.CryptoLUKSHWEncryptionType.OPAL_HW_AND_SW:
+                kwargs["luks_version"] = "luks2-hw-opal"
+            elif info.hw_encryption == blockdev.CryptoLUKSHWEncryptionType.OPAL_HW_ONLY:
+                kwargs["luks_version"] = "luks2-hw-opal-only"
 
         return kwargs
 
