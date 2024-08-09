@@ -4,6 +4,7 @@ from unittest.mock import patch
 from blivet.formats.luks import LUKS
 from blivet.size import Size
 from blivet.static_data import luks_data
+from blivet import blockdev
 
 
 class LUKSNodevTestCase(unittest.TestCase):
@@ -128,3 +129,38 @@ class LUKSNodevTestCase(unittest.TestCase):
         fmt = LUKS()
         self.assertEqual(fmt._header_size, Size("16 MiB"))
         self.assertEqual(fmt._min_size, Size("16 MiB"))
+
+    def test_luks_opal(self):
+        fmt = LUKS(exists=True)
+        self.assertFalse(fmt.is_opal)
+        self.assertFalse(fmt.protected)
+
+        fmt = LUKS(luks_version="luks2-hw-opal", exists=True)
+        self.assertTrue(fmt.is_opal)
+        self.assertTrue(fmt.protected)
+
+        fmt = LUKS(luks_version="luks2-hw-opal", passphrase="passphrase", opal_admin_passphrase="passphrase")
+        with patch("blivet.devicelibs.crypto.calculate_luks2_max_memory", return_value=None):
+            with patch("blivet.devicelibs.crypto.get_optimal_luks_sector_size", return_value=512):
+                with patch("blivet.devices.lvm.blockdev.crypto") as crypto:
+                    fmt._create()
+                    crypto.luks_format.assert_not_called()
+                    crypto.opal_format.assert_called()
+                    self.assertEqual(crypto.opal_format.call_args[1]["hw_encryption"],
+                                     blockdev.CryptoLUKSHWEncryptionType.OPAL_HW_AND_SW)
+                    self.assertEqual(crypto.opal_format.call_args[1]["cipher"], "aes-xts-plain64")
+                    self.assertEqual(crypto.opal_format.call_args[1]["key_size"], 512)
+
+        fmt = LUKS(luks_version="luks2-hw-opal-only", passphrase="passphrase", opal_admin_passphrase="passphrase")
+        with patch("blivet.devicelibs.crypto.calculate_luks2_max_memory", return_value=None):
+            with patch("blivet.devicelibs.crypto.get_optimal_luks_sector_size", return_value=512):
+                with patch("blivet.devices.lvm.blockdev.crypto") as crypto:
+                    fmt._create()
+                    crypto.luks_format.assert_not_called()
+                    crypto.opal_format.assert_called()
+                    self.assertEqual(crypto.opal_format.call_args[1]["hw_encryption"],
+                                     blockdev.CryptoLUKSHWEncryptionType.OPAL_HW_ONLY)
+
+                    # cipher and key size are not valid for HW encryption only
+                    self.assertEqual(crypto.opal_format.call_args[1]["cipher"], None)
+                    self.assertEqual(crypto.opal_format.call_args[1]["key_size"], 0)

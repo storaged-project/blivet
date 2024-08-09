@@ -158,6 +158,7 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
     _check = False
     _hidden = False                     # hide devices with this formatting?
     _ks_mountpoint = None
+    _protected = False
 
     _resize_class = fsresize.UnimplementedFSResize
     _size_info_class = fssize.UnimplementedFSSize
@@ -684,6 +685,11 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
     def packages(self):
         """ Packages required to manage formats of this type. """
         return self._packages
+
+    @property
+    def protected(self):
+        """ Is this format protected? """
+        return self._protected
 
     @property
     def resizable(self):

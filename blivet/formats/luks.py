@@ -100,6 +100,10 @@ class LUKS(DeviceFormat):
             :type pbkdf_args: :class:`LUKS2PBKDFArgs`
             :keyword luks_sector_size: encryption sector size (use only with LUKS version 2)
             :type luks_sector_size: int
+            :keyword subsystem: LUKS subsystem
+            :type subsystem: str
+            :keyword opal_admin_passphrase: OPAL admin passphrase
+            :type opal_admin_passphrase: str
 
             .. note::
 
@@ -120,13 +124,18 @@ class LUKS(DeviceFormat):
         self.map_name = kwargs.get("name")
         self.luks_version = kwargs.get("luks_version") or crypto.DEFAULT_LUKS_VERSION
 
-        if self.luks_version == "luks2":
+        self.label = kwargs.get("label") or None
+        self.subsystem = kwargs.get("subsystem") or None
+
+        self.is_opal = self.luks_version in crypto.OPAL_TYPES.keys()
+
+        if self.luks_version.startswith("luks2"):
             self._header_size = crypto.LUKS2_METADATA_SIZE
         else:
             self._header_size = crypto.LUKS1_METADATA_SIZE
         self._min_size = self._header_size
 
-        if not self.exists and self.luks_version not in crypto.LUKS_VERSIONS.keys():
+        if not self.exists and self.luks_version not in list(crypto.LUKS_VERSIONS.keys()) + list(crypto.OPAL_TYPES.keys()):
             raise ValueError("Unknown or unsupported LUKS version '%s'" % self.luks_version)
 
         if not self.exists:
@@ -176,6 +185,8 @@ class LUKS(DeviceFormat):
         if self.luks_sector_size and self.luks_version != "luks2":
             raise ValueError("Sector size argument is valid only for LUKS version 2.")
 
+        self.__opal_admin_passphrase = kwargs.get("opal_admin_passphrase")
+
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
         if self.__passphrase:
@@ -185,11 +196,13 @@ class LUKS(DeviceFormat):
         s += ("  cipher = %(cipher)s  key_size = %(key_size)s"
               "  map_name = %(map_name)s\n version = %(luks_version)s"
               "  key_file = %(key_file)s  passphrase = %(passphrase)s\n"
-              "  escrow_cert = %(escrow_cert)s  add_backup = %(backup)s" %
+              "  escrow_cert = %(escrow_cert)s  add_backup = %(backup)s\n"
+              "  label = %(label)s  subsystem = %(subsystem)s" %
               {"cipher": self.cipher, "key_size": self.key_size,
                "map_name": self.map_name, "luks_version": self.luks_version,
                "key_file": self._key_file, "passphrase": passphrase,
-               "escrow_cert": self.escrow_cert, "backup": self.add_backup_passphrase})
+               "escrow_cert": self.escrow_cert, "backup": self.add_backup_passphrase,
+               "label": self.label, "subsystem": self.subsystem})
         return s
 
     @property
@@ -215,6 +228,12 @@ class LUKS(DeviceFormat):
         self.__passphrase = passphrase
 
     passphrase = property(fset=_set_passphrase)
+
+    def _set_opal_admin_passphrase(self, opal_admin_passphrase):
+        """ Set the OPAL admin passphrase for this device. """
+        self.__opal_admin_passphrase = opal_admin_passphrase
+
+    opal_admin_passphrase = property(fset=_set_opal_admin_passphrase)
 
     @property
     def has_key(self):
@@ -243,6 +262,19 @@ class LUKS(DeviceFormat):
         if not self.exists or not self.map_name:
             return False
         return os.path.exists("/dev/mapper/%s" % self.map_name)
+
+    @property
+    def resizable(self):
+        if self.is_opal:
+            return False
+        return super(LUKS, self).resizable
+
+    @property
+    def protected(self):
+        if self.is_opal and self.exists:
+            # cannot remove LUKS HW-OPAL without admin password
+            return True
+        return False
 
     def update_size_info(self):
         """ Update this format's current size. """
@@ -295,9 +327,18 @@ class LUKS(DeviceFormat):
 
         udev.settle()
 
+    # pylint: disable=unused-argument
+    def _pre_destroy(self, **kwargs):
+        if self.is_opal:
+            raise LUKSError("HW-OPAL LUKS devices cannot be destroyed.")
+        return super(LUKS, self)._pre_destroy()
+
     def _pre_resize(self):
         if self.luks_version == "luks2" and not self.has_key:
             raise LUKSError("Passphrase or key needs to be set before resizing LUKS2 format.")
+
+        if self.is_opal:
+            raise LUKSError("HW-OPAL LUKS devices cannot be resized.")
 
         super(LUKS, self)._pre_resize()
 
@@ -312,7 +353,7 @@ class LUKS(DeviceFormat):
                         type=self.type, status=self.status)
         super(LUKS, self)._create(**kwargs)  # set up the event sync
 
-        if not self.pbkdf_args and self.luks_version == "luks2":
+        if not self.pbkdf_args and self.luks_version.startswith("luks2"):
             if luks_data.pbkdf_args:
                 self.pbkdf_args = luks_data.pbkdf_args
             else:
@@ -324,7 +365,7 @@ class LUKS(DeviceFormat):
                         luks_data.pbkdf_args = self.pbkdf_args
                         log.info("PBKDF arguments for LUKS2 not specified, using defaults with memory limit %s", mem_limit)
 
-        if not self.luks_sector_size and self.luks_version == "luks2":
+        if not self.luks_sector_size and self.luks_version.startswith("luks2"):
             self.luks_sector_size = crypto.get_optimal_luks_sector_size(self.device)
 
         if self.pbkdf_args:
@@ -348,14 +389,29 @@ class LUKS(DeviceFormat):
         else:
             raise LUKSError("Passphrase or key file must be set for LUKS create")
 
+        if self.is_opal:
+            if not self.__opal_admin_passphrase:
+                raise LUKSError("OPAL admin passphrase must be specified when creating LUKS HW-OPAL format")
+            opal_context = blockdev.CryptoKeyslotContext(passphrase=self.__opal_admin_passphrase)
+
         try:
-            blockdev.crypto.luks_format(self.device,
-                                        context=context,
-                                        cipher=self.cipher,
-                                        key_size=self.key_size,
-                                        min_entropy=self.min_luks_entropy,
-                                        luks_version=crypto.LUKS_VERSIONS[self.luks_version],
-                                        extra=extra)
+            if self.is_opal:
+                blockdev.crypto.opal_format(self.device,
+                                            context=context,
+                                            cipher=self.cipher if self.luks_version == "luks2-hw-opal" else None,
+                                            key_size=self.key_size if self.luks_version == "luks2-hw-opal" else 0,
+                                            min_entropy=self.min_luks_entropy,
+                                            opal_context=opal_context,
+                                            hw_encryption=crypto.OPAL_TYPES[self.luks_version],
+                                            extra=extra)
+            else:
+                blockdev.crypto.luks_format(self.device,
+                                            context=context,
+                                            cipher=self.cipher,
+                                            key_size=self.key_size,
+                                            min_entropy=self.min_luks_entropy,
+                                            luks_version=crypto.LUKS_VERSIONS[self.luks_version],
+                                            extra=extra)
         except blockdev.CryptoError as e:
             raise LUKSError(e)
 
@@ -382,6 +438,8 @@ class LUKS(DeviceFormat):
 
     @property
     def destroyable(self):
+        if self.is_opal:
+            return False
         return self._plugin.available
 
     @property
