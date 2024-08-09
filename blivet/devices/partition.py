@@ -377,10 +377,10 @@ class PartitionDevice(StorageDevice):
         if not self.exists:
             return self.part_type_uuid_req
         else:
-            if hasattr(parted.Partition, "type_uuid") and self.parted_partition.type_uuid:
+            if hasattr(parted.Partition, "type_uuid") and self.parted_partition and self.parted_partition.type_uuid:
                 try:
                     return UUID(bytes=self.parted_partition.type_uuid)
-                except (TypeError, ValueError, AttributeError):
+                except (TypeError, ValueError):
                     pass
             return self._part_type_uuid
 
