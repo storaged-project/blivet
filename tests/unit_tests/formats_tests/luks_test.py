@@ -139,7 +139,7 @@ class LUKSNodevTestCase(unittest.TestCase):
         self.assertTrue(fmt.is_opal)
         self.assertTrue(fmt.protected)
 
-        fmt = LUKS(luks_version="luks2-hw-opal", passphrase="passphrase", opal_passphrase="passphrase")
+        fmt = LUKS(luks_version="luks2-hw-opal", passphrase="passphrase", opal_admin_passphrase="passphrase")
         with patch("blivet.devicelibs.crypto.calculate_luks2_max_memory", return_value=None):
             with patch("blivet.devicelibs.crypto.get_optimal_luks_sector_size", return_value=512):
                 with patch("blivet.devices.lvm.blockdev.crypto") as crypto:
@@ -151,7 +151,7 @@ class LUKSNodevTestCase(unittest.TestCase):
                     self.assertEqual(crypto.opal_format.call_args[1]["cipher"], "aes-xts-plain64")
                     self.assertEqual(crypto.opal_format.call_args[1]["key_size"], 512)
 
-        fmt = LUKS(luks_version="luks2-hw-opal-only", passphrase="passphrase", opal_passphrase="passphrase")
+        fmt = LUKS(luks_version="luks2-hw-opal-only", passphrase="passphrase", opal_admin_passphrase="passphrase")
         with patch("blivet.devicelibs.crypto.calculate_luks2_max_memory", return_value=None):
             with patch("blivet.devicelibs.crypto.get_optimal_luks_sector_size", return_value=512):
                 with patch("blivet.devices.lvm.blockdev.crypto") as crypto:

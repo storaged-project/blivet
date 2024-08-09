@@ -102,8 +102,8 @@ class LUKS(DeviceFormat):
             :type luks_sector_size: int
             :keyword subsystem: LUKS subsystem
             :type subsystem: str
-            :keyword opal_passphrase: OPAL admin passphrase
-            :type opal_passphrase: str
+            :keyword opal_admin_passphrase: OPAL admin passphrase
+            :type opal_admin_passphrase: str
 
             .. note::
 
@@ -185,7 +185,7 @@ class LUKS(DeviceFormat):
         if self.luks_sector_size and self.luks_version != "luks2":
             raise ValueError("Sector size argument is valid only for LUKS version 2.")
 
-        self.__opal_passphrase = kwargs.get("opal_passphrase")
+        self.__opal_admin_passphrase = kwargs.get("opal_admin_passphrase")
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
@@ -229,11 +229,11 @@ class LUKS(DeviceFormat):
 
     passphrase = property(fset=_set_passphrase)
 
-    def _set_opal_passphrase(self, opal_passphrase):
+    def _set_opal_admin_passphrase(self, opal_admin_passphrase):
         """ Set the OPAL admin passphrase for this device. """
-        self.__opal_passphrase = opal_passphrase
+        self.__opal_admin_passphrase = opal_admin_passphrase
 
-    opal_passphrase = property(fset=_set_opal_passphrase)
+    opal_admin_passphrase = property(fset=_set_opal_admin_passphrase)
 
     @property
     def has_key(self):
@@ -390,9 +390,9 @@ class LUKS(DeviceFormat):
             raise LUKSError("Passphrase or key file must be set for LUKS create")
 
         if self.is_opal:
-            if not self.__opal_passphrase:
+            if not self.__opal_admin_passphrase:
                 raise LUKSError("OPAL admin passphrase must be specified when creating LUKS HW-OPAL format")
-            opal_context = blockdev.CryptoKeyslotContext(passphrase=self.__opal_passphrase)
+            opal_context = blockdev.CryptoKeyslotContext(passphrase=self.__opal_admin_passphrase)
 
         try:
             if self.is_opal:
