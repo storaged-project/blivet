@@ -10,6 +10,7 @@ prepare:
     script:
       - sudo dnf install -y 'dnf-command(copr)'
       - sudo dnf copr enable -y @storage/blivet-daily
+      - sudo dnf -y update --refresh
 
   - name: ansible
     how: ansible
@@ -17,4 +18,4 @@ prepare:
 
 execute:
     how: tmt
-    script: sudo make test
+    script: sudo make check
