@@ -139,6 +139,8 @@ class LUKSFormatPopulator(FormatPopulator):
             elif info.hw_encryption == blockdev.CryptoLUKSHWEncryptionType.OPAL_HW_ONLY:
                 kwargs["luks_version"] = "luks2-hw-opal-only"
 
+            kwargs["subsystem"] = info.subsystem
+
         return kwargs
 
     def run(self):
