@@ -243,6 +243,10 @@ def device_get_name(udev_info):
         elif device_get_format(udev_info) == "linux_raid_member":
             # MD RAID member -> use SYS_NAME
             name = udev_info["SYS_NAME"]
+        elif device_get_format(udev_info) == "isw_raid_member":
+            # intel software biosraid
+            # MD RAID member -> use SYS_NAME
+            name = udev_info["SYS_NAME"]
         elif device_is_partition(udev_info):
             # partition on RAID -> construct name from MD_DEVNAME + partition number
             # for partitions on named RAID we want to use the raid name, not

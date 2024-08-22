@@ -419,7 +419,7 @@ class StorageDevice(Device):
 
     @property
     def protected(self):
-        return self.readonly or self._protected
+        return self.readonly or self._protected or self.format.protected
 
     @protected.setter
     def protected(self, value):
