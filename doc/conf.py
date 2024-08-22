@@ -42,14 +42,14 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Blivet'
-copyright = '2013-2016, Red Hat, Inc.'     # pylint: disable=redefined-builtin
+copyright = '2013-2024, Red Hat, Inc.'     # pylint: disable=redefined-builtin
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '2.0.2'
+version = '3.10.1'
 # The full version, including alpha/beta/rc tags.
 release = version
 

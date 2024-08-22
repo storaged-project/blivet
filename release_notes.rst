@@ -1,3 +1,343 @@
+3.10.0
+=======
+* `Support for creating Stratis Pools encrypted with Clevis/Tang`
+* `Support for adding new block devices to existing Stratis Pools`
+* `Automatic PV grow support`
+
+Support for creating Stratis Pools encrypted with Clevis/Tang
+--------------------------------------------------------------
+Encrypted Stratis Pools can now be created with Clevis/Tang or
+TPM2 configured.
+
+Support for adding new block devices to existing Stratis Pools
+---------------------------------------------------------------
+New block devices can now be added to existing Stratis Pools
+using the `ActionAddMember` action.
+
+
+Automatic PV grow support
+--------------------------
+LVM PVs can now be automatically grown to the size of the underlying
+block device with `ActionResizeFormat` using the new `grow_to_fill`
+property.
+
+3.9.0
+======
+* `Fstab support`_
+* `Libblockdev FS plugin used for filesystem operations`_
+
+Fstab support
+--------------
+Blivet now supports managing the `/etc/fstab` entries. This can be done
+either automatically when changing devices (filesystems) or manually
+via the newly added `fstab` module.
+
+Libblockdev FS plugin used for filesystem operations
+------------------------------------------------------
+Filesystem management and operations are now done using the libblockdev
+FS plugin instead of running the filesystem-specific tools directly.
+Support for some older/unused filesystems (HFS, JFS, ReiserFS) has been
+removed.
+
+3.8.0
+======
+* `Filesystem online resize support`_
+* `Libblockdev 3.0`_
+
+Filesystem online resize support
+---------------------------------
+Filesystem that support online shrink and/or grow can now be resized when
+mounted. The default behaviour is still to try to unmount the filesystem
+first. This can be controlled with the `flags.allow_online_fs_resize` flag.
+
+Libblockdev 3.0
+----------------
+Latest major release of the libblockdev library is now required for blivet.
+
+3.7.0
+======
+* `NVMe and NVMe over Fabrics support`_
+* `Discoverable partition IDs support`_
+* `DMRAID support removed`_
+* `Removed`_
+
+NVMe and NVMe over Fabrics support
+-----------------------------------
+Basic support for NVMe and NVMe oF devices was added in this release. These
+devices will now be correctly identified as either `NVMeNamespaceDevice` or
+`NVMeFabricsNamespaceDevice`.
+
+Discoverable partition IDs support
+-----------------------------------
+Blivet now support discoverable partitions specification to set well known
+GPT partition GUIDs based on the selected mount point.
+
+DMRAID support removed
+-----------------------
+Support for DMRAID devices was removed in this release. BIOS RAID
+devices are now support by `mdadm`.
+
+Removed
+--------
+* `DMRaidArrayDevice`
+* `flags.noiswmd` and `flags.dmraid`
+
+3.6.0
+======
+* `LVM writecache support`_
+* `Support for enabling/disabling compression/deduplication for existing LVM VDO volumes`_
+* `Test suite improvements`_
+
+LVM writecache support
+-----------------------
+Blivet can now create LVM writecache devices and attach them to
+existing LVM volumes as well as create new LVM volumes with with
+write cache attached to them.
+
+Support for enabling/disabling compression/deduplication for existing LVM VDO volumes
+--------------------------------------------------------------------------------------
+Deduplication and compression can be now enabled or disabled on
+existing LVM VDO volumes.
+
+Test suite improvements
+------------------------
+The blivet test suite has been split into two separate test suites:
+unit tests that don't require root privileges and don't use real
+storage devices and "storage" tests that use either loop devices or
+virtual scsi devices for testing.
+
+3.5.0
+======
+* `Stratis support`_
+* `LVM cache pools support`_
+* `LVM device file support`_
+* `Device rename support`_
+* `NPIV-enabled zFCP devices support`_
+
+Stratis support
+----------------
+Blivet can now create Stratis pools and filesystems.
+This also includes devicefactory support for Stratis devices and
+support for creating and unlocking encrypted Stratis pools.
+
+LVM cache pools support
+------------------------
+Blivet can now create LVM cache pools and attach them to
+existing logical volumes.
+
+LVM device file support
+------------------------
+Blivet now supports the new LVM device file used for device
+filtering.
+
+Device rename support
+----------------------
+Blivet now can rename devices (LVM Volume Groups and Logical Volumes)
+using the ActionConfigureDevice action.
+
+NPIV-enabled zFCP devices support
+----------------------------------
+Blivet now supports zFCP NPIV (N_Port ID virtualization) devices.
+The kernel module will detect the WWPNs and LUNs and bring all the devices
+up automatically. This means the user doesn't have to provide
+the WWPN and LUN IDs.
+
+3.4.0
+======
+* `LVM VDO Support`_
+
+LVM VDO Support
+----------------
+Blivet can now create LVM VDO Pools and Volumes.
+This also includes devicefactory support for deduplicated and
+compressed volumes using LVM VDO.
+
+3.3.0
+======
+* `Localization Platform Change`_
+* `XFS Grow Support`_
+* `Better Handling of Unknown Device Mapper Devices`_
+* `F2FS Support`_
+* `Removed`_
+
+ * `DMDevice.slave`, `LoopDevice.slave`, `LUKSDevice.slave`
+ * `blivet.errors.NoSlavesError`
+ * `blivet.udev.device_name_blacklist`
+
+Localization Platform Change
+-----------------------------
+Localization platform has been changed from Zanata to Weblate.
+
+XFS Grow Support
+-----------------
+XFS format can now be resized by Blivet.
+
+Better Handling of Unknown Device Mapper Devices
+-------------------------------------------------
+Unknown/unsupported Device Mapper devices are now added to the
+devicetree and no longer causes errors during populate.
+
+F2FS Support
+-------------
+Blivet can now create F2FS filesystem.
+
+Removed
+--------
+* `DMDevice.slave`, `LoopDevice.slave`, `LUKSDevice.slave`
+* `blivet.errors.NoSlavesError`
+* `blivet.udev.device_name_blacklist`
+
+3.2.0
+======
+* `Alignment to Minimal I/O Size`
+* `LVMPhysicalVolume Resizable`
+* `LUKS2`
+* `Removed`
+** `blivet.errors.UnknownSourceDeviceError`
+
+Alignment to Minimal I/O Size
+------------------------------
+Newly created devices smaller than min I/O size are now automatically
+aligned up.
+
+LVMPhysicalVolume Resizable
+----------------------------
+LVM Physical Volume format can now be resized by Blivet.
+
+LUKS2
+------
+LUKS2 is now used as default encryption if not specified otherwise.
+
+Removed
+--------
+* ``blivet.errors.UnknownSourceDeviceError``
+
+3.1.0
+======
+* `LUKS2`
+* `NVDIMM`
+
+LUKS2
+------
+Blivet now supports creating and unlocking LUKS2 volumes.
+
+NVDIMM
+-------
+Blivet now supports managing NVDIMM devices. Configuration of the devices
+themselves can be done prior to using ndvimms in sector mode as you would
+use any other disk-like devices in blivet.
+
+
+3.0.0
+======
+* `Python 2&3 Compatibility`_
+* `Configuration Actions`_
+* `Streamlined DeviceFactory Reconfiguration`_
+* `New Upstream Location`_
+* `DeviceFactory Defaults to LVM`_
+* `DBus Interface`_
+* `HBA RAID Info`_
+* `DiskDevice.wwn`_
+* `Removed`_
+** `udev.device_is_realdisk`
+* `Moved`_
+** `Encrypted Volume Data`
+
+Python 2&3 Compatibility
+-------------------------
+Blivet can now run using python-2.7.x or python-3.5.x. The ``six`` python
+module is used as a compatibility layer.
+
+Configuration Actions
+----------------------
+Setting arbitrary attributes of devices and their formatting can now be
+accomplished using configuration actions (``ActionConfigureDevice``,
+``ActionConfigureFormat``). Previously, the only way to do this was by making
+ad-hoc changes that were not properly accounted for.
+
+Streamlined DeviceFactory Reconfiguration
+------------------------------------------
+When passing a device to a ``DeviceFactory`` constructor to reconfigure that
+device, blivet will now obtain the factory defaults from that device. This
+saves the caller from having to pass all arguments explicitly to maintain the
+initial settings for that device.
+
+New Upstream Location
+----------------------
+Blivet has moved to https://github.com/storaged-project/blivet, along with
+libblockdev, libbytesize, and blivet-gui.
+
+DeviceFactory Defaults to LVM
+------------------------------
+``Blivet.factory_device`` and ``devicefactory.get_device_factory`` both
+default to configuring LVM. Previously there was no default type.
+
+DBus Interface
+---------------
+An *experimental* DBus interface has been added. It contains functionality
+related to examining the current configuration, removing devices, and
+configuring new devices using blivet's ``DeviceFactory``.
+
+HBA RAID Info
+--------------
+Blivet now uses libstoragemgmt's python module (``lsm``) to provide some
+basic information about HBA RAID volumes as properties of ``DiskDevice``.
+
+DiskDevice.wwn
+---------------
+An attribute (``wwn``) has been added to ``DiskDevice`` to convey World Wide
+Number for disks.
+
+Removed
+--------
+* ``udev.device_is_realdisk``
+
+Moved
+------
+Encrypted Volume Data has moved to a singleton and is no longer passed around
+as arguments to ``DeviceTree`` or related classes.
+
+
+2.1.3
+======
+* `Device Tags`
+
+Device Tags
+------------
+All ``Device`` subclasses now have a ``tags`` attribute which is prepopulated
+with predefined tags describing the drive(s) a device resides on. The available
+tags are defined in ``blivet.devices.lib.Tags``.
+
+2.1.2
+======
+* `Separate data/metadata LVs for thin/cache LVs`_
+
+Separate data/metadata LVs for thin/cache LVs
+----------------------------------------------
+LVM thin pools and cached LVs can now be created from separate data/metadata LVs.
+
+
+2.1.1
+======
+* `Improved handling for unsupported/corrupt disklabels`_
+
+Improved handling for unsupported/corrupt disklabels
+-----------------------------------------------------
+Devices built on disklabels which are either corrupt or otherwise
+not supported by parted are now correctly recognized and included
+in the ``DeviceTree``. This means that users can now properly remove
+all devices from such disks.
+
+
+2.1.0
+======
+* `MD chunk size`
+
+MD chunk size
+--------------
+Chunk size can now be specified when instantiating ``blivet.devices.MDRaidArrayDevice``.
+
+
 2.0.0
 ======
 
