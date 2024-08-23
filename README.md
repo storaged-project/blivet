@@ -57,7 +57,7 @@ To install these dependencies use following commands:
 
 ### Development
 
-See [CONTRIBUTING](https://github.com/storaged-project/blivet/blob/master/CONTRIBUTING)
+See [CONTRIBUTING.md](https://github.com/storaged-project/blivet/blob/main/CONTRIBUTING.md)
 
 Developer documentation is available on our [website](http://storaged.org/blivet/) or on [Read the Docs](https://blivet.readthedocs.io/en/latest/).
 
