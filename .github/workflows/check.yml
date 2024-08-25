@@ -3,12 +3,10 @@ name: Static Analysis
 on:
   pull_request:
     branches:
-     - 3.*-devel
-     - master
+     - main
   push:
     branches:
-     - 3.*-devel
-     - master
+     - main
   schedule:
     - cron: 0 0 * * 0
 
