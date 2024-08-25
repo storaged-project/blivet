@@ -13,7 +13,7 @@ on:
 jobs:
   build:
     name: static-analysis
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       CI_IMAGE: fedora:latest
       CI_CONTAINER: blivet-tests
