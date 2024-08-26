@@ -1,6 +1,9 @@
 import os
 import shutil
 import subprocess
+from uuid import UUID
+
+import parted
 
 from ..storagetestcase import StorageTestCase
 
@@ -100,6 +103,11 @@ class LVMTestCase(StorageTestCase):
         pv = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "1")
         self.assertIsNone(pv.format.vg_name)
         self.assertIsNone(pv.format.vg_uuid)
+
+        # not really related to LVM, but we want to test the partition types somewhere
+        if hasattr(parted.Partition, "type_uuid"):
+            self.assertEqual(pv.part_type_uuid, UUID('e6d6d379-f507-44c2-a23c-238f2a3df928'))
+            self.assertEqual(pv.part_type_name, "Linux LVM")
 
     def test_lvm_thin(self):
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])

@@ -38,6 +38,7 @@ from .. import udev
 from ..formats import DeviceFormat, get_format
 from ..devicelibs.gpt import gpt_part_uuid_for_mountpoint
 from ..size import Size, MiB, ROUND_DOWN
+from .. import avail_plugs
 
 import logging
 log = logging.getLogger("blivet")
@@ -159,6 +160,7 @@ class PartitionDevice(StorageDevice):
         self._parted_partition = None
         self._orig_path = None
         self._part_type_uuid = None
+        self._part_type_name = None
         self._mountpoint = mountpoint
 
         if not exists and size is None:
@@ -383,6 +385,30 @@ class PartitionDevice(StorageDevice):
                 except (TypeError, ValueError):
                     pass
             return self._part_type_uuid
+
+    @property
+    def part_type_name(self):
+        """ Get the partition's type as a human-readable string. """
+        if not self.exists:
+            return None
+        else:
+            if self._part_type_name:
+                return self._part_type_name
+            else:
+                if "part" not in avail_plugs:
+                    log.info("Libblockdev part plugin not available, cannot get partition type")
+                    return None
+                else:
+                    try:
+                        spec = blockdev.part.get_part_spec(self.disk.path, self.path)
+                    except (blockdev.PartError, blockdev.BlockDevNotImplementedError) as e:
+                        log.error("Failed to get partition spec for %s: %s", self.path, str(e))
+                    else:
+                        if not spec or not hasattr(spec, "type_name"):
+                            log.error("Failed to get partition spec for %s", self.path)
+                        else:
+                            self._part_type_name = spec.type_name
+                            return self._part_type_name
 
     @property
     def is_extended(self):
