@@ -3,19 +3,17 @@ name: Static Analysis
 on:
   pull_request:
     branches:
-     - 3.*-devel
-     - master
+     - main
   push:
     branches:
-     - 3.*-devel
-     - master
+     - main
   schedule:
     - cron: 0 0 * * 0
 
 jobs:
   build:
     name: static-analysis
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       CI_IMAGE: fedora:latest
       CI_CONTAINER: blivet-tests
