@@ -1171,6 +1171,16 @@ class PartitionSetFactory(PartitionFactory):
 
         # drop any new disks that don't have free space
         min_free = min(Size("500MiB"), self.parent_factory.size)
+
+        for d in add_disks:
+            if not d.partitioned:
+                log.debug("Ignoring disk %s: disk is not partitioned", d.name)
+            elif not d.format.supported:
+                log.debug("Ignoring disk %s: format %s is not supported", d.name, d.format.name)
+            elif d.format.free < min_free:
+                log.debug("Ignoring disk %s: not enough free space. Required: %s, free: %s",
+                          d.name, min_free, d.format.free)
+
         add_disks = [d for d in add_disks if d.partitioned and
                      d.format.supported and d.format.free >= min_free]
 
