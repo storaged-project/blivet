@@ -944,7 +944,7 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
             :keyword devices: list of factory-managed devices or None
             :type devices: list(:class:`blivet.devices.StorageDevice`) or NoneType
         """
-        return Size("550 MiB")  # huge stratis pool metadata
+        return Size("1.3 GiB")  # huge stratis pool metadata
 
     def _validate_factory_device(self, *args, **kwargs):
         device = args[0]
@@ -970,7 +970,7 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
         else:
             self.assertAlmostEqual(device.pool.size,
                                    device.size,
-                                   delta=Size("600 MiB"))
+                                   delta=Size("1.3 GiB"))
 
         self.assertEqual(device.pool.encrypted, kwargs.get("container_encrypted", False))
 
