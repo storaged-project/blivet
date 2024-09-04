@@ -744,11 +744,6 @@ def set_up_logging(log_dir="/tmp", log_prefix="blivet", console_logs=None):
 
     log.info("sys.argv = %s", sys.argv)
 
-    prefix = "%s-testdata" % (log_prefix,)
-    handler = make_handler(log_dir, prefix, logging.DEBUG)
-    testdata_log.setLevel(logging.DEBUG)
-    testdata_log.addHandler(handler)
-
 
 def set_up_console_log(log_names=None):
     log_names = log_names or []
