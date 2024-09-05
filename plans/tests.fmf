@@ -1,8 +1,10 @@
 summary: Run tests
 
 adjust+:
-  when: revdeps == yes
-  enabled: false
+  - when: revdeps == yes
+    enabled: false
+  - when: distro == centos
+    enabled: false
 
 prepare:
   - name: copr
