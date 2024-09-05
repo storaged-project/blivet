@@ -1,10 +1,5 @@
 actions:
   post-upstream-clone:
-    # we need to set email and username for the merge commit
-    - 'git config user.email "blivet-ci@example.com"'
-    - 'git config user.name "Blivet CI"'
-    # merge the release branch to get correct version in spec
-    - 'git merge --ff origin/3.10-release'
     # bump release to 99 to always be ahead of Fedora builds
     - 'bash -c "sed -i -r \"s/Release:(\s*)\S+/Release: 99%{?dist}/\" python-blivet.spec"'
   get-current-version:
@@ -30,8 +25,46 @@ jobs:
   trigger: commit
   owner: "@storage"
   project: blivet-daily
-  branch: 3.10-devel
+  branch: main
   preserve_project: true
+
+- job: tests
+  trigger: pull_request
+  targets:
+  - fedora-latest-stable
+
+- job: propose_downstream
+  trigger: release
+  dist_git_branches:
+    - fedora-all
+
+- job: koji_build
+  trigger: commit
+  dist_git_branches:
+    - fedora-all
+
+- job: bodhi_update
+  trigger: commit
+  dist_git_branches:
+    - fedora-branched
+
+# run tests for udisks consumers, see plans/ with `revdeps == yes`
+- job: tests
+  identifier: revdeps
+  trigger: pull_request
+  notifications:
+    failure_comment:
+      message: "Blivet-GUI tests failed for commit {commit_sha}. @vojtechtrefny please check."
+  targets:
+    - fedora-latest-stable
+  tf_extra_params:
+    environments:
+      - artifacts:
+        - type: repository-file
+          id: https://copr.fedorainfracloud.org/coprs/g/storage/blivet-daily/repo/fedora-$releasever/group_storage-blivet-daily-fedora-$releasever.repo
+        tmt:
+          context:
+            revdeps: "yes"
 
 srpm_build_deps:
  - git
