@@ -114,9 +114,6 @@ class DMDevice(StorageDevice):
             else:
                 raise
 
-    # def get_target_type(self):
-    #    return dm.get_dm_target(name=self.name)
-
     def get_dm_node(self):
         """ Return the dm-X (eg: dm-0) device node for this device. """
         log_method_call(self, self.name, status=self.status)
