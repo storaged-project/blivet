@@ -1,0 +1,32 @@
+# reverse dependency test for blivet-gui
+enabled: false
+
+adjust+:
+  when: revdeps == yes
+  enabled: true
+
+prepare:
+  - name: copr
+    how: shell
+    script:
+      - sudo dnf install -y 'dnf-command(copr)'
+      - sudo dnf copr enable -y @storage/blivet-daily
+      # TF prioritizes Fedora tag repo over all others, in particular our daily COPR
+      - for f in $(grep -l -r 'testing-farm-tag-repository' /etc/yum.repos.d); do sed -i '/priority/d' "$f" ;done
+      - sudo dnf -y update
+
+  - name: ansible
+    how: ansible
+    playbook:
+        - https://raw.githubusercontent.com/storaged-project/blivet-gui/main/misc/install-test-dependencies.yml
+
+discover:
+    how: shell
+    url: https://github.com/storaged-project/blivet-gui
+    ref: main
+    tests:
+      - name: all
+        test: make test
+
+execute:
+    how: tmt
