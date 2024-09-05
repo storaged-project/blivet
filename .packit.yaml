@@ -15,12 +15,21 @@ actions:
     - bash -c "sed -i python-blivet.spec -e \"s/Release:.*/Release:\ ${PACKIT_RPMSPEC_RELEASE}%{?dist}/\""
 
 jobs:
+# Fedora builds for the 'main' branch
 - job: copr_build
   targets:
     - fedora-all
   trigger: pull_request
   branch: main
 
+# CentOS 10 Stream builds for the 'rhel10-branch'
+- job: copr_build
+  targets:
+    - centos-stream-10-x86_64
+  trigger: pull_request
+  branch: rhel10-branch
+
+# Daily builds for Fedora from the 'main' branch
 - job: copr_build
   trigger: commit
   owner: "@storage"
@@ -28,12 +37,14 @@ jobs:
   branch: main
   preserve_project: true
 
+# Fedora tests for the 'main' branch
 - job: tests
   trigger: pull_request
   targets:
   - fedora-latest-stable
   branch: main
 
+# Downstream builds
 - job: propose_downstream
   trigger: release
   dist_git_branches:
@@ -49,7 +60,8 @@ jobs:
   dist_git_branches:
     - fedora-branched
 
-# run tests for udisks consumers, see plans/ with `revdeps == yes`
+# Reverse dependency tests
+## run tests for udisks consumers, see plans/ with `revdeps == yes`
 - job: tests
   identifier: revdeps
   trigger: pull_request
