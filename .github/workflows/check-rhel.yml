@@ -1,0 +1,38 @@
+name: Static Analysis (RHEL)
+
+on:
+  pull_request:
+    branches:
+     - rhel10-branch
+
+jobs:
+  build:
+    name: static-analysis-rhel
+    runs-on: ubuntu-24.04
+    env:
+      CI_IMAGE: quay.io/centos/centos:stream10-development
+      CI_CONTAINER: blivet-tests
+    steps:
+      - name: Checkout blivet repository
+        uses: actions/checkout@v4
+
+      - name: Install podman
+        run: |
+          sudo apt -qq update
+          sudo apt -y -qq install podman
+
+      - name: Start the container
+        run: |
+          podman run -d -t --name ${{ env.CI_CONTAINER }} --privileged --volume "$(pwd):/app" --workdir "/app" ${{ env.CI_IMAGE }}
+
+      - name: Install ansible in the container
+        run: |
+          podman exec -it ${{ env.CI_CONTAINER }} bash -c "dnf -y install ansible-core make which"
+
+      - name: Install test dependencies in the container
+        run: |
+          podman exec -it ${{ env.CI_CONTAINER }} bash -c "ansible-playbook -i 'localhost,' -c local misc/install-test-dependencies.yml"
+
+      - name: Run static analysis tests in the container
+        run: |
+          podman exec -it ${{ env.CI_CONTAINER }} bash -c "make check"
