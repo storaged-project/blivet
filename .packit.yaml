@@ -16,10 +16,10 @@ actions:
 
 jobs:
 - job: copr_build
-  metadata:
-    targets:
+  targets:
     - fedora-all
   trigger: pull_request
+  branch: main
 
 - job: copr_build
   trigger: commit
@@ -32,6 +32,7 @@ jobs:
   trigger: pull_request
   targets:
   - fedora-latest-stable
+  branch: main
 
 - job: propose_downstream
   trigger: release
@@ -52,6 +53,7 @@ jobs:
 - job: tests
   identifier: revdeps
   trigger: pull_request
+  branch: main
   notifications:
     failure_comment:
       message: "Blivet-GUI tests failed for commit {commit_sha}. @vojtechtrefny please check."
