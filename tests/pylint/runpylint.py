@@ -23,10 +23,11 @@ class BlivetLintConfig(CensorshipConfig):
             FalsePositive(r"Method 'do_task' is abstract in class 'UnimplementedTask' but is not overridden"),
             FalsePositive(r"No value for argument 'member_count' in unbound method call$"),
             FalsePositive(r"No value for argument 'smallest_member_size' in unbound method call$"),
-            FalsePositive(r"Bad option value '(subprocess-popen-preexec-fn|try-except-raise|environment-modify|arguments-renamed|redundant-u-string-prefix)'"),
+            FalsePositive(r"Bad option value '(subprocess-popen-preexec-fn|try-except-raise|environment-modify|arguments-renamed|redundant-u-string-prefix|possibly-used-before-assignment)'"),
             FalsePositive(r"Instance of '(Action.*Device|Action.*Format|Action.*Member|Device|DeviceAction|DeviceFormat|Event|ObjectID|PartitionDevice|StorageDevice|BTRFS.*Device|LoopDevice)' has no 'id' member$"),
             FalsePositive(r"Instance of 'GError' has no 'message' member"),  # overriding currently broken local pylint disable
-            FalsePositive(r"No name '.*' in module 'libmount'")
+            FalsePositive(r"No name '.*' in module 'libmount'"),
+            FalsePositive(r"Unknown option value for 'disable', expected a valid pylint message and got 'possibly-used-before-assignment'")
         ]
 
     def _files(self):

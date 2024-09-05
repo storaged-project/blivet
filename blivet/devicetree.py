@@ -752,6 +752,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                         break
             elif options:
                 attr = None
+                val = None
                 if "subvol=" in options:
                     attr = "name"
                     val = util.get_option_value("subvol", options)

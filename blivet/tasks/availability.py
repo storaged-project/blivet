@@ -283,6 +283,8 @@ class BlockDevFSMethod(Method):
                     avail, _mode, utility = self.check_fn(self.fstype)
                 elif self.operation == FSOperation.MKFS:
                     avail, _options, utility = self.check_fn(self.fstype)
+                else:
+                    raise RuntimeError("Unknown operation")
             except blockdev.FSError as e:
                 return [str(e)]
             if not avail:
