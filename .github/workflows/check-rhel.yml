@@ -13,7 +13,7 @@ jobs:
       CI_IMAGE: quay.io/centos/centos:stream10-development
       CI_CONTAINER: blivet-tests
     steps:
-      - name: Checkout libblockdev repository
+      - name: Checkout blivet repository
         uses: actions/checkout@v4
 
       - name: Install podman

@@ -68,7 +68,7 @@ jobs:
     - fedora-branched
 
 # Reverse dependency tests
-## run tests for udisks consumers, see plans/ with `revdeps == yes`
+## run tests for blivet consumers, see plans/ with `revdeps == yes`
 - job: tests
   identifier: revdeps
   trigger: pull_request
