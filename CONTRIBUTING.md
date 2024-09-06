@@ -8,6 +8,8 @@ The upstream git repo is on [GitHub](https://github.com/storaged-project/blivet)
 
 `main` is the only "active development" branch, new features should go to this branch. Topic branches may exist for older releases for bug fixing purposes, for example `3.10-branch` for the 3.10.X releases.
 
+`rhelX-branch` branches are used for backporting and testing changes for RHEL releases, but the RHEL development itself happens on the [CentOS Stream GitLab repository](https://gitlab.com/redhat/centos-stream/rpms/python-blivet/). In general changes for RHEL should go to the `main` branch first and will be then backported to the appropriate RHEL branches manually.
+
 Note that before the 3.11 release cycle the branching model used to be different with separate branches for development and releases, see the `CONTRIBUTING` file on the `3.10-devel` branch for more details.
 
 ### Guidelines for Commits
