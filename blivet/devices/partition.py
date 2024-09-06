@@ -740,7 +740,7 @@ class PartitionDevice(StorageDevice):
         self.parted_partition = partition
         if not self.is_extended:
             # Ensure old metadata which lived in freespace so did not get
-            # explictly destroyed by a destroyformat action gets wiped
+            # explicitly destroyed by a destroyformat action gets wiped
             DeviceFormat(device=self.path, exists=True).destroy()
 
         StorageDevice._post_create(self)

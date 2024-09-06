@@ -51,7 +51,7 @@ re_interface_raid = re.compile(r'^RAID\s*identity_tag: (\S*)\s*$')
 re_interface_edd3_sata = re.compile(r'^SATA\s*device: (\S*)\s*$')
 # EDD 4 features from 2010 and later.  Awesomely, the "version" output from
 # int 13 AH=41h says: AH Version of extensions. Shall be set to 30h,
-# so there's no way to distinguish these from EDD 3, even thuogh SATA does
+# so there's no way to distinguish these from EDD 3, even though SATA does
 # differ.  In theory, if we're on <4.0, pmp should always be all 0's.
 re_interface_edd4_sata = re.compile(r'^SATA\s*device: (\S*)\s*pmp: (\S*)\s*$')
 re_interface_sas = re.compile(r'^SAS\s*sas_address: (\S*)\s*lun: \(\S*\)\s*$')
@@ -357,7 +357,7 @@ class EddMatcher(object):
 
     """ This object tries to match given entry to a disk device name.
 
-        Assuming, heuristic analysis and guessing hapens here.
+        Assuming, heuristic analysis and guessing happens here.
     """
 
     def __init__(self, edd_entry, root=None):

@@ -868,7 +868,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
             been canceled.
 
             If a device does not exist then it must have been removed by the
-            cancelation of all the actions, so it does not need to be removed
+            cancellation of all the actions, so it does not need to be removed
             explicitly.
 
             Most devices are considered leaf devices if they have no children,

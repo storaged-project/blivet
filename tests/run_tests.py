@@ -124,7 +124,7 @@ def get_version():
 
 
 def _should_skip(distro=None, version=None, arch=None, reason=None):  # pylint: disable=unused-argument
-    # all these can be lists or a single value, so covert everything to list
+    # all these can be lists or a single value, so convert everything to list
     if distro is not None and type(distro) is not list:
         distro = [distro]
     if version is not None and type(version) is not list:

@@ -346,7 +346,7 @@ class LVMFormatPopulator(FormatPopulator):
         # Instead of doing a topological sort on internal LVs to make sure the
         # parent LV is always created before its internal LVs (an internal LV
         # can have internal LVs), we just create all the instances here and
-        # assign their parents later. Those who are not assinged a parent (which
+        # assign their parents later. Those who are not assigned a parent (which
         # would hold a reference to them) will get eaten by the garbage
         # collector.
 

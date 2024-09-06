@@ -35,7 +35,7 @@ log = logging.getLogger("blivet")
 
 
 class FSTabOptions(object):
-    """ User prefered fstab settings object intended to be attached to device.format.
+    """ User preferred fstab settings object intended to be attached to device.format.
         Set variables override otherwise automatically obtained values put into fstab.
     """
 

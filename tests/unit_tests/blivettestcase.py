@@ -99,7 +99,7 @@ class BlivetTestCase(unittest.TestCase):
         device_class = kwargs.pop("device_class")
 
         # we intentionally don't pass the "exists" kwarg to the constructor
-        # becauses this causes issues with some devices (especially partitions)
+        # because this causes issues with some devices (especially partitions)
         # but we still need it for some LVs like VDO because we can't create
         # those so we need to fake their existence even for the constructor
         if device_class is blivet.devices.LVMLogicalVolumeDevice:

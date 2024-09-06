@@ -314,7 +314,7 @@ class iSCSI(object):
         if not flags.ibft:
             return
 
-        # Make sure iscsi_ibft is loaded otherwise any atttempts will fail with
+        # Make sure iscsi_ibft is loaded otherwise any attempts will fail with
         # 'Could not get list of targets from firmware. (err 21)'
         try:
             BlockDev.utils.load_kernel_module("iscsi_ibft", None)

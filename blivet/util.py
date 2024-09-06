@@ -345,7 +345,7 @@ def total_memory():
 
 
 def available_memory():
-    """ Return the amount of system RAM that is currenly available.
+    """ Return the amount of system RAM that is currently available.
 
         :rtype: :class:`~.size.Size`
     """
@@ -373,7 +373,7 @@ def available_memory():
 
 def normalize_path_slashes(path):
     """ Normalize the slashes in a filesystem path.
-        Does not actually examine the filesystme in any way.
+        Does not actually examine the filesystem in any way.
     """
     while "//" in path:
         path = path.replace("//", "/")
@@ -381,7 +381,7 @@ def normalize_path_slashes(path):
 
 
 def join_paths(*paths):
-    """ Joins filesystem paths without any consiration of slashes or
+    """ Joins filesystem paths without any consideration of slashes or
         whatnot and then normalizes repeated slashes.
     """
     if len(paths) == 1 and hasattr(paths[0], "__iter__"):
@@ -811,7 +811,7 @@ def variable_copy(obj, memo, omit=None, shallow=None, duplicate=None):
         :param duplicate: a list of names of attributes to duplicate
         :type duplicate: iterable of str
 
-        Note that all atrributes in duplicate must implement a duplicate()
+        Note that all attributes in duplicate must implement a duplicate()
         method that does what is expected of it. Attributes with type
         pyparted.Disk are known to do so.
 

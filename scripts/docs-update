@@ -71,7 +71,7 @@ def main(blivet_branch):
     if ret != 0:
         print('Failed to show committed changes:\n%s' % out)
         return
-    print("Commited changes:\n%s" % out)
+    print("Committed changes:\n%s" % out)
 
     answer = input("Is this okay? [y/N]")
     if answer in ("y", "Y"):

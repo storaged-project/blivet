@@ -71,12 +71,12 @@ class XFSSync(FSSync):
         try:
             BlockDev.fs.freeze(mountpoint)
         except BlockDev.FSError as e:
-            error_msg = "failed to sync filesytem: %s" % e
+            error_msg = "failed to sync filesystem: %s" % e
 
         try:
             BlockDev.fs.unfreeze(mountpoint)
         except BlockDev.FSError as e:
-            error_msg = "failed to sync filesytem: %s" % e
+            error_msg = "failed to sync filesystem: %s" % e
 
         if error_msg:
             raise FSError(error_msg)

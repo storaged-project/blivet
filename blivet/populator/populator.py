@@ -72,7 +72,7 @@ def parted_exn_handler(exn_type, exn_options, exn_msg):
 class PopulatorMixin(object, metaclass=SynchronizedMeta):
     def __init__(self, disk_images=None):
         """
-            :keyword disk_images: dictoinary of disk images
+            :keyword disk_images: dictionary of disk images
             :type list: dict
         """
         luks_data.reset(passphrase=None, luks_dict={})

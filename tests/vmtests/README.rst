@@ -1,7 +1,7 @@
 Running VM tests
 ================
 
-The VM tests are intended to run aginst a libvirt managed KVM
+The VM tests are intended to run against a libvirt managed KVM
 virtual machine, running a Live OS with two unprovisioned
 disks present. A suitable environment can be created using
 the virt-install program and Fedora Workstation Live CD
