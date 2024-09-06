@@ -351,7 +351,7 @@ def remove_new_partitions(disks, remove, all_partitions):
     def _remove_extended(disk, extended):
         """ We may want to remove extended partition from the disk too.
             This should happen if we don't have the PartitionDevice object
-            or in installer_mode after we've removed all logical paritions.
+            or in installer_mode after we've removed all logical partitions.
         """
 
         if extended and not disk.format.logical_partitions:
@@ -363,7 +363,7 @@ def remove_new_partitions(disks, remove, all_partitions):
                     return False
                 else:
                     if any(l.disk == extended.disk for l in removed_logical):
-                        # we removed all logical paritions from this extended
+                        # we removed all logical partitions from this extended
                         # so we no longer need this one
                         return True
                     else:
@@ -675,7 +675,7 @@ def resolve_disk_tags(disks, tags):
         :param tags: tags to select disks based on
         :type tags: list of str
 
-        If tags contains multiple values it is interpeted as
+        If tags contains multiple values it is interpreted as
         "include disks containing *any* of these tags".
     """
     return [disk for disk in disks if any(tag in disk.tags for tag in tags)]
@@ -984,7 +984,7 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
             log.debug("creating extended partition")
             ext = add_partition(disklabel, free, part_type, None)
 
-            # extedned partition took all free space - make the size request smaller
+            # extended partition took all free space - make the size request smaller
             if aligned_size > (ext.geometry.length - disklabel.alignment.grainSize) * disklabel.sector_size:
                 log.debug("not enough free space after creating extended "
                           "partition - shrinking the logical partition")
@@ -1883,7 +1883,7 @@ def grow_partitions(disks, partitions, free, size_sets=None):
             log.debug("back from remove_new_partitions")
 
             # adjust the extended partition as needed
-            # we will ony resize an extended partition that we created
+            # we will only resize an extended partition that we created
             log.debug("extended: %s", extended_geometry)
             if extended_geometry and \
                chunk.geometry.contains(extended_geometry):

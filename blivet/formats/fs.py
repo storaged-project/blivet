@@ -90,7 +90,7 @@ class FS(DeviceFormat):
     _writelabel_class = fswritelabel.UnimplementedFSWriteLabel
     _writeuuid_class = fswriteuuid.UnimplementedFSWriteUUID
     _selinux_supported = True
-    # This constant is aquired by testing some filesystems
+    # This constant is acquired by testing some filesystems
     # and it's giving us percentage of space left after the format.
     # This number is more guess than precise number because this
     # value is already unpredictable and can change in the future...
@@ -1124,7 +1124,7 @@ class GFS2(FS):
     _packages = ["gfs2-utils"]
     _mkfs_class = fsmkfs.GFS2Mkfs
     _labelfs = fslabeling.GFS2Labeling()
-    # FIXME parted needs to be thaught about btrfs so that we can set the
+    # FIXME parted needs to be taught about btrfs so that we can set the
     # partition table type correctly for btrfs partitions
     # parted_system = fileSystemType["gfs2"]
 

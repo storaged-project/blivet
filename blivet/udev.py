@@ -878,7 +878,7 @@ def device_get_iscsi_name(info):
 
     path_components = device_get_path(info).split("-")
 
-    # Tricky, the name itself contains atleast 1 - char
+    # Tricky, the name itself contains at least 1 - char
     return "-".join(path_components[name_field:len(path_components) - 2])
 
 

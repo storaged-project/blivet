@@ -88,7 +88,7 @@ class RAIDn(RAIDLevel, metaclass=abc.ABCMeta):
 
         All methods in this class fall into these categories:
 
-        1) May not be overrridden in any subclass.
+        1) May not be overridden in any subclass.
 
         2) Are private abstract methods.
 
@@ -127,7 +127,7 @@ class RAIDn(RAIDLevel, metaclass=abc.ABCMeta):
            :param int member_count: the number of members belonging to the array
            :rtype: int
 
-           Raiess a RaidError if member_count is fewer than the minimum
+           Raises a RaidError if member_count is fewer than the minimum
            number of members required for this level.
         """
         if member_count < self.min_members:

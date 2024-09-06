@@ -58,7 +58,7 @@ MAX_JOURNAL_SIZE = 131072 * SECTOR_SIZE
 
 def calculate_luks2_max_memory():
     """ Calculates maximum RAM that will be used during LUKS format.
-        The calculation is based on currenly available (free) memory.
+        The calculation is based on currently available (free) memory.
         This value will be used for the 'max_memory_kb' option for the
         'argon2' key derivation function.
     """

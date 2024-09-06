@@ -215,7 +215,7 @@ class DBusBlivet(DBusObject):
             self._blivet.do_it()
         except StorageError as e:
             raise dbus.exceptions.DBusException('%s.%s' % (BUS_NAME, e.__class__.__name__),
-                                                "An error occured while committing the "
+                                                "An error occurred while committing the "
                                                 "changes to disk: %s" % str(e))
 
     @dbus.service.method(dbus_interface=BLIVET_INTERFACE, in_signature='a{sv}', out_signature='o')
@@ -236,7 +236,7 @@ class DBusBlivet(DBusObject):
             device = self._blivet.factory_device(**kwargs)
         except StorageError as e:
             raise dbus.exceptions.DBusException('%s.%s' % (BUS_NAME, e.__class__.__name__),
-                                                "An error occured while configuring the "
+                                                "An error occurred while configuring the "
                                                 "device: %s" % str(e))
 
         if device is None:

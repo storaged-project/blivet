@@ -59,7 +59,7 @@ class SizeTestCase(unittest.TestCase):
         s = Size(478360371)
         self.assertEqual(s.human_readable(), "456.2 MiB")
 
-        # human_reable output should be the same as input for big enough sizes
+        # human_readable output should be the same as input for big enough sizes
         # and enough places and integer values
         s = Size("12.68 TiB")
         self.assertEqual(s.human_readable(max_places=2), "12.68 TiB")
@@ -68,7 +68,7 @@ class SizeTestCase(unittest.TestCase):
         s = Size("300 MiB")
         self.assertEqual(s.human_readable(max_places=2), "300 MiB")
 
-        # rounding should work with max_places limitted
+        # rounding should work with max_places limited
         s = Size("12.687 TiB")
         self.assertEqual(s.human_readable(max_places=2), "12.69 TiB")
         s = Size("23.7874 TiB")
@@ -334,7 +334,7 @@ class UtilityMethodsTestCase(unittest.TestCase):
     def test_arithmetic(self):
         s = Size("2GiB")
 
-        # Make sure arithmatic operations with Size always result in the expected type
+        # Make sure arithmetic operations with Size always result in the expected type
         self.assertIsInstance(s + s, Size)
         self.assertIsInstance(s - s, Size)
         self.assertIsInstance(s / s, Decimal)

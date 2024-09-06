@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument("--branch", type=str, help="Git branch to test", required=True)
     parser.add_argument("--connection", type=str, help="Libvirt connection URI", required=True)
     parser.add_argument("--name", type=str, help="Name of the virtual machine", required=True)
-    parser.add_argument("--ip", type=str, help="IP adress of the virtual machine", required=True)
+    parser.add_argument("--ip", type=str, help="IP address of the virtual machine", required=True)
     parser.add_argument("--vmpass", type=str, help="Root passphrase for the virtual machine", required=False)
     parser.add_argument("--virtpass", type=str, help="Root passphrase for the libvirt host", required=False)
     parser.add_argument("--verbose", "-v", action='store_true', help="Display verbose information")
@@ -159,7 +159,7 @@ def run_tests(cmd_args):
                 # switch to selected branch
                 _stdin, stdout, stderr = ssh.exec_command("cd blivet && git checkout %s" % cmd_args.branch)
                 if stdout.channel.recv_exit_status() != 0:
-                    raise RuntimeError("Failed to switch to brach %s.\nOutput:\n%s\n%s" %
+                    raise RuntimeError("Failed to switch to branch %s.\nOutput:\n%s\n%s" %
                                        (cmd_args.branch, stdout.read().decode("utf-8"),
                                         stderr.read().decode("utf-8")))
 

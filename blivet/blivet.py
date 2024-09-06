@@ -75,7 +75,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         self.size_sets = []
         self.set_default_fstype(get_default_filesystem_type())
 
-        # fstab write location purposedly set to None. It has to be overridden
+        # fstab write location purposely set to None. It has to be overridden
         # manually when using blivet.
         if HAVE_LIBMOUNT:
             self.fstab = FSTabManager(src_file=FSTAB_PATH, dest_file=None)
@@ -437,7 +437,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             allocated to any partition.
 
             disks and partitions allow specifying a set of disks other than
-            self.disks and partition values other than self.parttions.
+            self.disks and partition values other than self.partitions.
 
             :keyword disks: overrides :attr:`disks`
             :type disks: list

@@ -398,7 +398,7 @@ class StorageDevice(Device):
             Note: This method should only be invoked via the
                   ActionConfigureDevice.execute method. All the pre-conditions
                   enforced by ActionConfigureDevice.__init__ are assumed to hold.
-                  self.name value is chaged by the ActionConfigureDevice.apply method.
+                  self.name value is changed by the ActionConfigureDevice.apply method.
 
                   Caller must make sure the name is unique, this method cannot check
                   the name uniqueness.

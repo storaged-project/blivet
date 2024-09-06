@@ -170,7 +170,7 @@ class EventManager(object, metaclass=abc.ABCMeta):
 
     @property
     def error_cb(self):
-        """ callback to run when an exception occurrs in a thread. """
+        """ callback to run when an exception occurs in a thread. """
         return self._error_cb
 
     @error_cb.setter

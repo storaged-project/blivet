@@ -1412,7 +1412,7 @@ class LVMInternalLogicalVolumeMixin(object):
         # meaning of 'parents')
         pass
 
-    # internal LVs follow different rules limitting size
+    # internal LVs follow different rules limiting size
     def _set_size(self, newsize):
         if not isinstance(newsize, Size):
             raise AttributeError("new size must of type Size")
@@ -1428,7 +1428,7 @@ class LVMInternalLogicalVolumeMixin(object):
 
     @property
     def max_size(self):
-        # no format, so maximum size is only limitted by either the parent LV or the VG
+        # no format, so maximum size is only limited by either the parent LV or the VG
         if not self.takes_extra_space:
             return self._parent_lv.max_size
         else:
@@ -1926,7 +1926,7 @@ class LVMThinLogicalVolumeMixin(object):
     def _pre_create(self):
         # skip LVMLogicalVolumeDevice's _pre_create() method as it checks for a
         # free space in a VG which doesn't make sense for a ThinLV and causes a
-        # bug by limitting the ThinLV's size to VG free space which is nonsense
+        # bug by limiting the ThinLV's size to VG free space which is nonsense
         super(LVMLogicalVolumeBase, self)._pre_create()  # pylint: disable=bad-super-call
 
     def _create(self):
@@ -2195,7 +2195,7 @@ class LVMVDOLogicalVolumeMixin(object):
     def _pre_create(self):
         # skip LVMLogicalVolumeDevice's _pre_create() method as it checks for a
         # free space in a VG which doesn't make sense for a VDO LV and causes a
-        # bug by limitting the VDO LV's size to VG free space which is nonsense
+        # bug by limiting the VDO LV's size to VG free space which is nonsense
         super(LVMLogicalVolumeBase, self)._pre_create()  # pylint: disable=bad-super-call
 
     def _create(self):
