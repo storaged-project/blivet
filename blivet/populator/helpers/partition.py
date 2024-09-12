@@ -83,6 +83,10 @@ class PartitionDevicePopulator(DevicePopulator):
                 disk.format = get_format("disklabel", exists=True, device=disk.path)
                 disk.original_format = copy.deepcopy(disk.format)
 
+        if disk.format.parted_disk is None:
+            log.error("ignoring partition %s on %s: parted disk not found", name, disk.name)
+            return
+
         try:
             device = PartitionDevice(name, sysfs_path=sysfs_path,
                                      uuid=udev.device_get_partition_uuid(self.data),
