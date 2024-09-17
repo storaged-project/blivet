@@ -108,3 +108,4 @@ srpm_build_deps:
  - python3-setuptools
 
 downstream_package_name: python-blivet
+upstream_tag_template: blivet-{version}
