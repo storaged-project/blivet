@@ -124,17 +124,8 @@ ChangeLog:
 	(GIT_DIR=.git git log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
 
 tag:
-	@if test $(VERSION) != $(RPMVERSION) ; then \
-	  tags='$(VERSION_TAG) $(RELEASE_TAG)' ; \
-	elif test $(RPMRELEASE) = "1" ; then \
-	  tags='$(VERSION_TAG) $(RELEASE_TAG)' ; \
-	else \
-	  tags='$(RELEASE_TAG)' ; \
-	fi ; \
-	for tag in $$tags ; do \
-	  git tag -a -s -m "Tag as $$tag" -f $$tag ; \
-	  echo "Tagged as $$tag" ; \
-	done
+	git tag -a -s -m "Tag as $(VERSION_TAG)" -f "$(VERSION_TAG)" && \
+	echo "Tagged as $(VERSION_TAG)"
 
 release: tag archive
 

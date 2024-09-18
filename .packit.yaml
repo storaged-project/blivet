@@ -1,7 +1,4 @@
 actions:
-  post-upstream-clone:
-    # bump release to 99 to always be ahead of Fedora builds
-    - 'bash -c "sed -i -r \"s/Release:(\s*)\S+/Release: 99%{?dist}/\" python-blivet.spec"'
   get-current-version:
     - "python3 ./setup.py --version"
   create-archive:
@@ -36,6 +33,21 @@ jobs:
   project: blivet-daily
   branch: main
   preserve_project: true
+  actions:
+    post-upstream-clone:
+      # bump release to 99 to always be ahead of Fedora builds
+      - 'bash -c "sed -i -r \"s/Release:(\s*)\S+/Release: 99%{?dist}/\" python-blivet.spec"'
+    get-current-version:
+      - "python3 ./setup.py --version"
+    create-archive:
+      - "make local"
+      - 'bash -c "ls *.tar*"'
+    fix-spec-file:
+      # define the Source variables
+      - bash -c "sed -i python-blivet.spec -e \"s/http.*%{realname}-%{realversion}.tar.gz/blivet-${PACKIT_PROJECT_VERSION}.tar.gz/\""
+      - bash -c "sed -i python-blivet.spec -e \"s/http.*%{realname}-%{realversion}-tests.tar.gz/blivet-${PACKIT_PROJECT_VERSION}-tests.tar.gz/\""
+      # fill in Release as if packit would have done it
+      - bash -c "sed -i python-blivet.spec -e \"s/Release:.*/Release:\ ${PACKIT_RPMSPEC_RELEASE}%{?dist}/\""
 
 # Fedora tests for the 'main' branch
 - job: tests
@@ -96,3 +108,4 @@ srpm_build_deps:
  - python3-setuptools
 
 downstream_package_name: python-blivet
+upstream_tag_template: blivet-{version}
