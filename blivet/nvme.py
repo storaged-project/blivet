@@ -76,6 +76,10 @@ class NVMe(object):
             return False
         if not hasattr(blockdev.NVMETech, "FABRICS"):
             return False
+        try:
+            blockdev.nvme.is_tech_avail(blockdev.NVMETech.FABRICS, 0)  # pylint: disable=no-member
+        except (blockdev.BlockDevNotImplementedError, blockdev.NVMEError):
+            return False
         return True
 
     def startup(self):
