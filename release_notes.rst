@@ -1,6 +1,6 @@
 3.11.0
 =======
-* `LUKS HW-OPAL support`
+* `LUKS HW-OPAL support`_
 
 LUKS HW-OPAL support
 ---------------------
@@ -10,9 +10,9 @@ encryption support.
 
 3.10.0
 =======
-* `Support for creating Stratis Pools encrypted with Clevis/Tang`
-* `Support for adding new block devices to existing Stratis Pools`
-* `Automatic PV grow support`
+* `Support for creating Stratis Pools encrypted with Clevis/Tang`_
+* `Support for adding new block devices to existing Stratis Pools`_
+* `Automatic PV grow support`_
 
 Support for creating Stratis Pools encrypted with Clevis/Tang
 --------------------------------------------------------------
