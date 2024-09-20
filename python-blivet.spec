@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.10.1
+Version: 3.11.0
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -110,6 +110,68 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Fri Sep 20 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.11.0-1
+- Fix checking for NVMe plugin availability (vtrefny)
+- packit: Add upstream_tag_template (vtrefny)
+- packit: Bump release only for daily builds not for regular builds (vtrefny)
+- Makefile: Create just one tag for the release (vtrefny)
+- CONTRIBUTING: Add a short note about RHEL branches and development (vtrefny)
+- Fix spelling issues found by codespell and spellintian (vtrefny)
+- ci: Fix some copy-paste errors in CI job descriptions (vtrefny)
+- packit: Add tmt tests for rhel10-branch running on C10S (vtrefny)
+- packit: Add RPM build for pull requests against the rhel10-branch (vtrefny)
+- ci: Limit running Anaconda tests to 'main' branch only (vtrefny)
+- packit: Limit Fedora builds and tests to the 'main' branch (vtrefny)
+- ci: Add a GH action to run static analysis on CentOS 10 Stream (vtrefny)
+- dm: Remove unused code (vtrefny)
+- misc: Add support for installing dependencies on CentOS 1O Stream (vtrefny)
+- tests: Change expected Stratis metadata size for stratisd 3.7.0 (vtrefny)
+- Disable the "testdata" logging (vtrefny)
+- Log reason for ignoring disks in devicefactory (vtrefny)
+- Add partition type human-readable string to PartitionDevice (vtrefny)
+- spec: Bump required version of libblockdev to 3.2.0 (vtrefny)
+- ci: Bump Ubuntu in GitHub actions to 24.04 (vtrefny)
+- ci: Update branches in GitHub actions (vtrefny)
+- Remove TODO list from the repository (vtrefny)
+- Update CONTRIBUTING with the new branching and release model (vtrefny)
+- ci: Add Packit configuration for downstream builds on release (vtrefny)
+- packit: Set branch for Copr builds to "main" (vtrefny)
+- Fix intel biosraid can't get device name causing crashed (yurii.huang)
+- Fix getting LUKS subsystem for existing LUKS formats (vtrefny)
+- ci: Remove priority from Testing farm repositories (vtrefny)
+- Rename "opal_passphrase" to "opal_admin_passphrase" (vtrefny)
+- Add support for creating LUKS HW-OPAL devices (vtrefny)
+- Mark existing LUKS HW-OPAL formats as protected (vtrefny)
+- devices: catch exceptions where invalid access happens first (kkoukiou)
+- Allow marking formats as protected (vtrefny)
+- Add support for recognizing LUKS HW-OPAL devices (vtrefny)
+- README: Remove mentions about supported Ubuntu and Debian versions (vtrefny)
+- Use correct LUKS metadata size for LUKS 2 (vtrefny)
+- part_type_uuid: guard against pyparted type_uuid being None (awilliam)
+- Fix checking for FS min size application availability (vtrefny)
+- blivet fstab method change (japokorn)
+- tests: Add a test case for BTRFS device factory (vtrefny)
+- Preserve mount options when renaming btrfs factory device (vtrefny)
+- Fix device factory example (vtrefny)
+- Fix passing extra mkfs options for btrfs volumes (#2036976) (vtrefny)
+- tests: Remove logging from LVMTestCase (vtrefny)
+- devicetree: resolve devices also with the PARTUUID=.. naming (kkoukiou)
+- spec: Bump required version of libblockdev to 3.1.0 (vtrefny)
+- tasks: Use libblockdev for the fsminsize task (vtrefny)
+- Make sure ignored and exclusive disks work with device IDs too (vtrefny)
+- tests: Make sure selinux_test doesn't try to create mountpoints (vtrefny)
+- infra: bump actions/upload-artifact from 2 to 4 (49699333+dependabot[bot])
+- infra: Add dependabot to automatically update GH actions (vtrefny)
+- Fix skipping MD tests on CentOS 9 (vtrefny)
+- ci: Remove GH action to run blivet-gui tests (vtrefny)
+- tests: Try waiting after partition creation for XFS resize test (vtrefny)
+- Set log level to INFO for libblockdev (vtrefny)
+- Run mkfs.xfs with the force (-f) option by default (vtrefny)
+- ci: Disable the Blivet-GUI test case by default (vtrefny)
+- ci: Add a simple tmt test and run it via packit (vtrefny)
+- ci: Run Blivet-GUI reverse dependency tests on pull requests (vtrefny)
+- TFT is still broken so let's avoid failures by just doing a build (jkonecny)
+
 * Fri Jun 07 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.10.1-1
 - tests: Add a test case with MD array on LUKS (vtrefny)
 - Add support for setting label when creating GFS2 format (vtrefny)

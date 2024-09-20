@@ -1,3 +1,13 @@
+3.11.0
+=======
+* `LUKS HW-OPAL support`
+
+LUKS HW-OPAL support
+---------------------
+On disks that support hardware encryption standard OPAL2 Blivet
+can now create LUKS HW-OPAL devices to utilize the hardware
+encryption support.
+
 3.10.0
 =======
 * `Support for creating Stratis Pools encrypted with Clevis/Tang`
