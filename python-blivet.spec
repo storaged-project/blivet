@@ -10,8 +10,8 @@ Epoch: 1
 License: LGPL-2.1-or-later
 %global realname blivet
 %global realversion %{version}%{?prerelease}
-Source0: http://github.com/storaged-project/blivet/archive/%{realname}-%{realversion}.tar.gz
-Source1: http://github.com/storaged-project/blivet/archive/%{realname}-%{realversion}-tests.tar.gz
+Source0: http://github.com/storaged-project/blivet/releases/download/%{realname}-%{realversion}/%{realname}-%{realversion}.tar.gz
+Source1: http://github.com/storaged-project/blivet/releases/download/%{realname}-%{realversion}/%{realname}-%{realversion}-tests.tar.gz
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
