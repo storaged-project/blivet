@@ -99,5 +99,9 @@ setup(name='blivet',
                    "Intended Audience :: Developers",
                    "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
                    "Programming Language :: Python :: 3",
-                   "Operating System :: POSIX :: Linux"]
+                   "Operating System :: POSIX :: Linux"],
+      project_urls={"Bug Reports": "https://github.com/storaged-project/blivet/issues",
+                    "Source": "https://github.com/storaged-project/blivet",
+                    "Changelog": "https://github.com/storaged-project/blivet/blob/main/release_notes.rst",
+                    "Documentation": "https://storaged.org/blivet/"}
      )
