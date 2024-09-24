@@ -53,7 +53,7 @@ jobs:
 - job: tests
   trigger: pull_request
   targets:
-  - fedora-latest-stable
+    - fedora-latest
   branch: main
 
 # CentOS 10 Stream tests for the 'rhel10-branch'
@@ -89,7 +89,7 @@ jobs:
     failure_comment:
       message: "Blivet-GUI tests failed for commit {commit_sha}. @vojtechtrefny please check."
   targets:
-    - fedora-latest-stable
+    - fedora-latest
   tf_extra_params:
     environments:
       - artifacts:
