@@ -58,7 +58,11 @@ class Ext2FSMinSize(FSMinSize):
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
-        return Size(BlockDev.fs.ext2_get_min_size(self.fs.device))
+        try:
+            min_size = Size(BlockDev.fs.ext2_get_min_size(self.fs.device))
+        except BlockDev.FSError as e:
+            raise FSError("failed to get fs min size: %s" % e)
+        return min_size
 
 
 class NTFSMinSize(FSMinSize):
@@ -69,7 +73,11 @@ class NTFSMinSize(FSMinSize):
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
-        return Size(BlockDev.fs.ntfs_get_min_size(self.fs.device))
+        try:
+            min_size = Size(BlockDev.fs.ntfs_get_min_size(self.fs.device))
+        except BlockDev.FSError as e:
+            raise FSError("failed to get fs min size: %s" % e)
+        return min_size
 
 
 class UnimplementedFSMinSize(fstask.UnimplementedFSTask):
