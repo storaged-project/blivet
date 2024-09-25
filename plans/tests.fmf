@@ -16,7 +16,7 @@ prepare:
       - for f in $(grep -l -r 'testing-farm-tag-repository' /etc/yum.repos.d); do sed -i '/priority/d' "$f" ;done
       - sudo dnf -y update
       # amazon-ec2-utils creates sda -> nvme symlinks breaking our tests
-      - if rpm -q amazon-ec2-utils; then rpm -e --verbose amazon-ec2-utils && udevadm trigger /dev/nvme* ;fi
+      - if rpm -q amazon-ec2-utils; then sudo dnf -y upgrade --enablerepo=updates-testing --refresh --advisory=FEDORA-2024-954abd2b9c && udevadm trigger /dev/nvme* ;fi
 
   - name: ansible
     how: ansible
