@@ -13,6 +13,10 @@ License: LGPL-2.1-or-later
 Source0: http://github.com/storaged-project/blivet/releases/download/%{realname}-%{realversion}/%{realname}-%{realversion}.tar.gz
 Source1: http://github.com/storaged-project/blivet/releases/download/%{realname}-%{realversion}/%{realname}-%{realversion}-tests.tar.gz
 
+%if 0%{?rhel} >= 9
+Patch0: 0001-remove-btrfs-plugin.patch
+%endif
+
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
 %global partedver 1.8.1
@@ -172,17 +176,40 @@ make DESTDIR=%{buildroot} install
 - ci: Run Blivet-GUI reverse dependency tests on pull requests (vtrefny)
 - TFT is still broken so let's avoid failures by just doing a build (jkonecny)
 
+* Thu Sep 26 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.11.0-2
+- Do not raise libblockdev errors in FSMinSize tasks (#2314637)
+
+* Fri Sep 20 2024 Packit <hello@packit.dev> - 1:3.11.0-1
+- Update to version 3.11.0
+
+* Thu Aug 15 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.10.1-5
+- LUKS HW-OPAL support (#2304174)
+
+* Mon Jul 29 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.10.1-4
+- part_type_uuid: guard against pyparted type_uuid being None (#2300115)
+
+* Fri Jul 19 2024 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.10.1-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
+
+* Mon Jun 10 2024 Python Maint <python-maint@redhat.com> - 1:3.10.1-2
+- Rebuilt for Python 3.13
+
 * Fri Jun 07 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.10.1-1
 - tests: Add a test case with MD array on LUKS (vtrefny)
 - Add support for setting label when creating GFS2 format (vtrefny)
-- tests: add dbus example to traverse the devices and call test the factory()
-  (tgill)
+- tests: add dbus example to traverse the devices and call test the factory() (tgill)
 - fix issue #1239 (koito_coco)
 - fix compare uuid fail (iasunsea)
 - Remove support for the MD linear RAID level (vtrefny)
 - ci: Fix repository name in job name in check.yml (vtrefny)
 - Fix pylint 'possibly-used-before-assignment' warnings (vtrefny)
 - Fix skipping btrfs calls when libblockdev btrfs plugin is missing (vtrefny)
+
+* Fri Jun 07 2024 Python Maint <python-maint@redhat.com> - 1:3.10.0-3
+- Rebuilt for Python 3.13
+
+* Tue Jun 04 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.10.0-2
+- Remove support for the MD linear RAID level
 
 * Fri May 10 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.10.0-1
 - Added support for PV grow (japokorn)
@@ -222,8 +249,7 @@ make DESTDIR=%{buildroot} install
 - tests: Add a simple unit test for listing btrfs subvolumes (vtrefny)
 - Fix getting default subvolume ID for mounted btrfs volumes (vtrefny)
 - Do not try to get btrfs subvolumes without libblockdev (vtrefny)
-- Do not raise not implemented exception when checking if btrfs is empty
-  (vtrefny)
+- Do not raise not implemented exception when checking if btrfs is empty (vtrefny)
 - Try to start stratisd before checking its availability (vtrefny)
 - Fix creating Stratis filesystem without size specified (vtrefny)
 - Fix printing the partition type UUID (vtrefny)
@@ -237,6 +263,9 @@ make DESTDIR=%{buildroot} install
 - Fstab cleanup fix (japokorn)
 - Fix getting subvolumes for mounted btrfs volumes (vtrefny)
 
+* Tue Mar 12 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.9.1-2
+- Fix scanning partitions on RAID arrays (#2269133)
+
 * Tue Feb 27 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.9.1-1
 - Try to assemble MD arrays during populate (#2236356) (vtrefny)
 - Fix UnboundLocalError in MD populator (vtrefny)
@@ -246,6 +275,12 @@ make DESTDIR=%{buildroot} install
 - misc: Bump libblockdev version for Debian (vtrefny)
 - Fix typos (vtrefny)
 - Remove unused import (vtrefny)
+
+* Mon Feb 12 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.9.0-3
+- Fix UnboundLocalError in MD populator (#2263668)
+
+* Tue Feb 06 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.9.0-2
+- Fix crash when scanning degraded/not fully assembled MD arrays
 
 * Wed Jan 31 2024 Vojtech Trefny <vtrefny@redhat.com> - 3.9.0-1
 - Fix getting default LVM cache metadata size from libblockdev (vtrefny)
@@ -320,6 +355,15 @@ make DESTDIR=%{buildroot} install
 - Fstab support (japokorn)
 - add udev-builtin-path_id property to zfcp-attached SCSI disks (maier)
 
+* Fri Jan 26 2024 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.8.2-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
+
+* Sun Jan 21 2024 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.8.2-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
+
+* Wed Dec 13 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.8.2-2
+- add udev-builtin-path_id property to zfcp-attached SCSI disks
+
 * Thu Oct 12 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.8.2-1
 - tests: Ignore new pylint false positive with pylint 3.0 (vtrefny)
 - pylint: Use 'exit' instead of 'do_exit' for pylint.lint.Run (vtrefny)
@@ -343,14 +387,19 @@ make DESTDIR=%{buildroot} install
 - iscsi: Rework UDisks iscsi module activation (tbzatek)
 - iscsi: Make sure to modprobe iscsi_ibft (tbzatek)
 - iscsi: Downgrade default CHAP auth algs to SHA1,MD5 (tbzatek)
-- iscsi: Save firmware initiator name to /etc/iscsi/initiatorname.iscsi
-  (vtrefny)
+- iscsi: Save firmware initiator name to /etc/iscsi/initiatorname.iscsi (vtrefny)
 - spec: Bump release to 99 to be always ahead of Fedora in nightly (vtrefny)
 - tests: Improve iscsi_test.ISCSITestCase (vtrefny)
 - Make sure that LUKS.has_key always returns a boolean value (vtrefny)
 - Squashed 'translation-canary/' changes from d6a40985..5bb81253 (vtrefny)
 - Add btrfs subvolume specification to devicetree.resolve_device (vtrefny)
 - Revert "Makefile cleanup" (vtrefny)
+
+* Fri Jul 21 2023 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.8.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_39_Mass_Rebuild
+
+* Thu Jun 29 2023 Python Maint <python-maint@redhat.com> - 1:3.8.0-2
+- Rebuilt for Python 3.12
 
 * Thu Jun 29 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.8.0-1
 - Revert "Makefile cleanup" (blivet-ci)
@@ -389,6 +438,18 @@ make DESTDIR=%{buildroot} install
 - Allow changing iSCSI initiator name after setting it (vtrefny)
 - Prefer UUID for fstab spec for DM devices too (vtrefny)
 - Remove support for Python 2 from spec and Makefile (vtrefny)
+
+* Tue Jun 13 2023 Python Maint <python-maint@redhat.com> - 1:3.7.1-5
+- Rebuilt for Python 3.12
+
+* Wed May 31 2023 Vojtech Trefny <@trefny@redhat.com> - 3.7.1-4
+- Always prefer GPT disk labels on x86_64
+
+* Tue May 23 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.7.1-3
+- Add support for filesystem online resize
+
+* Thu May 04 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.7.1-2
+- Add support for specifying stripe size for RAID LVs
 
 * Thu Mar 16 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.7.1-1
 - Fix the get_mount_device function (vponcova)
@@ -435,6 +496,12 @@ make DESTDIR=%{buildroot} install
 - add loongarch support (mahailiang)
 - Add a basic support for NVMe and NVMe Fabrics devices (vtrefny)
 
+* Thu Feb 02 2023 Vojtech Trefny <vtrefny@redhat.com> - 3.6.1-3
+- Use mdadm to support BIOS RAID devices (#2158574)
+
+* Fri Jan 20 2023 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.6.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_38_Mass_Rebuild
+
 * Mon Nov 28 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.6.1-1
 - misc: Remove "warn: false" from Ansible "command" (vtrefny)
 - spec: Change license string to the SPDX format required by Fedora (vtrefny)
@@ -449,6 +516,9 @@ make DESTDIR=%{buildroot} install
 - tests: remove unused global variables (berrange)
 - Backport total_memory improvements from anaconda (vslavik)
 - Fix regex for checking e2fsprogs version (vtrefny)
+
+* Fri Nov 11 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.6.0-2
+- Change license string to the SPDX format required by Fedora
 
 * Tue Sep 20 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.6.0-1
 - pylint: Explicitly allow loading the _ped module from pyparted (vtrefny)
@@ -489,6 +559,9 @@ make DESTDIR=%{buildroot} install
 - Split the test suite into "unit" and "storage" tests (vtrefny)
 - Add support for attaching and creating LVM writecached LVs (vtrefny)
 - Add support for enabling/disabling compression/deduplication (vtrefny)
+
+* Fri Jul 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.5.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
 
 * Tue Jul 19 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.5.0-1
 - tests: Fix patching NVDIMM static data in populator_test (vtrefny)
@@ -589,6 +662,12 @@ make DESTDIR=%{buildroot} install
 - safe_dbus: Add function to get all properties for an interface (vtrefny)
 - Add support for renaming devices using ActionConfigureDevice (vtrefny)
 
+* Mon Jun 20 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.4.4-3
+- Add support for NPIV-enabled zFCP devices
+
+* Mon Jun 13 2022 Python Maint <python-maint@redhat.com> - 1:3.4.4-2
+- Rebuilt for Python 3.11
+
 * Mon May 16 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.4.4-1
 - Use LVM PV format current_size in LVMVolumeGroupDevice._remove (vtrefny)
 - Correctly set vg_name after adding/removing a PV from a VG (vtrefny)
@@ -598,10 +677,16 @@ make DESTDIR=%{buildroot} install
 - Correctly cancel configure actions in cancel() (vtrefny)
 - Set partition flags after setting parted filesystem (#2033875) (vtrefny)
 
+* Tue Feb 15 2022 Jan Pokorny <japokorn@redhat.com> - 3.4.3-2
+- Set partition flags after setting parted filesystem (#2033875) (vtrefny)
+
 * Tue Feb 01 2022 Vojtech Trefny <vtrefny@redhat.com> - 3.4.3-1
 - Make sure we mount the top level subvolume when mounting btrfs (vtrefny)
 - README: Fix API documentation link (vtrefny)
 - iscsi: Replace all log_exception_info calls with log.info (vtrefny)
+
+* Fri Jan 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.4.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
 * Thu Sep 30 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.4.2-1
 - pylint: Remove pdb breakpoint in device_properties_test (vtrefny)
@@ -623,8 +708,7 @@ make DESTDIR=%{buildroot} install
 - pylint: Ignore deprecation warning about threading.currentThread (vtrefny)
 - Fix getting PV info in LVMPhysicalVolume from the cache (vtrefny)
 - Fix ActionRemoveMember requires check (#1993655) (vtrefny)
-- util: Ignore false positive assignment-from-no-return warning in ObjectID
-  (vtrefny)
+- util: Ignore false positive assignment-from-no-return warning in ObjectID (vtrefny)
 - tasks: Ignore pylint arguments-differ warning for do_tasks (vtrefny)
 - Remove unused __save_passphrase member from LUKS_Data (vtrefny)
 - size: Ignore new pylint warning "arguments-renamed" (vtrefny)
@@ -632,8 +716,7 @@ make DESTDIR=%{buildroot} install
 - Remove unused member __names from DeviceFactory (vtrefny)
 - Improve error message printed for missing dependecies (vtrefny)
 - tests: Print version and blivet location when running tests (vtrefny)
-- tests: Allow running tests without the tests directory in PYTHONPATH
-  (vtrefny)
+- tests: Allow running tests without the tests directory in PYTHONPATH (vtrefny)
 - edd_test: Locate the edd_data based on the test file location (vtrefny)
 - Run Anaconda tests on blivet pull requests (jkonecny)
 - Do not set chunk size for RAID 1 (vtrefny)
@@ -650,14 +733,25 @@ make DESTDIR=%{buildroot} install
 - Fix activating old style LVM snapshots (vtrefny)
 - Make sure the device is setup before configuring its format (vtrefny)
 - Remove RHEL 9 specific patch from SPEC (vtrefny)
-- Use package list instead of cycle in our dependencies Ansible playbook
-  (vtrefny)
+- Use package list instead of cycle in our dependencies Ansible playbook (vtrefny)
 - Add vagrant file for running tests and development in a VM (vtrefny)
 - Update our playbook for installing test dependencies (vtrefny)
 - Add example for working with actions (vtrefny)
 - Add LUKS encrypted LV to LVM example (vtrefny)
 - Add example for LVM thin provisioning (vtrefny)
 - Squashed 'translation-canary/' changes from 3bc2ad68..4d4e65b8 (vtrefny)
+
+* Fri Jul 23 2021 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.4.0-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
+
+* Wed Jul 21 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.4.0-4
+- Revert "Use PARTITION_ESP flag for EFIFS partitions" (#1975375)
+
+* Wed Jun 30 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.4.0-3
+- Fix resolving devices with names that look like BIOS drive number (#1960798)
+
+* Thu Jun 03 2021 Python Maint <python-maint@redhat.com> - 1:3.4.0-2
+- Rebuilt for Python 3.10
 
 * Fri May 07 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.4.0-1
 - Fix setting SELinux flag in SELinuxContextTestCase (vtrefny)
@@ -702,6 +796,9 @@ make DESTDIR=%{buildroot} install
 - Add availability functions for LVM VDO (vtrefny)
 - Add VDO pool data LV to internal LVs during populate (vtrefny)
 - Fix type of LVM VDO logical volumes (vtrefny)
+
+* Mon Apr 12 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.3.3-2
+- Avoid AttributeError for DiskLabel formats without disklabel type (#1945914)
 
 * Thu Feb 18 2021 Vojtech Trefny <vtrefny@redhat.com> - 3.3.3-1
 - apply compression settings from blivet.flags.btrfs_compression (#1926892) (michel)
