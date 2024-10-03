@@ -193,6 +193,14 @@ class FS(DeviceFormat):
         return d
 
     @classmethod
+    def _compression_size_factor(cls):
+        """ Adjust free space estimate for transparent compression.
+        Classes for filesystems that implement transparent compression
+        can override this.
+        """
+        return 1
+
+    @classmethod
     def free_space_estimate(cls, device_size):
         """ Get estimated free space when format will be done on device
             with size ``device_size``.
@@ -207,7 +215,7 @@ class FS(DeviceFormat):
             :return: estimated free size after format
             :rtype: :class:`~.size.Size`
         """
-        return device_size * cls._metadata_size_factor
+        return device_size * cls._metadata_size_factor * cls._compression_size_factor()
 
     @classmethod
     def get_required_size(cls, free_space):
@@ -1107,6 +1115,16 @@ class BTRFS(FS):
             if content and not all(c in self._system_dirs + subvols for c in content):
                 return False
             return True
+
+    @classmethod
+    def _compression_size_factor(cls):
+        """ Adjust free space estimate for transparent compression.
+        We estimate 40% 'additional space' if it's enabled (this is
+        pretty conservative).
+        """
+        if flags.btrfs_compression:
+            return 1.40
+        return 1
 
 
 register_device_format(BTRFS)
