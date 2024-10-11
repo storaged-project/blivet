@@ -14,8 +14,6 @@ from blivet.util import set_up_logging
 
 import parted
 
-set_up_logging()
-
 
 class GPTTestBase(VMBackedTestCase):
 
@@ -33,6 +31,12 @@ class GPTTestBase(VMBackedTestCase):
         self.swap = None
         self.usrluks = None
         self.usr = None
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        set_up_logging()
 
     def set_up_disks(self):
         disklabel.DiskLabel.set_default_label_type("gpt")
