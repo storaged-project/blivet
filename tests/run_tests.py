@@ -218,6 +218,10 @@ if __name__ == '__main__':
                            help="name of test class or method (e. g. 'devices_test' or 'formats_test.fs_test.Ext2FSTestCase'")
     argparser.add_argument("-p", "--pdb", dest="pdb", help="run pdb after a failed test", action="store_true")
     argparser.add_argument("-s", "--stop", dest="stop", help="stop executing after first failed test", action="store_true")
+    argparser.add_argument("-l", "--logging", dest="logging", help="enable blivet logging during tests", action="store_true")
+    argparser.add_argument("-d", "--log-dir", dest="logdir",
+                           help="directory for saving the logs (defaults to current directory)",
+                           action="store")
     args = argparser.parse_args()
 
     testdir = os.path.abspath(os.path.dirname(__file__))
@@ -257,6 +261,13 @@ if __name__ == '__main__':
             continue
 
         suite.addTest(test)
+
+    if args.logging:
+        from blivet.util import set_up_logging
+        if args.logdir:
+            set_up_logging(log_dir=args.logdir)
+        else:
+            set_up_logging()
 
     if args.pdb:
         runner = unittest.TextTestRunner(verbosity=2, failfast=args.stop, resultclass=DebugTestResult)
