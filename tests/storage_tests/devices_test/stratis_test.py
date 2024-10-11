@@ -230,7 +230,7 @@ class StratisTestCaseClevis(StratisTestCaseBase):
         blivet.partitioning.do_partitioning(self.storage)
 
         pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd],
-                                             encrypted=True, passphrase="abcde",
+                                             encrypted=True, passphrase="fipsneeds8chars",
                                              clevis=StratisClevisConfig(pin="tang",
                                                                         tang_url=self._tang_server,
                                                                         tang_thumbprint=None))
