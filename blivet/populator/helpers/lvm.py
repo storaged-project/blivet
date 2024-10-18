@@ -33,7 +33,7 @@ from ...errors import DeviceTreeError, DuplicateVGError
 from ...flags import flags
 from ...size import Size
 from ...storage_log import log_method_call
-from ...tasks.availability import BLOCKDEV_LVM_PLUGIN_VDO
+from ...tasks import availability
 from .devicepopulator import DevicePopulator
 from .formatpopulator import FormatPopulator
 
@@ -45,6 +45,7 @@ log = logging.getLogger("blivet")
 
 class LVMDevicePopulator(DevicePopulator):
     @classmethod
+    @availability.blockdev_lvm_required()
     def match(cls, data):
         return udev.device_is_dm_lvm(data)
 
@@ -86,6 +87,11 @@ class LVMDevicePopulator(DevicePopulator):
 class LVMFormatPopulator(FormatPopulator):
     priority = 100
     _type_specifier = "lvmpv"
+
+    @classmethod
+    @availability.blockdev_lvm_required()
+    def match(cls, data, device):
+        return super(cls, cls).match(data, device)
 
     def _get_kwargs(self):
         kwargs = super(LVMFormatPopulator, self)._get_kwargs()
@@ -247,7 +253,7 @@ class LVMFormatPopulator(FormatPopulator):
                 lv_parents = [self._devicetree.get_device_by_device_id("LVM-" + pool_device_name)]
             elif lv_attr[0] == 'd':
                 # vdo pool
-                if BLOCKDEV_LVM_PLUGIN_VDO.available:
+                if availability.BLOCKDEV_LVM_PLUGIN_VDO.available:
                     pool_info = blockdev.lvm.vdo_info(vg_name, lv_name)
                     if pool_info:
                         lv_kwargs["compression"] = pool_info.compression

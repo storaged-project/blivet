@@ -23,6 +23,7 @@
 from ... import udev
 from ...devices import DMDevice
 from ...storage_log import log_method_call
+from ...tasks import availability
 from .devicepopulator import DevicePopulator
 
 import logging
@@ -33,6 +34,7 @@ class DMDevicePopulator(DevicePopulator):
     priority = 50
 
     @classmethod
+    @availability.blockdev_dm_required()
     def match(cls, data):
         return (udev.device_is_dm(data) and
                 not udev.device_is_dm_partition(data) and

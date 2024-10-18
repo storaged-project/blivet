@@ -34,6 +34,7 @@ from ...devices import device_path_to_name
 from ...errors import DeviceError, NoParentsError, MDRaidError
 from ...flags import flags
 from ...storage_log import log_method_call
+from ...tasks import availability
 from .devicepopulator import DevicePopulator
 from .formatpopulator import FormatPopulator
 
@@ -43,6 +44,7 @@ log = logging.getLogger("blivet")
 
 class MDDevicePopulator(DevicePopulator):
     @classmethod
+    @availability.blockdev_md_required()
     def match(cls, data):
         return (udev.device_is_md(data) and
                 not udev.device_get_md_container(data))
@@ -98,6 +100,11 @@ class MDDevicePopulator(DevicePopulator):
 class MDFormatPopulator(FormatPopulator):
     priority = 100
     _type_specifier = "mdmember"
+
+    @classmethod
+    @availability.blockdev_md_required()
+    def match(cls, data, device):
+        return super(cls, cls).match(data, device)
 
     def _get_kwargs(self):
         kwargs = super(MDFormatPopulator, self)._get_kwargs()

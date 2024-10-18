@@ -224,8 +224,7 @@ class DeviceNotFoundError(StorageError):
     pass
 
 
-class UnusableConfigurationError(StorageError):
-
+class UnusableConfigurationError(DeviceTreeError, StorageError):
     """ User has an unusable initial storage configuration. """
     suggestion = ""
 

@@ -11,6 +11,7 @@ from blivet.devices import PartitionDevice, StorageDevice
 from blivet.devices import NVMeNamespaceDevice, NVMeFabricsNamespaceDevice
 from blivet.devicelibs import lvm
 from blivet.devicetree import DeviceTree
+from blivet.errors import DeviceTreeError
 from blivet.formats import get_device_format_class, get_format, DeviceFormat
 from blivet.formats.disklabel import DiskLabel
 from blivet.populator.helpers import DiskDevicePopulator, DMDevicePopulator, LoopDevicePopulator
@@ -23,6 +24,70 @@ from blivet.populator.helpers.boot import EFIFormatPopulator, MacEFIFormatPopula
 from blivet.populator.helpers.formatpopulator import FormatPopulator
 from blivet.populator.helpers.disklabel import DiskLabelFormatPopulator
 from blivet.size import Size
+
+
+class PopulatorTestCase(unittest.TestCase):
+    @patch.object(DeviceTree, "_get_format_helper")
+    def test_handle_format_error_handling(self, *args):
+        """ Test handling of errors raised from populator (format) helpers' run methods.
+
+            The piece we want to test is that DeviceTreeError being raised from the
+            helper's run method results in no crash and an unset format on the device.
+            There is no need to test the various helpers individually since the only
+            machinery is in Populator.handle_format.
+        """
+        get_format_helper_patch = args[0]
+
+        devicetree = DeviceTree()
+
+        # Set up info to look like a specific format type
+        name = 'fhtest1'
+        fmt_type = 'xfs'
+        info = dict(SYS_NAME=name, ID_FS_TYPE=fmt_type)
+        device = StorageDevice(name, size=Size('50g'), exists=True)
+
+        # Set up helper to raise an exn in run()
+        helper = Mock()
+        helper.side_effect = DeviceTreeError("failed to populate format")
+        get_format_helper_patch.return_value = helper
+
+        devicetree.handle_format(info, device)
+
+        self.assertEqual(device.format.type, None)
+
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch.object(DeviceTree, "_reason_to_skip_device", return_value=None)
+    @patch.object(DeviceTree, "_clear_new_multipath_member")
+    @patch.object(DeviceTree, "handle_format")
+    @patch.object(DeviceTree, "_add_parent_devices")
+    @patch.object(DeviceTree, "_get_device_helper")
+    def test_handle_device_error_handling(self, *args):
+        """ Test handling of errors raised from populator (device) helpers' run methods.
+
+            When the helper's run method raises DeviceTreeError we should end up with a
+            StorageDevice (and no traceback). There is no need to test the various
+            helper classes since all of the machinery is in Populator.handle_device.
+        """
+        get_device_helper_patch = args[0]
+        add_parent_devices_patch = args[1]
+
+        devicetree = DeviceTree()
+
+        # Set up info to look like a specific device type
+        name = 'dhtest1'
+        info = dict(SYS_NAME=name, SYS_PATH='/fake/sys/path/dhtest1')
+
+        # Set up helper to raise an exn in run()
+        helper = Mock()
+        helper.side_effect = DeviceTreeError("failed to populate device")
+        get_device_helper_patch.return_value = helper
+
+        add_parent_devices_patch.return_value = list()
+        devicetree.handle_device(info)
+
+        device = devicetree.get_device_by_name(name)
+        self.assertIsNotNone(device)
+        self.assertIsInstance(device, StorageDevice)
 
 
 class PopulatorHelperTestCase(unittest.TestCase):

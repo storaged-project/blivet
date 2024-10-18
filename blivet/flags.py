@@ -82,6 +82,9 @@ class Flags(object):
         # compression option for btrfs filesystems
         self.btrfs_compression = None
 
+        # allow duplicate UUIDs in the devicetree
+        self.allow_inconsistent_config = True
+
         self.debug_threads = False
 
         # Assign GPT partition type UUIDs to allow partition
