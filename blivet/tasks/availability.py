@@ -587,6 +587,28 @@ BLOCKDEV_MPATH_PLUGIN = blockdev_plugin("libblockdev mpath plugin", BLOCKDEV_MPA
 BLOCKDEV_SWAP_PLUGIN = blockdev_plugin("libblockdev swap plugin", BLOCKDEV_SWAP_TECH)
 BLOCKDEV_FS_PLUGIN = blockdev_plugin("libblockdev fs plugin", BLOCKDEV_FS_TECH)
 
+
+# libblockdev dependency guards
+class BlockDevDependencyGuard(util.DependencyGuard, metaclass=abc.ABCMeta):
+    def __init__(self, plugin):
+        self._plugin = plugin
+        super().__init__()
+
+    def _check_avail(self):
+        return self._plugin.available
+
+    @property
+    def error_msg(self):
+        return "%s is not available" % self._plugin.name
+
+
+blockdev_dm_required = BlockDevDependencyGuard(BLOCKDEV_DM_PLUGIN)
+blockdev_crypto_required = BlockDevDependencyGuard(BLOCKDEV_CRYPTO_PLUGIN)
+blockdev_loop_required = BlockDevDependencyGuard(BLOCKDEV_LOOP_PLUGIN)
+blockdev_lvm_required = BlockDevDependencyGuard(BLOCKDEV_LVM_PLUGIN)
+blockdev_md_required = BlockDevDependencyGuard(BLOCKDEV_MDRAID_PLUGIN)
+blockdev_mpath_required = BlockDevDependencyGuard(BLOCKDEV_MPATH_PLUGIN)
+
 # applications
 # fsck
 DOSFSCK_APP = application("dosfsck")
