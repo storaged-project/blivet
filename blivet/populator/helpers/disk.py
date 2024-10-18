@@ -36,6 +36,7 @@ from ...devices import MDBiosRaidArrayDevice, ZFCPDiskDevice
 from ...devices import NVMeNamespaceDevice, NVMeFabricsNamespaceDevice
 from ...devices import device_path_to_name
 from ...storage_log import log_method_call
+from ...tasks import availability
 from .devicepopulator import DevicePopulator
 
 import logging
@@ -151,6 +152,7 @@ class MDBiosRaidDevicePopulator(DiskDevicePopulator):
     _device_class = MDBiosRaidArrayDevice
 
     @classmethod
+    @availability.blockdev_md_required()
     def match(cls, data):
         return (super(MDBiosRaidDevicePopulator, MDBiosRaidDevicePopulator).match(data) and
                 udev.device_get_md_container(data))
