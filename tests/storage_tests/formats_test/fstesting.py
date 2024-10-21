@@ -278,7 +278,7 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase, metaclass=abc.ABCMeta):
         an_fs.target_size = TARGET_SIZE
         self.assertIsNone(an_fs.do_resize())
 
-        TARGET_SIZE = TARGET_SIZE / 2
+        TARGET_SIZE = TARGET_SIZE - Size("10 MiB")
         self.assertTrue(TARGET_SIZE > an_fs.min_size)
         an_fs.target_size = TARGET_SIZE
         self.assertEqual(an_fs.target_size, TARGET_SIZE)

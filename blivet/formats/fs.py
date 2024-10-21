@@ -1012,10 +1012,14 @@ class FATFS(FS):
     _uuidfs = fsuuid.FATFSUUID()
     _supported = True
     _formattable = True
+    _resizable = True
+    _resize_support = FSResize.OFFLINE_GROW | FSResize.OFFLINE_SHRINK
     _max_size = Size("1 TiB")
     _packages = ["dosfstools"]
     _fsck_class = fsck.DosFSCK
     _info_class = fsinfo.FATFSInfo
+    _minsize_class = fsminsize.FATFSMinSize
+    _resize_class = fsresize.FATFSResize
     _size_info_class = fssize.FATFSSize
     _mkfs_class = fsmkfs.FATFSMkfs
     _mount_class = fsmount.FATFSMount
