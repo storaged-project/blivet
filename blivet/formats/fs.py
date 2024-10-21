@@ -1015,6 +1015,8 @@ class FATFS(FS):
     _max_size = Size("1 TiB")
     _packages = ["dosfstools"]
     _fsck_class = fsck.DosFSCK
+    _info_class = fsinfo.FATFSInfo
+    _size_info_class = fssize.FATFSSize
     _mkfs_class = fsmkfs.FATFSMkfs
     _mount_class = fsmount.FATFSMount
     _readlabel_class = fsreadlabel.DosFSReadLabel
