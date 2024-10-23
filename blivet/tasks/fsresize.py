@@ -47,6 +47,10 @@ class FSResize(task.BasicApplication, FSResizeTask):
 
     # IMPLEMENTATION methods
 
+    @property
+    def fs_type(self):
+        return self.fs.type
+
     def do_task(self):  # pylint: disable=arguments-differ
         """ Resize the device.
 
@@ -57,7 +61,7 @@ class FSResize(task.BasicApplication, FSResizeTask):
             raise FSError("\n".join(error_msgs))
 
         try:
-            BlockDev.fs.resize(self.fs.device, self.fs.target_size.convert_to(B), self.fs.type)
+            BlockDev.fs.resize(self.fs.device, self.fs.target_size.convert_to(B), self.fs_type)
         except BlockDev.FSError as e:
             raise FSError(str(e))
 
@@ -75,6 +79,16 @@ class NTFSResize(FSResize):
 class XFSResize(FSResize):
     ext = availability.BLOCKDEV_XFS_RESIZE
     unit = B
+
+
+class FATFSResize(FSResize):
+    ext = availability.BLOCKDEV_VFAT_RESIZE
+    unit = B
+
+    @property
+    def fs_type(self):
+        # we don't want 'efi' to be used for EFIFS
+        return "vfat"
 
 
 class TmpFSResize(FSResize):

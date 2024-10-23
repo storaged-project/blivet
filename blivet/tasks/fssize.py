@@ -81,6 +81,11 @@ class XFSSize(FSSize):
         return Size(self.fs._current_info.block_size * self.fs._current_info.block_count)
 
 
+class FATFSSize(FSSize):
+    def _get_size(self):
+        return Size(self.fs._current_info.cluster_size * self.fs._current_info.cluster_count)
+
+
 class TmpFSSize(fstask.FSTask):
     description = "current filesystem size"
 

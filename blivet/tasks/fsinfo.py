@@ -81,5 +81,12 @@ class XFSInfo(FSInfo):
         return BlockDev.fs.xfs_get_info(self.fs.device)
 
 
+class FATFSInfo(FSInfo):
+    ext = availability.BLOCKDEV_VFAT_INFO
+
+    def _get_info(self):
+        return BlockDev.fs.vfat_get_info(self.fs.device)
+
+
 class UnimplementedFSInfo(fstask.UnimplementedFSTask):
     pass

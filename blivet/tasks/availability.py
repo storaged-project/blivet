@@ -553,6 +553,7 @@ BLOCKDEV_NTFS_LABEL = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.
 BLOCKDEV_EXT_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "ext2"))
 BLOCKDEV_XFS_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "xfs"))
 BLOCKDEV_NTFS_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "ntfs"))
+BLOCKDEV_VFAT_RESIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.RESIZE, blockdev.fs.can_resize, "vfat"))
 
 BLOCKDEV_EXT_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "ext2"))
 BLOCKDEV_XFS_INFO = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperation.INFO, blockdev.fs.can_get_size, "xfs"))
