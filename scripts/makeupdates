@@ -34,16 +34,13 @@ def getArchiveTag(spec, name="blivet"):
     f.close()
 
     version = "0.0"
-    release = "1"
     for line in lines:
         if line.startswith('Version:'):
             version = line.split()[1]
-        elif line.startswith('Release:'):
-            release = line.split()[1].split('%')[0]
         else:
             continue
 
-    return "-".join([name, version, release])
+    return "%s-%s" % (name, version)
 
 def getArchiveTagOffset(spec, offset, name="blivet"):
     tag = getArchiveTag(spec, name)
