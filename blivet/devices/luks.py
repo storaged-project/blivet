@@ -86,6 +86,9 @@ class LUKSDevice(DMCryptDevice):
 
     def _set_size(self, newsize):
         if not self.exists and not self.raw_device.exists:
+            log.debug("adjusting size of %s to %s to accommodate LUKS metadata",
+                      self.raw_device.name,
+                      newsize + self.raw_device.format._header_size)
             self.raw_device.size = newsize + self.raw_device.format._header_size
 
             # just run the StorageDevice._set_size to make sure we are in the format limits
