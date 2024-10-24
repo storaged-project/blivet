@@ -635,11 +635,11 @@ class StorageDevice(Device):
             max_size = self.format.max_size
             min_size = self.format.min_size
             if max_size and newsize > max_size:
-                raise errors.DeviceError("device cannot be larger than %s" %
-                                         max_size, self.name)
+                raise errors.DeviceError("device %s cannot be larger than %s" %
+                                         (self.name, max_size))
             elif min_size and newsize < min_size:
-                raise errors.DeviceError("device cannot be smaller than %s" %
-                                         min_size, self.name)
+                raise errors.DeviceError("device %s cannot be smaller than %s" %
+                                         (self.name, min_size))
 
         self._size = newsize
 
