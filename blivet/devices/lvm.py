@@ -2673,7 +2673,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         if not isinstance(newsize, Size):
             raise AttributeError("new size must be of type Size")
 
-        newsize = self.vg.align(newsize)
+        newsize = self.vg.align(newsize, roundup=self.growable)
         log.debug("trying to set lv %s size to %s", self.name, newsize)
         # Don't refuse to set size if we think there's not enough space in the
         # VG for an existing LV, since it's existence proves there is enough
