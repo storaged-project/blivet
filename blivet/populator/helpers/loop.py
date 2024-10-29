@@ -27,11 +27,13 @@ from gi.repository import BlockDev as blockdev
 from ... import udev
 from ...devices import FileDevice, LoopDevice
 from ...storage_log import log_method_call
+from ...tasks import availability
 from .devicepopulator import DevicePopulator
 
 
 class LoopDevicePopulator(DevicePopulator):
     @classmethod
+    @availability.blockdev_loop_required()
     def match(cls, data):
         return udev.device_is_loop(data)
 
