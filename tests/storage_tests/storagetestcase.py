@@ -176,6 +176,7 @@ def delete_lio_device(dev_path):
 class StorageTestCase(unittest.TestCase):
 
     _disk_size = 2 * 1024**3
+    _num_disks = 4
 
     def setUp(self):
         self.addCleanup(self._clean_up)
@@ -183,7 +184,7 @@ class StorageTestCase(unittest.TestCase):
         self.vdevs = []
         self._dev_files = []
 
-        for _ in range(4):
+        for _ in range(self._num_disks):
             dev_file = create_sparse_tempfile("blivet_test", self._disk_size)
             self._dev_files.append(dev_file)
             try:
