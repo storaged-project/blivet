@@ -424,6 +424,7 @@ class DeviceActionTestCase(BlivetTestCase):
         # - obsoletes all but ActionConfigureDevice actions w/ lower id on the
         #   same existing device with the same attribute being configured
         sdc1._rename = Mock()  # XXX partitions are actually not renamable
+        sdc1.config_actions_map = {"name": "_rename"}
         configure_device_1 = ActionConfigureDevice(sdc1, "name", "new_name")
         configure_device_1.apply()
         configure_device_2 = ActionConfigureDevice(sdc1, "name", "new_name2")

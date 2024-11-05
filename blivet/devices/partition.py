@@ -69,6 +69,8 @@ class PartitionDevice(StorageDevice):
     _resizable = True
     default_size = DEFAULT_PART_SIZE
 
+    config_actions_map = {"parted_flags": "_set_parted_flags"}
+
     def __init__(self, name, fmt=None, uuid=None,
                  size=None, grow=False, maxsize=None, start=None, end=None,
                  major=None, minor=None, bootable=None,
@@ -162,6 +164,8 @@ class PartitionDevice(StorageDevice):
         self._part_type_uuid = None
         self._part_type_name = None
         self._mountpoint = mountpoint
+
+        self._parted_flags = []
 
         if not exists and size is None:
             if start is not None and end is not None:
@@ -608,6 +612,48 @@ class PartitionDevice(StorageDevice):
             return
 
         self.parted_partition.unsetFlag(flag)
+
+    @property
+    def parted_flags(self):
+        """ Parted flags (as list of strings) currently set for this partition """
+        if self._parted_flags:
+            return self._parted_flags
+
+        parted_flags = []
+
+        if not self.parted_partition:
+            return parted_flags
+
+        for fid, flag in parted.partitionFlag.items():
+            if self.get_flag(fid):
+                parted_flags.append(flag)
+
+        self._parted_flags = parted_flags
+        return self._parted_flags
+
+    @parted_flags.setter
+    def parted_flags(self, parted_flags):
+        self._parted_flags = parted_flags
+
+    def _set_parted_flags(self, new_parted_flags, old_parted_flags, dry_run):
+        if not self.exists:
+            raise ValueError("device has not been created")
+
+        if not self.parted_partition:
+            raise ValueError("cannot set flags %s" % self.name)
+
+        if sorted(new_parted_flags) == sorted(old_parted_flags):
+            raise ValueError("flags are already set to %s" % ", ".join(new_parted_flags))
+
+        if not dry_run:
+            for fid in parted.partitionFlag.keys():
+                self.unset_flag(fid)
+
+            for fid, flag in parted.partitionFlag.items():
+                if flag in new_parted_flags:
+                    self.set_flag(fid)
+
+            self.disk.original_format.commit_to_disk()
 
     @property
     def is_magic(self):

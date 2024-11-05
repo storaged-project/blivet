@@ -5,6 +5,7 @@ import parted
 
 from unittest.mock import patch
 
+import blivet
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
 from blivet.devicelibs.gpt import gpt_part_uuid_for_mountpoint
@@ -12,6 +13,8 @@ from blivet.formats import get_format
 from blivet.flags import flags
 from blivet.size import Size
 from blivet.util import sparsetmpfile
+
+from ..storagetestcase import StorageTestCase
 
 
 class PartitionDeviceTestCase(unittest.TestCase):
@@ -266,3 +269,85 @@ class PartitionDeviceTestCase(unittest.TestCase):
             flags.gpt_discoverable_partitions = True
             self.assertEqual(device.part_type_uuid,
                              gpt_part_uuid_for_mountpoint("/home"))
+
+
+class PartitionTestCase(StorageTestCase):
+
+    _num_disks = 1
+
+    def setUp(self):
+        super().setUp()
+
+        disks = [os.path.basename(vdev) for vdev in self.vdevs]
+        self.storage = blivet.Blivet()
+        self.storage.exclusive_disks = disks
+        self.storage.reset()
+
+        # make sure only the targetcli disks are in the devicetree
+        for disk in self.storage.disks:
+            self.assertTrue(disk.path in self.vdevs)
+            self.assertIsNone(disk.format.type)
+            self.assertFalse(disk.children)
+
+    def _clean_up(self):
+        self.storage.reset()
+        for disk in self.storage.disks:
+            if disk.path not in self.vdevs:
+                raise RuntimeError("Disk %s found in devicetree but not in disks created for tests" % disk.name)
+            self.storage.recursive_remove(disk)
+
+        self.storage.do_it()
+
+        return super()._clean_up()
+
+    def test_parted_flags_configure_action(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.format_device(disk, blivet.formats.get_format("disklabel", label_type="msdos"))
+
+        part = self.storage.new_partition(size=Size("100 MiB"), parents=[disk])
+        self.storage.create_device(part)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        part = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "1")
+        self.assertIsNotNone(part)
+
+        self.assertCountEqual(part.parted_flags, [])
+
+        ac = blivet.deviceaction.ActionConfigureDevice(device=part, attr="parted_flags",
+                                                       new_value=["boot"])
+        self.storage.devicetree.actions.add(ac)
+
+        self.assertCountEqual(part.parted_flags, ["boot"])
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        part = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "1")
+        self.assertIsNotNone(part)
+
+        self.assertCountEqual(part.parted_flags, ["boot"])
+
+        with self.assertRaises(ValueError):
+            blivet.deviceaction.ActionConfigureDevice(device=part, attr="parted_flags",
+                                                      new_value=["boot"])
+
+        ac = blivet.deviceaction.ActionConfigureDevice(device=part, attr="parted_flags",
+                                                       new_value=["boot", "lvm"])
+
+        self.storage.devicetree.actions.add(ac)
+
+        self.assertCountEqual(part.parted_flags, ["boot", "lvm"])
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        part = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "1")
+        self.assertIsNotNone(part)
+
+        self.assertCountEqual(part.parted_flags, ["boot", "lvm"])
