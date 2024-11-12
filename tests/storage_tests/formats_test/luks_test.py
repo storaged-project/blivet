@@ -99,6 +99,7 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
 
         with tempfile.NamedTemporaryFile(prefix="blivet_test") as temp:
             temp.write(b"password2")
+            temp.flush()
 
             # create the luks format with both passphrase and keyfile
             self.fmt._key_file = temp.name
