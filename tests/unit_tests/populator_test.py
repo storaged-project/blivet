@@ -269,6 +269,8 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
 class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
     helper_class = LVMDevicePopulator
 
+    @patch("blivet.tasks.availability.BLOCKDEV_LVM_TECH.availability_errors", return_value=[])
+    @patch("blivet.tasks.availability.BLOCKDEV_LVM_PLUGIN._availability_errors", [])
     @patch("blivet.udev.device_is_dm_lvm", return_value=True)
     def test_match(self, *args):
         """Test matching of lvm device populator."""
@@ -277,6 +279,8 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_is_dm_lvm.return_value = False
         self.assertFalse(self.helper_class.match(None))
 
+    @patch("blivet.tasks.availability.BLOCKDEV_LVM_TECH.availability_errors", return_value=[])
+    @patch("blivet.tasks.availability.BLOCKDEV_LVM_PLUGIN._availability_errors", [])
     @patch("blivet.udev.device_is_dm", return_value=False)
     @patch("blivet.udev.device_is_dm_mpath", return_value=False)
     @patch("blivet.udev.device_is_loop", return_value=False)
@@ -862,7 +866,10 @@ class FormatPopulatorTestCase(PopulatorHelperTestCase):
     def helper_name(self):
         return self.helper_class.__name__
 
-    def test_match(self):
+    @patch("blivet.tasks.availability.BLOCKDEV_LVM_TECH.availability_errors", return_value=[])
+    @patch("blivet.tasks.availability.BLOCKDEV_LVM_PLUGIN._availability_errors", [])
+    # pylint: disable=unused-argument
+    def test_match(self, *args):
         if self.udev_type is None:
             return
 
@@ -873,6 +880,8 @@ class FormatPopulatorTestCase(PopulatorHelperTestCase):
             self.assertTrue(self.helper_class.match(data, device),
                             msg="Failed to match %s against %s" % (self.udev_type, self.helper_name))
 
+    @patch("blivet.tasks.availability.BLOCKDEV_LVM_TECH.availability_errors", return_value=[])
+    @patch("blivet.tasks.availability.BLOCKDEV_LVM_PLUGIN._availability_errors", [])
     @patch("blivet.static_data.mpath_members.is_mpath_member", return_value=False)
     @patch("blivet.udev.device_is_partition", return_value=False)
     @patch("blivet.udev.device_is_dm_partition", return_value=False)
