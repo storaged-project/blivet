@@ -77,7 +77,7 @@ safe_name_characters = "0-9a-zA-Z._-"
 if hasattr(blockdev.LVMTech, "DEVICES"):
     try:
         blockdev.lvm.is_tech_avail(blockdev.LVMTech.DEVICES, 0)  # pylint: disable=no-member
-    except blockdev.LVMError:
+    except (blockdev.LVMError, blockdev.BlockDevNotImplementedError):
         HAVE_LVMDEVICES = False
     else:
         HAVE_LVMDEVICES = True
