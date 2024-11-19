@@ -220,12 +220,13 @@ class DiskLabel(DeviceFormat):
 
     @classmethod
     def get_platform_label_types(cls):
-        label_types = ["msdos", "gpt"]
+        # always prefer gpt except for configurations below
+        label_types = ["gpt", "msdos"]
         if arch.is_pmac():
             label_types = ["mac"]
-        # always prefer gpt on aarch64, x86_64, and EFI plats except 32-bit ARM
-        elif arch.is_aarch64() or arch.is_x86(bits=64) or (arch.is_efi() and not arch.is_arm()):
-            label_types = ["gpt", "msdos"]
+        # prefet msdos on 32-bit ARM
+        elif arch.is_arm():
+            label_types = ["msdos", "gpt"]
         elif arch.is_s390():
             label_types += ["dasd"]
 
@@ -254,7 +255,7 @@ class DiskLabel(DeviceFormat):
         if arch.is_s390():
             if blockdev.s390.dasd_is_fba(self.device):
                 # the device is FBA DASD
-                return "msdos"
+                return "gpt"
             elif self.parted_device.type == parted.DEVICE_DASD:
                 # the device is DASD
                 return "dasd"
