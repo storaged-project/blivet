@@ -275,6 +275,16 @@ def device_get_format_version(udev_info):
     return udev_info.get("ID_FS_VERSION")
 
 
+def device_get_format_size(udev_info):
+    """ Report a device's format size as reported by udev. """
+    return udev_info.get("ID_FS_SIZE")
+
+
+def device_get_format_blocksize(udev_info):
+    """ Report a device's format block size as reported by udev. """
+    return udev_info.get("ID_FS_BLOCKSIZE")
+
+
 def device_get_uuid(udev_info):
     """ Get the UUID from the device's format as reported by udev.
 

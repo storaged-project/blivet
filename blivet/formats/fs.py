@@ -353,17 +353,12 @@ class FS(DeviceFormat):
         if not self.exists:
             return
 
-        self._current_info = None
         self._min_instance_size = Size(0)
         self._resizable = self.__class__._resizable
 
         # try to gather current size info
         self._size = Size(0)
-        try:
-            if self._info.available:
-                self._current_info = self._info.do_task()
-        except FSError as e:
-            log.info("Failed to obtain info for device %s: %s", self.device, e)
+        udev.settle()
         try:
             self._size = self._size_info.do_task()
         except (FSError, NotImplementedError) as e:
