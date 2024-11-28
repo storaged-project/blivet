@@ -22,10 +22,15 @@
 import abc
 import os
 
+from .. import udev
 from ..errors import FSError
 from ..size import Size
 
 from . import fstask
+
+
+import logging
+log = logging.getLogger("blivet")
 
 
 class FSSize(fstask.FSTask, metaclass=abc.ABCMeta):
@@ -44,10 +49,20 @@ class FSSize(fstask.FSTask, metaclass=abc.ABCMeta):
         return [self.fs._info]
 
     @abc.abstractmethod
-    def _get_size(self):
+    def _get_size_tools(self):
         raise NotImplementedError
 
-    # IMPLEMENTATION methods
+    def _get_size_udev(self):
+        udev.settle()
+        udev_info = udev.get_device(device_node=self.fs.device)
+        if not udev_info:
+            raise FSError("Failed to obtain udev information for device %s" % self.fs.device)
+
+        fs_size = udev.device_get_format_size(udev_info)
+        if not fs_size:
+            raise FSError("Failed to obtain filesystem size for %s from udev" % self.fs.device)
+
+        return Size(fs_size)
 
     def do_task(self):  # pylint: disable=arguments-differ
         """ Returns the size of the filesystem.
@@ -56,33 +71,51 @@ class FSSize(fstask.FSTask, metaclass=abc.ABCMeta):
             :rtype: :class:`~.size.Size`
             :raises FSError: on failure
         """
+
+        # try to get size from udev
+        try:
+            size = self._get_size_udev()
+        except FSError as e:
+            log.info("Failed to obtain filesystem size for %s from udev: %s",
+                     self.fs.device, str(e))
+        else:
+            return size
+
+        # fallback to filesystem tools
         error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
         if self.fs._current_info is None:
+            try:
+                if self.fs._info.available:
+                    self.fs._current_info = self.fs._info.do_task()
+            except FSError as e:
+                log.info("Failed to obtain info for device %s: %s", self.fs.device, e)
+
+        if self.fs._current_info is None:
             raise FSError("No info available for size computation.")
 
-        return self._get_size()
+        return self._get_size_tools()
 
 
 class Ext2FSSize(FSSize):
-    def _get_size(self):
+    def _get_size_tools(self):
         return Size(self.fs._current_info.block_size * self.fs._current_info.block_count)
 
 
 class NTFSSize(FSSize):
-    def _get_size(self):
+    def _get_size_tools(self):
         return Size(self.fs._current_info.size)
 
 
 class XFSSize(FSSize):
-    def _get_size(self):
+    def _get_size_tools(self):
         return Size(self.fs._current_info.block_size * self.fs._current_info.block_count)
 
 
 class FATFSSize(FSSize):
-    def _get_size(self):
+    def _get_size_tools(self):
         return Size(self.fs._current_info.cluster_size * self.fs._current_info.cluster_count)
 
 
