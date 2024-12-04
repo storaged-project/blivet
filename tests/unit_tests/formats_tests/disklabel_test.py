@@ -71,7 +71,7 @@ class DiskLabelTestCase(unittest.TestCase):
         arch.is_pmac.return_value = False
         arch.is_x86.return_value = False
 
-        self.assertEqual(disklabel_class.get_platform_label_types(), ["msdos", "gpt"])
+        self.assertEqual(disklabel_class.get_platform_label_types(), ["gpt", "msdos"])
 
         arch.is_pmac.return_value = True
         self.assertEqual(disklabel_class.get_platform_label_types(), ["mac"])
@@ -100,7 +100,7 @@ class DiskLabelTestCase(unittest.TestCase):
         arch.is_efi.return_value = False
 
         arch.is_s390.return_value = True
-        self.assertEqual(disklabel_class.get_platform_label_types(), ["msdos", "gpt", "dasd"])
+        self.assertEqual(disklabel_class.get_platform_label_types(), ["gpt", "msdos", "dasd"])
         arch.is_s390.return_value = False
 
     def test_label_type_size_check(self):
@@ -121,14 +121,14 @@ class DiskLabelTestCase(unittest.TestCase):
 
         with patch.object(blivet.formats.disklabel.DiskLabel, "parted_device", new=PropertyMock(return_value=None)):
             # no parted device -> no passing size check
-            self.assertEqual(dl._label_type_size_check("msdos"), False)
+            self.assertEqual(dl._label_type_size_check("gpt"), False)
 
     @patch("blivet.formats.disklabel.arch")
     def test_best_label_type(self, arch):
         """
             1. is always in _disklabel_types
             2. is the default unless the device is too long for the default
-            3. is msdos for fba dasd on S390
+            3. is gpt for fba dasd on S390
             4. is dasd for non-fba dasd on S390
         """
         dl = blivet.formats.disklabel.DiskLabel()
@@ -144,17 +144,17 @@ class DiskLabelTestCase(unittest.TestCase):
         arch.is_x86.return_value = False
 
         with patch.object(dl, '_label_type_size_check') as size_check:
-            # size check passes for first type ("msdos")
+            # size check passes for first type ("gpt")
             size_check.return_value = True
-            self.assertEqual(dl._get_best_label_type(), "msdos")
+            self.assertEqual(dl._get_best_label_type(), "gpt")
 
             # size checks all fail -> label type is None
             size_check.return_value = False
             self.assertEqual(dl._get_best_label_type(), None)
 
-            # size check passes on second call -> label type is "gpt" (second in platform list)
+            # size check passes on second call -> label type is "msdos" (second in platform list)
             size_check.side_effect = [False, True]
-            self.assertEqual(dl._get_best_label_type(), "gpt")
+            self.assertEqual(dl._get_best_label_type(), "msdos")
 
         arch.is_pmac.return_value = True
         with patch.object(dl, '_label_type_size_check') as size_check:
@@ -175,10 +175,10 @@ class DiskLabelTestCase(unittest.TestCase):
                 size_check.return_value = True
                 with patch("blivet.formats.disklabel.blockdev.s390") as _s390:
                     _s390.dasd_is_fba.return_value = False
-                    self.assertEqual(dl._get_best_label_type(), "msdos")
+                    self.assertEqual(dl._get_best_label_type(), "gpt")
 
                     _s390.dasd_is_fba.return_value = True
-                    self.assertEqual(dl._get_best_label_type(), "msdos")
+                    self.assertEqual(dl._get_best_label_type(), "gpt")
 
                     _s390.dasd_is_fba.return_value = False
                     dl._parted_device.type = parted.DEVICE_DASD
