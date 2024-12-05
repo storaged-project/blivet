@@ -371,10 +371,16 @@ class PartitionDevice(StorageDevice):
             hasattr(parted.Partition, "type_uuid"))
 
         if discoverable:
-            parttype = gpt_part_uuid_for_mountpoint(self._mountpoint)
-            log.debug("Discovered partition type UUID %s for mount '%s'",
-                      parttype, self._mountpoint)
-            return parttype
+            try:
+                parttype = gpt_part_uuid_for_mountpoint(self._mountpoint)
+            except errors.GPTVolUUIDError as e:
+                log.error("Failed to get partition type UUID for mount '%s': %s",
+                          self._mountpoint, str(e))
+                return None
+            else:
+                log.debug("Discovered partition type UUID %s for mount '%s'",
+                          parttype, self._mountpoint)
+                return parttype
         return None
 
     @property
