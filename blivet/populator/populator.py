@@ -471,7 +471,10 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         self.drop_device_info_cache()
 
         if flags.auto_dev_updates and availability.BLOCKDEV_MPATH_PLUGIN.available:
-            blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
+            try:
+                blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
+            except blockdev.MpathError as e:
+                log.error("Failed to set mpath friendly names: %s", str(e))
 
         self.setup_disk_images()
 
