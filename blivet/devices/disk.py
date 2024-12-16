@@ -255,6 +255,10 @@ class MultipathDevice(DMDevice):
         self.wwn = wwn or None
 
     @property
+    def device_id(self):
+        return self.name
+
+    @property
     def model(self):
         if not self.parents:
             return ""
