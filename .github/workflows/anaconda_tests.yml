@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
     env:
-      TARGET_BRANCH: 'master'
+      TARGET_BRANCH: 'main'
 
     steps:
       - name: Clone Anaconda repository
@@ -34,7 +34,7 @@ jobs:
         run: |
           # Run anaconda-ci container with blivet and anaconda attached.
           # Steps in the container:
-          # - Download anaconda-ci:master container (Rawhide)
+          # - Download anaconda-ci:main container (Rawhide)
           # - Remove already existing blivet RPM in the container.
           # - Install dependencies for blivet.
           # - Install blivet to the container.
