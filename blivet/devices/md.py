@@ -794,6 +794,10 @@ class MDBiosRaidArrayDevice(MDRaidArrayDevice):
         return self._size
 
     @property
+    def device_id(self):
+        return self.name
+
+    @property
     def description(self):
         levelstr = self.level.nick if self.level.nick else self.level.name
         return "BIOS RAID set (%s)" % levelstr
