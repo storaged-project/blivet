@@ -74,7 +74,12 @@ def device_to_dict(device):
     # Sice blivet uses Device.properties only (with couple of exceptions)
     # this is a functional workaround. (japokorn May 2017)
 
-    result = dict(device.properties)
+    result = dict()
+    for key in device.properties.keys():
+        try:
+            result[key] = device.properties.get(key)
+        except Exception as e:  # pylint: disable=broad-except
+            log.error("Failed to get %s property of %s: %s", key, device.sys_name, str(e))
     result["SYS_NAME"] = device.sys_name
     result["SYS_PATH"] = device.sys_path
     return result
