@@ -38,6 +38,11 @@ class LVMPVNodevTestCase(unittest.TestCase):
 
             mock["blockdev"].lvm.devices_add.assert_not_called()
 
+            # LVM devices file not enabled/supported -> devices_delete should not be called
+            fmt._destroy()
+
+            mock["blockdev"].lvm.devices_delete.assert_not_called()
+
         with self.patches() as mock:
             # LVM devices file enabled and devices file exists -> devices_add should be called
             mock["lvm"].HAVE_LVMDEVICES = True
@@ -46,6 +51,11 @@ class LVMPVNodevTestCase(unittest.TestCase):
             fmt._create()
 
             mock["blockdev"].lvm.devices_add.assert_called_with("/dev/test")
+
+            # LVM devices file enabled and devices file exists -> devices_delete should be called
+            fmt._destroy()
+
+            mock["blockdev"].lvm.devices_delete.assert_called_with("/dev/test")
 
         with self.patches() as mock:
             # LVM devices file enabled and devices file doesn't exist
@@ -58,6 +68,12 @@ class LVMPVNodevTestCase(unittest.TestCase):
 
             mock["blockdev"].lvm.devices_add.assert_called_with("/dev/test")
 
+            # LVM devices file enabled but devices file doesn't exist
+            # -> devices_delete should not be called
+            fmt._destroy()
+
+            mock["blockdev"].lvm.devices_delete.assert_not_called()
+
         with self.patches() as mock:
             # LVM devices file enabled and devices file doesn't exist
             # and existing VGs present -> devices_add should not be called
@@ -68,6 +84,12 @@ class LVMPVNodevTestCase(unittest.TestCase):
             fmt._create()
 
             mock["blockdev"].lvm.devices_add.assert_not_called()
+
+            # LVM devices file enabled but devices file doesn't exist
+            # -> devices_delete should not be called
+            fmt._destroy()
+
+            mock["blockdev"].lvm.devices_delete.assert_not_called()
 
         with self.patches() as mock:
             # LVM devices file enabled and devices file exists
@@ -80,6 +102,12 @@ class LVMPVNodevTestCase(unittest.TestCase):
             fmt._create()
 
             mock["blockdev"].lvm.devices_add.assert_not_called()
+
+            # LVM devices file enabled and devices file exists
+            # but flag set to false -> devices_delete should not be called
+            fmt._destroy()
+
+            mock["blockdev"].lvm.devices_delete.assert_not_called()
 
             # reset the flag back
             flags.lvm_devices_file = True

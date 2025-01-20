@@ -171,6 +171,16 @@ class LVMPhysicalVolume(DeviceFormat):
         if not lvm.HAVE_LVMDEVICES:
             raise PhysicalVolumeError("LVM devices file feature is not supported")
 
+        if not os.path.exists(lvm.LVM_DEVICES_FILE):
+            log.debug("Not removing %s from devices file: %s doesn't exist",
+                      self.device, lvm.LVM_DEVICES_FILE)
+            return
+
+        if not flags.lvm_devices_file:
+            log.debug("Not removing %s from devices file: 'lvm_devices_file' flag is set to False",
+                      self.device)
+            return
+
         try:
             blockdev.lvm.devices_delete(self.device)
         except blockdev.LVMError as e:
