@@ -315,8 +315,20 @@ class LVMVolumeGroupDevice(ContainerDevice):
             if lv.status and not status:
                 lv.teardown()
 
+        # update LVMPV format size --> PV format has different size when in VG
+        try:
+            member.format._size = member.format._target_size = member.format._size_info.do_task()
+        except errors.PhysicalVolumeError as e:
+            log.warning("Failed to obtain current size for device %s: %s", member.format.device, e)
+
     def _add(self, member):
         blockdev.lvm.vgextend(self.name, member.path)
+
+        # update LVMPV format size --> PV format has different size when in VG
+        try:
+            member.format._size = member.format._target_size = member.format._size_info.do_task()
+        except errors.PhysicalVolumeError as e:
+            log.warning("Failed to obtain current size for device %s: %s", member.path, e)
 
     def _add_log_vol(self, lv):
         """ Add an LV to this VG. """
