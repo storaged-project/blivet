@@ -981,6 +981,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         pv_info.vg_uuid = sentinel.vg_uuid
         pv_info.pe_start = 0
         pv_info.pv_free = 0
+        pv_info.pv_size = "10g"
 
         vg_device = Mock()
         vg_device.id = 0
@@ -1012,6 +1013,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         pv_info.vg_extent_count = 2500
         pv_info.vg_free_count = 0
         pv_info.vg_pv_count = 1
+        pv_info.pv_size = "10g"
 
         with patch("blivet.static_data.lvm_info.PVsInfo.cache", new_callable=PropertyMock) as mock_pvs_cache:
             mock_pvs_cache.return_value = {device.path: pv_info}
