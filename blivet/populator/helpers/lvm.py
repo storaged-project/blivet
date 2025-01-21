@@ -112,6 +112,8 @@ class LVMFormatPopulator(FormatPopulator):
                 log.warning("PV %s has no pe_start", name)
             if pv_info.pv_free:
                 kwargs["free"] = Size(pv_info.pv_free)
+            if pv_info.pv_size:
+                kwargs["size"] = Size(pv_info.pv_size)
 
         return kwargs
 
