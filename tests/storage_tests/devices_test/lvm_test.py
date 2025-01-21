@@ -475,6 +475,11 @@ class LVMTestCase(StorageTestCase):
         pv1 = self.storage.devicetree.get_device_by_name(pv1.name)
         ac = blivet.deviceaction.ActionRemoveMember(vg, pv1)
         self.storage.devicetree.actions.add(ac)
+
+        # schedule also removing the lvmpv format from the PV
+        ac = blivet.deviceaction.ActionDestroyFormat(pv1)
+        self.storage.devicetree.actions.add(ac)
+
         self.storage.do_it()
 
         pv2 = self.storage.devicetree.get_device_by_name(pv2.name)
@@ -497,3 +502,53 @@ class LVMTestCase(StorageTestCase):
         self.assertIsNotNone(vg)
         self.assertEqual(len(vg.pvs), 1)
         self.assertEqual(vg.pvs[0].name, pv2.name)
+
+    def test_lvm_pv_size(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.storage.initialize_disk(disk)
+
+        pv = self.storage.new_partition(size=blivet.size.Size("100 MiB"), fmt_type="lvmpv",
+                                        parents=[disk])
+        self.storage.create_device(pv)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pv = self.storage.devicetree.get_device_by_name(pv.name)
+        self.assertIsNotNone(pv)
+
+        pv.format.update_size_info()
+        self.assertTrue(pv.format.resizable)
+
+        ac = blivet.deviceaction.ActionResizeFormat(pv, blivet.size.Size("50 MiB"))
+        self.storage.devicetree.actions.add(ac)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pv = self.storage.devicetree.get_device_by_name(pv.name)
+        self.assertIsNotNone(pv)
+        self.assertEqual(pv.format.size, blivet.size.Size("50 MiB"))
+        pv_size = self._get_pv_size(pv.path)
+        self.assertEqual(pv_size, pv.format.size)
+
+        vg = self.storage.new_vg(name="blivetTestVG", parents=[pv])
+        self.storage.create_device(vg)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pv = self.storage.devicetree.get_device_by_name(pv.name)
+        self.assertIsNotNone(pv)
+        pv_size = self._get_pv_size(pv.path)
+        self.assertEqual(pv_size, pv.format.size)
+
+        vg = self.storage.devicetree.get_device_by_name("blivetTestVG")
+        self.assertIsNotNone(vg)
+        vg_size = self._get_vg_size(vg.name)
+        self.assertEqual(vg_size, vg.size)
+        vg_free = self._get_vg_free(vg.name)
+        self.assertEqual(vg_free, vg.free_space)
