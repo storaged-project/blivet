@@ -34,7 +34,7 @@ from .errors import DeviceError, PartitioningError, AlignmentError
 from .flags import flags
 from .devices import Device, PartitionDevice, device_path_to_name
 from .size import Size
-from .i18n import _
+from .i18n import _, N_
 from .util import stringize, unicodeize, compare
 
 import logging
@@ -681,6 +681,11 @@ def resolve_disk_tags(disks, tags):
     return [disk for disk in disks if any(tag in disk.tags for tag in tags)]
 
 
+class PartitioningErrors:
+    NO_PRIMARY = N_("no primary partition slots available")
+    NO_SLOTS = N_("no free partition slots")
+
+
 def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
     """ Allocate partitions based on requested features.
 
@@ -763,6 +768,7 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
         part_type = None
         growth = 0  # in sectors
         # loop through disks
+        errors = {}
         for _disk in req_disks:
             try:
                 disklabel = disklabels[_disk.path]
@@ -798,6 +804,10 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
             if new_part_type is None:
                 # can't allocate any more partitions on this disk
                 log.debug("no free partition slots on %s", _disk.name)
+                if PartitioningErrors.NO_SLOTS in errors.keys():
+                    errors[PartitioningErrors.NO_SLOTS].append(_disk.name)
+                else:
+                    errors[PartitioningErrors.NO_SLOTS] = [_disk.name]
                 continue
 
             if _part.req_primary and new_part_type != parted.PARTITION_NORMAL:
@@ -808,7 +818,11 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
                     new_part_type = parted.PARTITION_NORMAL
                 else:
                     # we need a primary slot and none are free on this disk
-                    log.debug("no primary slots available on %s", _disk.name)
+                    log.debug("no primary partition slots available on %s", _disk.name)
+                    if PartitioningErrors.NO_PRIMARY in errors.keys():
+                        errors[PartitioningErrors.NO_PRIMARY].append(_disk.name)
+                    else:
+                        errors[PartitioningErrors.NO_PRIMARY] = [_disk.name]
                     continue
             elif _part.req_part_type is not None and \
                     new_part_type != _part.req_part_type:
@@ -968,7 +982,12 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
                 break
 
         if free is None:
-            raise PartitioningError(_("Unable to allocate requested partition scheme."))
+            if not errors:
+                msg = _("Unable to allocate requested partition scheme.")
+            else:
+                errors_by_disk = (", ".join(disks) + ": " + _(error) for error, disks in errors.items())
+                msg = _("Unable to allocate requested partition scheme on requested disks:\n%s") % "\n".join(errors_by_disk)
+            raise PartitioningError(msg)
 
         _disk = use_disk
         disklabel = _disk.format
