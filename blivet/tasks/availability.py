@@ -437,6 +437,11 @@ BLOCKDEV_CRYPTO_INTEGRITY = BlockDevTechInfo(plugin_name="crypto",
                                                                                            blockdev.CryptoTechMode.QUERY)})
 BLOCKDEV_CRYPTO_TECH_INTEGRITY = BlockDevMethod(BLOCKDEV_CRYPTO_INTEGRITY)
 
+BLOCKDEV_CRYPTO_BITLK = BlockDevTechInfo(plugin_name="crypto",
+                                         check_fn=blockdev.crypto_is_tech_avail,
+                                         technologies={blockdev.CryptoTech.BITLK: blockdev.CryptoTechMode.OPEN_CLOSE})
+BLOCKDEV_CRYPTO_TECH_BITLK = BlockDevMethod(BLOCKDEV_CRYPTO_BITLK)
+
 # libblockdev dm plugin required technologies and modes
 BLOCKDEV_DM_ALL_MODES = (blockdev.DMTechMode.CREATE_ACTIVATE |
                          blockdev.DMTechMode.REMOVE_DEACTIVATE |
@@ -578,6 +583,8 @@ BLOCKDEV_BTRFS_PLUGIN = blockdev_plugin("libblockdev btrfs plugin", BLOCKDEV_BTR
 BLOCKDEV_CRYPTO_PLUGIN = blockdev_plugin("libblockdev crypto plugin", BLOCKDEV_CRYPTO_TECH)
 BLOCKDEV_CRYPTO_PLUGIN_INTEGRITY = blockdev_plugin("libblockdev crypto plugin (integrity technology)",
                                                    BLOCKDEV_CRYPTO_TECH_INTEGRITY)
+BLOCKDEV_CRYPTO_PLUGIN_BITLK = blockdev_plugin("libblockdev crypto plugin (BitLocker technology)",
+                                               BLOCKDEV_CRYPTO_TECH_BITLK)
 BLOCKDEV_DM_PLUGIN = blockdev_plugin("libblockdev dm plugin", BLOCKDEV_DM_TECH)
 BLOCKDEV_LOOP_PLUGIN = blockdev_plugin("libblockdev loop plugin", BLOCKDEV_LOOP_TECH)
 BLOCKDEV_LVM_PLUGIN = blockdev_plugin("libblockdev lvm plugin", BLOCKDEV_LVM_TECH)
