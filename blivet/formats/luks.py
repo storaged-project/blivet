@@ -28,7 +28,7 @@ from gi.repository import BlockDev as blockdev
 import os
 
 from ..storage_log import log_method_call
-from ..errors import LUKSError, IntegrityError
+from ..errors import LUKSError, IntegrityError, BitLockerError
 from ..devicelibs import crypto
 from . import DeviceFormat, register_device_format
 from ..flags import flags
@@ -635,7 +635,7 @@ register_device_format(Integrity)
 
 class BitLocker(DeviceFormat):
 
-    """ DM integrity format """
+    """ BitLocker format """
     _type = "bitlocker"
     _name = N_("BitLocker")
     _udev_types = ["BitLocker"]
@@ -643,6 +643,49 @@ class BitLocker(DeviceFormat):
     _formattable = False               # can be formatted
     _linux_native = False              # for clearpart
     _resizable = False                 # can be resized
+    _packages = ["cryptsetup"]         # required packages
+    _plugin = availability.BLOCKDEV_CRYPTO_PLUGIN_BITLK
+
+    def __init__(self, **kwargs):
+        """
+            :keyword device: the path to the underlying device
+            :keyword exists: indicates whether this is an existing format
+            :type exists: bool
+            :keyword name: the name of the mapped device
+
+            .. note::
+
+                The 'device' kwarg is required for existing formats. For non-
+                existent formats, it is only necessary that the :attr:`device`
+                attribute be set before the :meth:`create` method runs. Note
+                that you can specify the device at the last moment by specifying
+                it via the 'device' kwarg to the :meth:`create` method.
+        """
+        log_method_call(self, **kwargs)
+        DeviceFormat.__init__(self, **kwargs)
+
+        self.map_name = kwargs.get("name")
+
+    @property
+    def status(self):
+        if not self.exists or not self.map_name:
+            return False
+        return os.path.exists("/dev/mapper/%s" % self.map_name)
+
+    def _teardown(self, **kwargs):
+        """ Close, or tear down, the format. """
+        log_method_call(self, device=self.device,
+                        type=self.type, status=self.status)
+        log.debug("unmapping %s", self.map_name)
+
+        # it's safe to use luks_close here, it uses crypt_deactivate which works
+        # for all devices supported by cryptsetup
+        try:
+            blockdev.crypto.luks_close(self.map_name)
+        except blockdev.CryptoError as e:
+            raise BitLockerError(e)
+
+        udev.settle()
 
 
 register_device_format(BitLocker)

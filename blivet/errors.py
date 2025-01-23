@@ -140,6 +140,10 @@ class IntegrityError(LUKSError):
     pass
 
 
+class BitLockerError(DeviceFormatError):
+    pass
+
+
 class MDMemberError(DeviceFormatError):
     pass
 
