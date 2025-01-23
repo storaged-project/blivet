@@ -102,6 +102,8 @@ class LVMPhysicalVolume(DeviceFormat):
         # when set to True, blivet will try to resize the PV to fill all available space
         self._grow_to_fill = False
 
+        self._target_size = self._size
+
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
         s += ("  vg_name = %(vg_name)s  vg_uuid = %(vg_uuid)s"

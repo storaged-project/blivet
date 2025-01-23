@@ -343,11 +343,23 @@ class LVMVolumeGroupDevice(ContainerDevice):
             if lv.status and not status:
                 lv.teardown()
 
+        # update LVMPV format size --> PV format has different size when in VG
+        try:
+            fmt._size = fmt._target_size = fmt._size_info.do_task()
+        except errors.PhysicalVolumeError as e:
+            log.warning("Failed to obtain current size for device %s: %s", fmt.device, e)
+
     def _add(self, member):
         try:
             blockdev.lvm.vgextend(self.name, member.path)
         except blockdev.LVMError as err:
             raise errors.LVMError(err)
+
+        # update LVMPV format size --> PV format has different size when in VG
+        try:
+            member.format._size = member.format._target_size = member.format._size_info.do_task()
+        except errors.PhysicalVolumeError as e:
+            log.warning("Failed to obtain current size for device %s: %s", member.path, e)
 
     def _add_log_vol(self, lv):
         """ Add an LV to this VG. """
@@ -522,40 +534,55 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         self._reserved_percent = value
 
-    def _get_pv_usable_space(self, pv):
+    def _get_pv_metadata_space(self, pv):
+        """ Returns how much space will be used by VG metadata in given PV
+            This depends on type of the PV, PE size and PE start.
+        """
         if isinstance(pv, MDRaidArrayDevice):
-            return self.align(pv.size - 2 * pv.format.pe_start)
+            return 2 * pv.format.pe_start
         else:
-            return self.align(pv.size - pv.format.pe_start)
+            return pv.format.pe_start
+
+    def _get_pv_usable_space(self, pv):
+        """ Return how much space can be actually used on given PV.
+            This takes into account:
+             - VG metadata that is/will be stored in this PV
+             - the actual PV format size (which might differ from
+               the underlying block device size)
+        """
+
+        if pv.format.exists and pv.format.size and self.exists:
+            # PV format exists, we got its size and VG also exists
+            # -> all metadata is already accounted in the PV format size
+            return pv.format.size
+        elif pv.format.exists and pv.format.size and not self.exists:
+            # PV format exists, we got its size, but the VG doesn't exist
+            # -> metadata size is not accounted in the PV format size
+            return self.align(pv.format.size - self._get_pv_metadata_space(pv))
+        else:
+            # something else -> either the PV format is not yet created or
+            # we for some reason failed to get size of the format, either way
+            # lets use the underlying block device size and calculate the
+            # metadata size ourselves
+            return self.align(pv.size - self._get_pv_metadata_space(pv))
 
     @property
     def lvm_metadata_space(self):
-        """ The amount of the space LVM metadata cost us in this VG's PVs """
-        # NOTE: we either specify data alignment in a PV or the default is used
-        #       which is both handled by pv.format.pe_start, but LVM takes into
-        #       account also the underlying block device which means that e.g.
-        #       for an MD RAID device, it tries to align everything also to chunk
-        #       size and alignment offset of such device which may result in up
-        #       to a twice as big non-data area
-        # TODO: move this to either LVMPhysicalVolume's pe_start property once
-        #       formats know about their devices or to a new LVMPhysicalVolumeDevice
-        #       class once it exists
-        diff = Size(0)
-        for pv in self.pvs:
-            diff += pv.size - self._get_pv_usable_space(pv)
-
-        return diff
+        """ The amount of the space LVM metadata cost us in this VG's PVs
+            Note: we either specify data alignment in a PV or the default is used
+                  which is both handled by pv.format.pe_start, but LVM takes into
+                  account also the underlying block device which means that e.g.
+                  for an MD RAID device, it tries to align everything also to chunk
+                  size and alignment offset of such device which may result in up
+                  to a twice as big non-data area
+        """
+        return sum(self._get_pv_metadata_space(pv) for pv in self.pvs)
 
     @property
     def size(self):
         """ The size of this VG """
         # TODO: just ask lvm if isModified returns False
-
-        # sum up the sizes of the PVs, subtract the unusable (meta data) space
-        size = sum(pv.size for pv in self.pvs)
-        size -= self.lvm_metadata_space
-
-        return size
+        return sum(self._get_pv_usable_space(pv) for pv in self.pvs)
 
     @property
     def extents(self):
