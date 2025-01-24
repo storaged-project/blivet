@@ -1,0 +1,188 @@
+# ansible tasks for installing blivet dependencies,
+# see install-test-dependencies.yml for usage
+
+---
+####### Fedora
+- name: Install basic build tools (Fedora)
+  package:
+    state: present
+    name:
+      - make
+      - python3-ipython
+  when: ansible_distribution == 'Fedora'
+
+- name: Install dnf-plugins-core for dnf builddep (Fedora)
+  package: name=dnf-plugins-core state=present
+  when: ansible_distribution == 'Fedora'
+
+- name: Install build dependencies (Fedora)
+  command: "dnf -y builddep python3-blivet --nogpgcheck"
+  when: ansible_distribution == 'Fedora'
+
+- name: Install blivet to get all dependencies (Fedora)
+  package: name=python3-blivet state=present
+  when: ansible_distribution == 'Fedora'
+
+- name: Install test dependencies (Fedora)
+  package:
+    state: present
+    name:
+      - dosfstools
+      - e2fsprogs
+      - xfsprogs
+      - hfsplus-tools
+      - ntfsprogs
+      - python3-coverage
+      - python3-pocketlint
+      - python3-pycodestyle
+      - python3-pyudev
+      - python3-pyparted
+      - libselinux-python3
+      - python3-blockdev
+      - python3-bytesize
+      - python3-libmount
+      - python3-libvirt
+      - python3-paramiko
+      - targetcli
+      - iscsi-initiator-utils
+      - gfs2-utils
+      - stratisd
+      - stratis-cli
+      - libblockdev-tools
+  when: ansible_distribution == 'Fedora' and test_dependencies|bool
+
+####### CentOS 9/10
+- name: Install basic build tools (CentOS)
+  package: name=make state=present
+  when: ansible_distribution == 'CentOS'
+
+- name: Enable EPEL repository (CentOS)
+  package: name=epel-release state=present
+  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '9'
+
+- name: Install dnf-plugins-core for dnf config-manager and builddep (CentOS)
+  package: name=dnf-plugins-core state=present
+  when: ansible_distribution == 'CentOS'
+
+- name: Enable CRB repository (CentOS)
+  command: dnf config-manager --set-enabled crb
+  when: ansible_distribution == 'CentOS'
+
+- name: Install build dependencies (CentOS)
+  command: "dnf -y builddep python3-blivet --nogpgcheck"
+  when: ansible_distribution == 'CentOS'
+
+- name: Install blivet to get all dependencies (CentOS)
+  package: name=python3-blivet state=present
+  when: ansible_distribution == 'CentOS'
+
+- name: Install test dependencies (CentOS)
+  package:
+    state: present
+    name:
+      - dosfstools
+      - e2fsprogs
+      - xfsprogs
+      - python3-pyudev
+      - python3-pyparted
+      - libselinux-python3
+      - python3-blockdev
+      - python3-bytesize
+      - python3-libmount
+      - python3-libvirt
+      - python3-pip
+      - targetcli
+      - iscsi-initiator-utils
+      - stratisd
+      - stratis-cli
+      - libblockdev-tools
+  when: ansible_distribution == 'CentOS' and test_dependencies|bool
+
+- name: Install additional test dependencies (CentOS 9)
+  package:
+    state: present
+    name:
+      - python3-coverage
+      - python3-pycodestyle
+  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '9' and test_dependencies|bool
+
+- name: Install coverage and pycodestyle using pip (CentOS 10)
+  pip:
+    name: ['coverage', 'pycodestyle']
+  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '10' and test_dependencies|bool
+
+- name: Install paramiko using pip
+  pip: name=paramiko executable=pip3
+  when: ansible_distribution == 'CentOS' and test_dependencies|bool
+
+- name: Install pocketlint using pip (CentOS)
+  pip: name=pocketlint executable=pip3
+  when: ansible_distribution == 'CentOS' and test_dependencies|bool
+
+####### Debian/Ubuntu
+- name: Update apt cache (Debian/Ubuntu)
+  apt:
+    update_cache: yes
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Install basic build tools (Debian/Ubuntu)
+  package: name=make state=present
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Install dependencies (Debian/Ubuntu)
+  package:
+    state: present
+    name:
+      - python3-blockdev
+      - libblockdev3
+      - libblockdev-plugins-all
+      - gir1.2-blockdev-3.0
+      - python3-bytesize
+      - python3-selinux
+      - python3-pyudev
+      - python3-parted
+      - lvm2-dbusd
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Install test dependencies (Debian/Ubuntu)
+  package:
+    state: present
+    name:
+      - automake
+      - autopoint
+      - bison
+      - libtool
+      - pkg-config
+      - dosfstools
+      - e2fsprogs
+      - xfsprogs
+      - ntfs-3g
+      - python3-coverage
+      - python3-pycodestyle
+      - pycodestyle
+      - gettext
+      - python3-polib
+      - python3-paramiko
+      - python3-libvirt
+      - python3-pip
+      - targetcli-fb
+      - open-iscsi
+      - gfs2-utils
+      - libblockdev-tools
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' and test_dependencies|bool
+
+- name: Install libmount (Debian/Ubuntu)
+  block:
+    - name: Copy the libmount_deb script (Debian and CentOS non-x86_64)
+      copy:
+        src: files/libmount_deb.py
+        dest: "/tmp/libmount_deb.py"
+        mode: 0755
+
+    - name: Make and install libmount
+      shell: "python3 /tmp/libmount_deb.py"
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Install pocketlint using pip (Debian/Ubuntu)
+  pip: name=pocketlint executable=pip3 extra_args=--break-system-packages
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' and test_dependencies|bool
