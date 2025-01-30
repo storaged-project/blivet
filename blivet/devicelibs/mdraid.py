@@ -45,6 +45,6 @@ class MDRaidLevels(raid.RAIDLevels):
             hasattr(level, 'get_size')
 
 
-raid_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10"])
+raid_levels = MDRaidLevels(["raid0", "raid1", "raid4", "raid5", "raid6", "raid10", "linear"])
 
 EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_MDRAID_PLUGIN]
