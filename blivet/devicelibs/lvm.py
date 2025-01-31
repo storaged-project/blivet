@@ -21,7 +21,6 @@
 #
 
 import math
-import os
 import re
 
 from collections import namedtuple
@@ -70,8 +69,6 @@ KNOWN_THPOOL_PROFILES = (ThPoolProfile("thin-generic", N_("Generic")),
 
 EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_LVM_PLUGIN]
 
-LVMETAD_SOCKET_PATH = "/run/lvm/lvmetad.socket"
-
 safe_name_characters = "0-9a-zA-Z._-"
 
 if hasattr(blockdev.LVMTech, "DEVICES"):
@@ -86,6 +83,18 @@ else:
 
 
 LVM_DEVICES_FILE = "/etc/lvm/devices/system.devices"
+
+if hasattr(blockdev.LVMTech, "CONFIG"):
+    try:
+        event_activation = blockdev.lvm.config_get("global", "event_activation", "full")
+    except (blockdev.LVMError, blockdev.BlockDevNotImplementedError):
+        AUTO_ACTIVATION = True
+    else:
+        AUTO_ACTIVATION = bool(int(event_activation))
+else:
+    # it's safer to assume LVM auto activation is enabled than disabled
+    # worst case scenario is we will needlessly wait for auto activation
+    AUTO_ACTIVATION = True
 
 # list of devices that LVM is allowed to use
 # with LVM >= 2.0.13 we'll use this for the --devices option and when creating
@@ -231,10 +240,6 @@ def determine_parent_lv(internal_lv, lvs, lv_info):
             return lv
 
     return None
-
-
-def lvmetad_socket_exists():
-    return os.path.exists(LVMETAD_SOCKET_PATH)
 
 
 def ensure_lv_is_writable(vg_name, lv_name):
