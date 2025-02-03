@@ -1116,10 +1116,10 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         return 0
 
     def _pre_setup(self, orig=False):
-        # If the lvmetad socket exists and any PV is inactive before we call
+        # If auto-activation is enabled and any PV is inactive before we call
         # setup_parents (via _pre_setup, below), we should wait for auto-
         # activation before trying to manually activate this LV.
-        auto_activate = (lvm.lvmetad_socket_exists() and
+        auto_activate = (lvm.AUTO_ACTIVATION and
                          any(not pv.format.status for pv in self.vg.pvs))
         if not super(LVMLogicalVolumeBase, self)._pre_setup(orig=orig):
             return False
@@ -1127,9 +1127,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
         if auto_activate:
             log.debug("waiting for lvm auto-activation of %s", self.name)
             # Wait for auto-activation for up to 30 seconds. If this LV hasn't
-            # been activated when the timeout is reached, there may be some
-            # lvm.conf content preventing auto-activation of this LV, so we
-            # have to do it ourselves.
+            # been activated when the timeout is reached, we try do it ourselves.
             # The timeout value of 30 seconds was suggested by prajnoha. He
             # noted that udev uses the same value, for whatever that's worth.
             timeout = 30  # seconds
