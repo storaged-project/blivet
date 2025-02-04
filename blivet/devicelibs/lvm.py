@@ -21,6 +21,7 @@
 #
 
 import math
+import os
 import re
 
 from collections import namedtuple
@@ -83,6 +84,7 @@ else:
 
 
 LVM_DEVICES_FILE = "/etc/lvm/devices/system.devices"
+LVM_LOCAL_CONF = "/etc/lvm/lvmlocal.conf"
 
 if hasattr(blockdev.LVMTech, "CONFIG"):
     try:
@@ -289,3 +291,50 @@ def recommend_thpool_chunk_size(thpool_size):
 
 def is_valid_cache_md_size(md_size):
     return md_size >= LVM_CACHE_MIN_METADATA_SIZE and md_size <= LVM_CACHE_MAX_METADATA_SIZE
+
+
+def disable_lvm_autoactivation(lvmconf=LVM_LOCAL_CONF):
+    """ Disable LVM auto-activation *globally* by writing the configuration to
+        :attr:`lvmconf` (defaults to /etc/lvm/lvmlocal.conf)
+    """
+    if not os.path.exists(lvmconf):
+        raise RuntimeError("Cannot disable LVM auto-activation, configuration file %s does not exist" % lvmconf)
+
+    with open(lvmconf, "r") as f:
+        for line in f:
+            if "event_activation" in line and not line.strip().startswith("#"):
+                raise RuntimeError("LVM auto-activation is already configured in %s" % lvmconf)
+
+    with open(lvmconf, "a") as f:
+        f.write("global { event_activation = 0 }")
+        f.flush()
+
+    log.info("LVM auto-activation is now disabled in %s", lvmconf)
+
+    global AUTO_ACTIVATION
+    AUTO_ACTIVATION = False
+
+
+def reenable_lvm_autoactivation(lvmconf=LVM_LOCAL_CONF):
+    """ Enable LVM auto-activation previously disabled in :attr:`lvmconf`.
+        This function is intended to revert configuration done by
+        :func:`disable_lvm_autoactivation`.
+    """
+    if not os.path.exists(lvmconf):
+        raise RuntimeError("Cannot reenable LVM auto-activation, configuration file %s does not exist" % lvmconf)
+
+    with open(lvmconf, "r") as f:
+        lines = f.readlines()
+
+    if "global { event_activation = 0 }" not in lines:
+        raise RuntimeError("LVM auto-activation is not configured in %s" % lvmconf)
+
+    with open(lvmconf, "w+") as f:
+        for line in lines:
+            if line.strip("\n") != "global { event_activation = 0 }":
+                f.write(line)
+
+    log.info("LVM auto-activation configuration is now removed from %s", lvmconf)
+
+    global AUTO_ACTIVATION
+    AUTO_ACTIVATION = False
