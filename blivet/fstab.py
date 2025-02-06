@@ -404,6 +404,8 @@ class FSTabManager(object):
         else:
             entry.vfstype = device.format.type
 
+        entry.mntops = device.format.options
+
         return entry
 
     def entry_from_action(self, action):
@@ -444,6 +446,8 @@ class FSTabManager(object):
             entry.vfstype = action.device.format.mount_type
         else:
             entry.vfstype = action.device.format.type
+
+        entry.mntops = action.device.format.options
 
         return entry
 

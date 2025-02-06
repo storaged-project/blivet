@@ -95,7 +95,11 @@ class FSTabTestCase(unittest.TestCase):
         device.format.mountpoint = "/media/fstab_test"
 
         _entry = self.fstab.entry_from_device(device)
-        self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/media/fstab_test', 'ext4', None, 0, 0))
+        self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/media/fstab_test', 'ext4', 'defaults', 0, 0))
+
+        device.format.options = "noatime,ro"
+        _entry = self.fstab.entry_from_device(device)
+        self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/media/fstab_test', 'ext4', ['noatime', 'ro'], 0, 0))
 
     def test_entry_from_device_stratis(self):
         pool = StratisPoolDevice("testpool", parents=[], exists=True)
@@ -104,7 +108,7 @@ class FSTabTestCase(unittest.TestCase):
         device.format.mountpoint = "/media/fstab_test"
 
         _entry = self.fstab.entry_from_device(device)
-        self.assertEqual(_entry, FSTabEntry('/dev/stratis/testpool/testfs', '/media/fstab_test', 'xfs', None, 0, 0))
+        self.assertEqual(_entry, FSTabEntry('/dev/stratis/testpool/testfs', '/media/fstab_test', 'xfs', device.format.options, 0, 0))
 
     def test_update(self):
 
