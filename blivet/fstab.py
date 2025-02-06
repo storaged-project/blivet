@@ -406,6 +406,14 @@ class FSTabManager(object):
 
         entry.mntops = device.format.options
 
+        if device.format.check and entry.file == "/":
+            entry.passno = 1
+        elif device.format.check:
+            entry.passno = 2
+        else:
+            entry.passno = 0
+        entry.freq = int(device.format.dump)
+
         return entry
 
     def entry_from_action(self, action):
@@ -448,6 +456,14 @@ class FSTabManager(object):
             entry.vfstype = action.device.format.type
 
         entry.mntops = action.device.format.options
+
+        if action.device.format.check and entry.file == "/":
+            entry.passno = 1
+        elif action.device.format.check:
+            entry.passno = 2
+        else:
+            entry.passno = 0
+        entry.freq = int(action.device.format.dump)
 
         return entry
 

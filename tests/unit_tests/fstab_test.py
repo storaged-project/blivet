@@ -88,7 +88,6 @@ class FSTabTestCase(unittest.TestCase):
         self.assertEqual(entry.freq, 0)
         self.assertEqual(entry.passno, 2)
 
-
     def test_deepcopy(self):
         fstab1 = FSTabManager(None, 'dest')
 
@@ -113,11 +112,20 @@ class FSTabTestCase(unittest.TestCase):
         device.format.mountpoint = "/media/fstab_test"
 
         _entry = self.fstab.entry_from_device(device)
-        self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/media/fstab_test', 'ext4', 'defaults', 0, 0))
+        self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/media/fstab_test',
+                                            'ext4', 'defaults', 1, 2))
 
         device.format.options = "noatime,ro"
+        device.format.mountpoint = "/"
         _entry = self.fstab.entry_from_device(device)
-        self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/media/fstab_test', 'ext4', ['noatime', 'ro'], 0, 0))
+        self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/',
+                                            'ext4', ['noatime', 'ro'], 1, 1))
+
+        device = DiskDevice("test_device", fmt=get_format("vfat", exists=True))
+        device.format.mountpoint = "/media/fstab_test"
+        _entry = self.fstab.entry_from_device(device)
+        self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/media/fstab_test', 'vfat',
+                                            'umask=0077,shortname=winnt', 0, 0))
 
     def test_entry_from_device_stratis(self):
         pool = StratisPoolDevice("testpool", parents=[], exists=True)
