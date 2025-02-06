@@ -388,7 +388,7 @@ class FSTabManager(object):
         if device.format.mountable:
             entry.file = device.format.mountpoint
         elif device.format.type == "swap":
-            entry.file = "swap"
+            entry.file = "none"
         else:
             raise ValueError("""cannot generate fstab entry from device '%s' because
                                 it is neither mountable nor swap type""" % device.format.name)
@@ -429,7 +429,7 @@ class FSTabManager(object):
         if fmt.mountable:
             entry.file = fmt.mountpoint
         elif fmt.type == "swap":
-            entry.file = "swap"
+            entry.file = "none"
         else:
             raise ValueError("""cannot generate fstab entry from action '%s' because
                                 it is neither mountable nor swap type""" % action)
