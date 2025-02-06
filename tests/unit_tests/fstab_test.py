@@ -56,6 +56,8 @@ class FSTabTestCase(unittest.TestCase):
         self.assertEqual(entry.file, "/mnt/mountpath")
         self.assertEqual(entry.vfstype, "xfs")
         self.assertEqual(entry.mntops, ["ro", "noatime"])
+        self.assertEqual(entry.freq, 0)
+        self.assertEqual(entry.passno, 0)
 
         self.fstab.remove_entry(file="/mnt/mountpath")
 
@@ -72,6 +74,20 @@ class FSTabTestCase(unittest.TestCase):
         with open(FSTAB_WRITE_FILE, "r") as f:
             contents = f.read()
         self.assertEqual(contents, "/dev/sdb_dummy /media/newpath ext4 defaults 0 0\n")
+
+        # check defaults for check
+        self.fstab.add_entry("/dev/sdc_dummy", "/", "ext4", ["defaults"])
+        entry = self.fstab.find_entry("/dev/sdc_dummy")
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.freq, 0)
+        self.assertEqual(entry.passno, 1)
+
+        self.fstab.add_entry("/dev/sdd_dummy", "/boot", "ext4", ["defaults"])
+        entry = self.fstab.find_entry("/dev/sdd_dummy")
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.freq, 0)
+        self.assertEqual(entry.passno, 2)
+
 
     def test_deepcopy(self):
         fstab1 = FSTabManager(None, 'dest')

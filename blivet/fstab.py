@@ -583,7 +583,6 @@ class FSTabManager(object):
             :type: :class: `FSTabEntry`
         """
 
-        # Use existing FSTabEntry or create a new one
         _entry = entry or FSTabEntry()
 
         if spec is not None:
@@ -601,16 +600,12 @@ class FSTabManager(object):
             _entry.mntops = ['defaults']
 
         if freq is not None:
-            # Whether the fs should be dumped by dump(8) (default: 0, i.e. no)
             _entry.freq = freq
-        elif _entry.freq is None:
-            _entry.freq = 0
 
         if passno is not None:
             _entry.passno = passno
-        elif _entry.passno is None:
-            # 'passno' represents order of fsck run at the boot time (default: 0, i.e. disabled).
-            # '/' should have 1, other checked should have 2
+        if entry is None:
+            # FSTabEntry default is 0, let's set something more fitting here
             if _entry.file == '/':
                 _entry.passno = 1
             elif _entry.file.startswith('/boot'):
@@ -618,11 +613,9 @@ class FSTabManager(object):
             else:
                 _entry.passno = 0
 
-        if comment is not None:
+        if comment:
             # Add '# ' at the start of any comment line and newline to the end of comment.
-            # Has to be done here since libmount won't do it.
-            modif_comment = '# ' + comment.replace('\n', '\n# ') + '\n'
-            _entry.comment = modif_comment
+            _entry.comment = '# ' + comment.replace('\n', '\n# ') + '\n'
 
         self._table.add_fs(_entry.entry)
 
