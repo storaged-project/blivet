@@ -201,6 +201,8 @@ class FSTabEntry(object):
         # libmount.Fs() internally stores options as a comma separated string
         if values is None:
             self._entry.options = ""
+        elif isinstance(values, str):
+            self._entry.options = values
         else:
             self._entry.options = ','.join([x for x in values if x != ""])
 
