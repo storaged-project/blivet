@@ -34,7 +34,7 @@ class FSTabTestCase(unittest.TestCase):
         self.fstab.src_file = None
         self.fstab.dest_file = FSTAB_WRITE_FILE
 
-        entry = FSTabEntry("/dev/sda_dummy", "/media/wrongpath", "xfs", ["defaults"])
+        entry = FSTabEntry("/dev/sda_dummy", "/media/wrongpath", "xfs", ["ro", "noatime"])
 
         # create new entries
 
@@ -54,6 +54,8 @@ class FSTabTestCase(unittest.TestCase):
         # check that item was found and it is the correct one
         self.assertIsNotNone(entry, self.fstab)
         self.assertEqual(entry.file, "/mnt/mountpath")
+        self.assertEqual(entry.vfstype, "xfs")
+        self.assertEqual(entry.mntops, ["ro", "noatime"])
 
         self.fstab.remove_entry(file="/mnt/mountpath")
 
@@ -69,7 +71,7 @@ class FSTabTestCase(unittest.TestCase):
         # read the file and verify its contents
         with open(FSTAB_WRITE_FILE, "r") as f:
             contents = f.read()
-        self.assertTrue("/media/newpath" in contents)
+        self.assertEqual(contents, "/dev/sdb_dummy /media/newpath ext4 defaults 0 0\n")
 
     def test_deepcopy(self):
         fstab1 = FSTabManager(None, 'dest')

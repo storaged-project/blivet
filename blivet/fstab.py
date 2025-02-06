@@ -583,10 +583,6 @@ class FSTabManager(object):
             :type: :class: `FSTabEntry`
         """
 
-        # Default mount options
-        if mntops is None:
-            mntops = ['defaults']
-
         # Use existing FSTabEntry or create a new one
         _entry = entry or FSTabEntry()
 
