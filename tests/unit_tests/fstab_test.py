@@ -88,6 +88,16 @@ class FSTabTestCase(unittest.TestCase):
         self.assertEqual(entry.freq, 0)
         self.assertEqual(entry.passno, 2)
 
+        # check options update
+        self.assertEqual(entry.mntops, ["defaults"])
+        entry.mntops_add("ro")
+        self.assertEqual(entry.mntops, ["defaults", "ro"])
+        self.assertEqual(entry.get_raw_mntops(), "defaults,ro")
+
+        entry.mntops_add(["noatime", "auto"])
+        self.assertEqual(entry.mntops, ["defaults", "ro", "noatime", "auto"])
+        self.assertEqual(entry.get_raw_mntops(), "defaults,ro,noatime,auto")
+
     def test_deepcopy(self):
         fstab1 = FSTabManager(None, 'dest')
 

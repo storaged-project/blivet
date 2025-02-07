@@ -213,7 +213,12 @@ class FSTabEntry(object):
             :type values: list of str
         """
 
-        self._entry.append_options(','.join([x for x in values if x != ""]))
+        if not values:
+            return
+        elif isinstance(values, str):
+            self._entry.append_options(values)
+        else:
+            self._entry.append_options(','.join([x for x in values if x != ""]))
 
     @property
     def freq(self):
