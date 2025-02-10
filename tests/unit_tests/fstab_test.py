@@ -34,7 +34,7 @@ class FSTabTestCase(unittest.TestCase):
         self.fstab.src_file = None
         self.fstab.dest_file = FSTAB_WRITE_FILE
 
-        entry = FSTabEntry("/dev/sda_dummy", "/media/wrongpath", "xfs", ["defaults"])
+        entry = FSTabEntry("/dev/sda_dummy", "/media/wrongpath", "xfs", ["ro", "noatime"])
 
         # create new entries
 
@@ -54,6 +54,10 @@ class FSTabTestCase(unittest.TestCase):
         # check that item was found and it is the correct one
         self.assertIsNotNone(entry, self.fstab)
         self.assertEqual(entry.file, "/mnt/mountpath")
+        self.assertEqual(entry.vfstype, "xfs")
+        self.assertEqual(entry.mntops, ["ro", "noatime"])
+        self.assertEqual(entry.freq, 0)
+        self.assertEqual(entry.passno, 0)
 
         self.fstab.remove_entry(file="/mnt/mountpath")
 
@@ -69,7 +73,30 @@ class FSTabTestCase(unittest.TestCase):
         # read the file and verify its contents
         with open(FSTAB_WRITE_FILE, "r") as f:
             contents = f.read()
-        self.assertTrue("/media/newpath" in contents)
+        self.assertEqual(contents, "/dev/sdb_dummy /media/newpath ext4 defaults 0 0\n")
+
+        # check defaults for check
+        self.fstab.add_entry("/dev/sdc_dummy", "/", "ext4", ["defaults"])
+        entry = self.fstab.find_entry("/dev/sdc_dummy")
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.freq, 0)
+        self.assertEqual(entry.passno, 1)
+
+        self.fstab.add_entry("/dev/sdd_dummy", "/boot", "ext4", ["defaults"])
+        entry = self.fstab.find_entry("/dev/sdd_dummy")
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.freq, 0)
+        self.assertEqual(entry.passno, 2)
+
+        # check options update
+        self.assertEqual(entry.mntops, ["defaults"])
+        entry.mntops_add("ro")
+        self.assertEqual(entry.mntops, ["defaults", "ro"])
+        self.assertEqual(entry.get_raw_mntops(), "defaults,ro")
+
+        entry.mntops_add(["noatime", "auto"])
+        self.assertEqual(entry.mntops, ["defaults", "ro", "noatime", "auto"])
+        self.assertEqual(entry.get_raw_mntops(), "defaults,ro,noatime,auto")
 
     def test_deepcopy(self):
         fstab1 = FSTabManager(None, 'dest')
@@ -95,7 +122,20 @@ class FSTabTestCase(unittest.TestCase):
         device.format.mountpoint = "/media/fstab_test"
 
         _entry = self.fstab.entry_from_device(device)
-        self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/media/fstab_test', 'ext4', None, 0, 0))
+        self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/media/fstab_test',
+                                            'ext4', 'defaults', 1, 2))
+
+        device.format.options = "noatime,ro"
+        device.format.mountpoint = "/"
+        _entry = self.fstab.entry_from_device(device)
+        self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/',
+                                            'ext4', ['noatime', 'ro'], 1, 1))
+
+        device = DiskDevice("test_device", fmt=get_format("vfat", exists=True))
+        device.format.mountpoint = "/media/fstab_test"
+        _entry = self.fstab.entry_from_device(device)
+        self.assertEqual(_entry, FSTabEntry('/dev/test_device', '/media/fstab_test', 'vfat',
+                                            'umask=0077,shortname=winnt', 0, 0))
 
     def test_entry_from_device_stratis(self):
         pool = StratisPoolDevice("testpool", parents=[], exists=True)
@@ -104,7 +144,7 @@ class FSTabTestCase(unittest.TestCase):
         device.format.mountpoint = "/media/fstab_test"
 
         _entry = self.fstab.entry_from_device(device)
-        self.assertEqual(_entry, FSTabEntry('/dev/stratis/testpool/testfs', '/media/fstab_test', 'xfs', None, 0, 0))
+        self.assertEqual(_entry, FSTabEntry('/dev/stratis/testpool/testfs', '/media/fstab_test', 'xfs', device.format.options, 0, 0))
 
     def test_update(self):
 

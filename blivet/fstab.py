@@ -201,6 +201,8 @@ class FSTabEntry(object):
         # libmount.Fs() internally stores options as a comma separated string
         if values is None:
             self._entry.options = ""
+        elif isinstance(values, str):
+            self._entry.options = values
         else:
             self._entry.options = ','.join([x for x in values if x != ""])
 
@@ -211,7 +213,12 @@ class FSTabEntry(object):
             :type values: list of str
         """
 
-        self._entry.append_options(','.join([x for x in values if x != ""]))
+        if not values:
+            return
+        elif isinstance(values, str):
+            self._entry.append_options(values)
+        else:
+            self._entry.append_options(','.join([x for x in values if x != ""]))
 
     @property
     def freq(self):
@@ -388,7 +395,7 @@ class FSTabManager(object):
         if device.format.mountable:
             entry.file = device.format.mountpoint
         elif device.format.type == "swap":
-            entry.file = "swap"
+            entry.file = "none"
         else:
             raise ValueError("""cannot generate fstab entry from device '%s' because
                                 it is neither mountable nor swap type""" % device.format.name)
@@ -401,6 +408,16 @@ class FSTabManager(object):
             entry.vfstype = device.format.mount_type
         else:
             entry.vfstype = device.format.type
+
+        entry.mntops = device.format.options
+
+        if device.format.check and entry.file == "/":
+            entry.passno = 1
+        elif device.format.check:
+            entry.passno = 2
+        else:
+            entry.passno = 0
+        entry.freq = int(device.format.dump)
 
         return entry
 
@@ -429,7 +446,7 @@ class FSTabManager(object):
         if fmt.mountable:
             entry.file = fmt.mountpoint
         elif fmt.type == "swap":
-            entry.file = "swap"
+            entry.file = "none"
         else:
             raise ValueError("""cannot generate fstab entry from action '%s' because
                                 it is neither mountable nor swap type""" % action)
@@ -442,6 +459,16 @@ class FSTabManager(object):
             entry.vfstype = action.device.format.mount_type
         else:
             entry.vfstype = action.device.format.type
+
+        entry.mntops = action.device.format.options
+
+        if action.device.format.check and entry.file == "/":
+            entry.passno = 1
+        elif action.device.format.check:
+            entry.passno = 2
+        else:
+            entry.passno = 0
+        entry.freq = int(action.device.format.dump)
 
         return entry
 
@@ -577,11 +604,6 @@ class FSTabManager(object):
             :type: :class: `FSTabEntry`
         """
 
-        # Default mount options
-        if mntops is None:
-            mntops = ['defaults']
-
-        # Use existing FSTabEntry or create a new one
         _entry = entry or FSTabEntry()
 
         if spec is not None:
@@ -599,16 +621,12 @@ class FSTabManager(object):
             _entry.mntops = ['defaults']
 
         if freq is not None:
-            # Whether the fs should be dumped by dump(8) (default: 0, i.e. no)
             _entry.freq = freq
-        elif _entry.freq is None:
-            _entry.freq = 0
 
         if passno is not None:
             _entry.passno = passno
-        elif _entry.passno is None:
-            # 'passno' represents order of fsck run at the boot time (default: 0, i.e. disabled).
-            # '/' should have 1, other checked should have 2
+        if entry is None:
+            # FSTabEntry default is 0, let's set something more fitting here
             if _entry.file == '/':
                 _entry.passno = 1
             elif _entry.file.startswith('/boot'):
@@ -616,11 +634,9 @@ class FSTabManager(object):
             else:
                 _entry.passno = 0
 
-        if comment is not None:
+        if comment:
             # Add '# ' at the start of any comment line and newline to the end of comment.
-            # Has to be done here since libmount won't do it.
-            modif_comment = '# ' + comment.replace('\n', '\n# ') + '\n'
-            _entry.comment = modif_comment
+            _entry.comment = '# ' + comment.replace('\n', '\n# ') + '\n'
 
         self._table.add_fs(_entry.entry)
 
