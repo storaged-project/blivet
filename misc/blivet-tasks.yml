@@ -43,6 +43,7 @@
       - python3-libmount
       - python3-libvirt
       - python3-paramiko
+      - python3-yaml
       - targetcli
       - iscsi-initiator-utils
       - gfs2-utils
@@ -91,6 +92,7 @@
       - python3-libmount
       - python3-libvirt
       - python3-pip
+      - python3-yaml
       - targetcli
       - iscsi-initiator-utils
       - stratisd
@@ -165,6 +167,7 @@
       - python3-paramiko
       - python3-libvirt
       - python3-pip
+      - python3-yaml
       - targetcli-fb
       - open-iscsi
       - gfs2-utils
