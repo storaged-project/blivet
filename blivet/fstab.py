@@ -34,23 +34,6 @@ import logging
 log = logging.getLogger("blivet")
 
 
-class FSTabOptions(object):
-    """ User preferred fstab settings object intended to be attached to device.format.
-        Set variables override otherwise automatically obtained values put into fstab.
-    """
-
-    def __init__(self):
-        self.freq = None
-        self.passno = None
-
-        # preferred spec identification type; default "UUID"
-        # possible values: None, "UUID", "LABEL", "PARTLABEL", "PARTUUID", "PATH"
-        self.spec_type = None
-
-        # list of fstab options to be used
-        self.mntops = []
-
-
 class FSTabEntry(object):
     """ One processed line of fstab
     """
@@ -762,8 +745,8 @@ class FSTabManager(object):
 
         spec = None
 
-        if hasattr(device.format, 'fstab') and device.format.fstab.spec_type:
-            spec_type = device.format.fstab.spec_type
+        if hasattr(device.format, "fstab_spec_type") and device.format.fstab_spec_type:
+            spec_type = device.format.fstab_spec_type
         else:
             spec_type = self.spec_type
 
@@ -825,25 +808,25 @@ class FSTabManager(object):
                 # device is not present in fstab and has a defined mountpoint => add it
                 self.add_entry(spec=spec,
                                file=action.device.format.mountpoint,
-                               mntops=action.device.format.fstab.mntops,
-                               freq=action.device.format.fstab.freq,
-                               passno=action.device.format.fstab.passno,
+                               mntops=action.device.format.options,
+                               freq=action.device.format.freq,
+                               passno=action.device.format.passno,
                                entry=entry)
             elif found and found.spec != spec and action.device.format.mountpoint is not None:
                 # allow change of spec of existing devices
                 self.remove_entry(entry=found)
                 self.add_entry(spec=spec,
-                               mntops=action.device.format.fstab.mntops,
-                               freq=action.device.format.fstab.freq,
-                               passno=action.device.format.fstab.passno,
+                               mntops=action.device.format.options,
+                               freq=action.device.format.freq,
+                               passno=action.device.format.passno,
                                entry=found)
             elif found and found.file != action.device.format.mountpoint and action.device.format.mountpoint is not None:
                 # device already exists in fstab but with a different mountpoint => add it
                 self.add_entry(spec=spec,
                                file=action.device.format.mountpoint,
-                               mntops=action.device.format.fstab.mntops,
-                               freq=action.device.format.fstab.freq,
-                               passno=action.device.format.fstab.passno,
+                               mntops=action.device.format.options,
+                               freq=action.device.format.freq,
+                               passno=action.device.format.passno,
                                entry=found)
             return
 
@@ -858,9 +841,9 @@ class FSTabManager(object):
                 self.remove_entry(entry=bae_entry)
                 self.add_entry(spec=spec,
                                file=action.device.format.mountpoint,
-                               mntops=action.device.format.fstab.mntops,
-                               freq=action.device.format.fstab.freq,
-                               passno=action.device.format.fstab.passno,
+                               mntops=action.device.format.options,
+                               freq=action.device.format.freq,
+                               passno=action.device.format.passno,
                                entry=bae_entry)
             elif action.device.format.mountpoint is None:
                 self.remove_entry(entry=bae_entry)

@@ -71,10 +71,10 @@ class FstabTestCase(StorageTestCase):
             self.storage.create_device(lv)
 
             # specify device spec representation in fstab
-            lv.format.fstab.spec_type = "PATH"
-            lv.format.fstab.freq = 54321
-            lv.format.fstab.passno = 2
-            lv.format.fstab.mntops = ['optionA', 'optionB']
+            lv.format.fstab_spec_type = "PATH"
+            lv.format.freq = 54321
+            lv.format.passno = 2
+            lv.format.options = "optionA,optionB"
 
             # Change the mountpoint, make sure the change will make it into the fstab
             ac = blivet.deviceaction.ActionConfigureFormat(device=lv, attr="mountpoint", new_value="/mnt/test2")
