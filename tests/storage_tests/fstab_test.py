@@ -147,6 +147,57 @@ class FstabTestCase(StorageTestCase):
                 self.assertTrue("/mnt/test_fstab_luks_correct" in contents)
                 self.assertFalse("/mnt/test_fstab_luks_wrong" in contents)
 
+    def test_btrfs_creation(self):
+        unavailable_deps = blivet.devices.BTRFSVolumeDevice.unavailable_type_dependencies()
+        if unavailable_deps:
+            dep_str = ", ".join([d.name for d in unavailable_deps])
+            raise unittest.SkipTest("some unavailable dependencies required for this test: %s" % dep_str)
+
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        fstab_path = '/tmp/myfstab'
+
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            fstab_path = os.path.join(tmpdirname, 'fstab')
+
+            # change write path of blivet.fstab
+            self.storage.fstab.dest_file = fstab_path
+
+            self.storage.initialize_disk(disk)
+
+            part = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="btrfs",
+                                              parents=[disk])
+            self.storage.create_device(part)
+
+            blivet.partitioning.do_partitioning(self.storage)
+
+            vol = self.storage.new_btrfs(name="blivetTestVol", parents=[part])
+            self.storage.create_device(vol)
+
+            sub = self.storage.new_btrfs_sub_volume(parents=[vol], name="blivetTestSubVol1",
+                                                    mountpoint="/home")
+            self.storage.create_device(sub)
+
+            # create second subvolume with some more settings
+            sub = self.storage.new_btrfs_sub_volume(parents=[vol], name="blivetTestSubVol2",
+                                                    mountpoint="/var",
+                                                    fmt_args={"fstab_spec_type": "PATH",
+                                                              "freq": 1, "passno": 1})
+            self.storage.create_device(sub)
+
+            self.storage.do_it()
+            self.storage.reset()
+
+            with open(fstab_path, "r") as f:
+                contents = f.read()
+
+            # mountpoints are set and fstab management enabled, fstab entries should be
+            # automatically added for both subvolumes
+            self.assertEqual(contents,
+                             "%s1 /var btrfs subvol=blivetTestSubVol2 1 1\n"
+                             "UUID=%s /home btrfs subvol=blivetTestSubVol1 0 0\n" % (self.vdevs[0], vol.uuid))
+
     def test_swap_creation(self):
         # test swap creation for presence of FSTabOptions object
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
