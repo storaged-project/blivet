@@ -55,7 +55,7 @@ from ..errors import FSWriteLabelError, FSWriteUUIDError
 from . import DeviceFormat, register_device_format
 from .. import util
 from ..flags import flags
-from ..fstab import FSTabOptions, HAVE_LIBMOUNT
+from ..fstab import HAVE_LIBMOUNT
 from ..storage_log import log_exception_info, log_method_call
 from .. import arch
 from ..size import Size, ROUND_UP
@@ -132,8 +132,6 @@ class FS(DeviceFormat):
 
         DeviceFormat.__init__(self, **kwargs)
 
-        self.fstab = FSTabOptions()
-
         # Create task objects
         self._fsck = self._fsck_class(self)
         self._mkfs = self._mkfs_class(self)
@@ -148,6 +146,10 @@ class FS(DeviceFormat):
 
         self.mountpoint = kwargs.get("mountpoint")
         self.mountopts = kwargs.get("mountopts", "")
+        self.freq = kwargs.get("freq", 0)
+        self.passno = kwargs.get("passno", 0)
+        self.fstab_spec_type = kwargs.get("fstab_spec_type", None)
+
         self.label = kwargs.get("label")
         self.fsprofile = kwargs.get("fsprofile")
         self._mkfs_nodiscard = kwargs.get("nodiscard", False)

@@ -34,28 +34,11 @@ import logging
 log = logging.getLogger("blivet")
 
 
-class FSTabOptions(object):
-    """ User preferred fstab settings object intended to be attached to device.format.
-        Set variables override otherwise automatically obtained values put into fstab.
-    """
-
-    def __init__(self):
-        self.freq = None
-        self.passno = None
-
-        # preferred spec identification type; default "UUID"
-        # possible values: None, "UUID", "LABEL", "PARTLABEL", "PARTUUID", "PATH"
-        self.spec_type = None
-
-        # list of fstab options to be used
-        self.mntops = []
-
-
 class FSTabEntry(object):
     """ One processed line of fstab
     """
 
-    def __init__(self, spec=None, file=None, vfstype=None, mntops=None,
+    def __init__(self, spec=None, file=None, vfstype=None, mntopts=None,
                  freq=None, passno=None, comment=None, *, entry=None):
 
         # Note: "*" in arguments means that every following parameter can be used
@@ -72,8 +55,8 @@ class FSTabEntry(object):
             self.file = file
         if vfstype is not None:
             self.vfstype = vfstype
-        if mntops is not None:
-            self.mntops = mntops
+        if mntopts is not None:
+            self.mntopts = mntopts
         if freq is not None:
             self.freq = freq
         if passno is not None:
@@ -169,7 +152,7 @@ class FSTabEntry(object):
         self._entry.fstype = value if value is not None else ""
 
     @property
-    def mntops(self):
+    def mntopts(self):
         """ Return mount options
 
             :returns: list of mount options or None when not set
@@ -181,7 +164,7 @@ class FSTabEntry(object):
 
         return self._entry.options.split(',')
 
-    def get_raw_mntops(self):
+    def get_raw_mntopts(self):
         """ Return mount options
 
             :returns: comma separated string of mount options or None when not set
@@ -190,11 +173,11 @@ class FSTabEntry(object):
 
         return self._entry.options if self._entry.options != "" else None
 
-    @mntops.setter
-    def mntops(self, values):
+    @mntopts.setter
+    def mntopts(self, values):
         """ Set new mount options from the list of strings
 
-            :param values: mount options (see man fstab(5) fs_mntops)
+            :param values: mount options (see man fstab(5) fs_mntopts)
             :type values: list of str
         """
 
@@ -206,10 +189,10 @@ class FSTabEntry(object):
         else:
             self._entry.options = ','.join([x for x in values if x != ""])
 
-    def mntops_add(self, values):
+    def mntopts_add(self, values):
         """ Append new mount options to already existing ones
 
-            :param values: mount options (see man fstab(5) fs_mntops)
+            :param values: mount options (see man fstab(5) fs_mntopts)
             :type values: list of str
         """
 
@@ -255,7 +238,7 @@ class FSTabEntry(object):
             :returns: False if any of the listed values is not set; otherwise True
             :rtype: bool
         """
-        items = [self.spec, self.file, self.vfstype, self.mntops, self.freq, self.passno]
+        items = [self.spec, self.file, self.vfstype, self.mntopts, self.freq, self.passno]
 
         # (Property getters replace empty strings with None)
         return not any(x is None for x in items)
@@ -409,7 +392,7 @@ class FSTabManager(object):
         else:
             entry.vfstype = device.format.type
 
-        entry.mntops = device.format.options
+        entry.mntopts = device.format.options
 
         if device.format.check and entry.file == "/":
             entry.passno = 1
@@ -460,7 +443,7 @@ class FSTabManager(object):
         else:
             entry.vfstype = action.device.format.type
 
-        entry.mntops = action.device.format.options
+        entry.mntopts = action.device.format.options
 
         if action.device.format.check and entry.file == "/":
             entry.passno = 1
@@ -491,34 +474,34 @@ class FSTabManager(object):
 
         self._table.parse_fstab(self.src_file)
 
-    def find_device(self, devicetree, spec=None, mntops=None, blkid_tab=None, crypt_tab=None, *, entry=None):
+    def find_device(self, devicetree, spec=None, mntopts=None, blkid_tab=None, crypt_tab=None, *, entry=None):
         """ Find a blivet device, based on spec or entry. Mount options can be used to refine the search.
-            If both entry and spec/mntops are given, spec/mntops are prioritized over entry values.
+            If both entry and spec/mntopts are given, spec/mntopts are prioritized over entry values.
 
             :param devicetree: populated blivet.Devicetree instance
             :type devicetree: :class: `blivet.Devicetree`
             :keyword spec: searched device specs (see man fstab(5) fs_spec)
             :type spec: str
-            :keyword mntops: list of mount option strings (see man fstab(5) fs_mntops)
+            :keyword mntopts: list of mount option strings (see man fstab(5) fs_mntopts)
             :type mnops: list
             :keyword blkid_tab: Blkidtab object
             :type blkid_tab: :class: `BlkidTab`
             :keyword crypt_tab: Crypttab object
             :type crypt_tab: :class: `CryptTab`
-            :keyword entry: fstab entry with its spec (and mntops) filled as an alternative input type
+            :keyword entry: fstab entry with its spec (and mntopts) filled as an alternative input type
             :type: :class: `FSTabEntry`
             :returns: found device or None
             :rtype: :class: `~.devices.StorageDevice` or None
         """
 
         _spec = spec or (entry.spec if entry is not None else None)
-        _mntops = mntops or (entry.mntops if entry is not None else None)
-        _mntops_str = ",".join(_mntops) if mntops is not None else None
+        _mntopts = mntopts or (entry.mntopts if entry is not None else None)
+        _mntopts_str = ",".join(_mntopts) if mntopts is not None else None
 
-        return devicetree.resolve_device(_spec, options=_mntops_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
+        return devicetree.resolve_device(_spec, options=_mntopts_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
 
     def get_device(self, devicetree, spec=None, file=None, vfstype=None,
-                   mntops=None, blkid_tab=None, crypt_tab=None, *, entry=None):
+                   mntopts=None, blkid_tab=None, crypt_tab=None, *, entry=None):
         """ Parse an fstab entry for a device and return the corresponding device from the devicetree.
             If not found, try to create a new device based on given values.
             Raises UnrecognizedFSTabError in case of invalid or incomplete data.
@@ -527,7 +510,7 @@ class FSTabManager(object):
             :type devicetree: :class: `blivet.Devicetree`
             :keyword spec: searched device specs (see man fstab(5) fs_spec)
             :type spec: str
-            :keyword mntops: list of mount option strings (see man fstab(5) fs_mntops)
+            :keyword mntopts: list of mount option strings (see man fstab(5) fs_mntopts)
             :type mnops: list
             :keyword blkid_tab: Blkidtab object
             :type blkid_tab: :class: `BlkidTab`
@@ -544,11 +527,11 @@ class FSTabManager(object):
         from blivet.errors import UnrecognizedFSTabEntryError
 
         _spec = spec or (entry.spec if entry is not None else None)
-        _mntops = mntops or (entry.mntops if entry is not None else None)
-        _mntops_str = ",".join(_mntops) if mntops is not None else None
+        _mntopts = mntopts or (entry.mntopts if entry is not None else None)
+        _mntopts_str = ",".join(_mntopts) if mntopts is not None else None
 
         # find device in the tree
-        device = devicetree.resolve_device(_spec, options=_mntops_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
+        device = devicetree.resolve_device(_spec, options=_mntopts_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
 
         if device is None:
             if vfstype == "swap":
@@ -557,7 +540,7 @@ class FSTabManager(object):
                                     parents=devicetree.resolve_device(_spec),
                                     fmt=get_format(vfstype, device=_spec, exists=True),
                                     exists=True)
-            elif vfstype == "bind" or (_mntops is not None and "bind" in _mntops):
+            elif vfstype == "bind" or (_mntopts is not None and "bind" in _mntopts):
                 # bind mount... set vfstype so later comparison won't
                 # turn up false positives
                 vfstype = "bind"
@@ -576,15 +559,15 @@ class FSTabManager(object):
         if hasattr(device.format, "mountpoint"):
             device.format.mountpoint = file
 
-        device.format.options = _mntops
+        device.format.options = _mntopts
 
         return device
 
-    def add_entry(self, spec=None, file=None, vfstype=None, mntops=None,
+    def add_entry(self, spec=None, file=None, vfstype=None, mntopts=None,
                   freq=None, passno=None, comment=None, *, entry=None):
         """ Add a new entry into the table
             If both entry and other values are given, these values are prioritized over entry values.
-            If mntops/freq/passno is not set uses their respective default values.
+            If mntopts/freq/passno is not set uses their respective default values.
 
             :keyword spec: device specs (see man fstab(5) fs_spec)
             :type spec: str
@@ -592,7 +575,7 @@ class FSTabManager(object):
             :type file: str
             :keyword vfstype: device file system type (see man fstab(5) fs_vfstype)
             :type vfstype: str
-            :keyword mntops: list of mount option strings (see man fstab(5) fs_mntops)
+            :keyword mntopts: list of mount option strings (see man fstab(5) fs_mntopts)
             :type mnops: list
             :keyword freq: whether to dump the filesystem (see man fstab(5) fs_freq)
             :type freq: int
@@ -615,10 +598,10 @@ class FSTabManager(object):
         if vfstype is not None:
             _entry.vfstype = vfstype
 
-        if mntops is not None:
-            _entry.mntops = mntops
-        if _entry.mntops is None:
-            _entry.mntops = ['defaults']
+        if mntopts is not None:
+            _entry.mntopts = mntopts
+        if _entry.mntopts is None:
+            _entry.mntopts = ['defaults']
 
         if freq is not None:
             _entry.freq = freq
@@ -762,8 +745,8 @@ class FSTabManager(object):
 
         spec = None
 
-        if hasattr(device.format, 'fstab') and device.format.fstab.spec_type:
-            spec_type = device.format.fstab.spec_type
+        if hasattr(device.format, "fstab_spec_type") and device.format.fstab_spec_type:
+            spec_type = device.format.fstab_spec_type
         else:
             spec_type = self.spec_type
 
@@ -825,25 +808,25 @@ class FSTabManager(object):
                 # device is not present in fstab and has a defined mountpoint => add it
                 self.add_entry(spec=spec,
                                file=action.device.format.mountpoint,
-                               mntops=action.device.format.fstab.mntops,
-                               freq=action.device.format.fstab.freq,
-                               passno=action.device.format.fstab.passno,
+                               mntopts=action.device.format.options,
+                               freq=action.device.format.freq,
+                               passno=action.device.format.passno,
                                entry=entry)
             elif found and found.spec != spec and action.device.format.mountpoint is not None:
                 # allow change of spec of existing devices
                 self.remove_entry(entry=found)
                 self.add_entry(spec=spec,
-                               mntops=action.device.format.fstab.mntops,
-                               freq=action.device.format.fstab.freq,
-                               passno=action.device.format.fstab.passno,
+                               mntopts=action.device.format.options,
+                               freq=action.device.format.freq,
+                               passno=action.device.format.passno,
                                entry=found)
             elif found and found.file != action.device.format.mountpoint and action.device.format.mountpoint is not None:
                 # device already exists in fstab but with a different mountpoint => add it
                 self.add_entry(spec=spec,
                                file=action.device.format.mountpoint,
-                               mntops=action.device.format.fstab.mntops,
-                               freq=action.device.format.fstab.freq,
-                               passno=action.device.format.fstab.passno,
+                               mntopts=action.device.format.options,
+                               freq=action.device.format.freq,
+                               passno=action.device.format.passno,
                                entry=found)
             return
 
@@ -858,9 +841,9 @@ class FSTabManager(object):
                 self.remove_entry(entry=bae_entry)
                 self.add_entry(spec=spec,
                                file=action.device.format.mountpoint,
-                               mntops=action.device.format.fstab.mntops,
-                               freq=action.device.format.fstab.freq,
-                               passno=action.device.format.fstab.passno,
+                               mntopts=action.device.format.options,
+                               freq=action.device.format.freq,
+                               passno=action.device.format.passno,
                                entry=bae_entry)
             elif action.device.format.mountpoint is None:
                 self.remove_entry(entry=bae_entry)

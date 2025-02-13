@@ -1,5 +1,6 @@
 import copy
 import os
+import tempfile
 import unittest
 from unittest.mock import Mock
 
@@ -8,8 +9,6 @@ from blivet.devices import DiskDevice, StratisPoolDevice, StratisFilesystemDevic
 from blivet.formats import get_format
 from blivet.size import Size
 from blivet import Blivet
-
-FSTAB_WRITE_FILE = "/tmp/test-blivet-fstab2"
 
 
 class FSTabTestCase(unittest.TestCase):
@@ -20,19 +19,17 @@ class FSTabTestCase(unittest.TestCase):
             raise unittest.SkipTest("Missing libmount support required for this test")
 
     def setUp(self):
+        self._temp_dir = tempfile.TemporaryDirectory()
         self.fstab = FSTabManager()
         self.addCleanup(self._clean_up)
 
     def _clean_up(self):
-        try:
-            os.remove(FSTAB_WRITE_FILE)
-        except FileNotFoundError:
-            pass
+        self._temp_dir.cleanup()
 
     def test_fstab(self):
 
         self.fstab.src_file = None
-        self.fstab.dest_file = FSTAB_WRITE_FILE
+        self.fstab.dest_file = os.path.join(self._temp_dir.name, "fstab")
 
         entry = FSTabEntry("/dev/sda_dummy", "/media/wrongpath", "xfs", ["ro", "noatime"])
 
@@ -55,7 +52,7 @@ class FSTabTestCase(unittest.TestCase):
         self.assertIsNotNone(entry, self.fstab)
         self.assertEqual(entry.file, "/mnt/mountpath")
         self.assertEqual(entry.vfstype, "xfs")
-        self.assertEqual(entry.mntops, ["ro", "noatime"])
+        self.assertEqual(entry.mntopts, ["ro", "noatime"])
         self.assertEqual(entry.freq, 0)
         self.assertEqual(entry.passno, 0)
 
@@ -71,7 +68,7 @@ class FSTabTestCase(unittest.TestCase):
         self.fstab.write()
 
         # read the file and verify its contents
-        with open(FSTAB_WRITE_FILE, "r") as f:
+        with open(os.path.join(self._temp_dir.name, "fstab"), "r") as f:
             contents = f.read()
         self.assertEqual(contents, "/dev/sdb_dummy /media/newpath ext4 defaults 0 0\n")
 
@@ -89,14 +86,14 @@ class FSTabTestCase(unittest.TestCase):
         self.assertEqual(entry.passno, 2)
 
         # check options update
-        self.assertEqual(entry.mntops, ["defaults"])
-        entry.mntops_add("ro")
-        self.assertEqual(entry.mntops, ["defaults", "ro"])
-        self.assertEqual(entry.get_raw_mntops(), "defaults,ro")
+        self.assertEqual(entry.mntopts, ["defaults"])
+        entry.mntopts_add("ro")
+        self.assertEqual(entry.mntopts, ["defaults", "ro"])
+        self.assertEqual(entry.get_raw_mntopts(), "defaults,ro")
 
-        entry.mntops_add(["noatime", "auto"])
-        self.assertEqual(entry.mntops, ["defaults", "ro", "noatime", "auto"])
-        self.assertEqual(entry.get_raw_mntops(), "defaults,ro,noatime,auto")
+        entry.mntopts_add(["noatime", "auto"])
+        self.assertEqual(entry.mntopts, ["defaults", "ro", "noatime", "auto"])
+        self.assertEqual(entry.get_raw_mntopts(), "defaults,ro,noatime,auto")
 
     def test_deepcopy(self):
         fstab1 = FSTabManager(None, 'dest')
@@ -233,3 +230,34 @@ class FSTabTestCase(unittest.TestCase):
         dev2 = self.fstab.get_device(b.devicetree, "/dev/sda_dummy", "/mnt/mountpath", "xfs", ["defaults"])
 
         self.assertEqual(dev1, dev2)
+
+    def test_read_fstab(self):
+        with open(os.path.join(self._temp_dir.name, "fstab"), "w+") as f:
+            f.write("#\n"
+                    "# /etc/fstab\n"
+                    "# Created by anaconda on Mon Feb 10 11:39:42 2025\n"
+                    "#\n"
+                    "# Accessible filesystems, by reference, are maintained under '/dev/disk/'.\n"
+                    "# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.\n"
+                    "#\n"
+                    "# After editing this file, run 'systemctl daemon-reload' to update systemd\n"
+                    "# units generated from this file.\n"
+                    "#\n"
+                    "UUID=bc08e185-280e-46d3-9ae3-c0cc62c486ff\t/\t\text4\tdefaults\t1 1\n"
+                    "UUID=51d9dc40-d1a9-4fd9-b538-61d5bd020fda\t/boot\t\text4\tdefaults\t1 2\n"
+                    "/dev/sda1\t/mnt/test\tntfs\tro,nosuid,users,nofail,noauto\t0 2\n")
+
+        self.fstab.src_file = os.path.join(self._temp_dir.name, "fstab")
+        self.fstab.read()
+
+        entry = self.fstab.find_entry(file="/")
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.spec, "UUID=bc08e185-280e-46d3-9ae3-c0cc62c486ff")
+        self.assertEqual(entry.vfstype, "ext4")
+        self.assertEqual(entry.mntopts, ["defaults"])
+
+        entry = self.fstab.find_entry("/dev/sda1")
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.file, "/mnt/test")
+        self.assertEqual(entry.vfstype, "ntfs")
+        self.assertEqual(entry.mntopts, ['ro', 'nosuid', 'users', 'nofail', 'noauto'])

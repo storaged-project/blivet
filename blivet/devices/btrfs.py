@@ -543,7 +543,6 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
 
     """ A btrfs subvolume pseudo-device. """
     _type = "btrfs subvolume"
-    _format_immutable = True
 
     def __init__(self, *args, **kwargs):
         """
@@ -566,6 +565,10 @@ class BTRFSSubVolumeDevice(BTRFSDevice):
             raise errors.BTRFSValueError("%s unique parent must be a BTRFSDevice." % self.type)
 
         self.volume._add_subvolume(self)
+
+    @property
+    def format_immutable(self):
+        return super(BTRFSSubVolumeDevice, self).format_immutable or self.exists
 
     def _set_mountopts(self):
         # propagate mount options specified for members via kickstart
