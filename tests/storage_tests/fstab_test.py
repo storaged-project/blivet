@@ -31,6 +31,7 @@ class FstabTestCase(StorageTestCase):
     def _clean_up(self):
 
         self.storage.fstab.dest_file = None
+        self.storage.fstab.src_file = None
 
         self.storage.reset()
         for disk in self.storage.disks:
@@ -90,6 +91,12 @@ class FstabTestCase(StorageTestCase):
                 self.assertTrue("54321" in contents)
                 self.assertTrue("54321 2" in contents)
                 self.assertTrue("optionA,optionB" in contents)
+
+            # check that we can read and parse the fstab written above
+            self.storage.fstab.src_file = fstab_path
+            self.storage.reset()
+            self.assertEqual(str(self.storage.fstab),
+                             "/dev/mapper/blivetTestVG-blivetTestLVMine\t/mnt/test2\text4\toptionA,optionB\t54321\t2\t\n")
 
             dev = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestLVMine")
             self.storage.recursive_remove(dev)
