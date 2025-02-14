@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>blivet.populator.helpers package &#8212; Blivet 3.11.0 documentation</title>
+    <title>blivet.populator.helpers package &#8212; Blivet 3.12.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=514cf933" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=def86cc0" />
     
-    <script src="../_static/documentation_options.js?v=8905d4f5"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=1b7a0a1e"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="blivet.populator.html" title="blivet.populator package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.11.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="blivet.populator.html" accesskey="U">blivet.populator package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.populator.helpers package</a></li> 
@@ -581,6 +581,22 @@ perform all processing related to the device’s formatting.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="blivet.populator.helpers.luks.BitLockerFormatPopulator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.populator.helpers.luks.</span></span><span class="sig-name descname"><span class="pre">BitLockerFormatPopulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">devicetree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.helpers.luks.BitLockerFormatPopulator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.populator.helpers.formatpopulator.FormatPopulator" title="blivet.populator.helpers.formatpopulator.FormatPopulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">FormatPopulator</span></code></a></p>
+<p>:param <a class="reference internal" href="blivet.html#blivet.devicetree.DeviceTree" title="blivet.devicetree.DeviceTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceTree</span></code></a> devicetree: the calling devicetree
+:param <code class="xref py py-class docutils literal notranslate"><span class="pre">pyudev.Device</span></code> data: udev data describing a device
+:keyword device: device instance corresponding to the udev data
+:type device: <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.populator.helpers.luks.BitLockerFormatPopulator.priority">
+<span class="sig-name descname"><span class="pre">priority</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">100</span></em><a class="headerlink" href="#blivet.populator.helpers.luks.BitLockerFormatPopulator.priority" title="Link to this definition">¶</a></dt>
+<dd><p>Higher priority value gets checked for match first.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="blivet.populator.helpers.luks.IntegrityDevicePopulator">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.populator.helpers.luks.</span></span><span class="sig-name descname"><span class="pre">IntegrityDevicePopulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">devicetree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.helpers.luks.IntegrityDevicePopulator" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#blivet.populator.helpers.devicepopulator.DevicePopulator" title="blivet.populator.helpers.devicepopulator.DevicePopulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">DevicePopulator</span></code></a></p>
@@ -730,6 +746,17 @@ perform all processing related to the device’s formatting.</p>
 :param <code class="xref py py-class docutils literal notranslate"><span class="pre">pyudev.Device</span></code> data: udev data describing a device
 :keyword device: device instance corresponding to the udev data
 :type device: <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.populator.helpers.lvm.LVMFormatPopulator.match">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.helpers.lvm.LVMFormatPopulator.match" title="Link to this definition">¶</a></dt>
+<dd><p>Return True if this helper is appropriate for the given device.</p>
+<p>:param <code class="xref py py-class docutils literal notranslate"><span class="pre">pyudev.Device</span></code> data: udev data describing a device
+:param device: device instance corresponding to the udev data
+:type device: <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>
+:returns: whether this class is appropriate for the specified device
+:rtype: bool</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.populator.helpers.lvm.LVMFormatPopulator.priority">
 <span class="sig-name descname"><span class="pre">priority</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">100</span></em><a class="headerlink" href="#blivet.populator.helpers.lvm.LVMFormatPopulator.priority" title="Link to this definition">¶</a></dt>
@@ -793,6 +820,17 @@ perform all processing related to the device’s formatting.</p>
 :param <code class="xref py py-class docutils literal notranslate"><span class="pre">pyudev.Device</span></code> data: udev data describing a device
 :keyword device: device instance corresponding to the udev data
 :type device: <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.populator.helpers.mdraid.MDFormatPopulator.match">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.helpers.mdraid.MDFormatPopulator.match" title="Link to this definition">¶</a></dt>
+<dd><p>Return True if this helper is appropriate for the given device.</p>
+<p>:param <code class="xref py py-class docutils literal notranslate"><span class="pre">pyudev.Device</span></code> data: udev data describing a device
+:param device: device instance corresponding to the udev data
+:type device: <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageDevice</span></code>
+:returns: whether this class is appropriate for the specified device
+:rtype: bool</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.populator.helpers.mdraid.MDFormatPopulator.priority">
 <span class="sig-name descname"><span class="pre">priority</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">100</span></em><a class="headerlink" href="#blivet.populator.helpers.mdraid.MDFormatPopulator.priority" title="Link to this definition">¶</a></dt>
@@ -942,7 +980,7 @@ perform all processing related to the device’s formatting.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.populator.helpers.populatorhelper.PopulatorHelper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.populator.helpers.populatorhelper.</span></span><span class="sig-name descname"><span class="pre">PopulatorHelper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">devicetree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.populator.helpers.populatorhelper.PopulatorHelper" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class to hold type-specific code for populating the devicetree.</p>
 <p>:param <a class="reference internal" href="blivet.html#blivet.devicetree.DeviceTree" title="blivet.devicetree.DeviceTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceTree</span></code></a> devicetree: the calling devicetree
 :param <code class="xref py py-class docutils literal notranslate"><span class="pre">pyudev.Device</span></code> data: udev data describing a device
@@ -1204,6 +1242,10 @@ class. This function returns the first matching class.</p>
 <li><a class="reference internal" href="#blivet.populator.helpers.luks.BITLKDevicePopulator.run"><code class="docutils literal notranslate"><span class="pre">BITLKDevicePopulator.run()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#blivet.populator.helpers.luks.BitLockerFormatPopulator"><code class="docutils literal notranslate"><span class="pre">BitLockerFormatPopulator</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.populator.helpers.luks.BitLockerFormatPopulator.priority"><code class="docutils literal notranslate"><span class="pre">BitLockerFormatPopulator.priority</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#blivet.populator.helpers.luks.IntegrityDevicePopulator"><code class="docutils literal notranslate"><span class="pre">IntegrityDevicePopulator</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.populator.helpers.luks.IntegrityDevicePopulator.match"><code class="docutils literal notranslate"><span class="pre">IntegrityDevicePopulator.match()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.populator.helpers.luks.IntegrityDevicePopulator.run"><code class="docutils literal notranslate"><span class="pre">IntegrityDevicePopulator.run()</span></code></a></li>
@@ -1233,6 +1275,7 @@ class. This function returns the first matching class.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.populator.helpers.lvm.LVMFormatPopulator"><code class="docutils literal notranslate"><span class="pre">LVMFormatPopulator</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.populator.helpers.lvm.LVMFormatPopulator.match"><code class="docutils literal notranslate"><span class="pre">LVMFormatPopulator.match()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.populator.helpers.lvm.LVMFormatPopulator.priority"><code class="docutils literal notranslate"><span class="pre">LVMFormatPopulator.priority</span></code></a></li>
 <li><a class="reference internal" href="#blivet.populator.helpers.lvm.LVMFormatPopulator.run"><code class="docutils literal notranslate"><span class="pre">LVMFormatPopulator.run()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.populator.helpers.lvm.LVMFormatPopulator.update"><code class="docutils literal notranslate"><span class="pre">LVMFormatPopulator.update()</span></code></a></li>
@@ -1247,6 +1290,7 @@ class. This function returns the first matching class.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.populator.helpers.mdraid.MDFormatPopulator"><code class="docutils literal notranslate"><span class="pre">MDFormatPopulator</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.populator.helpers.mdraid.MDFormatPopulator.match"><code class="docutils literal notranslate"><span class="pre">MDFormatPopulator.match()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.populator.helpers.mdraid.MDFormatPopulator.priority"><code class="docutils literal notranslate"><span class="pre">MDFormatPopulator.priority</span></code></a></li>
 <li><a class="reference internal" href="#blivet.populator.helpers.mdraid.MDFormatPopulator.run"><code class="docutils literal notranslate"><span class="pre">MDFormatPopulator.run()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.populator.helpers.mdraid.MDFormatPopulator.update"><code class="docutils literal notranslate"><span class="pre">MDFormatPopulator.update()</span></code></a></li>
@@ -1335,7 +1379,7 @@ class. This function returns the first matching class.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -1343,7 +1387,7 @@ class. This function returns the first matching class.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -1364,15 +1408,15 @@ class. This function returns the first matching class.</p>
         <li class="right" >
           <a href="blivet.populator.html" title="blivet.populator package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.11.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="blivet.populator.html" >blivet.populator package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.populator.helpers package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-    &#169; Copyright 2013-2024, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    &#169; Copyright 2013-2025, Red Hat, Inc..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

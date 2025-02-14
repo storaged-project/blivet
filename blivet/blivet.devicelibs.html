@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>blivet.devicelibs package &#8212; Blivet 3.11.0 documentation</title>
+    <title>blivet.devicelibs package &#8212; Blivet 3.12.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=514cf933" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=def86cc0" />
     
-    <script src="../_static/documentation_options.js?v=8905d4f5"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=1b7a0a1e"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="blivet.dbus.html" title="blivet.dbus package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.11.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devicelibs package</a></li> 
       </ul>
@@ -139,7 +139,7 @@ This value will be used for the ‘max_memory_kb’ option for the
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devicelibs.edd.EddEntry">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.edd.</span></span><span class="sig-name descname"><span class="pre">EddEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sysfspath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddEntry" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>This object merely collects what the /sys/firmware/edd/* entries can
 provide.</p>
 <dl class="py attribute">
@@ -326,7 +326,7 @@ edd/int13_devXX/interface when self.type is USB.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devicelibs.edd.EddMatcher">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.edd.</span></span><span class="sig-name descname"><span class="pre">EddMatcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edd_entry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.edd.EddMatcher" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>This object tries to match given entry to a disk device name.</p>
 <p>Assuming, heuristic analysis and guessing happens here.</p>
 <dl class="py method">
@@ -402,7 +402,7 @@ devices.</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – the absolute path at which a filesystem is to be mounted</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – the absolute path at which a filesystem is to be mounted</p></li>
 <li><p><strong>arch</strong> – the architecture of the target install, None to use host arch</p></li>
 </ul>
 </dd>
@@ -410,7 +410,7 @@ devices.</p>
 <dd class="field-even"><p>the GPT partition type UUID or None</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
 </dd>
 </dl>
 <p>Given an absolute path at which a filesystem is to be mounted,
@@ -427,7 +427,7 @@ of the host architecture detected by blivet.arch.get_arch.</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – the volume type as a GPT_VOL constant</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – the volume type as a GPT_VOL constant</p></li>
 <li><p><strong>arch</strong> – the architecture of the target install, None to use host arch</p></li>
 </ul>
 </dd>
@@ -435,7 +435,7 @@ of the host architecture detected by blivet.arch.get_arch.</p>
 <dd class="field-even"><p>the GPT partition type UUID or None</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
 </dd>
 </dl>
 <p>Given a volume type defined by one of the GPT_VOL constants,
@@ -452,7 +452,7 @@ of the host architecture detected by blivet.arch.get_arch.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devicelibs.lvm.ThPoolProfile">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.lvm.</span></span><span class="sig-name descname"><span class="pre">ThPoolProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.ThPoolProfile" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
 <p>Create new instance of ThPoolProfile(name, desc)</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.devicelibs.lvm.ThPoolProfile.desc">
@@ -477,10 +477,17 @@ of the host architecture detected by blivet.arch.get_arch.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>internal_lv</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">LMVInternalLogicalVolumeDevice</span></code>) – the internal LV to determine parent LV from</p></li>
 <li><p><strong>lvs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">LMVLogicalVolumeDevice</span></code>) – LVs searched for a potential parent LV</p></li>
-<li><p><strong>lv_info</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – all available information about LVs</p></li>
+<li><p><strong>lv_info</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – all available information about LVs</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blivet.devicelibs.lvm.disable_lvm_autoactivation">
+<span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.lvm.</span></span><span class="sig-name descname"><span class="pre">disable_lvm_autoactivation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lvmconf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/etc/lvm/lvmlocal.conf'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.disable_lvm_autoactivation" title="Link to this definition">¶</a></dt>
+<dd><p>Disable LVM auto-activation <em>globally</em> by writing the configuration to
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">lvmconf</span></code> (defaults to /etc/lvm/lvmlocal.conf)</p>
 </dd></dl>
 
 <dl class="py function">
@@ -529,11 +536,6 @@ of the host architecture detected by blivet.arch.get_arch.</p>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="blivet.devicelibs.lvm.lvmetad_socket_exists">
-<span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.lvm.</span></span><span class="sig-name descname"><span class="pre">lvmetad_socket_exists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.lvmetad_socket_exists" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="blivet.devicelibs.lvm.needs_config_refresh">
 <span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.lvm.</span></span><span class="sig-name descname"><span class="pre">needs_config_refresh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.needs_config_refresh" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -542,6 +544,14 @@ of the host architecture detected by blivet.arch.get_arch.</p>
 <dt class="sig sig-object py" id="blivet.devicelibs.lvm.recommend_thpool_chunk_size">
 <span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.lvm.</span></span><span class="sig-name descname"><span class="pre">recommend_thpool_chunk_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thpool_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.recommend_thpool_chunk_size" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blivet.devicelibs.lvm.reenable_lvm_autoactivation">
+<span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.lvm.</span></span><span class="sig-name descname"><span class="pre">reenable_lvm_autoactivation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lvmconf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/etc/lvm/lvmlocal.conf'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.reenable_lvm_autoactivation" title="Link to this definition">¶</a></dt>
+<dd><p>Enable LVM auto-activation previously disabled in <code class="xref py py-attr docutils literal notranslate"><span class="pre">lvmconf</span></code>.
+This function is intended to revert configuration done by
+<a class="reference internal" href="#blivet.devicelibs.lvm.disable_lvm_autoactivation" title="blivet.devicelibs.lvm.disable_lvm_autoactivation"><code class="xref py py-func docutils literal notranslate"><span class="pre">disable_lvm_autoactivation()</span></code></a>.</p>
+</dd></dl>
 
 </section>
 <section id="module-blivet.devicelibs.mdraid">
@@ -553,7 +563,7 @@ of the host architecture detected by blivet.arch.get_arch.</p>
 <p>Add the specified standard levels to the levels in this object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>levels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em> of </em><em>valid RAID level descriptors</em>) – the levels to be added to this object</p>
+<dd class="field-odd"><p><strong>levels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>valid RAID level descriptors</em>) – the levels to be added to this object</p>
 </dd>
 </dl>
 <p>If levels is True, add all standard levels. Else, levels
@@ -566,7 +576,7 @@ Duplicate descriptors are ignored.</p>
 a RAID level, otherwise return True.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><em>object</em></a>) – an object representing a RAID level</p>
+<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><em>object</em></a>) – an object representing a RAID level</p>
 </dd>
 </dl>
 <p>There must be at least one element in the names list, or the level
@@ -651,7 +661,7 @@ meaningless.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devicelibs.raid.RAIDLevel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.raid.</span></span><span class="sig-name descname"><span class="pre">RAIDLevel</span></span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevel" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>An abstract class which is the parent of all classes which represent
 a RAID level.</p>
 <p>It ensures that RAIDLevel objects will really be singleton objects
@@ -701,7 +711,7 @@ meaningless.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="blivet.devicelibs.raid.RAIDLevels">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.raid.</span></span><span class="sig-name descname"><span class="pre">RAIDLevels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.raid.RAIDLevels" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A class which keeps track of registered RAID levels. This class
 may be extended, overriding the is_raid method to include any
 additional properties that a client of this package may require
@@ -709,7 +719,7 @@ for its RAID levels.</p>
 <p>Add the specified standard levels to the levels in this object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>levels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em> of </em><em>valid RAID level descriptors</em>) – the levels to be added to this object</p>
+<dd class="field-odd"><p><strong>levels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>valid RAID level descriptors</em>) – the levels to be added to this object</p>
 </dd>
 </dl>
 <p>If levels is True, add all standard levels. Else, levels
@@ -721,7 +731,7 @@ Duplicate descriptors are ignored.</p>
 <dd><p>Adds level to levels if it is not already there.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><em>object</em></a>) – an object representing a RAID level</p>
+<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><em>object</em></a>) – an object representing a RAID level</p>
 </dd>
 </dl>
 <p>Raises a RaidError if level is not valid.</p>
@@ -735,7 +745,7 @@ Duplicate descriptors are ignored.</p>
 a RAID level, otherwise return True.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><em>object</em></a>) – an object representing a RAID level</p>
+<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><em>object</em></a>) – an object representing a RAID level</p>
 </dd>
 </dl>
 <p>There must be at least one element in the names list, or the level
@@ -754,7 +764,7 @@ is so restrictive that a RAIDlevel object does not satisfy it.</p>
 <dd><p>Return RAID object corresponding to descriptor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>descriptor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><em>object</em></a>) – a RAID level descriptor</p>
+<dd class="field-odd"><p><strong>descriptor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><em>object</em></a>) – a RAID level descriptor</p>
 </dd>
 </dl>
 <p>Note that descriptor may be any object that identifies a
@@ -803,7 +813,7 @@ storing only data.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – size of data to be stored</p></li>
-<li><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – number of members in this array</p></li>
+<li><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – number of members in this array</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -821,10 +831,10 @@ than 0.</p>
 <dd><p>The maximum number of spares for this level.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – the number of members belonging to the array</p>
+<dd class="field-odd"><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – the number of members belonging to the array</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a></p>
 </dd>
 </dl>
 <p>Raises a RaidError if member_count is fewer than the minimum
@@ -845,7 +855,7 @@ available space in the array for both data and metadata.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – the number of members in the array</p></li>
+<li><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – the number of members in the array</p></li>
 <li><p><strong>smallest_member_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the size of the smallest
 member of this array</p></li>
 </ul>
@@ -869,10 +879,10 @@ than 0.</p>
 <p>Returns None if there is no recommended size.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – the number of members in the array</p>
+<dd class="field-odd"><p><strong>member_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – the number of members in the array</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a> or None</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a> or None</p>
 </dd>
 </dl>
 <p>Raises a RaidError if member_count is fewer than the
@@ -887,7 +897,7 @@ minimum number of members required for this level</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>member_size</strong> (list of <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – a list of the sizes of members of this array</p></li>
-<li><p><strong>num_members</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – the number of members in the array</p></li>
+<li><p><strong>num_members</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – the number of members in the array</p></li>
 <li><p><strong>chunk_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the smallest unit of size read or written</p></li>
 <li><p><strong>superblock_size_func</strong> (a function from <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a> to
 <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – a function that estimates the
@@ -916,7 +926,7 @@ memory allocated for metadata.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the amount of data on this array</p></li>
-<li><p><strong>num_members</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – the number of members in the array</p></li>
+<li><p><strong>num_members</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – the number of members in the array</p></li>
 <li><p><strong>chunk_size</strong> (<a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – the smallest unit of size read or written</p></li>
 <li><p><strong>superblock_size_func</strong> (a function from <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a> to
 <a class="reference internal" href="blivet.html#blivet.size.Size" title="blivet.size.Size"><code class="xref py py-class docutils literal notranslate"><span class="pre">Size</span></code></a>) – a function that estimates the
@@ -977,8 +987,8 @@ superblock size for this array</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>a</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – the dividend</p></li>
-<li><p><strong>b</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – the divisor</p></li>
+<li><p><strong>a</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – the dividend</p></li>
+<li><p><strong>b</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – the divisor</p></li>
 </ul>
 </dd>
 </dl>
@@ -990,7 +1000,7 @@ superblock size for this array</p></li>
 <dd><p>Convenience function to return a RAID level for the descriptor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>descriptor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><em>object</em></a>) – a RAID level descriptor</p>
+<dd class="field-odd"><p><strong>descriptor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><em>object</em></a>) – a RAID level descriptor</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#blivet.devicelibs.raid.RAIDLevel" title="blivet.devicelibs.raid.RAIDLevel">RAIDLevel</a></p>
@@ -1143,6 +1153,7 @@ RAID level, including the RAID object itself.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.determine_parent_lv"><code class="docutils literal notranslate"><span class="pre">determine_parent_lv()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.lvm.disable_lvm_autoactivation"><code class="docutils literal notranslate"><span class="pre">disable_lvm_autoactivation()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.empty_lvm_devices"><code class="docutils literal notranslate"><span class="pre">empty_lvm_devices()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.ensure_lv_is_writable"><code class="docutils literal notranslate"><span class="pre">ensure_lv_is_writable()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.is_lvm_name_valid"><code class="docutils literal notranslate"><span class="pre">is_lvm_name_valid()</span></code></a></li>
@@ -1152,9 +1163,9 @@ RAID level, including the RAID object itself.</p>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.lvm_devices_remove"><code class="docutils literal notranslate"><span class="pre">lvm_devices_remove()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.lvm_devices_reset"><code class="docutils literal notranslate"><span class="pre">lvm_devices_reset()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.lvm_devices_restore"><code class="docutils literal notranslate"><span class="pre">lvm_devices_restore()</span></code></a></li>
-<li><a class="reference internal" href="#blivet.devicelibs.lvm.lvmetad_socket_exists"><code class="docutils literal notranslate"><span class="pre">lvmetad_socket_exists()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.needs_config_refresh"><code class="docutils literal notranslate"><span class="pre">needs_config_refresh()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.recommend_thpool_chunk_size"><code class="docutils literal notranslate"><span class="pre">recommend_thpool_chunk_size()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.lvm.reenable_lvm_autoactivation"><code class="docutils literal notranslate"><span class="pre">reenable_lvm_autoactivation()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-blivet.devicelibs.mdraid">blivet.devicelibs.mdraid module</a><ul>
@@ -1245,7 +1256,7 @@ RAID level, including the RAID object itself.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -1253,7 +1264,7 @@ RAID level, including the RAID object itself.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -1274,14 +1285,14 @@ RAID level, including the RAID object itself.</p>
         <li class="right" >
           <a href="blivet.dbus.html" title="blivet.dbus package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.11.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devicelibs package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-    &#169; Copyright 2013-2024, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    &#169; Copyright 2013-2025, Red Hat, Inc..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>
