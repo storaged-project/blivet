@@ -1,3 +1,29 @@
+3.12.0
+=======
+* `Better resilience during initial storage scan`_
+* `GPT is now default partition table for all architectures`_
+* `FAT filesystem resize support`
+
+Better resilience during initial storage scan
+----------------------------------------------
+Multiple changes were made to avoid crashes during the
+initial storage scan on systems with unsupported, broken
+or otherwise unrecognized hardware and on systems with
+mussing runtime dependencies.
+
+GPT is now default partition table for all architectures
+---------------------------------------------------------
+GPT will be now used as the default partition table type on
+all architectures, namely ppc64le and s390x (except DASD
+drives) where the MSDOS/MBR partition table was used until
+now.
+
+FAT filesystem resize support
+------------------------------
+FAT formatted devices can now be resized by blivet. This
+requires the `vfat-resize` tool from the `libblockdev-tools`
+package.
+
 3.11.0
 =======
 * `LUKS HW-OPAL support`_
