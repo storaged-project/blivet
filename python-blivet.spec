@@ -22,7 +22,7 @@ Patch0: 0001-remove-btrfs-plugin.patch
 %global partedver 1.8.1
 %global pypartedver 3.10.4
 %global utillinuxver 2.15.1
-%global libblockdevver 3.2.0
+%global libblockdevver 3.3.0
 %global libbytesizever 0.3
 %global pyudevver 0.18
 %global s390utilscorever 2.31.0
