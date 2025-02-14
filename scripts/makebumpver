@@ -73,7 +73,7 @@ class MakeBumpVer:
         return ret
 
     def _rpmLog(self):
-        git_range = "%s-%s-%s.." % (self.name, self.version, self.release)
+        git_range = "%s-%s.." % (self.name, self.version)
         proc = subprocess.Popen(['git', 'log', '--pretty=oneline', '--no-merges', git_range],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
