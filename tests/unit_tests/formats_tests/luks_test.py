@@ -164,3 +164,14 @@ class LUKSNodevTestCase(unittest.TestCase):
                     # cipher and key size are not valid for HW encryption only
                     self.assertEqual(crypto.opal_format.call_args[1]["cipher"], None)
                     self.assertEqual(crypto.opal_format.call_args[1]["key_size"], 0)
+
+    def test_escrow_packet(self):
+        fmt = LUKS(device="/dev/test", passphrase="passphrase", escrow_cert="/tmp/escrow.crt")
+        with patch("blivet.devices.lvm.blockdev.crypto") as crypto:
+            fmt.escrow(directory="/tmp", backup_passphrase="test")
+            crypto.escrow_device.assert_called_with("/dev/test", "passphrase", "/tmp/escrow.crt", "/tmp", None)
+
+        fmt.add_backup_passphrase = True
+        with patch("blivet.devices.lvm.blockdev.crypto") as crypto:
+            fmt.escrow(directory="/tmp", backup_passphrase="test")
+            crypto.escrow_device.assert_called_with("/dev/test", "passphrase", "/tmp/escrow.crt", "/tmp", "test")
