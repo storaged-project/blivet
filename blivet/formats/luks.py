@@ -506,7 +506,8 @@ class LUKS(DeviceFormat):
 
         try:
             blockdev.crypto.escrow_device(self.device, self.__passphrase, self.escrow_cert,
-                                          directory, backup_passphrase)
+                                          directory,
+                                          backup_passphrase if self.add_backup_passphrase else None)
         except blockdev.CryptoError as e:
             raise LUKSError(e)
 
