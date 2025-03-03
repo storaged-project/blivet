@@ -278,7 +278,7 @@ class iSCSI(object):
 
         if extra is None:
             extra = dict()
-        extra["node.startup"] = GLib.Variant("s", "automatic")
+        extra["node.startup"] = GLib.Variant("s", "onboot")
         extra["node.session.auth.chap_algs"] = GLib.Variant("s", "SHA1,MD5")
 
         args = GLib.Variant("(sisisa{sv})", node_info.conn_info + (extra,))
