@@ -104,16 +104,16 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
             temp.flush()
 
             # create the luks format with both passphrase and keyfile
-            self.fmt._key_file = temp.name
+            self.fmt.key_file = temp.name
             self.fmt.create()
 
             # open first with just password
-            self.fmt._key_file = None
+            self.fmt.key_file = None
             self.fmt.setup()
             self.fmt.teardown()
 
             # now with keyfile
-            self.fmt._key_file = temp.name
+            self.fmt.key_file = temp.name
             self.fmt.passphrase = None
             self.fmt.setup()
             self.fmt.teardown()

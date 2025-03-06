@@ -106,6 +106,17 @@ class KeyslotContextList(object):
         else:
             return self.__contexts
 
+    def clear_contexts(self, ctype=None):
+        """ Remove ALL keyslot contexts of given type (or any type) from this list
+        """
+        if ctype is None:
+            self.__contexts = []
+        else:
+            for cxt in self.__contexts[:]:
+                if cxt.ctype == ctype:
+                    self.__contexts.remove(cxt)
+            self.__sort()
+
     def add_passphrase(self, passphrase, priority=1):
         """ Add a passphrase keyslot context to this list
         """

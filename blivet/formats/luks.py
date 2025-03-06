@@ -231,7 +231,12 @@ class LUKS(DeviceFormat):
 
     def _set_passphrase(self, passphrase):
         """ Set the passphrase used to access this device. """
-        self.contexts.add_passphrase(passphrase=passphrase, priority=100)
+        if not passphrase:
+            # fallback to keep this API backward compatible --> setting passphrase
+            # to "None" will remove ALL passphrase contexts
+            self.contexts.clear_contexts(ctype="passphrase")
+        else:
+            self.contexts.add_passphrase(passphrase=passphrase, priority=100)
 
     passphrase = property(fset=_set_passphrase)
 
@@ -468,7 +473,12 @@ class LUKS(DeviceFormat):
 
     @key_file.setter
     def key_file(self, keyfile):
-        self.contexts.add_keyfile(keyfile=keyfile, priority=50)
+        if not keyfile:
+            # fallback to keep this API backward compatible --> setting keyfile
+            # to "None" will remove ALL keyfile contexts
+            self.contexts.clear_contexts(ctype="keyfile")
+        else:
+            self.contexts.add_keyfile(keyfile=keyfile, priority=50)
 
     def add_passphrase(self, passphrase):
         """ Add a new passphrase.
