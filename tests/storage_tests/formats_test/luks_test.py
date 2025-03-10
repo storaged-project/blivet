@@ -12,9 +12,11 @@ from . import loopbackedtestcase
 
 class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
 
+    version = None
+
     def __init__(self, methodName='run_test'):
-        super(LUKSTestCase, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
-        self.fmt = LUKS(passphrase="password")
+        super().__init__(methodName=methodName, device_spec=[Size("100 MiB")])
+        self.fmt = LUKS(passphrase="password", luks_version=self.version)
 
     def test_size(self):
         self.fmt.device = self.loop_devices[0]
@@ -118,6 +120,18 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
 
     def _luks_close(self):
         self.fmt.teardown()
+
+
+class LUKSTestCaseLUKS1(LUKSTestCase):
+    version = "luks1"
+
+
+class LUKSTestCaseLUKS2(LUKSTestCase):
+    version = "luks2"
+
+
+# prevent unittest from running the "abstract" test case
+del LUKSTestCase
 
 
 @unittest.skipUnless(Integrity._plugin.available, "Integrity support not available")
