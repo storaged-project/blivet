@@ -364,6 +364,15 @@ class LUKS(DeviceFormat):
     def _post_create(self, **kwargs):
         super(LUKS, self)._post_create(**kwargs)
 
+        if self.luks_version == "luks2" and flags.discard_new:
+            try:
+                blockdev.crypto.luks_set_persistent_flags(self.device,
+                                                          blockdev.CryptoLUKSPersistentFlags.ALLOW_DISCARDS)
+            except blockdev.CryptoError as e:
+                raise LUKSError("Failed to set allow discards flag for newly created LUKS format: %s" % str(e))
+            except AttributeError:
+                log.warning("Cannot set allow discards flag: not supported")
+
         try:
             info = blockdev.crypto.luks_info(self.device)
         except blockdev.CryptoError as e:
