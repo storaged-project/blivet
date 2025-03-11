@@ -17,6 +17,8 @@ class FstabTestCase(StorageTestCase):
     def setUp(self):
         super().setUp()
 
+        blivet.flags.flags.auto_dev_updates = True
+
         disks = [os.path.basename(vdev) for vdev in self.vdevs]
         self.storage = blivet.Blivet()
         self.storage.exclusive_disks = disks
@@ -29,6 +31,8 @@ class FstabTestCase(StorageTestCase):
             self.assertFalse(disk.children)
 
     def _clean_up(self):
+
+        blivet.flags.flags.auto_dev_updates = False
 
         self.storage.fstab.dest_file = None
         self.storage.fstab.src_file = None
@@ -98,6 +102,22 @@ class FstabTestCase(StorageTestCase):
             self.assertEqual(str(self.storage.fstab),
                              "/dev/mapper/blivetTestVG-blivetTestLVMine\t/mnt/test2\text4\toptionA,optionB\t54321\t2\t\n")
 
+            # test some fstab functions here where we have a device and its fstab entry
+            fstab = blivet.fstab.FSTabManager(src_file=fstab_path)
+            fstab.read()
+            lv = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestLVMine")
+            entry = fstab.find_entry(file="/mnt/test2")
+            self.assertIsNotNone(entry)
+
+            dev = fstab.find_device(devicetree=self.storage.devicetree, spec="/dev/mapper/blivetTestVG-blivetTestLVMine")
+            self.assertIsNotNone(dev)
+            self.assertEqual(dev, lv)
+
+            dev = fstab.find_device(devicetree=self.storage.devicetree, entry=entry)
+            self.assertIsNotNone(dev)
+            self.assertEqual(dev, lv)
+
+            # remove the device
             dev = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestLVMine")
             self.storage.recursive_remove(dev)
 
@@ -204,6 +224,22 @@ class FstabTestCase(StorageTestCase):
             self.assertEqual(contents,
                              "%s1 /var btrfs subvol=blivetTestSubVol2 1 1\n"
                              "UUID=%s /home btrfs subvol=blivetTestSubVol1 0 0\n" % (self.vdevs[0], vol.uuid))
+
+            # test some fstab functions here where we have a btrfs device and its fstab entry
+            fstab = blivet.fstab.FSTabManager(src_file=fstab_path)
+            fstab.read()
+            sub = self.storage.devicetree.get_device_by_name("blivetTestSubVol1")
+            entry = fstab.find_entry(file="/home")
+            self.assertIsNotNone(entry)
+
+            dev = fstab.find_device(devicetree=self.storage.devicetree, spec="UUID=%s" % vol.uuid,
+                                    mntopts=["subvol=blivetTestSubVol1"])
+            self.assertIsNotNone(dev)
+            self.assertEqual(dev, sub)
+
+            dev = fstab.find_device(devicetree=self.storage.devicetree, entry=entry)
+            self.assertIsNotNone(dev)
+            self.assertEqual(dev, sub)
 
     def test_swap_creation(self):
         # test swap creation for presence of FSTabOptions object
