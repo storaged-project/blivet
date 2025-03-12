@@ -889,21 +889,19 @@ class FS(DeviceFormat):
             return False
         return self.system_mountpoint is not None
 
-    def sync(self, root='/'):
+    def sync(self, root=None):   # pylint: disable=unused-argument
         """ Ensure that data we've written is at least in the journal.
 
-            .. note::
-
-            This is a little odd because xfs_freeze will only be
-            available under the install root.
+            .. note:: Note the :root: parameter is ignored, this is a relic
+                      from previous version that used xfs_freeze which needed
+                      to be run from chroot, this was since changed and we are
+                      using the FIFREEZE/FITHAW ioctls directly without chroot.
         """
-        if not self.status or not self.system_mountpoint or \
-                not self.system_mountpoint.startswith(root) or \
-                not self._sync.available:
+        if not self.status or not self.system_mountpoint or not self._sync.available:
             return
 
         try:
-            self._sync.do_task(root)
+            self._sync.do_task()
         except FSError as e:
             log.error(e)
 
