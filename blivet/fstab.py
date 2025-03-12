@@ -496,7 +496,7 @@ class FSTabManager(object):
 
         _spec = spec or (entry.spec if entry is not None else None)
         _mntopts = mntopts or (entry.mntopts if entry is not None else None)
-        _mntopts_str = ",".join(_mntopts) if mntopts is not None else None
+        _mntopts_str = ",".join(_mntopts) if _mntopts is not None else None
 
         return devicetree.resolve_device(_spec, options=_mntopts_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
 
@@ -528,7 +528,7 @@ class FSTabManager(object):
 
         _spec = spec or (entry.spec if entry is not None else None)
         _mntopts = mntopts or (entry.mntopts if entry is not None else None)
-        _mntopts_str = ",".join(_mntopts) if mntopts is not None else None
+        _mntopts_str = ",".join(_mntopts) if _mntopts is not None else None
 
         # find device in the tree
         device = devicetree.resolve_device(_spec, options=_mntopts_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
