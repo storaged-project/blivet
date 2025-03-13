@@ -33,6 +33,10 @@ gi.require_version("BlockDev", "3.0")
 from gi.repository import BlockDev
 
 
+import logging
+log = logging.getLogger("blivet")
+
+
 class FSSync(task.BasicApplication, fstask.FSTask, metaclass=abc.ABCMeta):
 
     """ An abstract class that represents syncing a filesystem. """
@@ -50,31 +54,23 @@ class XFSSync(FSSync):
 
     ext = availability.BLOCKDEV_FS_PLUGIN
 
-    def _get_mountpoint(self, root=None):
-        mountpoint = self.fs.system_mountpoint
-        if root is not None and root.replace('/', ''):
-            if mountpoint == root:
-                mountpoint = '/'
-            else:
-                mountpoint = mountpoint[len(root):]
-
-        return mountpoint
-
-    def do_task(self, root="/"):
+    def do_task(self):
         # pylint: disable=arguments-differ
         error_msgs = self.availability_errors
         if error_msgs:
             raise FSError("\n".join(error_msgs))
 
+        log.debug("syncing filesystem on %s mounted to %s",
+                  self.fs.device, self.fs.system_mountpoint)
+
         error_msg = None
-        mountpoint = self._get_mountpoint(root=root)
         try:
-            BlockDev.fs.freeze(mountpoint)
+            BlockDev.fs.freeze(self.fs.system_mountpoint)
         except BlockDev.FSError as e:
             error_msg = "failed to sync filesystem: %s" % e
 
         try:
-            BlockDev.fs.unfreeze(mountpoint)
+            BlockDev.fs.unfreeze(self.fs.system_mountpoint)
         except BlockDev.FSError as e:
             error_msg = "failed to sync filesystem: %s" % e
 
