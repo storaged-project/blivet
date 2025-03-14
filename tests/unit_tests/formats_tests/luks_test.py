@@ -18,8 +18,17 @@ class LUKSNodevTestCase(unittest.TestCase):
         fmt = LUKS(exists=True)
         self.assertEqual(fmt.options, None)
 
+        fmt = LUKS(passphrase="passphrase")
+        with patch("blivet.devicelibs.crypto.calculate_luks2_max_memory", return_value=None):
+            with patch("blivet.devicelibs.crypto.get_optimal_luks_sector_size", return_value=0):
+                with patch("blivet.formats.luks.blockdev") as bd:
+                    fmt._create()
+                    bd.crypto.luks_format.assert_called()
+                    fmt._post_create()
+                    bd.crypto.luks_set_persistent_flags.assert_not_called()
+
         # flags.discard_new=True --> discard if creating new
-        with patch("blivet.flags.flags.discard_new", True):
+        with patch("blivet.formats.luks.flags.discard_new", True):
             fmt = LUKS(exists=True)
             self.assertEqual(fmt.options, None)
 
@@ -33,6 +42,25 @@ class LUKSNodevTestCase(unittest.TestCase):
             # add with comma after other option(s)
             fmt = LUKS(exists=False, options="blah")
             self.assertEqual(fmt.options, "blah,discard")
+
+            fmt = LUKS(passphrase="passphrase")
+            with patch("blivet.devicelibs.crypto.calculate_luks2_max_memory", return_value=None):
+                with patch("blivet.devicelibs.crypto.get_optimal_luks_sector_size", return_value=0):
+                    with patch("blivet.formats.luks.blockdev") as bd:
+                        fmt._create()
+                        bd.crypto.luks_format.assert_called()
+                        fmt._post_create()
+                        bd.crypto.luks_set_persistent_flags.assert_called()
+
+            # LUKS 1 doesn't support the persistent flags
+            fmt = LUKS(passphrase="passphrase", luks_version="luks1")
+            with patch("blivet.devicelibs.crypto.calculate_luks2_max_memory", return_value=None):
+                with patch("blivet.devicelibs.crypto.get_optimal_luks_sector_size", return_value=0):
+                    with patch("blivet.formats.luks.blockdev") as bd:
+                        fmt._create()
+                        bd.crypto.luks_format.assert_called()
+                        fmt._post_create()
+                        bd.crypto.luks_set_persistent_flags.assert_not_called()
 
     def test_key_size(self):
         # default cipher is AES-XTS with 512b key
