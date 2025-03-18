@@ -134,6 +134,108 @@ class LUKSTestCaseLUKS2(LUKSTestCase):
 del LUKSTestCase
 
 
+class LUKSContextTestCase(loopbackedtestcase.LoopBackedTestCase):
+
+    def __init__(self, methodName='run_test'):
+        super(LUKSContextTestCase, self).__init__(methodName=methodName, device_spec=[Size("100 MiB")])
+
+    def setUp(self):
+        super().setUp()
+        self.fmt = LUKS()
+        self.fmt.device = self.loop_devices[0]
+
+    def _clean_up(self):
+        self.fmt.teardown()
+        super()._clean_up()
+
+    def test_passphrase_context(self):
+        self.assertFalse(self.fmt.has_key)
+
+        self.fmt.contexts.add_passphrase("passphrase")
+        self.assertTrue(self.fmt.has_key)
+
+        self.fmt.create()
+        self.fmt.setup()
+
+    def test_keyfile_context(self):
+        self.assertFalse(self.fmt.has_key)
+
+        self.fmt.contexts.add_keyfile("/non/existing")
+        self.assertFalse(self.fmt.has_key)
+
+        self.fmt.contexts.clear_contexts()
+
+        with tempfile.NamedTemporaryFile(prefix="blivet_test") as temp:
+            temp.write(b"password2")
+            temp.flush()
+
+            # create the luks format with both passphrase and keyfile
+            self.fmt.contexts.add_keyfile(temp.name)
+            self.assertTrue(self.fmt.has_key)
+            self.fmt.create()
+
+            self.fmt.setup()
+            self.fmt.teardown()
+
+    def test_multiple_contexts(self):
+        self.fmt.contexts.add_passphrase("passphrase")
+        self.fmt.contexts.add_passphrase("passphrase1")
+
+        with tempfile.NamedTemporaryFile(prefix="blivet_test") as temp:
+            temp.write(b"password2")
+            temp.flush()
+
+            # create the luks format with both passphrase and keyfile
+            self.fmt.contexts.add_keyfile(temp.name)
+            self.fmt.create()
+
+            # we should now have three key slots, lets test one by one
+            self.fmt.contexts.clear_contexts()
+
+            # first passphrase
+            self.fmt.contexts.clear_contexts()
+            self.fmt.contexts.add_passphrase("passphrase")
+            self.fmt.setup()
+            self.fmt.teardown()
+
+            # second passphrase
+            self.fmt.contexts.clear_contexts()
+            self.fmt.contexts.add_passphrase("passphrase1")
+            self.fmt.setup()
+            self.fmt.teardown()
+
+            # keyfile
+            self.fmt.contexts.clear_contexts()
+            self.fmt.contexts.add_keyfile(temp.name)
+            self.fmt.setup()
+            self.fmt.teardown()
+
+    def test_add_remove_context(self):
+        self.fmt.contexts.add_passphrase("passphrase")
+        self.fmt.create()
+
+        # add new passphrase and test it
+        self.fmt.add_key(crypto.KeyslotContext(passphrase="passphrase1"))
+        self.fmt.contexts.clear_contexts()
+        self.fmt.contexts.add_passphrase("passphrase1")
+        self.fmt.setup()
+        self.fmt.teardown()
+
+        # remove the passphrase and test that the old one can still be used
+        self.fmt.remove_key(crypto.KeyslotContext(passphrase="passphrase1"))
+        self.fmt.contexts.clear_contexts()
+        self.fmt.contexts.add_passphrase("passphrase1")
+
+        # removed passphrase should no longer be usable
+        with self.assertRaises(LUKSError):
+            self.fmt.setup()
+
+        self.fmt.contexts.clear_contexts()
+        self.fmt.contexts.add_passphrase("passphrase")
+        self.fmt.setup()
+        self.fmt.teardown()
+
+
 @unittest.skipUnless(Integrity._plugin.available, "Integrity support not available")
 class IntegrityTestCase(loopbackedtestcase.LoopBackedTestCase):
 
