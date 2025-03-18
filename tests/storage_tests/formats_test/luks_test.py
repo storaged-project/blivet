@@ -84,8 +84,8 @@ class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
         self.fmt.teardown()
 
         # remove the original passphrase
-        self.fmt.passphrase = "password"
-        self.fmt.remove_passphrase()
+        self.fmt.remove_passphrase("password")
+        self.fmt.passphrase = None
 
         # now setup should fail
         with self.assertRaises(LUKSError):

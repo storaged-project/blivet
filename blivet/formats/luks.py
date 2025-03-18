@@ -486,6 +486,21 @@ class LUKS(DeviceFormat):
             Add the specified passphrase to an available key slot in the
             LUKS header.
         """
+        pwcontext = crypto.KeyslotContext(passphrase=passphrase)
+        return self.add_key(pwcontext)
+
+    def add_key(self, ncontext):
+        """ Add a new key to an existing LUKS device.
+
+            Add the specified context (passphrase, key file...) to an available key slot in the
+            LUKS header.
+
+            :param ncontext: new context to add the LUKS format
+            :type ncontext: :class:`~.crypto.KeyslotContext` object
+
+            .. note:: The LUKS format must have at least one valid context set to be able
+                      to add a new key.
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         if not self.exists:
@@ -495,40 +510,42 @@ class LUKS(DeviceFormat):
             raise LUKSError("luks device not configured")
 
         context = self.contexts.get_context()
-        ncontext = blockdev.CryptoKeyslotContext(passphrase=passphrase)
-
         try:
-            blockdev.crypto.luks_add_key(self.device, context._context, ncontext)
+            blockdev.crypto.luks_add_key(self.device, context._context, ncontext._context)
         except blockdev.CryptoError as e:
             raise LUKSError(e)
 
-    def remove_passphrase(self):
-        """
-        Remove the saved passphrase (and possibly key file) from the LUKS
-        header.
+        self.contexts.add_context(ncontext)
 
-        Note: If both passphrase and keyfile are set for this format, both
-              will be removed!
-        """
+    def remove_passphrase(self, passphrase):
+        """ Remove specified passphrase from this device.
 
+            .. note:: Key slot associated with the provided passphrase will be removed from
+                      this format even if it is the last active key slot!
+        """
+        context = crypto.KeyslotContext(passphrase=passphrase)
+        return self.remove_key(context)
+
+    def remove_key(self, context):
+        """ Remove a key from an existing LUKS device.
+
+            :param context: existing context to be removed from the LUKS format
+            :type context: :class:`~.crypto.KeyslotContext` object
+
+            .. note:: Key slot specified by @context will be removed from this format
+                      even if it is the last active key slot!
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        def _remove_passphrase(context):
-            try:
-                blockdev.crypto.luks_remove_key(self.device, context=context)
-            except blockdev.CryptoError as e:
-                raise LUKSError(e)
+        try:
+            blockdev.crypto.luks_remove_key(self.device, context=context._context)
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
 
-        # if self.__passphrase:
-        #     context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
-        #     _remove_passphrase(context)
-        # elif self._key_file:
-        #     context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
-        #     _remove_passphrase(context)
-        # FIXME
+        self.contexts.remove_context(context)
 
     def escrow(self, directory, backup_passphrase):
         log.debug("escrow: escrow_volume start for %s", self.device)

@@ -147,6 +147,21 @@ class KeyslotContextList(object):
                 self.__contexts.remove(cxt)
         self.__sort()
 
+    def add_context(self, context):
+        """ Add given context to this list
+        """
+        self.__contexts.append(context)
+        self.__sort()
+
+    def remove_context(self, context):
+        """ Remove ALL keyslot contexts matching the given context (e.g. same passphrase or key file)
+            from this list
+        """
+        if context.is_passphrase:
+            return self.remove_passphrase(context._passphrase)
+        elif context.is_keyfile:
+            return self.remove_keyfile(context._key_file)
+
 
 class KeyslotContext(object):
     ctype = None
