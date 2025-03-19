@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.12.0
+Version: 3.12.1
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -113,6 +113,17 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Wed Mar 19 2025 Vojtech Trefny <vtrefny@redhat.com> - 3.12.1-1
+- Fix running filesystem sync in installation environment (vtrefny)
+- Add a simple test for setting the allow-discards flag on LUKS (vtrefny)
+- tests: Add tests for FSTabManager.find_device (vtrefny)
+- Fix reading fstab options in FSTabManager.find_device (vtrefny)
+- Set persitent allow-discards flag for newly created LUKS devices (vtrefny)
+- tests: Run LUKS test cases with both LUKS 1 and 2 (vtrefny)
+- iscsi: Use node.startup=onboot option for Login (vtrefny)
+- tests: Add a simple test case for generating LUKS escrow packet (vtrefny)
+- luks/escrow: Only add backup passphrase when asked to (vtrefny)
+
 * Fri Feb 14 2025 Vojtech Trefny <vtrefny@redhat.com> - 3.12.0-1
 - spec: Remove old changelog entries from SPEC file (vtrefny)
 - spec: Bump required version of libblockdev to 3.3.0 (vtrefny)
