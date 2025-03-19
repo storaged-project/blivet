@@ -160,7 +160,7 @@ class LUKS(DeviceFormat):
                 # default to the max (512 bits) for xts
                 self.key_size = 512
 
-        self.contexts = crypto.KeyslotContextList()
+        self._contexts = crypto.KeyslotContextList()
 
         passphrase = kwargs.get("passphrase", None)
         if passphrase:
@@ -243,6 +243,14 @@ class LUKS(DeviceFormat):
         else:
             name = "%s (%s)" % (_(self._locked_name), _(self._name))
         return name
+
+    @property
+    def contexts(self):
+        """ Passphrases and key files set for this LUKS format. For non-existing LUKS formats
+            these will be added as key slots when creating the format, for existing LUKS formats
+            at least one context needs to be set to be able to activate the format.
+        """
+        return self._contexts
 
     def _set_passphrase(self, passphrase):
         """ Set the passphrase used to access this device. """
