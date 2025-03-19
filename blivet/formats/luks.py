@@ -112,6 +112,21 @@ class LUKS(DeviceFormat):
                 attribute be set before the :meth:`create` method runs. Note
                 that you can specify the device at the last moment by specifying
                 it via the 'device' kwarg to the :meth:`create` method.
+
+            .. note::
+
+                Setting passphrase and key file kwargs is considered deprecated, the new
+                API to set "keyslot contexts" should be used instead: see the `contexts`
+                property and the `crypto.KeyslotContextList` class.
+                This new API allows setting multiple passphrases and or key files for the
+                LUKS device and will allow using more types of LUKS key slots (kernel keyring,
+                TPM, FIDO etc.) in the future. Setting multiple contexts for a non-existing LUKS
+                format means all the specified passphrases and key files will be used when
+                creating the format: specifying two passphrase contexts and one key file context
+                will mean the new LUKS format will be created with three key slots.
+                For existing LUKS devices if you set multiple contexts, only the highest priority
+                context (by default the first passphrase context) will be used when activating the
+                LUKS device.
         """
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
