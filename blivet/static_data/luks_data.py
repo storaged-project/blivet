@@ -85,7 +85,8 @@ class LUKS_Data(object):
 
     def save_passphrase(self, device):
         """ Save a device's LUKS passphrase in case of reset. """
-        passphrase = device.format._LUKS__passphrase
+        pctx = device.format.contexts.get_context("passphrase")
+        passphrase = pctx._passphrase
         if passphrase:
             luks_data.luks_devs[device.format.uuid] = passphrase
             self.add_passphrase(passphrase)
