@@ -2,12 +2,15 @@ import os
 import tempfile
 import unittest
 
+import blivet
 from blivet.formats.luks import LUKS, Integrity
 from blivet.devicelibs import crypto
 from blivet.errors import LUKSError
 from blivet.size import Size
+import blivet.static_data
 
 from . import loopbackedtestcase
+from ..storagetestcase import StorageTestCase
 
 
 class LUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
@@ -255,3 +258,46 @@ class IntegrityTestCase(loopbackedtestcase.LoopBackedTestCase):
         fmt.teardown()
         self.assertFalse(fmt.status)
         self.assertFalse(os.path.exists("/dev/mapper/%s" % fmt.map_name))
+
+
+class LUKSResetTestCase(StorageTestCase):
+
+    def setUp(self):
+        super().setUp()
+
+        disks = [os.path.basename(vdev) for vdev in self.vdevs]
+        self.storage = blivet.Blivet()
+        self.storage.exclusive_disks = disks
+        self.storage.reset()
+
+        # make sure only the targetcli disks are in the devicetree
+        for disk in self.storage.disks:
+            self.assertTrue(disk.path in self.vdevs)
+            self.assertIsNone(disk.format.type)
+            self.assertFalse(disk.children)
+
+    def _clean_up(self):
+        self.storage.reset()
+        for disk in self.storage.disks:
+            if disk.path not in self.vdevs:
+                raise RuntimeError("Disk %s found in devicetree but not in disks created for tests" % disk.name)
+            self.storage.recursive_remove(disk)
+
+        self.storage.do_it()
+
+        return super()._clean_up()
+
+    def test_luks_save_passphrase(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        fmt = LUKS(passphrase="password")
+        self.storage.format_device(disk, fmt)
+        self.storage.do_it()
+
+        blivet.static_data.luks_data.save_passphrase(disk)
+        self.storage.devicetree.populate()
+
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.assertTrue(disk.format.has_key)
