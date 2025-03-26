@@ -56,6 +56,152 @@ DEFAULT_INTEGRITY_ALGORITHM = "crc32c"
 MAX_JOURNAL_SIZE = 131072 * SECTOR_SIZE
 
 
+class KeyslotContextList(object):
+
+    def __init__(self):
+        self.__contexts = []
+
+    def __len__(self):
+        return len(self.__contexts)
+
+    def __sort(self):
+        """ Sort contexts based on priority """
+        self.__contexts.sort(key=lambda cxt: cxt.priority, reverse=True)
+
+    @property
+    def valid(self):
+        """ Is at least one of the contexts set valid (non-empty passphrase, existing key file...)
+        """
+        if not self.__contexts:
+            return False
+        return any(cxt.valid for cxt in self.__contexts)
+
+    def get_context(self, ctype=None):
+        """ Get highest priority context with given type (or any type)
+            from this list
+        """
+        if not self.__contexts:
+            return None
+
+        if ctype:
+            contexts = [cxt for cxt in self.__contexts if cxt.ctype == ctype]
+            if not contexts:
+                return None
+            return contexts[0]
+        else:
+            return self.__contexts[0]
+
+    def get_contexts(self, ctype=None):
+        """ Get highest priority contexts of all contexts with given type (or any type)
+            from this list
+        """
+        if not self.__contexts:
+            return None
+
+        if ctype:
+            contexts = [cxt for cxt in self.__contexts if cxt.ctype == ctype]
+            if not contexts:
+                return None
+            return contexts
+        else:
+            return self.__contexts
+
+    def clear_contexts(self, ctype=None):
+        """ Remove ALL keyslot contexts of given type (or any type) from this list
+        """
+        if ctype is None:
+            self.__contexts = []
+        else:
+            for cxt in self.__contexts[:]:
+                if cxt.ctype == ctype:
+                    self.__contexts.remove(cxt)
+            self.__sort()
+
+    def add_passphrase(self, passphrase, priority=1):
+        """ Add a passphrase keyslot context to this list
+        """
+        context = KeyslotContext(passphrase=passphrase, priority=priority)
+        self.__contexts.append(context)
+        self.__sort()
+
+    def remove_passphrase(self, passphrase):
+        """ Remove ALL keylost contexts with given passphrase from this list
+        """
+        for cxt in self.__contexts[:]:
+            if cxt.is_passphrase and cxt._passphrase == passphrase:
+                self.__contexts.remove(cxt)
+        self.__sort()
+
+    def add_keyfile(self, keyfile, priority=0):
+        """ Add a passphrase keyfile context to this list
+        """
+        context = KeyslotContext(keyfile=keyfile, priority=priority)
+        self.__contexts.append(context)
+        self.__sort()
+
+    def remove_keyfile(self, keyfile):
+        """ Remove ALL keylost contexts with given keyfile from this list
+        """
+        for cxt in self.__contexts[:]:
+            if cxt.is_keyfile and cxt._keyfile == keyfile:
+                self.__contexts.remove(cxt)
+        self.__sort()
+
+    def add_context(self, context):
+        """ Add given context to this list
+        """
+        self.__contexts.append(context)
+        self.__sort()
+
+    def remove_context(self, context):
+        """ Remove ALL keyslot contexts matching the given context (e.g. same passphrase or key file)
+            from this list
+        """
+        if context.is_passphrase:
+            return self.remove_passphrase(context._passphrase)
+        elif context.is_keyfile:
+            return self.remove_keyfile(context._key_file)
+
+
+class KeyslotContext(object):
+    ctype = None
+    _context = None
+
+    def __init__(self, passphrase=None, keyfile=None, priority=0):
+        self.priority = priority
+        self._key_file = None
+        self._passphrase = None
+
+        if passphrase:
+            self.ctype = "passphrase"
+            self._passphrase = passphrase
+            self._context = BlockDev.CryptoKeyslotContext(passphrase=passphrase)
+            if not self.priority:
+                # set higher priority for passphrase
+                self.priority = 1
+        elif keyfile:
+            self.ctype = "keyfile"
+            self._key_file = keyfile
+            self._context = BlockDev.CryptoKeyslotContext(keyfile=keyfile)
+        else:
+            raise ValueError("At least one 'passphrase' and 'keyfile' must be specified")
+
+    @property
+    def valid(self):
+        if self.is_passphrase:
+            return True
+        if self.is_keyfile:
+            return os.access(self._key_file, os.R_OK)
+
+    @property
+    def is_passphrase(self):
+        return self.ctype == "passphrase"
+
+    @property
+    def is_keyfile(self):
+        return self.ctype == "keyfile"
+
+
 def calculate_luks2_max_memory():
     """ Calculates maximum RAM that will be used during LUKS format.
         The calculation is based on currently available (free) memory.

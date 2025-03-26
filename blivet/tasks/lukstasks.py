@@ -87,10 +87,8 @@ class LUKSResize(task.BasicApplication, dfresize.DFResizeTask):
         """ Resizes the LUKS format. """
         try:
             if self.luks.luks_version == "luks2":
-                if self.luks._LUKS__passphrase:
-                    context = blockdev.CryptoKeyslotContext(passphrase=self.luks._LUKS__passphrase)
-                elif self.luks._key_file:
-                    context = blockdev.CryptoKeyslotContext(keyfile=self.luks._key_file)
+                if self.luks.contexts:
+                    context = self.luks.contexts.get_context()._context
                 else:
                     # context for resize can be NULL -- this means the key is already in the keyring
                     context = None

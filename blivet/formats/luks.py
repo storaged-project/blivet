@@ -112,6 +112,21 @@ class LUKS(DeviceFormat):
                 attribute be set before the :meth:`create` method runs. Note
                 that you can specify the device at the last moment by specifying
                 it via the 'device' kwarg to the :meth:`create` method.
+
+            .. note::
+
+                Setting passphrase and key file kwargs is considered deprecated, the new
+                API to set "keyslot contexts" should be used instead: see the `contexts`
+                property and the `crypto.KeyslotContextList` class.
+                This new API allows setting multiple passphrases and or key files for the
+                LUKS device and will allow using more types of LUKS key slots (kernel keyring,
+                TPM, FIDO etc.) in the future. Setting multiple contexts for a non-existing LUKS
+                format means all the specified passphrases and key files will be used when
+                creating the format: specifying two passphrase contexts and one key file context
+                will mean the new LUKS format will be created with three key slots.
+                For existing LUKS devices if you set multiple contexts, only the highest priority
+                context (by default the first passphrase context) will be used when activating the
+                LUKS device.
         """
         log_method_call(self, **kwargs)
         DeviceFormat.__init__(self, **kwargs)
@@ -145,9 +160,15 @@ class LUKS(DeviceFormat):
                 # default to the max (512 bits) for xts
                 self.key_size = 512
 
-        # FIXME: these should both be lists, but managing them will be a pain
-        self.__passphrase = kwargs.get("passphrase")
-        self._key_file = kwargs.get("key_file")
+        self._contexts = crypto.KeyslotContextList()
+
+        passphrase = kwargs.get("passphrase", None)
+        if passphrase:
+            self.contexts.add_passphrase(passphrase=passphrase, priority=100)
+        keyfile = kwargs.get("key_file", None)
+        if keyfile:
+            self.contexts.add_keyfile(keyfile=keyfile, priority=50)
+
         self.escrow_cert = kwargs.get("escrow_cert")
         self.add_backup_passphrase = kwargs.get("add_backup_passphrase", False)
         self.min_luks_entropy = kwargs.get("min_luks_entropy")
@@ -189,18 +210,18 @@ class LUKS(DeviceFormat):
 
     def __repr__(self):
         s = DeviceFormat.__repr__(self)
-        if self.__passphrase:
+        if self.contexts:
             passphrase = "(set)"
         else:
             passphrase = "(not set)"
         s += ("  cipher = %(cipher)s  key_size = %(key_size)s"
               "  map_name = %(map_name)s\n version = %(luks_version)s"
-              "  key_file = %(key_file)s  passphrase = %(passphrase)s\n"
+              "  passphrase = %(passphrase)s (total contexts: %(total_contexts)s)\n"
               "  escrow_cert = %(escrow_cert)s  add_backup = %(backup)s\n"
               "  label = %(label)s  subsystem = %(subsystem)s" %
               {"cipher": self.cipher, "key_size": self.key_size,
                "map_name": self.map_name, "luks_version": self.luks_version,
-               "key_file": self._key_file, "passphrase": passphrase,
+               "passphrase": passphrase, "total_contexts": len(self.contexts),
                "escrow_cert": self.escrow_cert, "backup": self.add_backup_passphrase,
                "label": self.label, "subsystem": self.subsystem})
         return s
@@ -223,9 +244,22 @@ class LUKS(DeviceFormat):
             name = "%s (%s)" % (_(self._locked_name), _(self._name))
         return name
 
+    @property
+    def contexts(self):
+        """ Passphrases and key files set for this LUKS format. For non-existing LUKS formats
+            these will be added as key slots when creating the format, for existing LUKS formats
+            at least one context needs to be set to be able to activate the format.
+        """
+        return self._contexts
+
     def _set_passphrase(self, passphrase):
         """ Set the passphrase used to access this device. """
-        self.__passphrase = passphrase
+        if not passphrase:
+            # fallback to keep this API backward compatible --> setting passphrase
+            # to "None" will remove ALL passphrase contexts
+            self.contexts.clear_contexts(ctype="passphrase")
+        else:
+            self.contexts.add_passphrase(passphrase=passphrase, priority=100)
 
     passphrase = property(fset=_set_passphrase)
 
@@ -237,8 +271,7 @@ class LUKS(DeviceFormat):
 
     @property
     def has_key(self):
-        return bool((self.__passphrase not in ["", None]) or
-                    (self._key_file and os.access(self._key_file, os.R_OK)))
+        return bool(self.contexts) and self.contexts.valid
 
     @property
     def formattable(self):
@@ -302,15 +335,12 @@ class LUKS(DeviceFormat):
                         type=self.type, status=self.status)
 
         # passphrase is preferred for open
-        if self.__passphrase:
-            context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
-        elif self._key_file:
-            context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
-        else:
+        if not self.contexts:
             raise LUKSError("Passphrase or key file must be set for LUKS setup")
 
         try:
-            blockdev.crypto.luks_open(self.device, self.map_name, context=context)
+            blockdev.crypto.luks_open(self.device, self.map_name,
+                                      context=self.contexts.get_context()._context)
         except blockdev.CryptoError as e:
             raise LUKSError(e)
 
@@ -382,12 +412,11 @@ class LUKS(DeviceFormat):
             else:
                 extra = None
 
-        if self.__passphrase:
-            context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
-        elif self._key_file:
-            context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
-        else:
+        if not self.contexts:
             raise LUKSError("Passphrase or key file must be set for LUKS create")
+
+        # sort contexts by priority and use the highest priority for format
+        context = self.contexts.get_context()
 
         if self.is_opal:
             if not self.__opal_admin_passphrase:
@@ -397,7 +426,7 @@ class LUKS(DeviceFormat):
         try:
             if self.is_opal:
                 blockdev.crypto.opal_format(self.device,
-                                            context=context,
+                                            context=context._context,
                                             cipher=self.cipher if self.luks_version == "luks2-hw-opal" else None,
                                             key_size=self.key_size if self.luks_version == "luks2-hw-opal" else 0,
                                             min_entropy=self.min_luks_entropy,
@@ -406,7 +435,7 @@ class LUKS(DeviceFormat):
                                             extra=extra)
             else:
                 blockdev.crypto.luks_format(self.device,
-                                            context=context,
+                                            context=context._context,
                                             cipher=self.cipher,
                                             key_size=self.key_size,
                                             min_entropy=self.min_luks_entropy,
@@ -415,13 +444,17 @@ class LUKS(DeviceFormat):
         except blockdev.CryptoError as e:
             raise LUKSError(e)
 
-        if self.__passphrase and self._key_file:
-            # both passphrase and keyfile are set, we need to add the keyfile too
-            ncontext = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
-            try:
-                blockdev.crypto.luks_add_key(self.device, context, ncontext)
-            except blockdev.CryptoError as e:
-                raise LUKSError(e)
+        if len(self.contexts) > 1:
+            all_contexts = self.contexts.get_contexts()
+            # we have more contexts specified, let's add all of them
+            for cxt in all_contexts:
+                if cxt == context:
+                    # skip the context already added by format above
+                    continue
+                try:
+                    blockdev.crypto.luks_add_key(self.device, context._context, cxt._context)
+                except blockdev.CryptoError as e:
+                    raise LUKSError(e)
 
     def _post_create(self, **kwargs):
         super(LUKS, self)._post_create(**kwargs)
@@ -454,7 +487,21 @@ class LUKS(DeviceFormat):
     @property
     def key_file(self):
         """ Path to key file to be used in /etc/crypttab """
-        return self._key_file
+        # sort contexts by priority and get the highest priority keyfile context
+        context = self.contexts.get_context(ctype="keyfile")
+        if not context:
+            return None
+        else:
+            return context._key_file
+
+    @key_file.setter
+    def key_file(self, keyfile):
+        if not keyfile:
+            # fallback to keep this API backward compatible --> setting keyfile
+            # to "None" will remove ALL keyfile contexts
+            self.contexts.clear_contexts(ctype="keyfile")
+        else:
+            self.contexts.add_keyfile(keyfile=keyfile, priority=50)
 
     def add_passphrase(self, passphrase):
         """ Add a new passphrase.
@@ -462,59 +509,75 @@ class LUKS(DeviceFormat):
             Add the specified passphrase to an available key slot in the
             LUKS header.
         """
+        pwcontext = crypto.KeyslotContext(passphrase=passphrase)
+        return self.add_key(pwcontext)
+
+    def add_key(self, ncontext):
+        """ Add a new key to an existing LUKS device.
+
+            Add the specified context (passphrase, key file...) to an available key slot in the
+            LUKS header.
+
+            :param ncontext: new context to add the LUKS format
+            :type ncontext: :class:`~.crypto.KeyslotContext` object
+
+            .. note:: The LUKS format must have at least one valid context set to be able
+                      to add a new key.
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        # if both passphrase and keyfile are set, they both need to be valid so
-        # we can choose passphrase as default
-        if self.__passphrase:
-            context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
-        elif self._key_file:
-            context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
-        else:
+        if not self.contexts:
             raise LUKSError("luks device not configured")
 
-        ncontext = blockdev.CryptoKeyslotContext(passphrase=passphrase)
-
+        context = self.contexts.get_context()
         try:
-            blockdev.crypto.luks_add_key(self.device, context, ncontext)
+            blockdev.crypto.luks_add_key(self.device, context._context, ncontext._context)
         except blockdev.CryptoError as e:
             raise LUKSError(e)
 
-    def remove_passphrase(self):
-        """
-        Remove the saved passphrase (and possibly key file) from the LUKS
-        header.
+        self.contexts.add_context(ncontext)
 
-        Note: If both passphrase and keyfile are set for this format, both
-              will be removed!
-        """
+    def remove_passphrase(self, passphrase):
+        """ Remove specified passphrase from this device.
 
+            .. note:: Key slot associated with the provided passphrase will be removed from
+                      this format even if it is the last active key slot!
+        """
+        context = crypto.KeyslotContext(passphrase=passphrase)
+        return self.remove_key(context)
+
+    def remove_key(self, context):
+        """ Remove a key from an existing LUKS device.
+
+            :param context: existing context to be removed from the LUKS format
+            :type context: :class:`~.crypto.KeyslotContext` object
+
+            .. note:: Key slot specified by @context will be removed from this format
+                      even if it is the last active key slot!
+        """
         log_method_call(self, device=self.device,
                         type=self.type, status=self.status)
         if not self.exists:
             raise LUKSError("format has not been created")
 
-        def _remove_passphrase(context):
-            try:
-                blockdev.crypto.luks_remove_key(self.device, context=context)
-            except blockdev.CryptoError as e:
-                raise LUKSError(e)
+        try:
+            blockdev.crypto.luks_remove_key(self.device, context=context._context)
+        except blockdev.CryptoError as e:
+            raise LUKSError(e)
 
-        if self.__passphrase:
-            context = blockdev.CryptoKeyslotContext(passphrase=self.__passphrase)
-            _remove_passphrase(context)
-        elif self._key_file:
-            context = blockdev.CryptoKeyslotContext(keyfile=self._key_file)
-            _remove_passphrase(context)
+        self.contexts.remove_context(context)
 
     def escrow(self, directory, backup_passphrase):
         log.debug("escrow: escrow_volume start for %s", self.device)
 
+        # get the highest priority passphrase context
+        context = self.contexts.get_context(ctype="passphrase")
+
         try:
-            blockdev.crypto.escrow_device(self.device, self.__passphrase, self.escrow_cert,
+            blockdev.crypto.escrow_device(self.device, context._passphrase, self.escrow_cert,
                                           directory,
                                           backup_passphrase if self.add_backup_passphrase else None)
         except blockdev.CryptoError as e:
