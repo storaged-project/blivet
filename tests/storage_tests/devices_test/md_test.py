@@ -3,6 +3,8 @@ import time
 
 from contextlib import contextmanager
 
+import blivet.devicelibs
+
 from ..storagetestcase import StorageTestCase
 
 import blivet
@@ -68,11 +70,12 @@ class MDTestCase(StorageTestCase):
 
         return parts
 
-    def _test_mdraid(self, raid_level, members):
+    def _test_mdraid(self, raid_level, members, metadata_version=None):
         parts = self._prepare_members(members)
         array = self.storage.new_mdarray(name=self.raidname, parents=parts,
                                          level=raid_level, total_devices=members,
-                                         member_devices=members)
+                                         member_devices=members,
+                                         metadata_version=metadata_version)
         self.storage.create_device(array)
 
         with wait_for_resync():
@@ -89,6 +92,11 @@ class MDTestCase(StorageTestCase):
         for member in array.members:
             self.assertEqual(member.format.md_uuid, array.uuid)
 
+        if metadata_version:
+            self.assertEqual(array.metadata_version, metadata_version)
+        else:
+            self.assertEqual(array.metadata_version, "1.2")
+
     def test_mdraid_raid0(self):
         self._test_mdraid(blivet.devicelibs.raid.RAID0, 2)
 
@@ -103,6 +111,12 @@ class MDTestCase(StorageTestCase):
 
     def test_mdraid_raid10(self):
         self._test_mdraid(blivet.devicelibs.raid.RAID10, 4)
+
+    def test_mdraid_raid1_version_10(self):
+        self._test_mdraid(blivet.devicelibs.raid.RAID1, 2, "1.0")
+
+    def test_mdraid_raid1_version_11(self):
+        self._test_mdraid(blivet.devicelibs.raid.RAID1, 2, "1.1")
 
     def test_mdraid_raid0_extra(self):
         parts = self._prepare_members(2)
