@@ -297,6 +297,8 @@ class MDDiskTestCase(StorageTestCase):
 
 class MDLUKSTestCase(StorageTestCase):
 
+    _num_disks = 2
+
     raidname = "blivetTestRAIDLUKS"
     passphrase = "passphrase"
 
@@ -418,6 +420,8 @@ class MDLUKSTestCase(StorageTestCase):
 
 
 class BIOSRAIDTestCase(StorageTestCase):
+
+    _num_disks = 2
 
     def setUp(self):
         super().setUp()
