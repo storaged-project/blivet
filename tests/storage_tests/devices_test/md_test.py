@@ -3,6 +3,9 @@ import time
 
 from contextlib import contextmanager
 
+import blivet.deviceaction
+import blivet.devicelibs
+
 from ..storagetestcase import StorageTestCase
 
 import blivet
@@ -19,7 +22,6 @@ def wait_for_resync():
             with open("/proc/mdstat", "r") as f:
                 action = "resync" in f.read()
             if action:
-                print("Sleeping")
                 time.sleep(1)
 
 
@@ -68,11 +70,12 @@ class MDTestCase(StorageTestCase):
 
         return parts
 
-    def _test_mdraid(self, raid_level, members):
+    def _test_mdraid(self, raid_level, members, metadata_version=None):
         parts = self._prepare_members(members)
         array = self.storage.new_mdarray(name=self.raidname, parents=parts,
                                          level=raid_level, total_devices=members,
-                                         member_devices=members)
+                                         member_devices=members,
+                                         metadata_version=metadata_version)
         self.storage.create_device(array)
 
         with wait_for_resync():
@@ -89,6 +92,11 @@ class MDTestCase(StorageTestCase):
         for member in array.members:
             self.assertEqual(member.format.md_uuid, array.uuid)
 
+        if metadata_version:
+            self.assertEqual(array.metadata_version, metadata_version)
+        else:
+            self.assertEqual(array.metadata_version, "1.2")
+
     def test_mdraid_raid0(self):
         self._test_mdraid(blivet.devicelibs.raid.RAID0, 2)
 
@@ -103,6 +111,12 @@ class MDTestCase(StorageTestCase):
 
     def test_mdraid_raid10(self):
         self._test_mdraid(blivet.devicelibs.raid.RAID10, 4)
+
+    def test_mdraid_raid1_version_10(self):
+        self._test_mdraid(blivet.devicelibs.raid.RAID1, 2, "1.0")
+
+    def test_mdraid_raid1_version_11(self):
+        self._test_mdraid(blivet.devicelibs.raid.RAID1, 2, "1.1")
 
     def test_mdraid_raid0_extra(self):
         parts = self._prepare_members(2)
@@ -209,7 +223,81 @@ class MDTestCase(StorageTestCase):
         self.assertIsNone(part.format.md_uuid)
 
 
+class MDDiskTestCase(StorageTestCase):
+
+    _num_disks = 2
+    _disk_size = 200 * 1024**2
+
+    raidname = "blivetTestRAIDDisk"
+
+    def setUp(self):
+        super().setUp()
+
+        disks = [os.path.basename(vdev) for vdev in self.vdevs]
+        self.storage = blivet.Blivet()
+        self.storage.exclusive_disks = disks
+        self.storage.reset()
+
+        # make sure only the targetcli disks are in the devicetree
+        for disk in self.storage.disks:
+            self.assertTrue(disk.path in self.vdevs)
+            self.assertIsNone(disk.format.type)
+            self.assertFalse(disk.children)
+
+    def _clean_up(self):
+        # cleanup with mdadm
+        _ret = blivet.util.run_program(["wipefs", "-a", "/dev/md/%s" % self.raidname])
+        _ret = blivet.util.run_program(["mdadm", "--stop", "/dev/md/%s" % self.raidname])
+        _ret = blivet.util.run_program(["mdadm", "--zero-superblock", self.vdevs[0], self.vdevs[1]])
+
+        return super()._clean_up()
+
+    def _test_mdraid_raid1_on_disk(self, metadata_version):
+        disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk1)
+        self.storage.format_device(disk1, blivet.formats.get_format("mdmember"))
+
+        disk2 = self.storage.devicetree.get_device_by_path(self.vdevs[1])
+        self.assertIsNotNone(disk2)
+        self.storage.format_device(disk2, blivet.formats.get_format("mdmember"))
+
+        members = [disk1, disk2]
+
+        array = self.storage.new_mdarray(name=self.raidname, parents=members,
+                                         level=blivet.devicelibs.raid.RAID1,
+                                         total_devices=2, member_devices=2,
+                                         metadata_version=metadata_version)
+        self.storage.create_device(array)
+
+        with wait_for_resync():
+            self.storage.do_it()
+        self.storage.reset()
+
+        array = self.storage.devicetree.get_device_by_name(self.raidname)
+        self.assertIsNotNone(array)
+        self.assertEqual(array.level, blivet.devicelibs.raid.RAID1)
+        self.assertEqual(array.member_devices, 2)
+        self.assertEqual(array.spares, 0)
+        self.assertCountEqual([m.name for m in array.members],
+                              [d.name for d in members])
+        for member in array.members:
+            self.assertEqual(member.format.md_uuid, array.uuid)
+        self.assertTrue(array.is_disk)
+        self.assertEqual(array.metadata_version, metadata_version)
+
+    def test_mdraid_raid1_on_disk_version_10(self):
+        self._test_mdraid_raid1_on_disk("1.0")
+
+    def test_mdraid_raid1_on_disk_version_11(self):
+        self._test_mdraid_raid1_on_disk("1.1")
+
+    def test_mdraid_raid1_on_disk_version_12(self):
+        self._test_mdraid_raid1_on_disk("1.2")
+
+
 class MDLUKSTestCase(StorageTestCase):
+
+    _num_disks = 2
 
     raidname = "blivetTestRAIDLUKS"
     passphrase = "passphrase"
@@ -332,6 +420,8 @@ class MDLUKSTestCase(StorageTestCase):
 
 
 class BIOSRAIDTestCase(StorageTestCase):
+
+    _num_disks = 2
 
     def setUp(self):
         super().setUp()
