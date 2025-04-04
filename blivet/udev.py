@@ -513,7 +513,11 @@ def device_get_parents(info):
 
     parents = list()
     for name in names:
-        parents.append(get_device(device_node="/dev/" + name))
+        parent = get_device(device_node="/dev/" + name)
+        if not parent:
+            log.warning("Failed to get udev info for %s, ignoring", name)
+        else:
+            parents.append(parent)
 
     return parents
 
