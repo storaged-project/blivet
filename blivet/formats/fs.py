@@ -583,9 +583,13 @@ class FS(DeviceFormat):
 
         else:
             tmpdir = tempfile.mkdtemp(prefix="blivet-tmp.%s" % os.path.basename(self.device))
+            if self.mountopts and "ro" not in self.mountopts:
+                options = self.mountopts + ",ro"
+            else:
+                options = "ro"
             try:
                 util.mount(device=self.device, mountpoint=tmpdir, fstype=self.type,
-                           options=self.mountopts)
+                           options=options)
             except FSError as e:
                 log.debug("temp mount failed: %s", e)
                 raise
