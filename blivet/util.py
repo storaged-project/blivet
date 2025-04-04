@@ -245,7 +245,7 @@ def run_program_and_capture_output_binary(*args, **kwargs):
 
 
 def mount(device, mountpoint, fstype, options=None):
-    if options is None:
+    if not options:
         options = "defaults"
 
     mountpoint = os.path.normpath(mountpoint)
