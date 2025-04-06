@@ -95,6 +95,13 @@ class F2FSLabeling(FSLabeling):
         return cls._blockdev_check_label("f2fs", label)
 
 
+class ExFATLabeling(FSLabeling):
+
+    @classmethod
+    def label_format_ok(cls, label):
+        return cls._blockdev_check_label("exfat", label)
+
+
 class GFS2Labeling(FSLabeling):
 
     @classmethod

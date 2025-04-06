@@ -260,6 +260,10 @@ class F2FSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.F2FS
 
 
+class ExFATTestCase(fstesting.FSAsRoot):
+    _fs_class = fs.ExFATFS
+
+
 @unittest.skip("Unable to create because device fails device_check().")
 class NFSTestCase(fstesting.FSAsRoot):
     _fs_class = fs.NFS

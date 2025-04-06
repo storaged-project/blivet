@@ -1353,6 +1353,11 @@ register_device_format(NTFS)
 
 class ExFATFS(FS):
     _type = "exfat"
+    _labelfs = fslabeling.ExFATLabeling()
+    _formattable = True
+    _supported = True
+    _packages = ["exfatprogs"]
+    _mkfs_class = fsmkfs.ExFATMkfs
 
 
 register_device_format(ExFATFS)
