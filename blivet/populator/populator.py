@@ -89,6 +89,9 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         # initialize attributes that may later hold cached lvm info
         self.drop_device_info_cache()
 
+        # drop parted device cache
+        parted.freeAllDevices()
+
         self._cleanup = False
 
     def _add_parent_devices(self, info):
