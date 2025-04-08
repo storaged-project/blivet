@@ -244,12 +244,14 @@ class MDDiskTestCase(StorageTestCase):
             self.assertIsNone(disk.format.type)
             self.assertFalse(disk.children)
 
-    def _clean_up(self):
+    def _remove_array(self):
         # cleanup with mdadm
         _ret = blivet.util.run_program(["wipefs", "-a", "/dev/md/%s" % self.raidname])
         _ret = blivet.util.run_program(["mdadm", "--stop", "/dev/md/%s" % self.raidname])
         _ret = blivet.util.run_program(["mdadm", "--zero-superblock", self.vdevs[0], self.vdevs[1]])
 
+    def _clean_up(self):
+        self._remove_array()
         return super()._clean_up()
 
     def _test_mdraid_raid1_on_disk(self, metadata_version):
@@ -293,6 +295,37 @@ class MDDiskTestCase(StorageTestCase):
 
     def test_mdraid_raid1_on_disk_version_12(self):
         self._test_mdraid_raid1_on_disk("1.2")
+
+    def test_mdraid_raid_on_disk_external_rhbz2357484(self):
+        # create the raid  GPT using "external" tools (mdadm and parted)
+        _ret = blivet.util.run_program(["mdadm", "--create", "--run", "/dev/md/%s" % self.raidname,
+                                        "--level=raid0", "--raid-devices=2",
+                                        self.vdevs[0], self.vdevs[1]])
+        _ret = blivet.util.run_program(["parted", "--script", "/dev/md/%s" % self.raidname,
+                                        "mklabel", "gpt", "mkpart", "primary", "1MiB", "300MiB"])
+        self.storage.reset()
+
+        # remove the raid
+        self._remove_array()
+
+        # and create a new with different level and the same name as above
+        _ret = blivet.util.run_program(["mdadm", "--create", "--run", "/dev/md/%s" % self.raidname,
+                                        "--level=raid1", "--raid-devices=2",
+                                        self.vdevs[0], self.vdevs[1]])
+        _ret = blivet.util.run_program(["parted", "--script", "/dev/md/%s" % self.raidname,
+                                        "mklabel", "gpt", "mkpart", "primary", "1MiB", "150MiB"])
+        with wait_for_resync():
+            self.storage.reset()
+        self.storage.reset()
+
+        array = self.storage.devicetree.get_device_by_name(self.raidname)
+        self.assertIsNotNone(array)
+        self.assertEqual(array.level, blivet.devicelibs.raid.RAID1)
+
+        # check the partition table and partition on the array
+        self.assertEqual(array.format.type, "disklabel")
+        self.assertEqual(array.format.label_type, "gpt")
+        self.assertEqual(len(array.children), 1)
 
 
 class MDLUKSTestCase(StorageTestCase):
