@@ -917,3 +917,8 @@ class StorageDevice(Device):
 
         badchars = any(c in ('\x00', '/') for c in name)
         return not badchars and name != '.' and name != '..'
+
+    def drop_cache(self):
+        """ Drop cached information stored for this device and its format """
+        if self.format:
+            self.format.drop_cache()
