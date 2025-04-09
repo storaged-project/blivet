@@ -735,6 +735,9 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
         data.fstype = self.type
         data.mountpoint = self.ks_mountpoint
 
+    def drop_cache(self):
+        """ Drop cached information stored for this format """
+
 
 register_device_format(DeviceFormat)
 

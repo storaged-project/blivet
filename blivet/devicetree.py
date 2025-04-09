@@ -78,6 +78,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
             :keyword exclusive_disks: exclusive didks
             :type exclusive_disks: list
         """
+        self._devices = []
         self.reset(ignored_disks, exclusive_disks)
 
     def reset(self, ignored_disks=None, exclusive_disks=None):
@@ -88,6 +89,10 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
             :keyword exclusive_disks: exclusive didks
             :type exclusive_disks: list
         """
+        # remove cached data for devices
+        for device in self._devices:
+            device.drop_cache()
+
         # internal data members
         self._devices = []
         self._actions = ActionList(addfunc=self._register_action,

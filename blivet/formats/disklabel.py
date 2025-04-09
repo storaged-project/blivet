@@ -603,5 +603,11 @@ class DiskLabel(DeviceFormat):
         else:
             return 0
 
+    def drop_cache(self):
+        if self._parted_device and os.path.exists(self.device):
+            ped_device = self._parted_device.getPedDevice()
+            if ped_device:
+                ped_device.cache_remove()
+
 
 register_device_format(DiskLabel)
