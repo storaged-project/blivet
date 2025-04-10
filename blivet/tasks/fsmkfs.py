@@ -344,6 +344,14 @@ class F2FSMkfs(FSBlockDevMkfs):
     can_label = True
 
 
+class ExFATMkfs(FSBlockDevMkfs):
+    ext = availability.BLOCKDEV_EXFAT_MKFS
+    fstype = "exfat"
+    can_nodiscard = False
+    can_set_uuid = False
+    can_label = True
+
+
 class UnimplementedFSMkfs(task.UnimplementedTask, FSMkfsTask):
 
     @property

@@ -32,6 +32,7 @@
       - xfsprogs
       - hfsplus-tools
       - ntfsprogs
+      - exfatprogs
       - python3-coverage
       - python3-pocketlint
       - python3-pycodestyle
@@ -158,6 +159,7 @@
       - dosfstools
       - e2fsprogs
       - xfsprogs
+      - exfatprogs
       - ntfs-3g
       - python3-coverage
       - python3-pycodestyle
