@@ -10,6 +10,8 @@ from blivet.devices.btrfs import BTRFSVolumeDevice
 
 class BtrfsTestCase(StorageTestCase):
 
+    _num_disks = 2
+
     volname = "blivetTestBtrfsVolume"
 
     @classmethod

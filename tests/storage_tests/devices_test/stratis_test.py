@@ -45,6 +45,8 @@ class StratisTestCaseBase(StorageTestCase):
 
 class StratisTestCase(StratisTestCaseBase):
 
+    _num_disks = 2
+
     def test_stratis_basic(self):
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
         self.assertIsNotNone(disk)
@@ -213,6 +215,8 @@ class StratisTestCase(StratisTestCaseBase):
 
 @unittest.skip("Requires TPM or Tang configuration")
 class StratisTestCaseClevis(StratisTestCaseBase):
+
+    _num_disks = 1
 
     # XXX: we don't have Tang server, this test will be always skipped
     #      the test cases are kept here for manual testing

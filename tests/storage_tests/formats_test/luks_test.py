@@ -262,6 +262,8 @@ class IntegrityTestCase(loopbackedtestcase.LoopBackedTestCase):
 
 class LUKSResetTestCase(StorageTestCase):
 
+    _num_disks = 1
+
     def setUp(self):
         super().setUp()
 

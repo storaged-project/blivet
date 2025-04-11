@@ -12,6 +12,8 @@ import blivet
 
 class LVMTestCase(StorageTestCase):
 
+    _num_disks = 2
+
     vgname = "blivetTestVG"
 
     def setUp(self):
