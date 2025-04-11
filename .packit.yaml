@@ -6,10 +6,10 @@ actions:
     - 'bash -c "ls *.tar*"'
 jobs:
 - job: copr_build
-  metadata:
-    targets:
-    - fedora-all
+  targets:
+    - centos-stream-9-x86_64
   trigger: pull_request
+  branch: rhel9-branch
 srpm_build_deps:
  - make
  - systemd
