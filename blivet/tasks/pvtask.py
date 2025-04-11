@@ -27,6 +27,7 @@ from gi.repository import BlockDev as blockdev
 
 from ..errors import PhysicalVolumeError
 from ..size import Size, B
+from ..static_data import pvs_info
 
 from . import availability
 from . import task
@@ -55,13 +56,12 @@ class PVSize(task.BasicApplication):
             :raises :class:`~.errors.PhysicalVolumeError`: if size cannot be obtained
         """
 
-        try:
-            pv_info = blockdev.lvm.pvinfo(self.pv.device)
-            pv_size = pv_info.pv_size
-        except blockdev.LVMError as e:
-            raise PhysicalVolumeError(e)
+        pvs_info.drop_cache()
+        pv_info = pvs_info.cache.get(self.pv.device)
+        if pv_info is None:
+            raise PhysicalVolumeError("Failed to get PV info for %s" % self.pv.device)
 
-        return Size(pv_size)
+        return Size(pv_info.pv_size)
 
 
 class PVResize(task.BasicApplication, dfresize.DFResizeTask):
