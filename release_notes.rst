@@ -2,7 +2,7 @@
 =======
 * `Better resilience during initial storage scan`_
 * `GPT is now default partition table for all architectures`_
-* `FAT filesystem resize support`
+* `FAT filesystem resize support`_
 
 Better resilience during initial storage scan
 ----------------------------------------------

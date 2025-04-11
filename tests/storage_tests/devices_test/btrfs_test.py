@@ -10,6 +10,8 @@ from blivet.devices.btrfs import BTRFSVolumeDevice
 
 class BtrfsTestCase(StorageTestCase):
 
+    _num_disks = 2
+
     volname = "blivetTestBtrfsVolume"
 
     @classmethod
@@ -25,25 +27,10 @@ class BtrfsTestCase(StorageTestCase):
         # allow automounting to get btrfs information
         blivet.flags.flags.auto_dev_updates = True
 
-        disks = [os.path.basename(vdev) for vdev in self.vdevs]
-        self.storage = blivet.Blivet()
-        self.storage.exclusive_disks = disks
-        self.storage.reset()
-
-        # make sure only the targetcli disks are in the devicetree
-        for disk in self.storage.disks:
-            self.assertTrue(disk.path in self.vdevs)
-            self.assertIsNone(disk.format.type)
-            self.assertFalse(disk.children)
+        self._blivet_setup()
 
     def _clean_up(self):
-        self.storage.reset()
-        for disk in self.storage.disks:
-            if disk.path not in self.vdevs:
-                raise RuntimeError("Disk %s found in devicetree but not in disks created for tests" % disk.name)
-            self.storage.recursive_remove(disk)
-
-        self.storage.do_it()
+        self._blivet_cleanup()
 
         # reset back to default
         blivet.flags.flags.auto_dev_updates = False

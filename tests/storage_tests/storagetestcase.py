@@ -9,6 +9,7 @@ import unittest
 
 from contextlib import contextmanager
 
+import blivet
 
 _lio_devs = dict()
 
@@ -192,6 +193,27 @@ class StorageTestCase(unittest.TestCase):
                 self.vdevs.append(dev)
             except RuntimeError as e:
                 raise RuntimeError("Failed to setup targetcli device for testing: %s" % e)
+
+    def _blivet_setup(self):
+        disks = [os.path.basename(vdev) for vdev in self.vdevs]
+        self.storage = blivet.Blivet()  # pylint: disable=attribute-defined-outside-init
+        self.storage.exclusive_disks = disks
+        self.storage.reset()
+
+        # make sure only the targetcli disks are in the devicetree
+        for disk in self.storage.disks:
+            self.assertTrue(disk.path in self.vdevs)
+            self.assertIsNone(disk.format.type)
+            self.assertFalse(disk.children)
+
+    def _blivet_cleanup(self):
+        self.storage.reset()
+        for disk in self.storage.disks:
+            if disk.path not in self.vdevs:
+                raise RuntimeError("Disk %s found in devicetree but not in disks created for tests" % disk.name)
+            self.storage.recursive_remove(disk)
+
+        self.storage.do_it()
 
     def _clean_up(self):
         for dev in self.vdevs:
