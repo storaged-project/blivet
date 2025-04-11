@@ -1,4 +1,3 @@
-import os
 import unittest
 
 from ..storagetestcase import StorageTestCase
@@ -20,16 +19,7 @@ class StratisTestCaseBase(StorageTestCase):
     def setUp(self):
         super().setUp()
 
-        disks = [os.path.basename(vdev) for vdev in self.vdevs]
-        self.storage = blivet.Blivet()
-        self.storage.exclusive_disks = disks
-        self.storage.reset()
-
-        # make sure only the targetcli disks are in the devicetree
-        for disk in self.storage.disks:
-            self.assertTrue(disk.path in self.vdevs)
-            self.assertIsNone(disk.format.type)
-            self.assertFalse(disk.children)
+        self._blivet_setup()
 
     def _clean_up(self):
         self.storage.reset()
