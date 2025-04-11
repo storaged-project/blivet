@@ -367,8 +367,9 @@ class MDLUKSTestCase(StorageTestCase):
             self.assertIsNotNone(disk)
             self.storage.initialize_disk(disk)
 
+            pbkdf = blivet.formats.luks.LUKS2PBKDFArgs(type="pbkdf2", time_ms=100)
             part = self.storage.new_partition(size=blivet.size.Size("100 MiB"), fmt_type="luks",
-                                              fmt_args={"passphrase": self.passphrase},
+                                              fmt_args={"passphrase": self.passphrase, "pbkdf_args": pbkdf},
                                               parents=[disk])
             self.storage.create_device(part)
 
