@@ -305,9 +305,15 @@ class LVMVolumeGroupDevice(ContainerDevice):
             if lv.exists:
                 lv.setup()
 
+        # if format was already scheduled for removal, use original_format
+        if member.format != "lvmpv":
+            fmt = member.original_format
+        else:
+            fmt = member.format
+
         # do not run pvmove on empty PVs
-        member.format.update_size_info()
-        if member.format.free < member.format.current_size:
+        fmt.update_size_info()
+        if fmt.free < fmt.current_size:
             blockdev.lvm.pvmove(member.path)
         blockdev.lvm.vgreduce(self.name, member.path)
 
@@ -317,9 +323,9 @@ class LVMVolumeGroupDevice(ContainerDevice):
 
         # update LVMPV format size --> PV format has different size when in VG
         try:
-            member.format._size = member.format._target_size = member.format._size_info.do_task()
+            fmt._size = fmt._target_size = fmt._size_info.do_task()
         except errors.PhysicalVolumeError as e:
-            log.warning("Failed to obtain current size for device %s: %s", member.format.device, e)
+            log.warning("Failed to obtain current size for device %s: %s", fmt.device, e)
 
     def _add(self, member):
         blockdev.lvm.vgextend(self.name, member.path)
