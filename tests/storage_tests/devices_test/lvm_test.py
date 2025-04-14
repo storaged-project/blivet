@@ -12,21 +12,14 @@ import blivet
 
 class LVMTestCase(StorageTestCase):
 
+    _num_disks = 2
+
     vgname = "blivetTestVG"
 
     def setUp(self):
         super().setUp()
 
-        disks = [os.path.basename(vdev) for vdev in self.vdevs]
-        self.storage = blivet.Blivet()
-        self.storage.exclusive_disks = disks
-        self.storage.reset()
-
-        # make sure only the targetcli disks are in the devicetree
-        for disk in self.storage.disks:
-            self.assertTrue(disk.path in self.vdevs)
-            self.assertIsNone(disk.format.type)
-            self.assertFalse(disk.children)
+        self._blivet_setup()
 
     def _get_pv_size(self, pv):
         out = subprocess.check_output(["pvs", "-o", "pv_size", "--noheadings", "--nosuffix", "--units=b", pv])

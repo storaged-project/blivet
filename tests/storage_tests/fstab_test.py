@@ -9,6 +9,8 @@ from .storagetestcase import StorageTestCase
 
 class FstabTestCase(StorageTestCase):
 
+    _num_disks = 1
+
     @classmethod
     def setUpClass(cls):
         if not blivet.fstab.HAVE_LIBMOUNT:
