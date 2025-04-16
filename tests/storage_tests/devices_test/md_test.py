@@ -295,6 +295,11 @@ class MDDiskTestCase(StorageTestCase):
         self.storage.reset()
 
         array = self.storage.devicetree.get_device_by_name(self.raidname)
+        if not array:
+            print()
+            print(self.storage.devicetree)
+            os.system("lsblk")
+            os.system("ls /dev/md*")
         self.assertIsNotNone(array)
         self.assertEqual(array.level, blivet.devicelibs.raid.RAID1)
 
