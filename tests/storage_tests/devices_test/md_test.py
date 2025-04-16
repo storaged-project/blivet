@@ -290,6 +290,11 @@ class MDDiskTestCase(StorageTestCase):
                                         self.vdevs[0], self.vdevs[1]])
         _ret = blivet.util.run_program(["parted", "--script", "/dev/md/%s" % self.raidname,
                                         "mklabel", "gpt", "mkpart", "primary", "1MiB", "150MiB"])
+
+        # XXX udev races, sometimes we just don't get the `linux_raid_member` format on the disks
+        # in udev after creating the array above
+        _ret = blivet.util.run_program(["udevadm", "trigger", "-s", "block", "--settle"])
+
         with wait_for_resync():
             self.storage.reset()
         self.storage.reset()
