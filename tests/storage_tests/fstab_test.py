@@ -243,6 +243,11 @@ class FstabTestCase(StorageTestCase):
             self.assertIsNotNone(dev)
             self.assertEqual(dev, sub)
 
+            # non-existing subvolume, should not return the volume
+            dev = fstab.find_device(devicetree=self.storage.devicetree, spec="UUID=%s" % vol.uuid,
+                                    mntopts=["subvol=non-existing"])
+            self.assertIsNone(dev)
+
     def test_swap_creation(self):
         # test swap creation for presence of FSTabOptions object
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
