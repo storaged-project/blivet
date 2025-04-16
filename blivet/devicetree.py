@@ -757,13 +757,18 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         # check mount options for btrfs volumes in case it's a subvol
         if device and device.type.startswith("btrfs") and (subvolspec or options):
             # start with the volume -- not a subvolume
-            device = getattr(device, "volume", device)
+            volume = getattr(device, "volume", device)
 
             if subvolspec:
-                for subvol in device.subvolumes:
+                for subvol in volume.subvolumes:
                     if subvol.format.subvolspec == subvolspec:
                         device = subvol
                         break
+                else:
+                    # subvolspec was given, but subvolume was not found -> return None
+                    log.debug("subvolume with subvolspec '%s' not found in '%s'",
+                              subvolspec, volume.name)
+                    device = None
             elif options:
                 attr = None
                 val = None
@@ -773,15 +778,20 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 elif "subvolid=" in options:
                     attr = "vol_id"
                     val = util.get_option_value("subvolid", options)
-                elif device.default_subvolume:
+                elif volume.default_subvolume:
                     # default subvolume
-                    device = device.default_subvolume
+                    device = volume.default_subvolume
 
                 if attr and val:
-                    for subvol in device.subvolumes:
+                    for subvol in volume.subvolumes:
                         if getattr(subvol, attr, None) == val:
                             device = subvol
                             break
+                    else:
+                        # subvolspec was given, but subvolume was not found -> return None
+                        log.debug("subvolume with subvolspec '%s=%s' not found in '%s'",
+                                  attr, val, volume.name)
+                        device = None
 
         if device:
             log.debug("resolved '%s' to '%s' (%s)", devspec, device.name, device.type)
