@@ -24,8 +24,3 @@
 
 ---
 
-- test: storage_tests.devices_test.md_test.(MDTestCase|MDLUKSTestCase|MDDiskTestCase)
-  skip_on:
-    - distro: "centos"
-      version: "9"
-      reason: "MD tests are randomly failing on RHEL/CentOS 9"
