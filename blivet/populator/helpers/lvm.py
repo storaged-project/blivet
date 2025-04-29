@@ -29,7 +29,7 @@ from ...callbacks import callbacks
 from ... import udev
 from ...devicelibs import lvm
 from ...devices.lvm import LVMVolumeGroupDevice, LVMLogicalVolumeDevice, LVMInternalLVtype
-from ...errors import DeviceTreeError, DuplicateVGError
+from ...errors import DeviceTreeError, DuplicateVGError, LVMError
 from ...flags import flags
 from ...size import Size
 from ...storage_log import log_method_call
@@ -289,7 +289,7 @@ class LVMFormatPopulator(FormatPopulator):
                 if flags.auto_dev_updates:
                     try:
                         lv_device.setup()
-                    except blockdev.LVMError:
+                    except LVMError:
                         log.warning("failed to activate lv %s", lv_device.name)
                         lv_device.controllable = False
 
