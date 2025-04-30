@@ -175,7 +175,7 @@ class LUKSFormatPopulator(FormatPopulator):
                     self.device.format.passphrase = passphrase
                     try:
                         self.device.format.setup()
-                    except blockdev.BlockDevError:
+                    except LUKSError:
                         self.device.format.passphrase = None
                     else:
                         break
