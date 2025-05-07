@@ -135,12 +135,14 @@ def settle(quiet=False):
         util.run_program(argv)
 
 
-def trigger(subsystem=None, action="add", name=None):
+def trigger(subsystem=None, action="add", name=None, path=None):
     argv = ["trigger", "--action=%s" % action]
     if subsystem:
         argv.append("--subsystem-match=%s" % subsystem)
     if name:
         argv.append("--sysname-match=%s" % name)
+    if path:
+        argv.append(path)
 
     util.run_program(["udevadm"] + argv)
     settle()
