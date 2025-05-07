@@ -55,6 +55,8 @@ class FSSize(fstask.FSTask, metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     def _get_size_udev(self):
+        # just make sure udev has up-to-date information
+        udev.trigger(action="change", path=self.fs.device)
         udev.settle()
         udev_info = udev.get_device(device_node=self.fs.device)
         if not udev_info:
