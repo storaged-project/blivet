@@ -58,11 +58,12 @@ class FSSize(fstask.FSTask, metaclass=abc.ABCMeta):
         if not udev_info:
             raise FSError("Failed to obtain udev information for device %s" % self.fs.device)
 
-        fs_size = udev.device_get_format_size(udev_info)
-        if not fs_size:
+        last_block = udev.device_get_format_lastblock(udev_info)
+        block_size = udev.device_get_format_blocksize(udev_info)
+        if not last_block or not block_size:
             raise FSError("Failed to obtain filesystem size for %s from udev" % self.fs.device)
 
-        return Size(fs_size)
+        return Size(int(last_block) * int(block_size))
 
     def do_task(self):  # pylint: disable=arguments-differ
         """ Returns the size of the filesystem.

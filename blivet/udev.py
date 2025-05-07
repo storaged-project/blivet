@@ -285,6 +285,11 @@ def device_get_format_size(udev_info):
     return udev_info.get("ID_FS_SIZE")
 
 
+def device_get_format_lastblock(udev_info):
+    """ Report a device's format last block as reported by udev. """
+    return udev_info.get("ID_FS_LASTBLOCK")
+
+
 def device_get_format_blocksize(udev_info):
     """ Report a device's format block size as reported by udev. """
     return udev_info.get("ID_FS_BLOCKSIZE")
