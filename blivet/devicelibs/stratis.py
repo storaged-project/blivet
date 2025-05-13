@@ -43,6 +43,7 @@ STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool.r0"
 STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem.r0"
 STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev.r0"
 STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
+STRATIS_MANAGER_INTF_R8 = STRATIS_SERVICE + ".Manager.r8"
 
 STRATIS_FS_SIZE = Size("1 TiB")
 
@@ -179,9 +180,9 @@ def set_key(key_desc, passphrase, key_file):
             os.close(write)
 
 
-def unlock_pool(pool_uuid, method):
-    if not availability.STRATIS_DBUS.available:
-        raise StratisError("Stratis DBus service not available")
+def _unlock_pool_old(pool_uuid, method=None, desc=None, passphrase=None, keyfile=None):
+    if method == "keyring":
+        set_key(desc, passphrase, keyfile)
 
     try:
         (succ, err, _blockdevs) = safe_dbus.call_sync(STRATIS_SERVICE,
@@ -194,6 +195,56 @@ def unlock_pool(pool_uuid, method):
     else:
         if not succ:
             raise StratisError("Failed to unlock pool: %s" % err)
+
+
+def _unlock_pool_new(pool_uuid, method=None, passphrase=None, keyfile=None):
+    fd_list = Gio.UnixFDList()
+
+    if method == "keyring":
+        if passphrase:
+            (read, write) = os.pipe()
+            os.write(write, passphrase.encode("utf-8"))
+            fd = read
+        elif keyfile:
+            fd = os.open(keyfile, os.O_RDONLY)
+        else:
+            raise RuntimeError("Passphrase or key file must be provided")
+
+        fd_list.append(fd)
+
+        args = GLib.Variant("(ss(b(bu))(bh))", (pool_uuid, "uuid", (True, (False, 0)), (True, 0)))
+    else:
+        args = GLib.Variant("(ss(b(bu))(bh))", (pool_uuid, "uuid", (True, (False, 0)), (False, 0)))
+
+    try:
+        print(args)
+        (succ, err, _blockdevs) = safe_dbus.call_sync(STRATIS_SERVICE,
+                                                      STRATIS_PATH,
+                                                      STRATIS_MANAGER_INTF_R8,
+                                                      "StartPool",
+                                                      args, fds=fd_list)
+    except safe_dbus.DBusCallError as e:
+        raise StratisError("Failed to unlock pool: %s" % str(e))
+    else:
+        if not succ:
+            raise StratisError("Failed to unlock pool: %s" % err)
+    finally:
+        if keyfile:
+            os.close(fd)
+        if passphrase:
+            os.close(write)
+
+
+def unlock_pool(pool_uuid, method, desc=None, passphrase=None, keyfile=None):
+    if not availability.STRATIS_DBUS.available:
+        raise StratisError("Stratis DBus service not available")
+
+    ret = safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH,
+                                           iface=STRATIS_MANAGER_INTF_R8)
+    if ret:
+        return _unlock_pool_new(pool_uuid, method, passphrase, keyfile)
+    else:
+        return _unlock_pool_old(pool_uuid, method, desc, passphrase, keyfile)
 
 
 def create_pool(name, devices, encrypted, passphrase, key_file, clevis):
