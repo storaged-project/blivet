@@ -214,6 +214,21 @@ class FSAsRoot(loopbackedtestcase.LoopBackedTestCase, metaclass=abc.ABCMeta):
         # and no errors should occur when checking
         self.assertIsNone(an_fs.do_check())
 
+    def test_fssize(self):
+        an_fs = self._fs_class()
+        if not an_fs.formattable:
+            self.skipTest("can not create filesystem %s" % an_fs.name)
+        if an_fs._size_info.availability_errors:
+            self.skipTest("can not get size for filesystem %s" % an_fs.name)
+        an_fs.device = self.loop_devices[0]
+        self.assertIsNone(an_fs.create())
+        an_fs.update_size_info()
+
+        if isinstance(an_fs, fs.NTFS) or isinstance(an_fs, fs.FATFS):
+            self.assertAlmostEqual(an_fs._size, self._DEVICE_SIZE, delta=Size("1 MiB"))
+        else:
+            self.assertEqual(an_fs._size, self._DEVICE_SIZE)
+
     def test_no_explicit_target_size(self):
         """ Because _target_size has not been set, resize sets to min size. """
         # CHECK ME: This is debatable, maybe target size should be set to

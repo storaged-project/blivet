@@ -38,6 +38,8 @@ class FSSize(fstask.FSTask, metaclass=abc.ABCMeta):
     """ An abstract class that represents size information extraction. """
     description = "current filesystem size"
 
+    udev = False
+
     # TASK methods
 
     @property
@@ -53,6 +55,8 @@ class FSSize(fstask.FSTask, metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     def _get_size_udev(self):
+        # just make sure udev has up-to-date information
+        udev.trigger(action="change", path=self.fs.device)
         udev.settle()
         udev_info = udev.get_device(device_node=self.fs.device)
         if not udev_info:
@@ -73,14 +77,15 @@ class FSSize(fstask.FSTask, metaclass=abc.ABCMeta):
             :raises FSError: on failure
         """
 
-        # try to get size from udev
-        try:
-            size = self._get_size_udev()
-        except FSError as e:
-            log.info("Failed to obtain filesystem size for %s from udev: %s",
-                     self.fs.device, str(e))
-        else:
-            return size
+        # try to get size from udev if supported
+        if self.udev:
+            try:
+                size = self._get_size_udev()
+            except FSError as e:
+                log.info("Failed to obtain filesystem size for %s from udev: %s",
+                         self.fs.device, str(e))
+            else:
+                return size
 
         # fallback to filesystem tools
         error_msgs = self.availability_errors
@@ -101,6 +106,8 @@ class FSSize(fstask.FSTask, metaclass=abc.ABCMeta):
 
 
 class Ext2FSSize(FSSize):
+    udev = True
+
     def _get_size_tools(self):
         return Size(self.fs._current_info.block_size * self.fs._current_info.block_count)
 
@@ -111,6 +118,8 @@ class NTFSSize(FSSize):
 
 
 class XFSSize(FSSize):
+    udev = True
+
     def _get_size_tools(self):
         return Size(self.fs._current_info.block_size * self.fs._current_info.block_count)
 
