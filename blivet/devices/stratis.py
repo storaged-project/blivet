@@ -155,6 +155,12 @@ class StratisPoolDevice(ContainerDevice):
         return bool((self.__passphrase not in ["", None]) or
                     (self._key_file and os.access(self._key_file, os.R_OK)))
 
+    def _teardown(self, recursive=None):
+        """ Close, or tear down, a device. """
+        log_method_call(self, self.name, status=self.status,
+                        controllable=self.controllable)
+        devicelibs.stratis.stop_pool(self.uuid)
+
     def _pre_create(self):
         super(StratisPoolDevice, self)._pre_create()
 
