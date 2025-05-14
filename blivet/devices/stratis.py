@@ -93,6 +93,11 @@ class StratisPoolDevice(ContainerDevice):
         return sum(parent.size for parent in self.parents)
 
     @property
+    def status(self):
+        # XXX only active (existing) pools are in devicetree currently
+        return self.exists
+
+    @property
     def _physical_size(self):
         if self.exists:
             pool_info = stratis_info.get_pool_info(self.name)
