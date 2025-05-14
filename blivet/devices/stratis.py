@@ -94,8 +94,9 @@ class StratisPoolDevice(ContainerDevice):
 
     @property
     def status(self):
-        # XXX only active (existing) pools are in devicetree currently
-        return self.exists
+        if not self.exists or not self.uuid:
+            return False
+        return self.uuid not in [pool.uuid for pool in stratis_info.stopped_pools]
 
     @property
     def _physical_size(self):
@@ -161,6 +162,20 @@ class StratisPoolDevice(ContainerDevice):
                         controllable=self.controllable)
         devicelibs.stratis.stop_pool(self.uuid)
 
+    def _setup(self, orig=False):
+        if self.encrypted and not self.has_key and not self._clevis:
+            raise StratisError("Passphrase or key file must be set for encrypted Stratis pool setup")
+
+        if self.encrypted:
+            if self.has_key:
+                devicelibs.stratis.unlock_pool(self.uuid, method="keyring",
+                                               passphrase=self.__passphrase,
+                                               keyfile=self.key_file)
+            else:
+                devicelibs.stratis.unlock_pool(self.uuid, method="clevis")
+        else:
+            devicelibs.stratis.start_pool(self.uuid)
+
     def _pre_create(self):
         super(StratisPoolDevice, self)._pre_create()
 
@@ -179,7 +194,8 @@ class StratisPoolDevice(ContainerDevice):
                                        clevis=self._clevis)
 
     def _post_create(self):
-        super(StratisPoolDevice, self)._post_create()
+        self.exists = True
+        self.update_sysfs_path()
         self.format.exists = True
 
         pool_info = stratis_info.get_pool_info(self.name)

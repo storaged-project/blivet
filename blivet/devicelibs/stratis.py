@@ -195,6 +195,9 @@ def _unlock_pool_old(pool_uuid, method=None, desc=None, passphrase=None, keyfile
     else:
         if not succ:
             raise StratisError("Failed to unlock pool: %s" % err)
+    finally:
+        # repopulate the stratis info cache so the started pool is in correct list of pools
+        stratis_info.drop_cache()
 
 
 def _unlock_pool_new(pool_uuid, method=None, passphrase=None, keyfile=None):
@@ -233,6 +236,8 @@ def _unlock_pool_new(pool_uuid, method=None, passphrase=None, keyfile=None):
             os.close(fd)
         if passphrase:
             os.close(write)
+        # repopulate the stratis info cache so the started pool is in correct list of pools
+        stratis_info.drop_cache()
 
 
 def unlock_pool(pool_uuid, method, desc=None, passphrase=None, keyfile=None):
@@ -382,4 +387,35 @@ def stop_pool(pool_uuid):
             raise StratisError("Failed to stop stratis pool '%s': %s (%d)" % (pool_info.name, err, rc))
 
     # repopulate the stratis info cache so the stopped pool is in correct list of pools
+    stratis_info.drop_cache()
+
+
+def start_pool(pool_uuid):
+    if not availability.STRATIS_DBUS.available:
+        raise StratisError("Stratis DBus service not available")
+
+    ret = safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH,
+                                           iface=STRATIS_MANAGER_INTF_R8)
+    if not ret:
+        raise StratisError("DBus interface %s not available" % STRATIS_MANAGER_INTF_R8)
+
+    # repopulate the stratis info cache just to be sure all values are still valid
+    stratis_info.drop_cache()
+
+    args = GLib.Variant("(ss(b(bu))(bh))", (pool_uuid, "uuid", (False, (False, 0)), (False, 0)))
+
+    try:
+        ((succ, _uuid), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
+                                                       STRATIS_PATH,
+                                                       STRATIS_MANAGER_INTF_R8,
+                                                       "StartPool",
+                                                       args,
+                                                       timeout=STRATIS_CALL_TIMEOUT)
+    except safe_dbus.DBusCallError as e:
+        raise StratisError("Failed to start stratis pool '%s': %s" % (pool_uuid, str(e)))
+    else:
+        if not succ:
+            raise StratisError("Failed to start stratis pool '%s': %s (%d)" % (pool_uuid, err, rc))
+
+    # repopulate the stratis info cache so the started pool is in correct list of pools
     stratis_info.drop_cache()
