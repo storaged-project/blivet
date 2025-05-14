@@ -1,6 +1,7 @@
 import unittest
 
 from ..storagetestcase import StorageTestCase
+from packaging.version import Version
 
 import blivet
 
@@ -201,6 +202,109 @@ class StratisTestCase(StratisTestCaseBase):
         bd2 = self.storage.devicetree.get_device_by_path(self.vdevs[1] + "1")
         self.assertEqual(bd2.format.pool_name, pool.name)
         self.assertEqual(bd2.format.pool_uuid, pool.uuid)
+
+    def _get_stratis_version(self):
+        out = blivet.util.capture_output(["stratis", "--version"])
+        return Version(out)
+
+    def test_stratis_pool_start_stop(self):
+        if self._get_stratis_version() < Version("3.8.0"):
+            self.skipTest("Stratis 3.8.0 or newer needed for start/stop support")
+
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.storage.initialize_disk(disk)
+
+        bd = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="stratis",
+                                        parents=[disk])
+        self.storage.create_device(bd)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd])
+        self.storage.create_device(pool)
+
+        fs = self.storage.new_stratis_filesystem(name="blivetTestFS", parents=[pool],
+                                                 size=blivet.size.Size("800 MiB"))
+        self.storage.create_device(fs)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertTrue(pool.status)
+
+        # try teardown and setup
+        pool.teardown()
+        self.assertFalse(pool.status)
+        pool.setup()
+        self.assertTrue(pool.status)
+
+        # teardown again to test reset with stopped pool
+        pool.teardown()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertFalse(pool.status)
+
+        # start the pool again to be able to remove it
+        pool.setup()
+
+        # run reset() to get the filesystems
+        self.storage.reset()
+        fs = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS")
+        self.assertIsNotNone(fs)
+
+    def test_stratis_pool_start_stop_encrypted(self):
+        if self._get_stratis_version() < Version("3.8.0"):
+            self.skipTest("Stratis 3.8.0 or newer needed for start/stop support")
+
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.storage.initialize_disk(disk)
+
+        bd = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="stratis",
+                                        parents=[disk])
+        self.storage.create_device(bd)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd],
+                                             encrypted=True, passphrase="fipsneeds8chars")
+        self.storage.create_device(pool)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertTrue(pool.status)
+
+        # try teardown and setup
+        pool.teardown()
+        self.assertFalse(pool.status)
+
+        # setup won't work without passphrase
+        with self.assertRaisesRegex(blivet.errors.StratisError, "Passphrase or key file must be set for encrypted Stratis pool setup"):
+            pool.setup()
+
+        pool.passphrase = "fipsneeds8chars"
+        pool.setup()
+        self.assertTrue(pool.status)
+
+        # teardown again to test reset with stopped pool
+        pool.teardown()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertFalse(pool.status)
+
+        # start the pool again to be able to remove it
+        pool.passphrase = "fipsneeds8chars"
+        pool.setup()
 
 
 @unittest.skip("Requires TPM or Tang configuration")
