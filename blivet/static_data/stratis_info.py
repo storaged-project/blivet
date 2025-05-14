@@ -150,7 +150,7 @@ class StratisInfo(object):
                                        pool_name=pool_name, pool_uuid=pool_info.uuid,
                                        object_path=blockdev_path)
 
-    def _get_locked_pools_info_old(self):
+    def _get_locked_pools_info(self):
         locked_pools = []
 
         try:
@@ -182,50 +182,6 @@ class StratisInfo(object):
             locked_pools.append(info)
 
         return locked_pools
-
-    def _get_locked_pools_info_new(self):
-        locked_pools = []
-
-        try:
-            pools_info = safe_dbus.get_property_sync(STRATIS_SERVICE,
-                                                     STRATIS_PATH,
-                                                     STRATIS_MANAGER_INTF_R8,
-                                                     "StoppedPools")[0]
-        except safe_dbus.DBusCallError as e:
-            log.error("Failed to get list of locked Stratis pools: %s", str(e))
-            return locked_pools
-
-        for pool_uuid in pools_info.keys():
-            valid, feats = pools_info[pool_uuid]["features"]
-            if not valid:
-                log.info("Stopped Stratis pool %s doesn't have valid features", pool_uuid)
-                continue
-            else:
-                if "encryption" not in feats.keys():
-                    log.warning("Encryption information not found for Stratis pool %s", pool_uuid)
-                    continue
-                if not feats["encryption"]:
-                    continue
-                else:
-                    info = StratisLockedPoolInfo(uuid=pool_uuid,
-                                                 key_desc=None,
-                                                 clevis=None,
-                                                 devices=[d["devnode"] for d in pools_info[pool_uuid]["devs"]])
-                    locked_pools.append(info)
-
-        return locked_pools
-
-    def _get_locked_pools_info(self):
-        try:
-            ret = safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH, iface=STRATIS_MANAGER_INTF_R8)
-        except safe_dbus.DBusCallError:
-            log.warning("Stratis DBus service is not running")
-            return []
-
-        if ret:
-            return self._get_locked_pools_info_new()
-        else:
-            return self._get_locked_pools_info_old()
 
     def _get_stopped_pools_info(self):
         stopped_pools = []
