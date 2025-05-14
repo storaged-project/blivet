@@ -257,6 +257,21 @@ class StratisTestCase(StratisTestCaseBase):
         fs = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS")
         self.assertIsNotNone(fs)
 
+        # stop the pool again to test removing stopped pool
+        pool.teardown()
+        self.storage.reset()
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+
+        self.storage.destroy_device(pool)
+        self.storage.do_it()
+        self.storage.reset()
+
+        # we didn't remove the block devices so the pool should be back
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+
+        pool.setup()
+
     def test_stratis_pool_start_stop_encrypted(self):
         if self._get_stratis_version() < Version("3.8.0"):
             self.skipTest("Stratis 3.8.0 or newer needed for start/stop support")

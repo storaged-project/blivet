@@ -247,7 +247,12 @@ class StratisPoolDevice(ContainerDevice):
     def _destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
-        devicelibs.stratis.remove_pool(self.uuid)
+        if self.status:
+            devicelibs.stratis.remove_pool(self.uuid)
+        else:
+            # stopped pool cannot be removed so if someone wants to do that, the destroy
+            # action here will be noop and pool will be removed by removing the block devices
+            log.info("Ignoring destroy action for stopped stratis pool %s", self.name)
 
     def add_hook(self, new=True):
         super(StratisPoolDevice, self).add_hook(new=new)
