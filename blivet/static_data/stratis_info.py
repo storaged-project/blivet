@@ -200,6 +200,9 @@ class StratisInfo(object):
                 log.info("Stopped Stratis pool %s doesn't have valid features", pool_uuid)
                 continue
             else:
+                if "encryption" not in feats.keys():
+                    log.warning("Encryption information not found for Stratis pool %s", pool_uuid)
+                    continue
                 if not feats["encryption"]:
                     continue
                 else:

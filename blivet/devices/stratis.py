@@ -216,6 +216,18 @@ class StratisPoolDevice(ContainerDevice):
     def _remove(self, member):
         raise DeviceError("Removing members from a Stratis pool is not supported")
 
+    def _pre_destroy(self):
+        """ Preparation and precondition checking for device destruction.
+            Note: This functions overrides StorageDevice._pre_destroy to avoid
+                  calling teardown() because stopped stratis pools cannot be
+                  removed.
+        """
+        if not self.exists:
+            raise DeviceError("device has not been created")
+
+        if not self.isleaf:
+            raise DeviceError("Cannot destroy non-leaf device %s" % self.name)
+
     def _destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
