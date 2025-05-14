@@ -220,7 +220,6 @@ def _unlock_pool_new(pool_uuid, method=None, passphrase=None, keyfile=None):
         args = GLib.Variant("(ss(b(bu))(bh))", (pool_uuid, "uuid", (True, (False, 0)), (False, 0)))
 
     try:
-        print(args)
         (succ, err, _blockdevs) = safe_dbus.call_sync(STRATIS_SERVICE,
                                                       STRATIS_PATH,
                                                       STRATIS_MANAGER_INTF_R8,
