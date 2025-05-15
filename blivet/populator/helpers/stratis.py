@@ -76,7 +76,7 @@ class StratisFormatPopulator(FormatPopulator):
         uuid = self._get_blockdev_uuid()
         kwargs["uuid"] = uuid
 
-        # stratis block device hosting an encrypted pool
+        # old-style stratis block device hosting an encrypted pool
         kwargs["locked_pool"] = False
         for pool in stratis_info.locked_pools:
             if self.device.path in pool.devices:
@@ -99,58 +99,48 @@ class StratisFormatPopulator(FormatPopulator):
 
         return kwargs
 
-    def _add_pool_device(self):
-        bd_info = stratis_info.blockdevs.get(self.device.format.uuid)
-        if not bd_info:
-            # no info about the stratis block device -> we're done
-            return
+    def _add_stopped_pool_device(self, pool_info):
+        pool_device = StratisPoolDevice(pool_info.name,
+                                        parents=[self.device],
+                                        uuid=pool_info.uuid,
+                                        exists=True,
+                                        encrypted=pool_info.encrypted)
+        self._devicetree._add_device(pool_device)
+        return pool_device
 
-        if not bd_info.pool_name:
-            log.info("stratis block device %s has no pool", self.device.name)
-            return
-
-        pool_info = stratis_info.pools.get(bd_info.pool_uuid)
-        if pool_info is None:
-            log.warning("Failed to get information about Stratis pool %s (%s)",
-                        bd_info.pool_name, bd_info.pool_uuid)
-            return
-
-        pool_device = self._devicetree.get_device_by_uuid(bd_info.pool_uuid)
-        if pool_device and self.device not in pool_device.parents:
-            pool_device.parents.append(self.device)
-            callbacks.parent_added(device=pool_device, parent=self.device)
-        elif pool_device is None:
-            # TODO: stratis duplicate pool name
-
-            if pool_info.clevis:
-                if pool_info.clevis[0] == "tang":
-                    try:
-                        data = json.loads(pool_info.clevis[1])
-                    except json.JSONDecodeError:
-                        log.warning("failed to decode tang configuration for stratis pool %s",
-                                    self.device.name)
-                        clevis_info = StratisClevisConfig(pin=pool_info.clevis[0])
-                    else:
-                        clevis_info = StratisClevisConfig(pin=pool_info.clevis[0],
-                                                          tang_url=data["url"],
-                                                          tang_thumbprint=data["thp"])
-                else:
+    def _add_started_pool_device(self, pool_info):
+        if pool_info.clevis:
+            if pool_info.clevis[0] == "tang":
+                try:
+                    data = json.loads(pool_info.clevis[1])
+                except json.JSONDecodeError:
+                    log.warning("failed to decode tang configuration for stratis pool %s",
+                                self.device.name)
                     clevis_info = StratisClevisConfig(pin=pool_info.clevis[0])
+                else:
+                    clevis_info = StratisClevisConfig(pin=pool_info.clevis[0],
+                                                      tang_url=data["url"],
+                                                      tang_thumbprint=data["thp"])
             else:
-                clevis_info = None
+                clevis_info = StratisClevisConfig(pin=pool_info.clevis[0])
+        else:
+            clevis_info = None
 
-            pool_device = StratisPoolDevice(pool_info.name,
-                                            parents=[self.device],
-                                            uuid=pool_info.uuid,
-                                            size=pool_info.physical_size,
-                                            exists=True,
-                                            encrypted=pool_info.encrypted,
-                                            clevis=clevis_info)
-            self._devicetree._add_device(pool_device)
+        pool_device = StratisPoolDevice(pool_info.name,
+                                        parents=[self.device],
+                                        uuid=pool_info.uuid,
+                                        size=pool_info.physical_size,
+                                        exists=True,
+                                        encrypted=pool_info.encrypted,
+                                        clevis=clevis_info)
+        self._devicetree._add_device(pool_device)
+        return pool_device
 
+    def _add_filesystems(self, pool_uuid):
         # now add filesystems on this pool
         for fs_info in stratis_info.filesystems.values():
-            if fs_info.pool_uuid != pool_info.uuid:
+            if fs_info.pool_uuid != pool_uuid:
+                print(fs_info.pool_uuid, pool_uuid)
                 continue
 
             fs_device = self._devicetree.get_device_by_uuid(fs_info.uuid)
@@ -175,6 +165,40 @@ class StratisFormatPopulator(FormatPopulator):
 
             self._devicetree.handle_format(udev_info, fs_device)
             fs_device.original_format = copy.deepcopy(fs_device.format)
+
+    def _add_pool_device(self):
+        bd_info = stratis_info.blockdevs.get(self.device.format.uuid)
+        if not bd_info:
+            # possibly stopped pool
+            pool_info = next((pool_info for pool_info in stratis_info.stopped_pools if self.device.path in pool_info.devices), None)
+            if pool_info:
+                pool_device = self._add_stopped_pool_device(pool_info)
+            else:
+                # no stopped pool info, no bd info -> nothing we can do
+                return
+        else:
+            if not bd_info.pool_name:
+                log.info("stratis block device %s has no pool", self.device.name)
+                return
+
+            pool_device = self._devicetree.get_device_by_uuid(bd_info.pool_uuid)
+            if pool_device and self.device not in pool_device.parents:
+                pool_device.parents.append(self.device)
+                callbacks.parent_added(device=pool_device, parent=self.device)
+                return
+            elif pool_device is None:
+                # started pool
+                pool_info = stratis_info.pools.get(bd_info.pool_uuid)
+                if pool_info:
+                    pool_device = self._add_started_pool_device(pool_info)
+
+        if not pool_device:
+            log.warning("Failed to get information about Stratis pool %s (%s)",
+                        bd_info.pool_name, bd_info.pool_uuid)
+            return
+
+        # now add the filesystems
+        self._add_filesystems(pool_device.uuid)
 
     def run(self):
         log_method_call(self, pv=self.device.name)

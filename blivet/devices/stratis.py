@@ -93,6 +93,12 @@ class StratisPoolDevice(ContainerDevice):
         return sum(parent.size for parent in self.parents)
 
     @property
+    def status(self):
+        if not self.exists or not self.uuid:
+            return False
+        return self.uuid not in [pool.uuid for pool in stratis_info.stopped_pools]
+
+    @property
     def _physical_size(self):
         if self.exists:
             pool_info = stratis_info.get_pool_info(self.name)
@@ -150,6 +156,26 @@ class StratisPoolDevice(ContainerDevice):
         return bool((self.__passphrase not in ["", None]) or
                     (self._key_file and os.access(self._key_file, os.R_OK)))
 
+    def _teardown(self, recursive=None):
+        """ Close, or tear down, a device. """
+        log_method_call(self, self.name, status=self.status,
+                        controllable=self.controllable)
+        devicelibs.stratis.stop_pool(self.uuid)
+
+    def _setup(self, orig=False):
+        if self.encrypted and not self.has_key and not self._clevis:
+            raise StratisError("Passphrase or key file must be set for encrypted Stratis pool setup")
+
+        if self.encrypted:
+            if self.has_key:
+                devicelibs.stratis.unlock_pool(self.uuid, method="keyring",
+                                               passphrase=self.__passphrase,
+                                               keyfile=self.key_file)
+            else:
+                devicelibs.stratis.unlock_pool(self.uuid, method="clevis")
+        else:
+            devicelibs.stratis.start_pool(self.uuid)
+
     def _pre_create(self):
         super(StratisPoolDevice, self)._pre_create()
 
@@ -168,7 +194,8 @@ class StratisPoolDevice(ContainerDevice):
                                        clevis=self._clevis)
 
     def _post_create(self):
-        super(StratisPoolDevice, self)._post_create()
+        self.exists = True
+        self.update_sysfs_path()
         self.format.exists = True
 
         pool_info = stratis_info.get_pool_info(self.name)
@@ -205,10 +232,27 @@ class StratisPoolDevice(ContainerDevice):
     def _remove(self, member):
         raise DeviceError("Removing members from a Stratis pool is not supported")
 
+    def _pre_destroy(self):
+        """ Preparation and precondition checking for device destruction.
+            Note: This functions overrides StorageDevice._pre_destroy to avoid
+                  calling teardown() because stopped stratis pools cannot be
+                  removed.
+        """
+        if not self.exists:
+            raise DeviceError("device has not been created")
+
+        if not self.isleaf:
+            raise DeviceError("Cannot destroy non-leaf device %s" % self.name)
+
     def _destroy(self):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
-        devicelibs.stratis.remove_pool(self.uuid)
+        if self.status:
+            devicelibs.stratis.remove_pool(self.uuid)
+        else:
+            # stopped pool cannot be removed so if someone wants to do that, the destroy
+            # action here will be noop and pool will be removed by removing the block devices
+            log.info("Ignoring destroy action for stopped stratis pool %s", self.name)
 
     def add_hook(self, new=True):
         super(StratisPoolDevice, self).add_hook(new=new)

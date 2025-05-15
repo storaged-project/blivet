@@ -125,12 +125,9 @@ class StratisBlockdev(DeviceFormat):
         if not self.has_key and not self.locked_pool_clevis_pin:
             raise StratisError("No passphrase/key file for the locked Stratis pool")
 
-        if not self.locked_pool_key_desc and not self.locked_pool_clevis_pin:
-            raise StratisError("No key description for the locked Stratis pool")
-
         if self.has_key:
-            stratis.set_key(self.locked_pool_key_desc, self.__passphrase, self.key_file)
-            stratis.unlock_pool(self.pool_uuid, method="keyring")
+            stratis.unlock_pool(self.pool_uuid, method="keyring", desc=self.locked_pool_key_desc,
+                                passphrase=self.__passphrase, keyfile=self.key_file)
         else:
             stratis.unlock_pool(self.pool_uuid, method="clevis")
 
