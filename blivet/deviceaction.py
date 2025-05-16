@@ -734,12 +734,13 @@ class ActionDestroyFormat(DeviceAction):
     obj = ACTION_OBJECT_FORMAT
     type_desc_str = N_("destroy format")
 
-    def __init__(self, device):
+    def __init__(self, device, optional=False):
         if device.format_immutable:
             raise ValueError("this device's formatting cannot be modified")
 
         DeviceAction.__init__(self, device)
         self.orig_format = self.device.format
+        self.optional = optional
 
         if not device.format.destroyable:
             raise ValueError("resource to destroy this format type %s is unavailable" % device.format.type)
@@ -758,21 +759,29 @@ class ActionDestroyFormat(DeviceAction):
         """ wipe the filesystem signature from the device """
         # remove any flag if set
         super(ActionDestroyFormat, self).execute(callbacks=callbacks)
-        status = self.device.status
-        self.device.setup(orig=True)
-        if hasattr(self.device, 'set_rw'):
-            self.device.set_rw()
 
-        self.format.destroy()
-        udev.settle()
-        if isinstance(self.device, PartitionDevice) and self.device.disklabel_supported:
-            if self.format.parted_flag:
-                self.device.unset_flag(self.format.parted_flag)
-            self.device.disk.original_format.commit_to_disk()
+        try:
+            status = self.device.status
+            self.device.setup(orig=True)
+            if hasattr(self.device, 'set_rw'):
+                self.device.set_rw()
+
+            self.format.destroy()
             udev.settle()
+            if isinstance(self.device, PartitionDevice) and self.device.disklabel_supported:
+                if self.format.parted_flag:
+                    self.device.unset_flag(self.format.parted_flag)
+                self.device.disk.original_format.commit_to_disk()
+                udev.settle()
 
-        if not status:
-            self.device.teardown()
+            if not status:
+                self.device.teardown()
+        except Exception as e:  # pylint: disable=broad-except
+            if self.optional:
+                log.error("Ignoring error when executing optional action: Failed to destroy format on %s: %s.",
+                          self.device.name, str(e))
+            else:
+                raise
 
     def cancel(self):
         if not self._applied:
