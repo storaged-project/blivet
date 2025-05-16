@@ -264,7 +264,7 @@ class DeviceTreeBase(object):
                 if actions:
                     if leaf.format.exists and not leaf.protected and \
                        not leaf.format_immutable:
-                        self.actions.add(ActionDestroyFormat(leaf))
+                        self.actions.add(ActionDestroyFormat(leaf, optional=True))
 
                     self.actions.add(ActionDestroyDevice(leaf))
                 else:
@@ -276,7 +276,7 @@ class DeviceTreeBase(object):
 
         if not device.format_immutable:
             if actions:
-                self.actions.add(ActionDestroyFormat(device))
+                self.actions.add(ActionDestroyFormat(device, optional=True))
             else:
                 device.format = None
 
