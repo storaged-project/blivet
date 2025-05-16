@@ -897,7 +897,7 @@ class Blivet(object):
         if device.format.exists and device.format.type and \
            not device.format_immutable:
             # schedule destruction of any formatting while we're at it
-            self.devicetree.actions.add(ActionDestroyFormat(device))
+            self.devicetree.actions.add(ActionDestroyFormat(device, optional=True))
 
         action = ActionDestroyDevice(device)
         self.devicetree.actions.add(action)
