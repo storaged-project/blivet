@@ -1160,3 +1160,32 @@ class BlivetLVMConfigureActionsTest(unittest.TestCase):
         with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
             b.do_it()
             lvm.vdo_enable_deduplication.assert_called_with(vg.name, vdopool.lvname)
+
+
+@patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
+@patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
+@patch("blivet.devices.dm.DMDevice._external_dependencies", new=[])
+class BlivetLVMOptionalDestroyTest(unittest.TestCase):
+
+    def test_optional_format_destroy(self, *args):  # pylint: disable=unused-argument
+        b = blivet.Blivet()
+        pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
+                           size=Size("10 GiB"), exists=True)
+        vg = LVMVolumeGroupDevice("testvg", parents=[pv], exists=True)
+        lv = LVMLogicalVolumeDevice("testlv", parents=[vg], exists=True, size=Size("5 GiB"),
+                                    fmt=blivet.formats.get_format("xfs", exists=True))
+
+        for dev in (pv, vg, lv):
+            b.devicetree._add_device(dev)
+
+        b.destroy_device(lv)
+        fmt_ac = b.devicetree.actions.find(action_type="destroy", object_type="format")
+        self.assertTrue(fmt_ac)
+        self.assertTrue(fmt_ac[0].optional)
+
+        with patch("blivet.devices.lvm.blockdev.lvm") as lvm:
+            lvm.lvactivate.side_effect = RuntimeError()
+            try:
+                b.do_it()
+            except RuntimeError:
+                self.fail("Optional format destroy action is not optional")
