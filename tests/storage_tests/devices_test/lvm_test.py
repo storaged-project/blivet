@@ -1,7 +1,9 @@
 import os
 import shutil
 import subprocess
+import tempfile
 from uuid import UUID
+from unittest.mock import patch
 
 import parted
 
@@ -574,3 +576,54 @@ class LVMTestCase(StorageTestCase):
         self.assertEqual(vg_size, vg.size)
         vg_free = self._get_vg_free(vg.name)
         self.assertEqual(vg_free, vg.free_space)
+
+    def _break_thin_pool(self):
+        os.system("vgchange -an %s >/dev/null 2>&1" % self.vgname)
+
+        # changing transaction_id for the pool prevents it from being activated
+        with tempfile.NamedTemporaryFile(prefix="blivet_test") as temp:
+            os.system("vgcfgbackup -f %s %s >/dev/null 2>&1" % (temp.name, self.vgname))
+            os.system("sed -i 's/transaction_id =.*/transaction_id = 123456/' %s >/dev/null 2>&1" % temp.name)
+            os.system("vgcfgrestore -f %s %s --force >/dev/null 2>&1" % (temp.name, self.vgname))
+
+    @patch("blivet.devicelibs.lvm.AUTO_ACTIVATION", False)
+    def test_lvm_broken_thin(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.initialize_disk(disk)
+
+        pv = self.storage.new_partition(size=blivet.size.Size("100 MiB"), fmt_type="lvmpv",
+                                        parents=[disk])
+        self.storage.create_device(pv)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        vg = self.storage.new_vg(name=self.vgname, parents=[pv])
+        self.storage.create_device(vg)
+
+        pool = self.storage.new_lv(thin_pool=True, size=blivet.size.Size("50 MiB"),
+                                   parents=[vg], name="blivetTestPool")
+        self.storage.create_device(pool)
+
+        self.storage.do_it()
+
+        # intentionally break the thin pool created above
+        self._break_thin_pool()
+
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("%s-blivetTestPool" % self.vgname)
+        self.assertIsNotNone(pool)
+
+        # check that the pool cannot be activated
+        try:
+            pool.setup()
+        except Exception:  # pylint: disable=broad-except
+            pass
+        else:
+            self.fail("Failed to break thinpool for tests")
+
+        # verify that the pool can be destroyed even if it cannot be activated
+        self.storage.recursive_remove(pool)
+        self.storage.do_it()
