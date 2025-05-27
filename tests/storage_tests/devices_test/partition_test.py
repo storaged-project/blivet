@@ -5,6 +5,7 @@ import parted
 
 from unittest.mock import patch
 
+import blivet
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
 from blivet.devicelibs.gpt import gpt_part_uuid_for_mountpoint
@@ -12,6 +13,8 @@ from blivet.formats import get_format
 from blivet.flags import flags
 from blivet.size import Size
 from blivet.util import sparsetmpfile
+
+from ..storagetestcase import StorageTestCase
 
 
 class PartitionDeviceTestCase(unittest.TestCase):
@@ -266,3 +269,148 @@ class PartitionDeviceTestCase(unittest.TestCase):
             flags.gpt_discoverable_partitions = True
             self.assertEqual(device.part_type_uuid,
                              gpt_part_uuid_for_mountpoint("/home"))
+
+
+class PartitionTestCase(StorageTestCase):
+
+    def setUp(self):
+        super().setUp()
+
+        disks = [os.path.basename(vdev) for vdev in self.vdevs]
+        self.storage = blivet.Blivet()
+        self.storage.exclusive_disks = disks
+        self.storage.reset()
+
+        # make sure only the targetcli disks are in the devicetree
+        for disk in self.storage.disks:
+            self.assertTrue(disk.path in self.vdevs)
+            self.assertIsNone(disk.format.type)
+            self.assertFalse(disk.children)
+
+    def _clean_up(self):
+        self.storage.reset()
+        for disk in self.storage.disks:
+            if disk.path not in self.vdevs:
+                raise RuntimeError("Disk %s found in devicetree but not in disks created for tests" % disk.name)
+            self.storage.recursive_remove(disk)
+
+        self.storage.do_it()
+
+    def test_msdos_basic(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.format_device(disk, blivet.formats.get_format("disklabel", label_type="msdos"))
+
+        for i in range(4):
+            part = self.storage.new_partition(size=Size("100 MiB"), parents=[disk],
+                                              primary=True)
+            self.storage.create_device(part)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.assertEqual(disk.format.type, "disklabel")
+        self.assertEqual(disk.format.label_type, "msdos")
+        self.assertIsNotNone(disk.format.parted_disk)
+        self.assertIsNotNone(disk.format.parted_device)
+        self.assertEqual(len(disk.format.partitions), 4)
+        self.assertEqual(len(disk.format.primary_partitions), 4)
+        self.assertEqual(len(disk.children), 4)
+
+        for i in range(4):
+            part = self.storage.devicetree.get_device_by_path(self.vdevs[0] + str(i + 1))
+            self.assertIsNotNone(part)
+            self.assertEqual(part.type, "partition")
+            self.assertEqual(part.disk, disk)
+            self.assertEqual(part.size, Size("100 MiB"))
+            self.assertTrue(part.is_primary)
+            self.assertFalse(part.is_extended)
+            self.assertFalse(part.is_logical)
+            self.assertIsNotNone(part.parted_partition)
+
+    def test_msdos_extended(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.format_device(disk, blivet.formats.get_format("disklabel", label_type="msdos"))
+
+        part = self.storage.new_partition(size=Size("100 MiB"), parents=[disk])
+        self.storage.create_device(part)
+
+        part = self.storage.new_partition(size=Size("1 GiB"), parents=[disk],
+                                          part_type=parted.PARTITION_EXTENDED)
+        self.storage.create_device(part)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        for i in range(4):
+            part = self.storage.new_partition(size=Size("100 MiB"), parents=[disk],
+                                              part_type=parted.PARTITION_LOGICAL)
+            self.storage.create_device(part)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.assertEqual(disk.format.type, "disklabel")
+        self.assertEqual(disk.format.label_type, "msdos")
+        self.assertIsNotNone(disk.format.parted_disk)
+        self.assertIsNotNone(disk.format.parted_device)
+        self.assertEqual(len(disk.format.partitions), 6)
+        self.assertEqual(len(disk.format.primary_partitions), 1)
+        self.assertEqual(len(disk.children), 6)
+
+        for i in range(4, 8):
+            part = self.storage.devicetree.get_device_by_path(self.vdevs[0] + str(i + 1))
+            self.assertIsNotNone(part)
+            self.assertEqual(part.type, "partition")
+            self.assertEqual(part.disk, disk)
+            self.assertEqual(part.size, Size("100 MiB"))
+            self.assertFalse(part.is_primary)
+            self.assertFalse(part.is_extended)
+            self.assertTrue(part.is_logical)
+            self.assertIsNotNone(part.parted_partition)
+
+    def test_gpt_basic(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.format_device(disk, blivet.formats.get_format("disklabel", label_type="gpt"))
+
+        for i in range(4):
+            part = self.storage.new_partition(size=Size("100 MiB"), parents=[disk],)
+            self.storage.create_device(part)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.assertEqual(disk.format.type, "disklabel")
+        self.assertEqual(disk.format.label_type, "gpt")
+        self.assertIsNotNone(disk.format.parted_disk)
+        self.assertIsNotNone(disk.format.parted_device)
+        self.assertEqual(len(disk.format.partitions), 4)
+        self.assertEqual(len(disk.format.primary_partitions), 4)
+        self.assertEqual(len(disk.children), 4)
+
+        for i in range(4):
+            part = self.storage.devicetree.get_device_by_path(self.vdevs[0] + str(i + 1))
+            self.assertIsNotNone(part)
+            self.assertEqual(part.type, "partition")
+            self.assertEqual(part.disk, disk)
+            self.assertEqual(part.size, Size("100 MiB"))
+            self.assertTrue(part.is_primary)
+            self.assertFalse(part.is_extended)
+            self.assertFalse(part.is_logical)
+            self.assertIsNotNone(part.parted_partition)
