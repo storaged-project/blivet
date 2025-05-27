@@ -1087,7 +1087,12 @@ def device_is_nvme_namespace(info):
     if not info.get("SYS_PATH"):
         return False
 
-    device = pyudev.Devices.from_sys_path(global_udev, info.get("SYS_PATH"))
+    try:
+        device = pyudev.Devices.from_sys_path(global_udev, info.get("SYS_PATH"))
+    except pyudev.DeviceNotFoundError as e:
+        log.error(e)
+        return False
+
     while device:
         if device.subsystem and device.subsystem.startswith("nvme"):
             return True
