@@ -1,6 +1,7 @@
 import os
 import unittest
 from uuid import UUID
+import blivet.deviceaction
 import parted
 
 from unittest.mock import patch
@@ -414,3 +415,121 @@ class PartitionTestCase(StorageTestCase):
             self.assertFalse(part.is_extended)
             self.assertFalse(part.is_logical)
             self.assertIsNotNone(part.parted_partition)
+
+    def _partition_wipe_check(self):
+        part1 = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "1")
+        self.assertIsNotNone(part1)
+        self.assertIsNone(part1.format.type)
+
+        out = blivet.util.capture_output(["blkid", "-p", "-sTYPE", "-ovalue", self.vdevs[0] + "1"])
+        self.assertEqual(out.strip(), "")
+
+        part2 = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "2")
+        self.assertIsNotNone(part2)
+        self.assertEqual(part2.format.type, "ext4")
+
+        try:
+            part2.format.do_check()
+        except blivet.errors.FSError as e:
+            self.fail("Partition wipe corrupted filesystem on an adjacent partition: %s" % str(e))
+
+        out = blivet.util.capture_output(["blkid", "-p", "-sTYPE", "-ovalue", self.vdevs[0] + "2"])
+        self.assertEqual(out.strip(), "ext4")
+
+    def test_partition_wipe_ext(self):
+        """ Check that any stray filesystem metadata are removed before creating a partition """
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.format_device(disk, blivet.formats.get_format("disklabel", label_type="gpt"))
+
+        # create two partitions with ext4
+        part1 = self.storage.new_partition(size=Size("100 MiB"), parents=[disk],
+                                           fmt=blivet.formats.get_format("ext4"))
+        self.storage.create_device(part1)
+
+        part2 = self.storage.new_partition(size=Size("1 MiB"), parents=[disk], grow=True,
+                                           fmt=blivet.formats.get_format("ext4"))
+        self.storage.create_device(part2)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # remove the first partition (only the partition without removing the format)
+        part1 = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "1")
+        ac = blivet.deviceaction.ActionDestroyDevice(part1)
+        self.storage.devicetree.actions.add(ac)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # create the first partition again (without ext4)
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        part1 = self.storage.new_partition(size=Size("100 MiB"), parents=[disk])
+        self.storage.create_device(part1)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        # XXX PartitionDevice._post_create calls wipefs on the partition, we want to check that
+        # the _pre_create dd wipe works so we need to skip the _post_create wipefs call
+        part1._post_create = lambda: None
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # make sure the ext4 signature is not present on part1 (and untouched on part2)
+        self._partition_wipe_check()
+
+    def test_partition_wipe_mdraid(self):
+        """ Check that any stray RAID metadata are removed before creating a partition """
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.format_device(disk, blivet.formats.get_format("disklabel", label_type="gpt"))
+
+        # create two partitions, one empty, one with ext4
+        part1 = self.storage.new_partition(size=Size("100 MiB"), parents=[disk])
+        self.storage.create_device(part1)
+
+        part2 = self.storage.new_partition(size=Size("1 MiB"), parents=[disk], grow=True,
+                                           fmt=blivet.formats.get_format("ext4"))
+        self.storage.create_device(part2)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # create MD RAID with metadata 1.0 on the first partition
+        ret = blivet.util.run_program(["mdadm", "--create", "blivetMDTest", "--level=linear",
+                                       "--metadata=1.0", "--raid-devices=1", "--force", part1.path])
+        self.assertEqual(ret, 0, "Failed to create RAID array for partition wipe test")
+        ret = blivet.util.run_program(["mdadm", "--stop", "/dev/md/blivetMDTest"])
+        self.assertEqual(ret, 0, "Failed to create RAID array for partition wipe test")
+
+        # now remove the partition without removing the array first
+        part1 = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "1")
+        ac = blivet.deviceaction.ActionDestroyDevice(part1)
+        self.storage.devicetree.actions.add(ac)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # create the first partition again (without format)
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        part1 = self.storage.new_partition(size=Size("100 MiB"), parents=[disk])
+        self.storage.create_device(part1)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        # XXX PartitionDevice._post_create calls wipefs on the partition, we want to check that
+        # the _pre_create dd wipe works so we need to skip the _post_create wipefs call
+        part1._post_create = lambda: None
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # make sure the mdmember signature is not present on part1 (and ext4 is untouched on part2)
+        self._partition_wipe_check()
