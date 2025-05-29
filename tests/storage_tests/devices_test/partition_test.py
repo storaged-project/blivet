@@ -4,6 +4,7 @@ from collections import namedtuple
 import os
 import six
 import unittest
+import blivet.deviceaction
 import parted
 
 try:
@@ -11,11 +12,14 @@ try:
 except ImportError:
     from mock import patch
 
+import blivet
 from blivet.devices import DiskFile
 from blivet.devices import PartitionDevice
 from blivet.formats import get_format
 from blivet.size import Size
 from blivet.util import sparsetmpfile
+
+from ..storagetestcase import StorageTestCase
 
 
 Weighted = namedtuple("Weighted", ["fstype", "mountpoint", "true_funcs", "weight"])
@@ -218,3 +222,266 @@ class PartitionDeviceTestCase(unittest.TestCase):
             end_free = (extended_end - logical_end) * sector_size
             self.assertEqual(extended_device.min_size,
                              extended_device.align_target_size(extended_device.current_size - end_free))
+
+
+class PartitionTestCase(StorageTestCase):
+
+    def setUp(self):
+        super().setUp()
+
+        disks = [os.path.basename(vdev) for vdev in self.vdevs]
+        self.storage = blivet.Blivet()
+        self.storage.exclusive_disks = disks
+        self.storage.reset()
+
+        # make sure only the targetcli disks are in the devicetree
+        for disk in self.storage.disks:
+            self.assertTrue(disk.path in self.vdevs)
+            self.assertIsNone(disk.format.type)
+            self.assertFalse(disk.children)
+
+    def _clean_up(self):
+        self.storage.reset()
+        for disk in self.storage.disks:
+            if disk.path not in self.vdevs:
+                raise RuntimeError("Disk %s found in devicetree but not in disks created for tests" % disk.name)
+            self.storage.recursive_remove(disk)
+
+        self.storage.do_it()
+
+    def test_msdos_basic(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.format_device(disk, blivet.formats.get_format("disklabel", label_type="msdos"))
+
+        for i in range(4):
+            part = self.storage.new_partition(size=Size("100 MiB"), parents=[disk],
+                                              primary=True)
+            self.storage.create_device(part)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.assertEqual(disk.format.type, "disklabel")
+        self.assertEqual(disk.format.label_type, "msdos")
+        self.assertIsNotNone(disk.format.parted_disk)
+        self.assertIsNotNone(disk.format.parted_device)
+        self.assertEqual(len(disk.format.partitions), 4)
+        self.assertEqual(len(disk.format.primary_partitions), 4)
+        self.assertEqual(len(disk.children), 4)
+
+        for i in range(4):
+            part = self.storage.devicetree.get_device_by_path(self.vdevs[0] + str(i + 1))
+            self.assertIsNotNone(part)
+            self.assertEqual(part.type, "partition")
+            self.assertEqual(part.disk, disk)
+            self.assertEqual(part.size, Size("100 MiB"))
+            self.assertTrue(part.is_primary)
+            self.assertFalse(part.is_extended)
+            self.assertFalse(part.is_logical)
+            self.assertIsNotNone(part.parted_partition)
+
+    def test_msdos_extended(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.format_device(disk, blivet.formats.get_format("disklabel", label_type="msdos"))
+
+        part = self.storage.new_partition(size=Size("100 MiB"), parents=[disk])
+        self.storage.create_device(part)
+
+        part = self.storage.new_partition(size=Size("1 GiB"), parents=[disk],
+                                          part_type=parted.PARTITION_EXTENDED)
+        self.storage.create_device(part)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        for i in range(4):
+            part = self.storage.new_partition(size=Size("100 MiB"), parents=[disk],
+                                              part_type=parted.PARTITION_LOGICAL)
+            self.storage.create_device(part)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.assertEqual(disk.format.type, "disklabel")
+        self.assertEqual(disk.format.label_type, "msdos")
+        self.assertIsNotNone(disk.format.parted_disk)
+        self.assertIsNotNone(disk.format.parted_device)
+        self.assertEqual(len(disk.format.partitions), 6)
+        self.assertEqual(len(disk.format.primary_partitions), 1)
+        self.assertEqual(len(disk.children), 6)
+
+        for i in range(4, 8):
+            part = self.storage.devicetree.get_device_by_path(self.vdevs[0] + str(i + 1))
+            self.assertIsNotNone(part)
+            self.assertEqual(part.type, "partition")
+            self.assertEqual(part.disk, disk)
+            self.assertEqual(part.size, Size("100 MiB"))
+            self.assertFalse(part.is_primary)
+            self.assertFalse(part.is_extended)
+            self.assertTrue(part.is_logical)
+            self.assertIsNotNone(part.parted_partition)
+
+    def test_gpt_basic(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.format_device(disk, blivet.formats.get_format("disklabel", label_type="gpt"))
+
+        for i in range(4):
+            part = self.storage.new_partition(size=Size("100 MiB"), parents=[disk],)
+            self.storage.create_device(part)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.assertEqual(disk.format.type, "disklabel")
+        self.assertEqual(disk.format.label_type, "gpt")
+        self.assertIsNotNone(disk.format.parted_disk)
+        self.assertIsNotNone(disk.format.parted_device)
+        self.assertEqual(len(disk.format.partitions), 4)
+        self.assertEqual(len(disk.format.primary_partitions), 4)
+        self.assertEqual(len(disk.children), 4)
+
+        for i in range(4):
+            part = self.storage.devicetree.get_device_by_path(self.vdevs[0] + str(i + 1))
+            self.assertIsNotNone(part)
+            self.assertEqual(part.type, "partition")
+            self.assertEqual(part.disk, disk)
+            self.assertEqual(part.size, Size("100 MiB"))
+            self.assertTrue(part.is_primary)
+            self.assertFalse(part.is_extended)
+            self.assertFalse(part.is_logical)
+            self.assertIsNotNone(part.parted_partition)
+
+    def _partition_wipe_check(self):
+        part1 = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "1")
+        self.assertIsNotNone(part1)
+        self.assertIsNone(part1.format.type)
+
+        out = blivet.util.capture_output(["blkid", "-p", "-sTYPE", "-ovalue", self.vdevs[0] + "1"])
+        self.assertEqual(out.strip(), "")
+
+        part2 = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "2")
+        self.assertIsNotNone(part2)
+        self.assertEqual(part2.format.type, "ext4")
+
+        try:
+            part2.format.do_check()
+        except blivet.errors.FSError as e:
+            self.fail("Partition wipe corrupted filesystem on an adjacent partition: %s" % str(e))
+
+        out = blivet.util.capture_output(["blkid", "-p", "-sTYPE", "-ovalue", self.vdevs[0] + "2"])
+        self.assertEqual(out.strip(), "ext4")
+
+    def test_partition_wipe_ext(self):
+        """ Check that any stray filesystem metadata are removed before creating a partition """
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.format_device(disk, blivet.formats.get_format("disklabel", label_type="gpt"))
+
+        # create two partitions with ext4
+        part1 = self.storage.new_partition(size=Size("100 MiB"), parents=[disk],
+                                           fmt=blivet.formats.get_format("ext4"))
+        self.storage.create_device(part1)
+
+        part2 = self.storage.new_partition(size=Size("1 MiB"), parents=[disk], grow=True,
+                                           fmt=blivet.formats.get_format("ext4"))
+        self.storage.create_device(part2)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # remove the first partition (only the partition without removing the format)
+        part1 = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "1")
+        ac = blivet.deviceaction.ActionDestroyDevice(part1)
+        self.storage.devicetree.actions.add(ac)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # create the first partition again (without ext4)
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        part1 = self.storage.new_partition(size=Size("100 MiB"), parents=[disk])
+        self.storage.create_device(part1)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        # XXX PartitionDevice._post_create calls wipefs on the partition, we want to check that
+        # the _pre_create dd wipe works so we need to skip the _post_create wipefs call
+        part1._post_create = lambda: None
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # make sure the ext4 signature is not present on part1 (and untouched on part2)
+        self._partition_wipe_check()
+
+    def test_partition_wipe_mdraid(self):
+        """ Check that any stray RAID metadata are removed before creating a partition """
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.format_device(disk, blivet.formats.get_format("disklabel", label_type="gpt"))
+
+        # create two partitions, one empty, one with ext4
+        part1 = self.storage.new_partition(size=Size("100 MiB"), parents=[disk])
+        self.storage.create_device(part1)
+
+        part2 = self.storage.new_partition(size=Size("1 MiB"), parents=[disk], grow=True,
+                                           fmt=blivet.formats.get_format("ext4"))
+        self.storage.create_device(part2)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # create MD RAID with metadata 1.0 on the first partition
+        ret = blivet.util.run_program(["mdadm", "--create", "blivetMDTest", "--level=linear",
+                                       "--metadata=1.0", "--raid-devices=1", "--force", part1.path])
+        self.assertEqual(ret, 0, "Failed to create RAID array for partition wipe test")
+        ret = blivet.util.run_program(["mdadm", "--stop", "/dev/md/blivetMDTest"])
+        self.assertEqual(ret, 0, "Failed to create RAID array for partition wipe test")
+
+        # now remove the partition without removing the array first
+        part1 = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "1")
+        ac = blivet.deviceaction.ActionDestroyDevice(part1)
+        self.storage.devicetree.actions.add(ac)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # create the first partition again (without format)
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        part1 = self.storage.new_partition(size=Size("100 MiB"), parents=[disk])
+        self.storage.create_device(part1)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        # XXX PartitionDevice._post_create calls wipefs on the partition, we want to check that
+        # the _pre_create dd wipe works so we need to skip the _post_create wipefs call
+        part1._post_create = lambda: None
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # make sure the mdmember signature is not present on part1 (and ext4 is untouched on part2)
+        self._partition_wipe_check()

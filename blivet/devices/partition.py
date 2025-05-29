@@ -599,7 +599,7 @@ class PartitionDevice(StorageDevice):
         """ Wipe the partition metadata.
 
             Assumes that the partition metadata is located at the start
-            of the partition and occupies no more than 1 MiB.
+            and end of the partition and occupies no more than 1 MiB.
 
             Erases in block increments. Erases the smallest number of blocks
             such that at least 1 MiB is erased or the whole partition is
@@ -622,6 +622,24 @@ class PartitionDevice(StorageDevice):
         device = self.parted_partition.geometry.device.path
         cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%d" % bs,
                "seek=%d" % start, "count=%d" % count]
+        try:
+            util.run_program(cmd)
+        except OSError as e:
+            log.error(str(e))
+        finally:
+            # If a udev device is created with the watch option, then
+            # a change uevent is synthesized and we need to wait for
+            # things to settle.
+            udev.settle()
+
+        if count >= part_len:
+            # very small partition, we wiped it completely already
+            return
+
+        # now do the end of the partition as well (RAID 1.0 metadata)
+        end = self.parted_partition.geometry.end
+        cmd = ["dd", "if=/dev/zero", "of=%s" % device, "bs=%d" % bs,
+               "seek=%d" % (end - count), "count=%d" % count]
         try:
             util.run_program(cmd)
         except OSError as e:
