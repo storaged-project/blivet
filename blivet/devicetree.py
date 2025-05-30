@@ -267,7 +267,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
             for leaf in leaves:
                 if actions:
                     if leaf.format.exists and not leaf.protected and \
-                       not leaf.format_immutable:
+                       not leaf.format_immutable and leaf.format.type:
                         self.actions.add(ActionDestroyFormat(leaf, optional=True))
 
                     self.actions.add(ActionDestroyDevice(leaf))
