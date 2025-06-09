@@ -225,7 +225,7 @@ class BlockDevMethod(Method):
             try:
                 self._tech_info.check_fn(tech, mode)
             except GLib.GError as e:
-                errors.append("%s: %s" % (tech.value_name, e.message))
+                errors.append("%s" % e.message)
         return errors
 
     def availability_errors(self, resource):
