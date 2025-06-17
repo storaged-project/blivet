@@ -49,13 +49,26 @@ python module.
 %package -n python3-%{realname}
 Summary: A python3 package for examining and modifying storage configuration.
 
-%{?python_provide:%python_provide python3-%{realname}}
-
 BuildRequires: gettext
 BuildRequires: python3-devel
 BuildRequires: python3-setuptools
 
-Requires: python3
+# For tests
+BuildRequires: python3-pyudev >= %{pyudevver}
+BuildRequires: parted >= %{partedver}
+BuildRequires: python3-pyparted >= %{pypartedver}
+BuildRequires: libselinux-python3
+BuildRequires: python3-libmount
+BuildRequires: python3-blockdev
+BuildRequires: python3-bytesize >= %{libbytesizever}
+BuildRequires: util-linux >= %{utillinuxver}
+BuildRequires: lsof
+BuildRequires: python3-gobject-base
+BuildRequires: systemd-udev
+BuildRequires: libblockdev-plugins-all
+BuildRequires: python3-dbus
+BuildRequires: python3-pyyaml
+
 Requires: python3-pyudev >= %{pyudevver}
 Requires: parted >= %{partedver}
 Requires: python3-pyparted >= %{pypartedver}
@@ -100,6 +113,9 @@ make
 make DESTDIR=%{buildroot} install
 
 %find_lang %{realname}
+
+%check
+%{py3_test_envvars} %{python3} tests/run_tests.py unit_tests
 
 %files -n %{realname}-data -f %{realname}.lang
 %{_sysconfdir}/dbus-1/system.d/*

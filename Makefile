@@ -148,7 +148,7 @@ local: po-pull
 	@make -B ChangeLog
 	$(PYTHON) setup.py -q sdist --dist-dir . --mode normal
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
-	git ls-files tests/ | tar -T- -czf $(PKGNAME)-$(VERSION)-tests.tar.gz
+	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ HEAD tests/ | gzip -9 > $(PKGNAME)-$(VERSION)-tests.tar.gz
 	@echo "The test archive is in $(PKGNAME)-$(VERSION)-tests.tar.gz"
 
 rpmlog:
