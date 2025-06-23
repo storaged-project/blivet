@@ -23,8 +23,7 @@ import dbus
 
 from .. import Blivet
 from ..callbacks import callbacks
-from ..devicefactory import DEVICE_TYPE_PARTITION, DEVICE_TYPE_LVM, DEVICE_TYPE_LVM_THINP
-from ..devicefactory import DEVICE_TYPE_MD, DEVICE_TYPE_BTRFS
+from ..devicefactory import DEVICE_TYPES
 from ..errors import StorageError
 from ..size import Size
 from ..util import ObjectID
@@ -79,11 +78,11 @@ class DBusBlivet(DBusObject):
     @property
     def properties(self):
         props = {"Devices": self.ListDevices(),
-                 "DEVICE_TYPE_LVM": DEVICE_TYPE_LVM,
-                 "DEVICE_TYPE_LVM_THINP": DEVICE_TYPE_LVM_THINP,
-                 "DEVICE_TYPE_PARTITION": DEVICE_TYPE_PARTITION,
-                 "DEVICE_TYPE_MD": DEVICE_TYPE_MD,
-                 "DEVICE_TYPE_BTRFS": DEVICE_TYPE_BTRFS}
+                 "DEVICE_TYPES.LVM": DEVICE_TYPES.LVM,
+                 "DEVICE_TYPES.LVM_THINP": DEVICE_TYPES.LVM_THINP,
+                 "DEVICE_TYPES.PARTITION": DEVICE_TYPES.PARTITION,
+                 "DEVICE_TYPES.MD": DEVICE_TYPES.MD,
+                 "DEVICE_TYPES.BTRFS": DEVICE_TYPES.BTRFS}
         return props
 
     def _device_removed(self, device, keep=True):
