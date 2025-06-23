@@ -20,6 +20,8 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
+from enum import Enum, unique
+
 from .storage_log import log_method_call
 from .errors import DeviceFactoryError, StorageError
 from .devices import BTRFSDevice, DiskDevice
@@ -52,14 +54,27 @@ log = logging.getLogger("blivet")
 SIZE_POLICY_MAX = -1
 SIZE_POLICY_AUTO = 0
 
-DEVICE_TYPE_LVM = 0
-DEVICE_TYPE_MD = 1
-DEVICE_TYPE_PARTITION = 2
-DEVICE_TYPE_BTRFS = 3
-DEVICE_TYPE_DISK = 4
-DEVICE_TYPE_LVM_THINP = 5
-DEVICE_TYPE_LVM_VDO = 6
-DEVICE_TYPE_STRATIS = 7
+
+@unique
+class DEVICE_TYPES(Enum):
+    """
+    Types of devices that blivet is aware of.
+    """
+
+    LVM = 0
+    MD = 1
+    PARTITION = 2
+    BTRFS = 3
+    DISK = 4
+    LVM_THINP = 5
+    LVM_VDO = 6
+    STRATIS = 7
+
+
+# Backwards compat. Device types could only be accessed via these individual
+# variable names through 3.12.1
+for dt_pair in DEVICE_TYPES:
+    globals()['DEVICE_TYPE_%s' % dt_pair.name] = dt_pair.value
 
 
 def is_supported_device_type(device_type):
