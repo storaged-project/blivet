@@ -27,7 +27,13 @@ class BlivetLintConfig(CensorshipConfig):
             FalsePositive(r"Instance of '(Action.*Device|Action.*Format|Action.*Member|Device|DeviceAction|DeviceFormat|Event|ObjectID|PartitionDevice|StorageDevice|BTRFS.*Device|LoopDevice)' has no 'id' member$"),
             FalsePositive(r"Instance of 'GError' has no 'message' member"),  # overriding currently broken local pylint disable
             FalsePositive(r"No name '.*' in module 'libmount'"),
-            FalsePositive(r"Unknown option value for 'disable', expected a valid pylint message and got 'possibly-used-before-assignment'")
+            FalsePositive(r"Unknown option value for 'disable', expected a valid pylint message and got 'possibly-used-before-assignment'"),
+            # These are created dynamically so pylint doesn't detect them
+            FalsePositive(r"Module 'blivet.devicefactory' has no 'DEVICE_TYPE_[A-Z_]+' member"),
+            FalsePositive(r"No name 'DEVICE_TYPE_[A-Z_]+' in module 'blivet.devicefactory'"),
+            # Only ignore the undefined variable inside of devicefactory.py, where it
+            # is dynamically defined
+            FalsePositive(r"E0602\(undefined-variable\):blivet/devicefactory.py:.*Undefined variable 'DEVICE_TYPE_[A-Z_]+'"),
         ]
 
     def _files(self):
