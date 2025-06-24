@@ -20,7 +20,7 @@
 # Red Hat Author(s): David Lehman <dlehman@redhat.com>
 #
 
-from enum import Enum, unique
+from enum import IntEnum, unique
 
 from .storage_log import log_method_call
 from .errors import DeviceFactoryError, StorageError
@@ -56,9 +56,18 @@ SIZE_POLICY_AUTO = 0
 
 
 @unique
-class DEVICE_TYPES(Enum):
+class DEVICE_TYPES(IntEnum):
     """
-    Types of devices that blivet is aware of.
+    Types of devices supported by `blivet.devicefactory`
+
+    .. note::
+        Subclasses IntEnum so that code which wants to work with blivet can create their own
+        Enum based on this and have the members be interoperable. (The members of IntEnums
+        compare based on the interger value of the member.  The members of normal Enums compare
+        based on the identity of the member so they are never equal to members of other Enums,
+        even when their values are the same.  The members of IntEnums compare based on the
+        integer `value` of the member so they can compare True with the member of a different
+        Enum's member when they have the same value.
     """
 
     LVM = 0
