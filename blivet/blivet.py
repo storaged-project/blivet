@@ -1013,7 +1013,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
     def safe_device_name(self, name, device_type=None):
         """ Convert a device name to something safe and return that.
 
-            LVM limits lv names to 128 characters. I don't know the limits for
+            LVM limits vgname + lvname to 126 characters. I don't know the limits for
             the other various device types, so I'm going to pick a number so
             that we don't have to have an entire library to determine
             device name limits.
@@ -1030,7 +1030,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         else:
             allowed = "0-9a-zA-Z._-"
 
-        max_len = 96    # No, you don't need longer names than this. Really.
+        max_len = 55    # No, you don't need longer names than this. Really.
         tmp = name.strip()
 
         if "/" not in allowed:
