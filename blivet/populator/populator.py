@@ -470,6 +470,9 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         disklib.update_volume_info()
         self.drop_device_info_cache()
 
+        # force LVM DBusD to refresh its internal state
+        lvm.lvm_dbusd_refresh()
+
         if flags.auto_dev_updates and availability.BLOCKDEV_MPATH_PLUGIN.available:
             try:
                 blockdev.mpath.set_friendly_names(flags.multipath_friendly_names)
