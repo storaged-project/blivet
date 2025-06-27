@@ -36,6 +36,7 @@ import logging
 log = logging.getLogger("blivet")
 
 from . import raid
+from .. import safe_dbus
 from ..size import Size
 from ..i18n import N_
 from ..flags import flags
@@ -284,3 +285,21 @@ def recommend_thpool_chunk_size(thpool_size):
 
 def is_valid_cache_md_size(md_size):
     return md_size >= LVM_CACHE_MIN_METADATA_SIZE and md_size <= LVM_CACHE_MAX_METADATA_SIZE
+
+
+def lvm_dbusd_refresh():
+    lvm_soname = blockdev.get_plugin_soname(blockdev.Plugin.LVM)
+    if 'dbus' not in lvm_soname:
+        return
+
+    try:
+        rc = safe_dbus.call_sync("com.redhat.lvmdbus1",
+                                 "/com/redhat/lvmdbus1/Manager",
+                                 "com.redhat.lvmdbus1.Manager",
+                                 "Refresh",
+                                 None)
+    except safe_dbus.DBusCallError as e:
+        log.error("Exception occurred when calling LVM DBusD refresh: %s", str(e))
+    else:
+        if rc[0] != 0:
+            log.error("Failed to call LVM DBusD refresh: %s", rc)
