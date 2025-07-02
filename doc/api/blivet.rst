@@ -85,13 +85,13 @@ blivet
 
 * :mod:`blivet.devicefactory`
     * :meth:`~blivet.devicefactory.DeviceFactory.configure`
-    * :const:`~blivet.devicefactory.DEVICE_TYPES.MD`
-    * :const:`~blivet.devicefactory.DEVICE_TYPES.PARTITION`
-    * :const:`~blivet.devicefactory.DEVICE_TYPES.BTRFS`
-    * :const:`~blivet.devicefactory.DEVICE_TYPES.DISK`
-    * :const:`~blivet.devicefactory.DEVICE_TYPES.LVM_THINP`
-    * :const:`~blivet.devicefactory.DEVICE_TYPES.LVM_VDO`
-    * :const:`~blivet.devicefactory.DEVICE_TYPES.STRATIS`
+    * :const:`~blivet.devicefactory.DeviceTypes.MD`
+    * :const:`~blivet.devicefactory.DeviceTypes.PARTITION`
+    * :const:`~blivet.devicefactory.DeviceTypes.BTRFS`
+    * :const:`~blivet.devicefactory.DeviceTypes.DISK`
+    * :const:`~blivet.devicefactory.DeviceTypes.LVM_THINP`
+    * :const:`~blivet.devicefactory.DeviceTypes.LVM_VDO`
+    * :const:`~blivet.devicefactory.DeviceTypes.STRATIS`
     * :func:`~blivet.devicefactory.is_supported_device_type`
     * :func:`~blivet.devicefactory.get_device_factory`
     * :func:`~blivet.devicefactory.get_device_type`

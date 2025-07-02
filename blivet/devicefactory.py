@@ -56,7 +56,7 @@ SIZE_POLICY_AUTO = 0
 
 
 @unique
-class DEVICE_TYPES(IntEnum):
+class DeviceTypes(IntEnum):
     """
     Types of devices supported by `blivet.devicefactory`
 
@@ -82,7 +82,7 @@ class DEVICE_TYPES(IntEnum):
 
 # Backwards compat. Device types could only be accessed via these individual
 # variable names through 3.12.1
-for dt_pair in DEVICE_TYPES:
+for dt_pair in DeviceTypes:
     globals()['DEVICE_TYPE_%s' % dt_pair.name] = dt_pair.value
 
 
@@ -96,19 +96,19 @@ def is_supported_device_type(device_type):
         :rtype: bool
     """
     devices = []
-    if device_type == DEVICE_TYPES.BTRFS:
+    if device_type == DeviceTypes.BTRFS:
         devices = [BTRFSDevice]
-    elif device_type == DEVICE_TYPES.DISK:
+    elif device_type == DeviceTypes.DISK:
         devices = [DiskDevice]
-    elif device_type in (DEVICE_TYPES.LVM, DEVICE_TYPES.LVM_THINP):
+    elif device_type in (DeviceTypes.LVM, DeviceTypes.LVM_THINP):
         devices = [LVMLogicalVolumeDevice]
-    elif device_type == DEVICE_TYPES.PARTITION:
+    elif device_type == DeviceTypes.PARTITION:
         devices = [PartitionDevice]
-    elif device_type == DEVICE_TYPES.MD:
+    elif device_type == DeviceTypes.MD:
         devices = [MDRaidArrayDevice]
-    elif device_type == DEVICE_TYPES.LVM_VDO:
+    elif device_type == DeviceTypes.LVM_VDO:
         devices = [LVMLogicalVolumeDevice, LVMVDOPoolMixin, LVMVDOLogicalVolumeMixin]
-    elif device_type == DEVICE_TYPES.STRATIS:
+    elif device_type == DeviceTypes.STRATIS:
         devices = [StratisFilesystemDevice, StratisPoolDevice]
 
     return not any(c.unavailable_type_dependencies() for c in devices)
@@ -124,11 +124,11 @@ def get_supported_raid_levels(device_type):
         :rtype: set of :class:`~.devicelibs.raid.RAIDLevel`
     """
     pkg = None
-    if device_type == DEVICE_TYPES.BTRFS:
+    if device_type == DeviceTypes.BTRFS:
         pkg = btrfs
-    elif device_type in (DEVICE_TYPES.LVM, DEVICE_TYPES.LVM_THINP, DEVICE_TYPES.LVM_VDO):
+    elif device_type in (DeviceTypes.LVM, DeviceTypes.LVM_THINP, DeviceTypes.LVM_VDO):
         pkg = lvm
-    elif device_type == DEVICE_TYPES.MD:
+    elif device_type == DeviceTypes.MD:
         pkg = mdraid
 
     if pkg and all(d.available for d in pkg.EXTERNAL_DEPENDENCIES):
@@ -142,36 +142,36 @@ def get_device_type(device):
     # an empty pool after removing the last thin lv, so the only thing we'll be
     # doing with the factory is adjusting the vg to account for the pool's
     # removal
-    device_types = {"partition": DEVICE_TYPES.PARTITION,
-                    "lvmlv": DEVICE_TYPES.LVM,
-                    "lvmthinlv": DEVICE_TYPES.LVM_THINP,
-                    "lvmthinpool": DEVICE_TYPES.LVM,
-                    "lvmvdolv": DEVICE_TYPES.LVM_VDO,
-                    "lvmvdopool": DEVICE_TYPES.LVM,
-                    "btrfs subvolume": DEVICE_TYPES.BTRFS,
-                    "btrfs volume": DEVICE_TYPES.BTRFS,
-                    "mdarray": DEVICE_TYPES.MD,
-                    "stratis filesystem": DEVICE_TYPES.STRATIS}
+    device_types = {"partition": DeviceTypes.PARTITION,
+                    "lvmlv": DeviceTypes.LVM,
+                    "lvmthinlv": DeviceTypes.LVM_THINP,
+                    "lvmthinpool": DeviceTypes.LVM,
+                    "lvmvdolv": DeviceTypes.LVM_VDO,
+                    "lvmvdopool": DeviceTypes.LVM,
+                    "btrfs subvolume": DeviceTypes.BTRFS,
+                    "btrfs volume": DeviceTypes.BTRFS,
+                    "mdarray": DeviceTypes.MD,
+                    "stratis filesystem": DeviceTypes.STRATIS}
 
     use_dev = device.raw_device
     if use_dev.is_disk:
-        device_type = DEVICE_TYPES.DISK
+        device_type = DeviceTypes.DISK
     else:
         device_type = device_types.get(use_dev.type)
 
     return device_type
 
 
-def get_device_factory(blivet, device_type=DEVICE_TYPES.LVM, **kwargs):
+def get_device_factory(blivet, device_type=DeviceTypes.LVM, **kwargs):
     """ Return a suitable DeviceFactory instance for device_type. """
-    class_table = {DEVICE_TYPES.LVM: LVMFactory,
-                   DEVICE_TYPES.BTRFS: BTRFSFactory,
-                   DEVICE_TYPES.PARTITION: PartitionFactory,
-                   DEVICE_TYPES.MD: MDFactory,
-                   DEVICE_TYPES.LVM_THINP: LVMThinPFactory,
-                   DEVICE_TYPES.LVM_VDO: LVMVDOFactory,
-                   DEVICE_TYPES.DISK: DeviceFactory,
-                   DEVICE_TYPES.STRATIS: StratisFactory}
+    class_table = {DeviceTypes.LVM: LVMFactory,
+                   DeviceTypes.BTRFS: BTRFSFactory,
+                   DeviceTypes.PARTITION: PartitionFactory,
+                   DeviceTypes.MD: MDFactory,
+                   DeviceTypes.LVM_THINP: LVMThinPFactory,
+                   DeviceTypes.LVM_VDO: LVMVDOFactory,
+                   DeviceTypes.DISK: DeviceFactory,
+                   DeviceTypes.STRATIS: StratisFactory}
 
     factory_class = class_table[device_type]
     log.debug("instantiating %s: %s, %s, %s", factory_class,
@@ -1550,7 +1550,7 @@ class LVMFactory(DeviceFactory):
                 mountpoint=self.mountpoint)
 
         lvname = "%s-%s" % (self.vg.name, self.device_name)
-        safe_new_name = self.storage.safe_device_name(lvname, DEVICE_TYPES.LVM)
+        safe_new_name = self.storage.safe_device_name(lvname, DeviceTypes.LVM)
         if self.device.name != safe_new_name:
             if safe_new_name in self.storage.names:
                 log.error("not renaming '%s' to in-use name '%s'",
@@ -2248,7 +2248,7 @@ class StratisFactory(DeviceFactory):
                 mountpoint=self.mountpoint)
 
         fsname = "%s/%s" % (self.pool.name, self.device_name)
-        safe_new_name = self.storage.safe_device_name(fsname, DEVICE_TYPES.STRATIS)
+        safe_new_name = self.storage.safe_device_name(fsname, DeviceTypes.STRATIS)
         if self.device.name != safe_new_name:
             if safe_new_name in self.storage.names:
                 log.error("not renaming '%s' to in-use name '%s'",
