@@ -63,8 +63,14 @@ def get_version_from_cpe(cpe):
          - "cpe:/o:fedoraproject:fedora:39"
          - "cpe:/o:redhat:enterprise_linux:7.3:GA:server
     """
-    # 2nd to 4th fields from e.g. "cpe:/o:fedoraproject:fedora:25" or "cpe:/o:redhat:enterprise_linux:7.3:GA:server"
-    _project, distro, version = tuple(cpe.split(":")[2:5])
+    if cpe.startswith("cpe:2.3"):
+        # version 2.3 of CPE standard
+        # 3th to 6th fields from "cpe:<cpe_version>:<part>:<vendor>:<product>:<version>:<update>:<edition>:"
+        _project, distro, version = tuple(cpe.split(":")[3:6])
+    else:
+        # older version of CPE standard
+        # 2nd to 4th fields from e.g. "cpe:/o:fedoraproject:fedora:25" or "cpe:/o:redhat:enterprise_linux:7.3:GA:server"
+        _project, distro, version = tuple(cpe.split(":")[2:5])
     version = str(int(float(version)))
     return (distro, version)
 
