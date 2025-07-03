@@ -1093,8 +1093,9 @@ def device_is_nvme_namespace(info):
         log.error(e)
         return False
 
-    while device:
-        if device.subsystem and device.subsystem.startswith("nvme"):
+    while device is not None:
+        subsystem = device.properties.get("SUBSYSTEM")
+        if subsystem and subsystem.startswith("nvme"):
             return True
         device = device.parent
 
