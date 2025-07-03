@@ -477,9 +477,9 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
 
         extra = []
         if self.uuid:
-            extra.append(blockdev.ExtraArg("-U", self.uuid))
+            extra.append(blockdev.ExtraArg.new("-U", self.uuid))
         if self.format and self.format._create_options:
-            extra.extend(blockdev.ExtraArg(arg) for arg in shlex.split(self.format._create_options))
+            extra.extend(blockdev.ExtraArg.new(arg, "") for arg in shlex.split(self.format._create_options))
         try:
             blockdev.btrfs.create_volume([d.path for d in self.parents],
                                          label=self.format.label,
