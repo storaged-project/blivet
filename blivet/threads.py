@@ -26,9 +26,8 @@ from types import FunctionType
 from abc import ABCMeta
 
 from .errors import ThreadError
-from .flags import flags
 
-blivet_lock = threading.RLock(verbose=flags.debug_threads)
+blivet_lock = threading.RLock()
 
 
 def _is_main_thread():
