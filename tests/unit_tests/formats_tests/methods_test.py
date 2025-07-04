@@ -288,7 +288,7 @@ class FSMethodsTestCase(FormatMethodsTestCase):
 
     def setUp(self):
         if self.format_class is None:
-            return unittest.skip('abstract base class')
+            self.skipTest('abstract base class')
 
         super(FSMethodsTestCase, self).setUp()
 
@@ -321,23 +321,23 @@ class FSMethodsTestCase(FormatMethodsTestCase):
 
     def test_create(self):
         if self.format_class is None:
-            return unittest.skip('abstract base class')
+            self.skipTest('abstract base class')
         super(FSMethodsTestCase, self).test_create()
 
     def test_destroy(self):
         if self.format_class is None:
-            return unittest.skip('abstract base class')
+            self.skipTest('abstract base class')
         super(FSMethodsTestCase, self).test_destroy()
 
     def test_setup(self):
         if self.format_class is None:
-            return unittest.skip('abstract base class')
+            self.skipTest('abstract base class')
         self.format.mountpoint = "/fake/mountpoint"
         super(FSMethodsTestCase, self).test_setup()
 
     def test_teardown(self):
         if self.format_class is None:
-            return unittest.skip('abstract base class')
+            self.skipTest('abstract base class')
 
         super(FSMethodsTestCase, self).test_teardown()
 

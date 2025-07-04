@@ -237,10 +237,10 @@ class DiskDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
     device_class = DiskDevice
 
     def test_create(self):
-        unittest.skip("disks cannot be created or destroyed")
+        self.skipTest("disks cannot be created or destroyed")
 
     def test_destroy(self):
-        unittest.skip("disks cannot be created or destroyed")
+        self.skipTest("disks cannot be created or destroyed")
 
 
 class PartitionDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
