@@ -85,8 +85,6 @@ class Flags(object):
         # allow duplicate UUIDs in the devicetree
         self.allow_inconsistent_config = True
 
-        self.debug_threads = False
-
         # Assign GPT partition type UUIDs to allow partition
         # auto-discovery according to:
         # https://uapi-group.org/specifications/specs/discoverable_partitions_specification/

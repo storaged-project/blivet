@@ -643,7 +643,7 @@ class ObjectID(object):
        which is unique for the object type. Subclasses can use self.id during
        __init__.
     """
-    _newid_gen = functools.partial(next, itertools.count())
+    _newid_gen = staticmethod(functools.partial(next, itertools.count()))
 
     def __new__(cls, *args, **kwargs):
         # pylint: disable=unused-argument
