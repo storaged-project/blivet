@@ -105,7 +105,7 @@ class DeviceFactoryTestCase(unittest.TestCase):
                              kwargs.get('label'))
 
         # sizes with VDO are special, we have a special check in LVMVDOFactoryTestCase._validate_factory_device
-        if device_type != devicefactory.DEVICE_TYPE_LVM_VDO:
+        if device_type != devicefactory.DeviceTypes.LVM_VDO:
             self.assertLessEqual(device.size, kwargs.get("size"))
             self.assertGreaterEqual(device.size, device.format.min_size)
             if device.format.max_size:
@@ -321,7 +321,7 @@ class DeviceFactoryTestCase(unittest.TestCase):
         factory = devicefactory.get_device_factory(self.b, self.device_type,
                                                    device=device)
         self.assertEqual(factory.size, getattr(device, "req_size", device.size))
-        if self.device_type == devicefactory.DEVICE_TYPE_PARTITION:
+        if self.device_type == devicefactory.DeviceTypes.PARTITION:
             self.assertIn(device.disk, factory.disks)
         else:
             self.assertEqual(factory.disks, device.disks)
@@ -331,7 +331,7 @@ class DeviceFactoryTestCase(unittest.TestCase):
 
 class PartitionFactoryTestCase(DeviceFactoryTestCase):
     device_class = PartitionDevice
-    device_type = devicefactory.DEVICE_TYPE_PARTITION
+    device_type = devicefactory.DeviceTypes.PARTITION
     factory_class = devicefactory.PartitionFactory
 
     @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
@@ -362,7 +362,7 @@ class PartitionFactoryTestCase(DeviceFactoryTestCase):
 
 class LVMFactoryTestCase(DeviceFactoryTestCase):
     device_class = LVMLogicalVolumeDevice
-    device_type = devicefactory.DEVICE_TYPE_LVM
+    device_type = devicefactory.DeviceTypes.LVM
     factory_class = devicefactory.LVMFactory
 
     def _validate_factory_device(self, *args, **kwargs):
@@ -604,7 +604,7 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
 class LVMThinPFactoryTestCase(LVMFactoryTestCase):
     # TODO: check that the LV we get is a thin pool
     device_class = LVMLogicalVolumeDevice
-    device_type = devicefactory.DEVICE_TYPE_LVM_THINP
+    device_type = devicefactory.DeviceTypes.LVM_THINP
     encryption_supported = False
     factory_class = devicefactory.LVMThinPFactory
 
@@ -636,7 +636,7 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
 
 class LVMVDOFactoryTestCase(LVMFactoryTestCase):
     device_class = LVMLogicalVolumeDevice
-    device_type = devicefactory.DEVICE_TYPE_LVM_VDO
+    device_type = devicefactory.DeviceTypes.LVM_VDO
     encryption_supported = False
     _disk_size = Size("10 GiB")  # we need bigger disks for VDO
     factory_class = devicefactory.LVMVDOFactory
@@ -788,7 +788,7 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
 @patch("blivet.formats.mdraid.MDRaidMember.destroyable", return_value=True)
 @patch("blivet.devices.md.MDRaidArrayDevice.type_external_dependencies", return_value=set())
 class MDFactoryTestCase(DeviceFactoryTestCase):
-    device_type = devicefactory.DEVICE_TYPE_MD
+    device_type = devicefactory.DeviceTypes.MD
     device_class = MDRaidArrayDevice
     factory_class = devicefactory.MDFactory
 
@@ -888,19 +888,19 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
     @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
     def test_mdfactory(self, *args):  # pylint: disable=unused-argument
         factory1 = devicefactory.get_device_factory(self.b,
-                                                    devicefactory.DEVICE_TYPE_MD,
+                                                    devicefactory.DeviceTypes.MD,
                                                     size=Size("1 GiB"),
                                                     raid_level=raid.RAID1)
 
         factory2 = devicefactory.get_device_factory(self.b,
-                                                    devicefactory.DEVICE_TYPE_MD,
+                                                    devicefactory.DeviceTypes.MD,
                                                     size=Size("1 GiB"),
                                                     raid_level=0)
 
         with self.assertRaisesRegex(devicefactory.DeviceFactoryError, "must have some RAID level"):
             devicefactory.get_device_factory(
                 self.b,
-                devicefactory.DEVICE_TYPE_MD,
+                devicefactory.DeviceTypes.MD,
                 size=Size("1 GiB"))
 
         with self.assertRaisesRegex(RaidError, "requires at least"):
@@ -931,7 +931,7 @@ class MDFactoryTestCase(DeviceFactoryTestCase):
 @unittest.skipUnless(not StratisFilesystemDevice.unavailable_type_dependencies(), "some unsupported device classes required for this test")
 class StratisFactoryTestCase(DeviceFactoryTestCase):
     device_class = StratisFilesystemDevice
-    device_type = devicefactory.DEVICE_TYPE_STRATIS
+    device_type = devicefactory.DeviceTypes.STRATIS
     encryption_supported = False
     factory_class = devicefactory.StratisFactory
 
@@ -1062,7 +1062,7 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
 
 class BlivetFactoryTestCase(DeviceFactoryTestCase):
     device_class = BTRFSVolumeDevice
-    device_type = devicefactory.DEVICE_TYPE_BTRFS
+    device_type = devicefactory.DeviceTypes.BTRFS
     encryption_supported = False
     factory_class = devicefactory.BTRFSFactory
 

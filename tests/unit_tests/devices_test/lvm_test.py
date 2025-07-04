@@ -997,10 +997,10 @@ class BlivetLVMVDODependenciesTest(BlivetLVMUnitTest):
                        new=[blivet.tasks.availability.unavailable_resource("VDO unavailability test")]):
 
                 # shouldn't affect "normal" LVM
-                lvm_supported = devicefactory.is_supported_device_type(devicefactory.DEVICE_TYPE_LVM)
+                lvm_supported = devicefactory.is_supported_device_type(devicefactory.DeviceTypes.LVM)
                 self.assertTrue(lvm_supported)
 
-                vdo_supported = devicefactory.is_supported_device_type(devicefactory.DEVICE_TYPE_LVM_VDO)
+                vdo_supported = devicefactory.is_supported_device_type(devicefactory.DeviceTypes.LVM_VDO)
                 self.assertFalse(vdo_supported)
 
 
