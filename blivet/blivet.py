@@ -542,7 +542,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         name = kwargs.pop("name", None)
         if name:
-            safe_name = self.safe_device_name(name, devicefactory.DEVICE_TYPE_MD)
+            safe_name = self.safe_device_name(name, devicefactory.DeviceTypes.MD)
             if safe_name != name:
                 log.warning("using '%s' instead of specified name '%s'",
                             safe_name, name)
@@ -575,13 +575,13 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         name = kwargs.pop("name", None)
         if name:
-            safe_name = self.safe_device_name(name, devicefactory.DEVICE_TYPE_LVM)
+            safe_name = self.safe_device_name(name, devicefactory.DeviceTypes.LVM)
             if safe_name != name:
                 log.warning("using '%s' instead of specified name '%s'",
                             safe_name, name)
                 name = safe_name
         else:
-            name = self.suggest_container_name(container_type=devicefactory.DEVICE_TYPE_LVM)
+            name = self.suggest_container_name(container_type=devicefactory.DeviceTypes.LVM)
 
         if name in self.names:
             raise ValueError("name '%s' is already in use" % name)
@@ -659,9 +659,9 @@ class Blivet(object, metaclass=SynchronizedMeta):
         name = kwargs.pop("name", None)
         if name:
             # make sure the specified name is sensible
-            safe_vg_name = self.safe_device_name(vg.name, devicefactory.DEVICE_TYPE_LVM)
+            safe_vg_name = self.safe_device_name(vg.name, devicefactory.DeviceTypes.LVM)
             full_name = "%s-%s" % (safe_vg_name, name)
-            safe_name = self.safe_device_name(full_name, devicefactory.DEVICE_TYPE_LVM)
+            safe_name = self.safe_device_name(full_name, devicefactory.DeviceTypes.LVM)
             if safe_name != full_name:
                 new_name = safe_name[len(safe_vg_name) + 1:]
                 log.warning("using '%s' instead of specified name '%s'",
@@ -772,7 +772,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
             dev_class = BTRFSVolumeDevice
             # set up the volume label, using hostname if necessary
             if not name:
-                name = self.suggest_container_name(container_type=devicefactory.DEVICE_TYPE_BTRFS)
+                name = self.suggest_container_name(container_type=devicefactory.DeviceTypes.BTRFS)
             if "label" not in fmt_args:
                 fmt_args["label"] = name
             fmt_args["subvolspec"] = MAIN_VOLUME_ID
@@ -823,13 +823,13 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         name = kwargs.pop("name", None)
         if name:
-            safe_name = self.safe_device_name(name, devicefactory.DEVICE_TYPE_STRATIS)
+            safe_name = self.safe_device_name(name, devicefactory.DeviceTypes.STRATIS)
             if safe_name != name:
                 log.warning("using '%s' instead of specified name '%s'",
                             safe_name, name)
                 name = safe_name
         else:
-            name = self.suggest_container_name(container_type=devicefactory.DEVICE_TYPE_STRATIS)
+            name = self.suggest_container_name(container_type=devicefactory.DeviceTypes.STRATIS)
 
         if name in self.names:
             raise ValueError("name '%s' is already in use" % name)
@@ -857,7 +857,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         if name:
             # make sure the specified name is sensible
             full_name = "%s/%s" % (pool.name, name)
-            safe_name = self.safe_device_name(full_name, devicefactory.DEVICE_TYPE_STRATIS)
+            safe_name = self.safe_device_name(full_name, devicefactory.DeviceTypes.STRATIS)
             if safe_name != full_name:
                 new_name = safe_name[len(pool.name) + 1:]
                 log.warning("using '%s' instead of specified name '%s'",
@@ -866,7 +866,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         else:
             name = self.suggest_device_name(parent=pool,
                                             mountpoint=mountpoint,
-                                            device_type=devicefactory.DEVICE_TYPE_STRATIS)
+                                            device_type=devicefactory.DeviceTypes.STRATIS)
 
         if "%s/%s" % (pool.name, name) in self.names:
             raise ValueError("name '%s' is already in use" % name)
@@ -1019,13 +1019,13 @@ class Blivet(object, metaclass=SynchronizedMeta):
             device name limits.
         """
 
-        if device_type in (devicefactory.DEVICE_TYPE_LVM, devicefactory.DEVICE_TYPE_LVM_THINP):
+        if device_type in (devicefactory.DeviceTypes.LVM, devicefactory.DeviceTypes.LVM_THINP):
             allowed = devicelibs.lvm.safe_name_characters
-        elif device_type == devicefactory.DEVICE_TYPE_MD:
+        elif device_type == devicefactory.DeviceTypes.MD:
             allowed = devicelibs.mdraid.safe_name_characters
-        elif device_type == devicefactory.DEVICE_TYPE_BTRFS:
+        elif device_type == devicefactory.DeviceTypes.BTRFS:
             allowed = devicelibs.btrfs.safe_name_characters
-        elif device_type == devicefactory.DEVICE_TYPE_STRATIS:
+        elif device_type == devicefactory.DeviceTypes.STRATIS:
             allowed = devicelibs.stratis.safe_name_characters
         else:
             allowed = "0-9a-zA-Z._-"
@@ -1053,7 +1053,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
     def unique_device_name(self, name, parent=None, name_set=True, device_type=None):
         """ Turn given name into a unique one by adding numeric suffix to it """
 
-        if device_type == devicefactory.DEVICE_TYPE_STRATIS:
+        if device_type == devicefactory.DeviceTypes.STRATIS:
             parent_separator = "/"
         else:
             parent_separator = "-"
@@ -1127,7 +1127,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         name = self.safe_device_name(prefix + body, device_type)
 
-        if device_type == devicefactory.DEVICE_TYPE_STRATIS:
+        if device_type == devicefactory.DeviceTypes.STRATIS:
             parent_separator = "/"
         else:
             parent_separator = "-"
@@ -1281,11 +1281,11 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
         return fstype
 
-    def factory_device(self, device_type=devicefactory.DEVICE_TYPE_LVM, **kwargs):
+    def factory_device(self, device_type=devicefactory.DeviceTypes.LVM, **kwargs):
         """ Schedule creation of a device based on a top-down specification.
 
             :param device_type: device type constant
-            :type device_type: int (:const:`~.devicefactory.DEVICE_TYPE_*`)
+            :type device_type: int (:const:`~.devicefactory.DeviceTypes.*`)
             :returns: the newly configured device
             :rtype: :class:`~.devices.StorageDevice`
 
@@ -1305,8 +1305,8 @@ class Blivet(object, metaclass=SynchronizedMeta):
                 kwargs["mountpoint"] = None
 
         if kwargs["fstype"] == "swap" and \
-           device_type == devicefactory.DEVICE_TYPE_BTRFS:
-            device_type = devicefactory.DEVICE_TYPE_PARTITION
+           device_type == devicefactory.DeviceTypes.BTRFS:
+            device_type = devicefactory.DeviceTypes.PARTITION
 
         factory = devicefactory.get_device_factory(self, device_type=device_type, **kwargs)
 

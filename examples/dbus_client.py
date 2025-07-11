@@ -23,12 +23,7 @@ import dbus
 
 
 import blivet
-from blivet.devicefactory import (
-    DEVICE_TYPE_LVM,
-    DEVICE_TYPE_MD,
-    DEVICE_TYPE_BTRFS,
-    DEVICE_TYPE_STRATIS,
-)
+from blivet.devicefactory import DeviceTypes
 
 OBJECT_MANAGER = "org.freedesktop.DBus.ObjectManager"
 BUS = dbus.SystemBus()
@@ -117,7 +112,7 @@ def get_property(path, interface, value):
 
 def lvm_create(disk_list, fs_name, size):
     kwargs = {
-        "device_type": DEVICE_TYPE_LVM,
+        "device_type": DeviceTypes.LVM,
         "size": size,
         "disks": disk_list,
         "fstype": "xfs",
@@ -131,7 +126,7 @@ def lvm_create(disk_list, fs_name, size):
 
 def btrfs_create(disk_list, fs_name, size):
     kwargs = {
-        "device_type": DEVICE_TYPE_BTRFS,
+        "device_type": DeviceTypes.BTRFS,
         "size": size,
         "disks": disk_list,
         "name": fs_name,
@@ -146,7 +141,7 @@ def btrfs_create(disk_list, fs_name, size):
 
 def md_create(disk_list, fs_name, size):
     kwargs = {
-        "device_type": DEVICE_TYPE_MD,
+        "device_type": DeviceTypes.MD,
         "size": size,
         "disks": disk_list,
         "fstype": "xfs",
@@ -161,7 +156,7 @@ def md_create(disk_list, fs_name, size):
 
 def stratis_create(disk_list, fs_name, size):
     kwargs = {
-        "device_type": DEVICE_TYPE_STRATIS,
+        "device_type": DeviceTypes.STRATIS,
         "size": size,
         "disks": disk_list,
         "name": fs_name,
@@ -182,13 +177,13 @@ def test_create_dev(disks_list, storage_type: int, size):
 
     newdev_object_path = None
 
-    if storage_type == blivet.devicefactory.DEVICE_TYPE_LVM:
+    if storage_type == blivet.devicefactory.DeviceTypes.LVM:
         newdev_object_path = lvm_create(disks_list, "test_lvm_filesystem", size)
-    elif storage_type == blivet.devicefactory.DEVICE_TYPE_BTRFS:
+    elif storage_type == blivet.devicefactory.DeviceTypes.BTRFS:
         newdev_object_path = btrfs_create(disks_list, "test_btrfs_filesystem", size)
-    elif storage_type == blivet.devicefactory.DEVICE_TYPE_MD:
+    elif storage_type == blivet.devicefactory.DeviceTypes.MD:
         newdev_object_path = md_create(disks_list, "test_md_filesystem", size)
-    elif storage_type == blivet.devicefactory.DEVICE_TYPE_STRATIS:
+    elif storage_type == blivet.devicefactory.DeviceTypes.STRATIS:
         newdev_object_path = stratis_create(disks_list, "test_stratis_filesystem", size)
 
     blivet_interface.Commit()
@@ -240,18 +235,18 @@ if __name__ == "__main__":
 
     print("To Use", disks)
 
-    new_object_path = test_create_dev(disks, DEVICE_TYPE_LVM, SIZE)
+    new_object_path = test_create_dev(disks, DeviceTypes.LVM, SIZE)
     if new_object_path is not None:
         remove_device(new_object_path, disks)
 
-    new_object_path = test_create_dev(disks, DEVICE_TYPE_BTRFS, SIZE)
+    new_object_path = test_create_dev(disks, DeviceTypes.BTRFS, SIZE)
     if new_object_path is not None:
         remove_device(new_object_path, disks)
 
-    new_object_path = test_create_dev(disks, DEVICE_TYPE_MD, SIZE)
+    new_object_path = test_create_dev(disks, DeviceTypes.MD, SIZE)
     if new_object_path is not None:
         remove_device(new_object_path, disks)
 
-    new_object_path = test_create_dev(disks, DEVICE_TYPE_STRATIS, SIZE)
+    new_object_path = test_create_dev(disks, DeviceTypes.STRATIS, SIZE)
     if new_object_path is not None:
         remove_device(new_object_path, disks)
