@@ -41,36 +41,6 @@ def findall(dirname=os.curdir):
 
 setuptools.findall = findall
 
-# Extend the sdist command
-class blivet_sdist(sdist):
-    user_options = sdist.user_options + [('mode=', None, "specify mode for sdist; one of 'release', 'normal'"),]
-
-    def initialize_options(self):
-        sdist.initialize_options(self)
-        self.mode = None  # pylint: disable=attribute-defined-outside-init
-
-    def finalize_options(self):
-        sdist.finalize_options(self)
-        if self.mode not in (None, 'release', 'normal'):
-            raise AttributeError('Unknown mode %s' % self.mode)
-
-    def run(self):
-        # Build the .mo files
-        subprocess.check_call(['make', '-C', 'po'])
-
-        # Run the parent command
-        sdist.run(self)
-
-    def make_release_tree(self, base_dir, files):
-        # Run the parent command first
-        sdist.make_release_tree(self, base_dir, files)
-
-        if self.mode == "release":
-            # Run translation-canary in release mode to remove any bad translations
-            sys.path.append('translation-canary')
-            from translation_canary.translated import testSourceTree  # pylint: disable=import-error
-            testSourceTree(base_dir, releaseMode=True)
-
 
 data_files = [
     ('/etc/dbus-1/system.d', ['dbus/blivet.conf']),
@@ -86,7 +56,6 @@ with open("README.md", "r") as f:
 
 setup(name='blivet',
       version='3.12.1',
-      cmdclass={"sdist": blivet_sdist},
       description='Python module for system storage configuration',
       long_description=long_description,
       long_description_content_type="text/markdown",
