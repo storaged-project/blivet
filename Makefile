@@ -127,7 +127,7 @@ install-dbus:
 	install -m 644 dbus/blivet.service $(DESTDIR)/usr/lib/systemd/system
 
 install:
-	$(PYTHON) setup.py install --root=$(DESTDIR)
+	$(PYTHON) -m pip install . --root=$(DESTDIR)
 	$(MAKE) -C po install
 	$(MAKE) install-dbus
 
