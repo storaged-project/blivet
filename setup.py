@@ -42,14 +42,6 @@ def findall(dirname=os.curdir):
 setuptools.findall = findall
 
 
-data_files = [
-    ('/etc/dbus-1/system.d', ['dbus/blivet.conf']),
-    ('/usr/share/dbus-1/system-services', ['dbus/com.redhat.Blivet0.service']),
-    ('/usr/libexec', ['dbus/blivetd']),
-    ('/usr/lib/systemd/system', ['dbus/blivet.service'])
-]
-
-
 with open("README.md", "r") as f:
     long_description = f.read()
 
@@ -61,7 +53,6 @@ setup(name='blivet',
       long_description_content_type="text/markdown",
       author='David Lehman', author_email='dlehman@redhat.com',
       url='http://github.com/storaged-project/blivet',
-      data_files=data_files,
       packages=['blivet', 'blivet.dbus', 'blivet.devices', 'blivet.devicelibs', 'blivet.events', 'blivet.formats', 'blivet.populator', 'blivet.static_data', 'blivet.tasks', 'blivet.populator.helpers'],
       install_requires=['pyudev'],
       classifiers=["Development Status :: 5 - Production/Stable",

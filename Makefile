@@ -116,9 +116,20 @@ clean:
 	$(MAKE) -C po clean
 	$(PYTHON) setup.py -q clean --all
 
+install-dbus:
+	install -d $(DESTDIR)/etc/dbus-1/system.d/
+	install -m 644 dbus/blivet.conf $(DESTDIR)/etc/dbus-1/system.d/blivet.conf
+	install -d $(DESTDIR)/usr/share/dbus-1/system-services/
+	install -m 644 dbus/com.redhat.Blivet0.service $(DESTDIR)/usr/share/dbus-1/system-services/com.redhat.Blivet0.service
+	install -d $(DESTDIR)/usr/libexec/
+	install -m 755 dbus/blivetd $(DESTDIR)/usr/libexec/blivetd
+	install -d $(DESTDIR)/usr/lib/systemd/system
+	install -m 644 dbus/blivet.service $(DESTDIR)/usr/lib/systemd/system
+
 install:
 	$(PYTHON) setup.py install --root=$(DESTDIR)
 	$(MAKE) -C po install
+	$(MAKE) install-dbus
 
 ChangeLog:
 	(GIT_DIR=.git git log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
