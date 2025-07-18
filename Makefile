@@ -142,7 +142,7 @@ archive: po-pull
 	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(VERSION_TAG) | tar -xf -
 	cp -r po $(PKGNAME)-$(VERSION)
 	cp ChangeLog $(PKGNAME)-$(VERSION)/
-	( cd $(PKGNAME)-$(VERSION) && $(PYTHON) -m build --sdist --outdir .. )
+	( cd $(PKGNAME)-$(VERSION) && $(PYTHON) -m build --sdist --outdir .. --no-isolation )
 	rm -rf $(PKGNAME)-$(VERSION)
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
 	@make tests-archive
@@ -153,7 +153,7 @@ tests-archive:
 
 local: po-pull
 	@make -B ChangeLog
-	$(PYTHON) -m build --sdist --outdir .
+	$(PYTHON) -m build --sdist --outdir . --no-isolation
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
 	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ HEAD tests/ | gzip -9 > $(PKGNAME)-$(VERSION)-tests.tar.gz
 	@echo "The test archive is in $(PKGNAME)-$(VERSION)-tests.tar.gz"
