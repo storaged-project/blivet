@@ -1,5 +1,4 @@
 PYTHON=python3
-PKG_INSTALL?=dnf
 
 L10N_REPOSITORY=git@github.com:storaged-project/blivet-weblate.git
 L10N_BRANCH=master
@@ -9,13 +8,10 @@ SPECFILE=python-blivet.spec
 VERSION=$(shell $(PYTHON) setup.py --version)
 RPMVERSION=$(shell rpmspec -q --queryformat "%{version}\n" $(SPECFILE) | head -1)
 RPMRELEASE=$(shell rpmspec --undefine '%dist' -q --queryformat "%{release}\n" $(SPECFILE) | head -1)
-RC_RELEASE ?= $(shell date -u +0.1.%Y%m%d%H%M%S)
 RELEASE_TAG=$(PKGNAME)-$(RPMVERSION)-$(RPMRELEASE)
 VERSION_TAG=$(PKGNAME)-$(VERSION)
 
 COVERAGE=$(PYTHON) -m coverage
-
-MOCKCHROOT ?= fedora-rawhide-$(shell uname -m)
 
 all:
 	$(MAKE) -C po
@@ -116,9 +112,20 @@ clean:
 	$(MAKE) -C po clean
 	$(PYTHON) setup.py -q clean --all
 
+install-dbus:
+	install -d $(DESTDIR)/etc/dbus-1/system.d/
+	install -m 644 dbus/blivet.conf $(DESTDIR)/etc/dbus-1/system.d/blivet.conf
+	install -d $(DESTDIR)/usr/share/dbus-1/system-services/
+	install -m 644 dbus/com.redhat.Blivet0.service $(DESTDIR)/usr/share/dbus-1/system-services/com.redhat.Blivet0.service
+	install -d $(DESTDIR)/usr/libexec/
+	install -m 755 dbus/blivetd $(DESTDIR)/usr/libexec/blivetd
+	install -d $(DESTDIR)/usr/lib/systemd/system
+	install -m 644 dbus/blivet.service $(DESTDIR)/usr/lib/systemd/system
+
 install:
-	$(PYTHON) setup.py install --root=$(DESTDIR)
+	$(PYTHON) -m pip install . --root=$(DESTDIR) --verbose --no-deps --no-build-isolation
 	$(MAKE) -C po install
+	$(MAKE) install-dbus
 
 ChangeLog:
 	(GIT_DIR=.git git log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
@@ -135,7 +142,7 @@ archive: po-pull
 	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ $(VERSION_TAG) | tar -xf -
 	cp -r po $(PKGNAME)-$(VERSION)
 	cp ChangeLog $(PKGNAME)-$(VERSION)/
-	( cd $(PKGNAME)-$(VERSION) && $(PYTHON) setup.py -q sdist --dist-dir .. --mode release )
+	( cd $(PKGNAME)-$(VERSION) && $(PYTHON) -m build --sdist --outdir .. --no-isolation )
 	rm -rf $(PKGNAME)-$(VERSION)
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
 	@make tests-archive
@@ -146,7 +153,7 @@ tests-archive:
 
 local: po-pull
 	@make -B ChangeLog
-	$(PYTHON) setup.py -q sdist --dist-dir . --mode normal
+	$(PYTHON) -m build --sdist --outdir . --no-isolation
 	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
 	git archive --format=tar --prefix=$(PKGNAME)-$(VERSION)/ HEAD tests/ | gzip -9 > $(PKGNAME)-$(VERSION)-tests.tar.gz
 	@echo "The test archive is in $(PKGNAME)-$(VERSION)-tests.tar.gz"
@@ -158,22 +165,6 @@ rpmlog:
 bumpver: po-pull
 	( scripts/makebumpver -n $(PKGNAME) -v $(VERSION) -r $(RPMRELEASE) ) || exit 1 ;
 
-scratch:
-	@rm -f ChangeLog
-	@make ChangeLog
-	@rm -rf $(PKGNAME)-$(VERSION).tar.gz
-	@rm -rf /tmp/$(PKGNAME)-$(VERSION) /tmp/$(PKGNAME)
-	@dir=$$PWD; cp -a $$dir /tmp/$(PKGNAME)-$(VERSION)
-	@cd /tmp/$(PKGNAME)-$(VERSION) ; $(PYTHON) setup.py -q sdist
-	@cp /tmp/$(PKGNAME)-$(VERSION)/dist/$(PKGNAME)-$(VERSION).tar.gz .
-	@rm -rf /tmp/$(PKGNAME)-$(VERSION)
-	@echo "The archive is in $(PKGNAME)-$(VERSION).tar.gz"
-
-rc-release: scratch-bumpver scratch
-	mock -r $(MOCKCHROOT) --scrub all || exit 1
-	mock -r $(MOCKCHROOT) --buildsrpm  --spec ./$(SPECFILE) --sources . --resultdir $(PWD) || exit 1
-	mock -r $(MOCKCHROOT) --rebuild *src.rpm --resultdir $(PWD)  || exit 1
-
 srpm: local
 	rpmbuild -bs --nodeps $(SPECFILE) --define "_sourcedir `pwd`"
 	rm -f $(PKGNAME)-$(VERSION).tar.gz $(PKGNAME)-$(VERSION)-tests.tar.gz
@@ -181,6 +172,18 @@ srpm: local
 rpm: local
 	rpmbuild -bb --nodeps $(SPECFILE) --define "_sourcedir `pwd`"
 	rm -f $(PKGNAME)-$(VERSION).tar.gz $(PKGNAME)-$(VERSION)-tests.tar.gz
+
+release-pypi:
+	if ! $(PYTHON) -m build --sdist --wheel; then \
+		echo ""; \
+		echo Distribution package build failed! Please verify that you have \'python3-build\' and \'python3-setuptools\' installed. >&2; \
+		exit 1; \
+	fi
+	if ! $(PYTHON) -m twine upload dist/*; then \
+		echo ""; \
+		echo Package upload failed! Make sure the \'twine tool\' is installed and you are registered >&2; \
+		exit 1; \
+	fi
 
 ci: check coverage
 

@@ -106,6 +106,7 @@ srpm_build_deps:
  - gettext
  - python3-devel
  - python3-setuptools
+ - python3-build
 
 downstream_package_name: python-blivet
 upstream_tag_template: blivet-{version}

@@ -65,10 +65,7 @@ Copy the documentation from `doc/_build/html` to a temporary directory, switch t
 Fedora builds are automated using Packit. After tagging a new release Packit will open PRs against all supported versions of Fedora in Pagure. Fedora maintainer will review and merge those PRs, afterwards, Packit will do the builds and Bodhi updates as well.
 
 ## PyPI Build Procedure
-Prepare archive for PyPI: `python3 setup.py sdist bdist_wheel`
 
-Check the archive: `twine check dist/*`
-
-Upload to Test PyPI (optional): `twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
-
-Upload to PyPI: `twine upload dist/*`
+```
+make release-pypi
+```

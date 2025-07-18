@@ -1,3 +1,4 @@
 include README.md COPYING ChangeLog Makefile python-blivet.spec release_notes.rst
 recursive-include po *.mo *.po *.pot Makefile
 recursive-include examples *.py
+recursive-include dbus *
