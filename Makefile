@@ -173,6 +173,18 @@ rpm: local
 	rpmbuild -bb --nodeps $(SPECFILE) --define "_sourcedir `pwd`"
 	rm -f $(PKGNAME)-$(VERSION).tar.gz $(PKGNAME)-$(VERSION)-tests.tar.gz
 
+release-pypi:
+	if ! $(PYTHON) -m build --sdist --wheel; then \
+		echo ""; \
+		echo Distribution package build failed! Please verify that you have \'python3-build\' and \'python3-setuptools\' installed. >&2; \
+		exit 1; \
+	fi
+	if ! $(PYTHON) -m twine upload dist/*; then \
+		echo ""; \
+		echo Package upload failed! Make sure the \'twine tool\' is installed and you are registered >&2; \
+		exit 1; \
+	fi
+
 ci: check coverage
 
 .PHONY: check clean pylint pep8 install tag archive local
