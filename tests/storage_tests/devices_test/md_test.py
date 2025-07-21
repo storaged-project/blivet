@@ -463,8 +463,7 @@ class BIOSRAIDTestCase(StorageTestCase):
         self._create_ddf_raid()
 
         with wait_for_resync():
-            self.storage.do_it()
-        self.storage.reset()
+            self.storage.reset()
 
         # check that we can correctly detect BIOS RAID arrays
         vol0 = self.storage.devicetree.get_device_by_name("vol0")
