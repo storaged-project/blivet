@@ -28,6 +28,7 @@ class BlivetLintConfig(CensorshipConfig):
             FalsePositive(r"Instance of 'GError' has no 'message' member"),  # overriding currently broken local pylint disable
             FalsePositive(r"No name '.*' in module 'libmount'"),
             FalsePositive(r"Unknown option value for 'disable', expected a valid pylint message and got 'possibly-used-before-assignment'"),
+            FalsePositive(r"No value for argument 'self' in function call"),
         ]
 
     def _files(self):

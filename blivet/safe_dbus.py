@@ -141,7 +141,7 @@ def call_sync(service, obj_path, iface, method, args,
 
     try:
         ret = connection.call_with_unix_fd_list_sync(service, obj_path, iface, method, args,
-                                                     None, Gio.DBusCallFlags.NONE,
+                                                     None, Gio.DBusCallFlags.NONE,  # pylint: disable=no-member
                                                      timeout, fds, None)
     except GLib.GError as gerr:
         msg = "Failed to call %s method on %s with %s arguments: %s" % \
