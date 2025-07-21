@@ -459,6 +459,13 @@ class BIOSRAIDTestCase(StorageTestCase):
         if ret != 0:
             raise RuntimeError("Failed to setup DDF RAID for testing")
 
+        # joys of creating devices for tests manually, we need to encourage udev
+        # a bit to actually have the correct information for reset after creating
+        # the DDF array
+        blivet.udev.trigger(action="change", path=self.vdevs[0])
+        blivet.udev.trigger(action="change", path=self.vdevs[1])
+        blivet.udev.settle()
+
     def test_ddf_raid(self):
         self._create_ddf_raid()
 
