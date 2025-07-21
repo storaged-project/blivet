@@ -51,7 +51,6 @@ Summary: A python3 package for examining and modifying storage configuration.
 
 BuildRequires: gettext
 BuildRequires: python3-devel
-BuildRequires: python3-setuptools
 
 # For tests
 BuildRequires: python3-pyudev >= %{pyudevver}
@@ -105,6 +104,9 @@ configuration.
 %prep
 %autosetup -n %{realname}-%{realversion} -N
 %autosetup -n %{realname}-%{realversion} -b1 -p1
+
+%generate_buildrequires
+%pyproject_buildrequires
 
 %build
 make

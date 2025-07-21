@@ -186,7 +186,7 @@ def main():
         sys.exit(1)
 
     # Files to replace version strings in
-    version_files = [(os.path.realpath(cwd+"/setup.py"), "version='%s'"),
+    version_files = [(os.path.realpath(cwd+"/pyproject.toml"), "version = \"%s\""),
                      (os.path.realpath(cwd+"/blivet/__init__.py"), "__version__ = '%s'"),
                      (os.path.realpath(cwd+"/doc/conf.py"), "version = '%s'")]
 
