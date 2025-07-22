@@ -220,9 +220,10 @@ class MDDiskTestCase(StorageTestCase):
 
         self._blivet_setup()
 
-    def _remove_array(self):
+    def _remove_array(self, wipefs=True):
         # cleanup with mdadm
-        _ret = blivet.util.run_program(["wipefs", "-a", "/dev/md/%s" % self.raidname])
+        if wipefs:
+            _ret = blivet.util.run_program(["wipefs", "-a", "/dev/md/%s" % self.raidname])
         _ret = blivet.util.run_program(["mdadm", "--stop", "/dev/md/%s" % self.raidname])
         _ret = blivet.util.run_program(["mdadm", "--zero-superblock", self.vdevs[0], self.vdevs[1]])
 
@@ -230,7 +231,7 @@ class MDDiskTestCase(StorageTestCase):
         self._remove_array()
         return super()._clean_up()
 
-    def _test_mdraid_raid1_on_disk(self, metadata_version):
+    def _create_array(self, metadata_version="1.2"):
         disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
         self.assertIsNotNone(disk1)
         self.storage.format_device(disk1, blivet.formats.get_format("mdmember"))
@@ -250,6 +251,11 @@ class MDDiskTestCase(StorageTestCase):
         with wait_for_resync():
             self.storage.do_it()
         self.storage.reset()
+
+        return members
+
+    def _test_mdraid_raid1_on_disk(self, metadata_version):
+        members = self._create_array(metadata_version)
 
         array = self.storage.devicetree.get_device_by_name(self.raidname)
         self.assertIsNotNone(array)
@@ -307,6 +313,55 @@ class MDDiskTestCase(StorageTestCase):
         self.assertEqual(array.format.type, "disklabel")
         self.assertEqual(array.format.label_type, "gpt")
         self.assertEqual(len(array.children), 1)
+
+    def test_stale_metadata_removal_pv(self):
+        """ Test that a stale LVM PV format is removed from a newly created MD array """
+        # manually create MD with PV format but without VG
+        _ret = blivet.util.run_program(["mdadm", "--create", "--run", "/dev/md/%s" % self.raidname,
+                                        "--level=raid1", "--raid-devices=2",
+                                        self.vdevs[0], self.vdevs[1]])
+        _ret = blivet.util.run_program(["pvcreate", "/dev/md/%s" % self.raidname])
+
+        # remove the array without wiping it
+        self._remove_array(wipefs=False)
+
+        # now create the array with blivet
+        self._create_array()
+
+        array = self.storage.devicetree.get_device_by_name(self.raidname)
+        self.assertIsNotNone(array)
+
+        # check that the PV format was correctly wiped
+        self.assertIsNone(array.format.type)
+
+        out = blivet.util.capture_output(["blkid", "-p", "-sTYPE", "-ovalue", array.path])
+        self.assertFalse(out)
+
+    def test_stale_metadata_removal_vg(self):
+        """ Test that a stale LVM VG is removed from a newly created MD array """
+        # manually create MD with with VG
+        _ret = blivet.util.run_program(["mdadm", "--create", "--run", "/dev/md/%s" % self.raidname,
+                                        "--level=raid1", "--raid-devices=2",
+                                        self.vdevs[0], self.vdevs[1]])
+        _ret = blivet.util.run_program(["vgcreate", "blivetTestStaleVG", "/dev/md/%s" % self.raidname])
+
+        # remove the array without wiping it
+        self._remove_array(wipefs=False)
+
+        # now create the array with blivet
+        self._create_array()
+
+        array = self.storage.devicetree.get_device_by_name(self.raidname)
+        self.assertIsNotNone(array)
+
+        # check that the VG was removed and the PV format was correctly wiped
+        vg = self.storage.devicetree.get_device_by_name("blivetTestStaleVG")
+        self.assertIsNone(vg)
+
+        self.assertIsNone(array.format.type)
+
+        out = blivet.util.capture_output(["blkid", "-p", "-sTYPE", "-ovalue", array.path])
+        self.assertFalse(out)
 
 
 class MDLUKSTestCase(StorageTestCase):

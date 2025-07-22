@@ -30,7 +30,7 @@ gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 
-from ..devicelibs import mdraid, raid
+from ..devicelibs import mdraid, raid, lvm
 
 from .. import errors
 from ..formats import DeviceFormat
@@ -593,17 +593,29 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                 return
 
             if pv_info.vg_uuid:
-                log.info("removing stale LVM metadata found on %s", self.name)
+                log.info("removing stale LVM VG found on %s", self.name)
                 try:
-                    blockdev.lvm.vgremove(pv_info.vg_name, extra={"--select": "vg_uuid=%s" % pv_info.vg_uuid})
+                    if lvm.HAVE_LVMDEVICES:
+                        with lvm.empty_lvm_devices():
+                            blockdev.lvm.vgremove(pv_info.vg_name,
+                                                  extra={"--select": "vg_uuid=%s" % pv_info.vg_uuid,
+                                                         "--devices": self.path})
+                    else:
+                        blockdev.lvm.vgremove(pv_info.vg_name,
+                                              extra={"--select": "vg_uuid=%s" % pv_info.vg_uuid})
                 except blockdev.LVMError as e:
                     log.error("Failed to remove stale volume group from newly-created md array %s: %s",
                               self.path, str(e))
                     raise errors.MDRaidError(e)
 
             # lvm says it is a pv whether or not there is vg metadata, so wipe the pv signature
+            log.info("removing stale LVM PV metadata found on %s", self.name)
             try:
-                blockdev.lvm.pvremove(self.path)
+                if lvm.HAVE_LVMDEVICES:
+                    with lvm.empty_lvm_devices():
+                        blockdev.lvm.pvremove(self.path, extra={"--devices": self.path})
+                else:
+                    blockdev.lvm.pvremove(self.path)
             except blockdev.LVMError as err:
                 raise errors.MDRaidError(err)
 
