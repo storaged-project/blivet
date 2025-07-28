@@ -303,3 +303,17 @@ class LUKSResetTestCase(StorageTestCase):
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
         self.assertIsNotNone(disk)
         self.assertTrue(disk.format.has_key)
+
+    def test_label_subsystem(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        fmt = LUKS(passphrase="password", label="label", subsystem="subsystem")
+        self.storage.format_device(disk, fmt)
+        self.storage.do_it()
+
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.assertEqual(disk.format.type, "luks")
+        self.assertEqual(disk.format.label, "label")
+        self.assertEqual(disk.format.subsystem, "subsystem")

@@ -405,10 +405,14 @@ class LUKS(DeviceFormat):
                                              iterations=self.pbkdf_args.iterations,
                                              time_ms=self.pbkdf_args.time_ms)
             extra = blockdev.CryptoLUKSExtra(pbkdf=pbkdf,
-                                             sector_size=self.luks_sector_size)
+                                             sector_size=self.luks_sector_size,
+                                             label=self.label,
+                                             subsystem=self.subsystem)
         else:
-            if self.luks_sector_size:
-                extra = blockdev.CryptoLUKSExtra(sector_size=self.luks_sector_size)
+            if self.luks_sector_size or self.label or self.subsystem:
+                extra = blockdev.CryptoLUKSExtra(sector_size=self.luks_sector_size,
+                                                 label=self.label,
+                                                 subsystem=self.subsystem)
             else:
                 extra = None
 
