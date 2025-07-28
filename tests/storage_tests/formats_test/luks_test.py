@@ -317,3 +317,12 @@ class LUKSResetTestCase(StorageTestCase):
         self.assertEqual(disk.format.type, "luks")
         self.assertEqual(disk.format.label, "label")
         self.assertEqual(disk.format.subsystem, "subsystem")
+
+        disk.format.label = "new_label"
+        disk.format.write_label()
+
+        self.storage.reset()
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.assertEqual(disk.format.type, "luks")
+        self.assertEqual(disk.format.label, "new_label")
