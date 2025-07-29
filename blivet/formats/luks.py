@@ -309,6 +309,12 @@ class LUKS(DeviceFormat):
             return True
         return False
 
+    def labeling(self):
+        return self.luks_version == "luks2"
+
+    def relabels(self):
+        return self.luks_version == "luks2"
+
     def update_size_info(self):
         """ Update this format's current size. """
 
@@ -405,10 +411,14 @@ class LUKS(DeviceFormat):
                                              iterations=self.pbkdf_args.iterations,
                                              time_ms=self.pbkdf_args.time_ms)
             extra = blockdev.CryptoLUKSExtra(pbkdf=pbkdf,
-                                             sector_size=self.luks_sector_size)
+                                             sector_size=self.luks_sector_size,
+                                             label=self.label,
+                                             subsystem=self.subsystem)
         else:
-            if self.luks_sector_size:
-                extra = blockdev.CryptoLUKSExtra(sector_size=self.luks_sector_size)
+            if self.luks_sector_size or self.label or self.subsystem:
+                extra = blockdev.CryptoLUKSExtra(sector_size=self.luks_sector_size,
+                                                 label=self.label,
+                                                 subsystem=self.subsystem)
             else:
                 extra = None
 
@@ -569,6 +579,48 @@ class LUKS(DeviceFormat):
             raise LUKSError(e)
 
         self.contexts.remove_context(context)
+
+    def label_format_ok(self, label):
+        """Return True if the label has an acceptable format for this
+           format. None, which represents accepting the default for this
+           device, is always acceptable.
+
+           :param label: A possible label
+           :type label: str or None
+        """
+        return label is None or len(label) < 48
+
+    def write_label(self, dry_run=False):
+        """ Create a label for this format.
+
+            :raises: LUKSError
+
+            If self.label is None, this means accept the default, so raise
+            an LUKSError in this case.
+
+            Raises a LUKSError if the label can not be set.
+        """
+
+        if self.luks_version != "luks2":
+            raise LUKSError("label can be set only for luks2")
+
+        if not dry_run:
+            if not self.exists:
+                raise LUKSError("format has not been created")
+
+            if not os.path.exists(self.device):
+                raise LUKSError("device does not exist")
+
+            if self.label is None:
+                raise LUKSError("makes no sense to write a label when accepting default label")
+
+            if not self.label_format_ok(self.label):
+                raise LUKSError("bad label format for labelling")
+
+            try:
+                blockdev.crypto.luks_set_label(self.device, self.label)
+            except blockdev.CryptoError as e:
+                raise LUKSError(e)
 
     def escrow(self, directory, backup_passphrase):
         log.debug("escrow: escrow_volume start for %s", self.device)
