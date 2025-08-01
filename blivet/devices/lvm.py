@@ -2789,6 +2789,25 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
         except blockdev.LVMError as err:
             raise errors.LVMError(err)
 
+    def pre_format_destroy(self):
+        """ Fixup needed to run before wiping this device """
+        if self.ignore_skip_activation > 0:
+            # the LV was not activated during the initial scan so if there is an MD array on it
+            # it will now also get activated and we need to stop it to be able to remove the LV
+            try:
+                info = blockdev.md.examine(self.path)
+            except blockdev.MDRaidError:
+                pass
+            else:
+                # give udev a bit time to activate the array so we can deactivate it again
+                time.sleep(5)
+                log.info("MD metadata found on LV with skip activation, stopping the array %s",
+                         info.device)
+                try:
+                    blockdev.md.deactivate(info.device)
+                except blockdev.MDRaidError as err:
+                    log.info("failed to deactivate %s: %s", info.device, str(err))
+
     @type_specific
     def _pre_create(self):
         LVMLogicalVolumeBase._pre_create(self)
