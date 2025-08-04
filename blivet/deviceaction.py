@@ -766,6 +766,9 @@ class ActionDestroyFormat(DeviceAction):
             if hasattr(self.device, 'set_rw'):
                 self.device.set_rw()
 
+            if hasattr(self.device, 'pre_format_destroy'):
+                self.device.pre_format_destroy()
+
             self.format.destroy()
             udev.settle()
             if isinstance(self.device, PartitionDevice) and self.device.disklabel_supported:
