@@ -25,5 +25,5 @@ prepare:
 execute:
     how: tmt
     script:
-      - sudo python3 tests/run_tests.py -l
+      - sudo python3 tests/run_tests.py -l -j
       - tmt-file-submit -l /tmp/blivet.log
