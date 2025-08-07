@@ -112,6 +112,8 @@ class ISCSITestCase(unittest.TestCase):
         except RuntimeError as e:
             raise RuntimeError("Failed to setup targetcli device for testing: %s" % e)
 
+        subprocess.call(["systemctl", "start", "iscsi-init.service"], stdout=subprocess.DEVNULL)
+
     def _force_logout(self):
         subprocess.call(["iscsiadm", "--mode", "node", "--logout", "--name", self.dev], stdout=subprocess.DEVNULL)
 

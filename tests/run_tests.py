@@ -228,9 +228,15 @@ if __name__ == '__main__':
     argparser.add_argument("-d", "--log-dir", dest="logdir",
                            help="directory for saving the logs (defaults to /tmp)",
                            action="store")
+    argparser.add_argument("-j", "--jenkins", dest="jenkins",
+                           help="run also tests that should run only in a CI environment",
+                           action="store_true")
     args = argparser.parse_args()
 
     testdir = os.path.abspath(os.path.dirname(__file__))
+
+    if args.jenkins:
+        os.environ["JENKINS_HOME"] = testdir  # pylint: disable=environment-modify
 
     import blivet
     print("Running tests with Blivet %s from %s" % (blivet.__version__,

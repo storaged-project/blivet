@@ -51,6 +51,7 @@
       - stratisd
       - stratis-cli
       - libblockdev-tools
+      - udisks2-iscsi
   when: ansible_distribution == 'Fedora' and test_dependencies|bool
 
 ####### CentOS 9/10
@@ -99,6 +100,7 @@
       - stratisd
       - stratis-cli
       - libblockdev-tools
+      - udisks2-iscsi
   when: ansible_distribution == 'CentOS' and test_dependencies|bool
 
 - name: Install additional test dependencies (CentOS 9)
