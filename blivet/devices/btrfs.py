@@ -37,7 +37,6 @@ from .. import errors
 from ..flags import flags
 from ..storage_log import log_method_call
 from .. import udev
-from .. import util
 from ..formats import get_format, DeviceFormat
 from ..size import Size
 from ..mounts import mounts_cache
@@ -127,17 +126,20 @@ class BTRFSDevice(StorageDevice):
         else:
             tmpdir = tempfile.mkdtemp(prefix=self._temp_dir_prefix)
             try:
-                util.mount(device=fmt.device, mountpoint=tmpdir, fstype=fmt.type,
-                           options=fmt.mountopts)
-            except errors.FSError as e:
-                log.debug("btrfs temp mount failed: %s", e)
-                raise
+                blockdev.fs.mount(fmt.device, tmpdir, fmt.type, fmt.mountopts)
+            except blockdev.FSError as e:
+                raise errors.BTRFSError("failed to temporarily mount %s for btrfs operation" % fmt.device) from e
 
             try:
                 yield tmpdir
             finally:
-                util.umount(mountpoint=tmpdir)
-                os.rmdir(tmpdir)
+                try:
+                    blockdev.fs.unmount(tmpdir)
+                except blockdev.FSError as e:
+                    log.error("failed to unmount temporarily mounted btrfs device %s: %s",
+                              fmt.device, str(e))
+                else:
+                    os.rmdir(tmpdir)
 
     @property
     def path(self):
