@@ -627,3 +627,131 @@ class LVMTestCase(StorageTestCase):
         # verify that the pool can be destroyed even if it cannot be activated
         self.storage.recursive_remove(pool)
         self.storage.do_it()
+
+    def test_lvm_grow(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.initialize_disk(disk)
+
+        pv = self.storage.new_partition(size=blivet.size.Size("100 MiB"), fmt_type="lvmpv",
+                                        parents=[disk])
+        self.storage.create_device(pv)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        vg = self.storage.new_vg(name=self.vgname, parents=[pv])
+        self.storage.create_device(vg)
+
+        lv1 = self.storage.new_lv(fmt_type="ext4", size=blivet.size.Size("10 MiB"),
+                                  parents=[vg], name="blivetTestLV1", grow=True)
+        self.storage.create_device(lv1)
+        lv2 = self.storage.new_lv(fmt_type="ext4", size=blivet.size.Size("10 MiB"),
+                                  parents=[vg], name="blivetTestLV2", grow=True)
+        self.storage.create_device(lv2)
+
+        blivet.partitioning.grow_lvm(self.storage)
+
+        self.assertEqual(lv1.size, blivet.size.Size("48 MiB"))
+        self.assertEqual(lv2.size, blivet.size.Size("48 MiB"))
+        self.assertEqual(vg.free, 0)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        lv1 = self.storage.devicetree.get_device_by_name(lv1.name)
+        self.assertIsNotNone(lv1)
+        self.assertEqual(lv1.size, blivet.size.Size("48 MiB"))
+
+        lv2 = self.storage.devicetree.get_device_by_name(lv2.name)
+        self.assertIsNotNone(lv2)
+        self.assertEqual(lv2.size, blivet.size.Size("48 MiB"))
+
+    def test_lvm_thin_grow(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.initialize_disk(disk)
+
+        pv = self.storage.new_partition(size=blivet.size.Size("100 MiB"), fmt_type="lvmpv",
+                                        parents=[disk])
+        self.storage.create_device(pv)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        vg = self.storage.new_vg(name=self.vgname, parents=[pv])
+        self.storage.create_device(vg)
+
+        lv = self.storage.new_lv(fmt_type="ext4", size=blivet.size.Size("10 MiB"),
+                                 parents=[vg], name="blivetTestLV")
+
+        pool = self.storage.new_lv(thin_pool=True, size=blivet.size.Size("50 MiB"),
+                                   parents=[vg], name="blivetTestPool", grow=True)
+        self.storage.create_device(pool)
+
+        thinlv = self.storage.new_lv(thin_volume=True, fmt_type="ext4", size=blivet.size.Size("25 MiB"),
+                                     parents=[pool], name="blivetTestThinLV")
+        self.storage.create_device(thinlv)
+
+        blivet.partitioning.grow_lvm(self.storage)
+
+        self.assertEqual(lv.size, blivet.size.Size("10 MiB"))
+        self.assertEqual(pool.size, blivet.size.Size("72 MiB"))
+        self.assertEqual(thinlv.size, blivet.size.Size("25 MiB"))
+        self.assertEqual(vg.free, 0)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+    def test_lvm_size_percent(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.initialize_disk(disk)
+
+        pv = self.storage.new_partition(size=blivet.size.Size("100 MiB"), fmt_type="lvmpv",
+                                        parents=[disk])
+        self.storage.create_device(pv)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        vg = self.storage.new_vg(name=self.vgname, parents=[pv])
+        self.storage.create_device(vg)
+
+        lv1 = self.storage.new_lv(fmt_type="ext4", percent=75,
+                                  parents=[vg], name="blivetTestLV1", grow=True)
+        self.storage.create_device(lv1)
+        lv2 = self.storage.new_lv(fmt_type="ext4", percent=25,
+                                  parents=[vg], name="blivetTestLV2", grow=True)
+        self.storage.create_device(lv2)
+
+        blivet.partitioning.grow_lvm(self.storage)
+
+        self.assertEqual(lv1.size, blivet.size.Size("76 MiB"))
+        self.assertEqual(lv2.size, blivet.size.Size("20 MiB"))
+        self.assertEqual(vg.free, 0)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        lv1 = self.storage.devicetree.get_device_by_name(lv1.name)
+        self.assertIsNotNone(lv1)
+        self.assertEqual(lv1.size, blivet.size.Size("76 MiB"))
+
+        lv2 = self.storage.devicetree.get_device_by_name(lv2.name)
+        self.assertIsNotNone(lv2)
+        self.assertEqual(lv2.size, blivet.size.Size("20 MiB"))
+
+        self.storage.destroy_device(lv1)
+        self.storage.destroy_device(lv2)
+
+        lv1 = self.storage.new_lv(fmt_type="ext4", percent=80,
+                                  parents=[lv1.vg], name="blivetTestLV1")
+        self.storage.create_device(lv1)
+
+        lv2 = self.storage.new_lv(fmt_type="ext4", percent=50,
+                                  parents=[lv1.vg], name="blivetTestLV2")
+        self.storage.create_device(lv2)
+
+        with self.assertRaisesRegex(ValueError, "cannot exceed 100"):
+            blivet.partitioning.grow_lvm(self.storage)
