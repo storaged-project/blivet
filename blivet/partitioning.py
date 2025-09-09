@@ -2046,7 +2046,7 @@ def grow_lvm(storage):
                 lv.size = lv.req_size
 
         # establish sizes for the percentage-based requests (which are fixed)
-        percentage_based_lvs = [lv for lv in vg.lvs if lv.req_percent]
+        percentage_based_lvs = [lv for lv in fatlvs if lv.req_percent]
         if sum(lv.req_percent for lv in percentage_based_lvs) > 100:
             raise ValueError("sum of percentages within a vg cannot exceed 100")
 
@@ -2073,6 +2073,19 @@ def grow_lvm(storage):
                 # pmspare size change caused by the above step, let's trade part
                 # of pool's space for it
                 pool.size -= vg.pmspare_size - orig_pmspare_size
+
+        for pool in vg.thinpools:
+            # establish sizes for the percentage-based requests (which are fixed)
+            percentage_based_lvs = [lv for lv in pool.lvs if lv.req_percent]
+            if sum(lv.req_percent for lv in percentage_based_lvs) > 100:
+                raise ValueError("sum of percentages within a thin pool cannot exceed 100")
+
+            percent_base = sum(vg.align(lv.req_size, roundup=True) for lv in percentage_based_lvs)
+            percentage_basis = pool.free_space + percent_base
+            for lv in percentage_based_lvs:
+                new_size = lv.req_percent * Decimal('0.01') * percentage_basis
+                # set req_size also so the request can also be growable if desired
+                lv.size = lv.req_size = new_size
 
         # now, grow thin lv requests within their respective pools
         for pool in vg.thinpools:

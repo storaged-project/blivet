@@ -610,3 +610,48 @@ class LVMTestCase(StorageTestCase):
 
         with self.assertRaisesRegex(ValueError, "cannot exceed 100"):
             blivet.partitioning.grow_lvm(self.storage)
+
+    def test_lvm_thin_size_percent(self):
+        pv = self._pvcreate(self.vdevs[0])
+        vg = self._vgcreate([pv])
+
+        pool = self.storage.new_lv(thin_pool=True, percent=100,
+                                   parents=[vg], name="blivetTestPool", grow=True)
+        self.storage.create_device(pool)
+
+        thinlv1 = self.storage.new_lv(thin_volume=True, fmt_type="ext4", percent=30,
+                                      parents=[pool], name="blivetTestThinLV1")
+        self.storage.create_device(thinlv1)
+
+        thinlv2 = self.storage.new_lv(thin_volume=True, fmt_type="ext4", percent=50,
+                                      parents=[pool], name="blivetTestThinLV2")
+        self.storage.create_device(thinlv2)
+
+        blivet.partitioning.grow_lvm(self.storage)
+
+        self.assertEqual(pool.size, blivet.size.Size("84 MiB"))
+        self.assertEqual(thinlv1.size, blivet.size.Size("24 MiB"))  # 84 * 0.3 rounded down to 4 MiB extents
+        self.assertEqual(thinlv2.size, blivet.size.Size("40 MiB"))  # 84 * 0.5 rounded down to 4 MiB extents
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name(pool.name)
+        self.assertIsNotNone(pool)
+        thinlv1 = self.storage.devicetree.get_device_by_name(thinlv1.name)
+        self.assertIsNotNone(thinlv1)
+        self.assertEqual(thinlv1.size, blivet.size.Size("24 MiB"))
+        thinlv2 = self.storage.devicetree.get_device_by_name(thinlv2.name)
+        self.assertIsNotNone(thinlv2)
+        self.assertEqual(thinlv2.size, blivet.size.Size("40 MiB"))
+
+        self.storage.destroy_device(thinlv1)
+        self.storage.destroy_device(thinlv2)
+
+        thinlv1 = self.storage.new_lv(thin_volume=True, fmt_type="ext4", percent=100,
+                                      parents=[pool], name="blivetTestThinLV1")
+        self.storage.create_device(thinlv1)
+
+        blivet.partitioning.grow_lvm(self.storage)
+
+        self.assertEqual(thinlv1.size, blivet.size.Size("84 MiB"))
