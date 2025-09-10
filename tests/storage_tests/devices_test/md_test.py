@@ -456,7 +456,7 @@ class MDLUKSTestCase(StorageTestCase):
         for part in parts[1:]:
             part.format.passphrase = self.passphrase
             part.format.setup()
-            self.assertTrue(parts[0].format.status)
+            self.assertTrue(part.format.status)
 
         # now the array should be in the tree and we should be able to activate it
         self.storage.devicetree.populate()
