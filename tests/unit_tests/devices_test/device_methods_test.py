@@ -391,6 +391,7 @@ class MDRaidArrayDeviceMethodsTestCase(StorageDeviceMethodsTestCase):
                                                      new=PropertyMock(return_value=True))
         self.patchers["pvs_info"] = patch("blivet.devices.md.pvs_info")
         self.patchers["lvm"] = patch("blivet.devices.md.blockdev.lvm")
+        self.patchers["trigger"] = patch("blivet.devices.md.udev.trigger")
 
     @property
     def teardown_method_mock(self):
