@@ -639,6 +639,10 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                                chunk_size=int(self.chunk_size))
         except blockdev.MDRaidError as err:
             raise errors.MDRaidError(err)
+
+        udev.settle()
+        for disk in disks:
+            udev.trigger(action="change", path=disk)
         udev.settle()
 
     def _remove(self, member):
