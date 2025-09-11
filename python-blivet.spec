@@ -67,6 +67,7 @@ BuildRequires: systemd-udev
 BuildRequires: libblockdev-plugins-all
 BuildRequires: python3-dbus
 BuildRequires: python3-pyyaml
+BuildRequires: python3-dasbus
 
 Requires: python3-pyudev >= %{pyudevver}
 Requires: parted >= %{partedver}
@@ -74,6 +75,7 @@ Requires: python3-pyparted >= %{pypartedver}
 Requires: libselinux-python3
 Requires: python3-libmount
 Requires: python3-blockdev >= %{libblockdevver}
+Requires: python3-dasbus
 Recommends: libblockdev-btrfs >= %{libblockdevver}
 Recommends: libblockdev-crypto >= %{libblockdevver}
 Recommends: libblockdev-dm >= %{libblockdevver}

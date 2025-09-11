@@ -24,8 +24,10 @@ import os
 import uuid
 
 from collections import namedtuple
+from dasbus.error import DBusError
+from dasbus.typing import get_native
 
-from .. import safe_dbus
+from .. import util
 from ..size import Size
 
 import logging
@@ -50,6 +52,23 @@ StratisLockedPoolInfo = namedtuple("StratisLockedPoolInfo", ["uuid", "key_desc",
 StratisStoppedPoolInfo = namedtuple("StratisStoppedPoolInfo", ["uuid", "name", "devices", "encrypted"])
 
 
+def _get_all_properties(obj_path, interface):
+    try:
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, obj_path,
+                                         "org.freedesktop.DBus.Properties")
+        properties = proxy.GetAll(interface)
+    except DBusError as e:
+        log.error("Error when getting DBus properties of '%s': %s",
+                  obj_path, str(e))
+        return None
+
+    if not properties:
+        log.error("Failed to get DBus properties of '%s'", obj_path)
+        return None
+
+    return get_native(properties)
+
+
 class StratisInfo(object):
     """ Class to be used as a singleton.
         Maintains the Stratis devices info cache.
@@ -59,14 +78,7 @@ class StratisInfo(object):
         self._info_cache = None
 
     def _get_pool_info(self, pool_path):
-        try:
-            properties = safe_dbus.get_properties_sync(STRATIS_SERVICE,
-                                                       pool_path,
-                                                       STRATIS_POOL_INTF)[0]
-        except safe_dbus.DBusPropertyError as e:
-            log.error("Error when getting DBus properties of '%s': %s",
-                      pool_path, str(e))
-
+        properties = _get_all_properties(pool_path, STRATIS_POOL_INTF)
         if not properties:
             log.error("Failed to get DBus properties of '%s'", pool_path)
             return None
@@ -92,14 +104,7 @@ class StratisInfo(object):
                                clevis=clevis)
 
     def _get_filesystem_info(self, filesystem_path):
-        try:
-            properties = safe_dbus.get_properties_sync(STRATIS_SERVICE,
-                                                       filesystem_path,
-                                                       STRATIS_FILESYSTEM_INTF)[0]
-        except safe_dbus.DBusPropertyError as e:
-            log.error("Error when getting DBus properties of '%s': %s",
-                      filesystem_path, str(e))
-
+        properties = _get_all_properties(filesystem_path, STRATIS_FILESYSTEM_INTF)
         if not properties:
             log.error("Failed to get DBus properties of '%s'", filesystem_path)
             return None
@@ -121,14 +126,7 @@ class StratisInfo(object):
                                      object_path=filesystem_path)
 
     def _get_blockdev_info(self, blockdev_path):
-        try:
-            properties = safe_dbus.get_properties_sync(STRATIS_SERVICE,
-                                                       blockdev_path,
-                                                       STRATIS_BLOCKDEV_INTF)[0]
-        except safe_dbus.DBusPropertyError as e:
-            log.error("Error when getting DBus properties of '%s': %s",
-                      blockdev_path, str(e))
-
+        properties = _get_all_properties(blockdev_path, STRATIS_BLOCKDEV_INTF)
         if not properties:
             log.error("Failed to get DBus properties of '%s'", blockdev_path)
             return None
@@ -154,11 +152,9 @@ class StratisInfo(object):
         locked_pools = []
 
         try:
-            pools_info = safe_dbus.get_property_sync(STRATIS_SERVICE,
-                                                     STRATIS_PATH,
-                                                     STRATIS_MANAGER_INTF,
-                                                     "LockedPools")[0]
-        except safe_dbus.DBusCallError as e:
+            proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF)
+            pools_info = proxy.LockedPools
+        except DBusError as e:
             log.error("Failed to get list of locked Stratis pools: %s", str(e))
             return locked_pools
 
@@ -187,8 +183,8 @@ class StratisInfo(object):
         stopped_pools = []
 
         try:
-            ret = safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH, iface=STRATIS_MANAGER_INTF_R8)
-        except safe_dbus.DBusCallError:
+            ret = util.check_object_available(STRATIS_SERVICE, STRATIS_PATH, iface=STRATIS_MANAGER_INTF_R8)
+        except DBusError:
             log.warning("Stratis DBus service is not running")
             return stopped_pools
 
@@ -198,11 +194,9 @@ class StratisInfo(object):
             return stopped_pools
 
         try:
-            pools_info = safe_dbus.get_property_sync(STRATIS_SERVICE,
-                                                     STRATIS_PATH,
-                                                     STRATIS_MANAGER_INTF_R8,
-                                                     "StoppedPools")[0]
-        except safe_dbus.DBusCallError as e:
+            proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF_R8)
+            pools_info = proxy.StoppedPools
+        except DBusError as e:
             log.error("Failed to get list of locked Stratis pools: %s", str(e))
             return stopped_pools
 
@@ -218,7 +212,7 @@ class StratisInfo(object):
                     encrypted = bool(feats["encryption"])
 
             info = StratisStoppedPoolInfo(uuid=pool_uuid,
-                                          name=pools_info[pool_uuid]["name"],
+                                          name=pools_info[pool_uuid]["name"].get_string(),
                                           devices=[d["devnode"] for d in pools_info[pool_uuid]["devs"]],
                                           encrypted=encrypted)
             stopped_pools.append(info)
@@ -234,20 +228,18 @@ class StratisInfo(object):
         self._info_cache["stopped_pools"] = []
 
         try:
-            ret = safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH)
-        except safe_dbus.DBusCallError:
+            ret = util.check_object_available(STRATIS_SERVICE, STRATIS_PATH)
+        except DBusError:
             log.warning("Stratis DBus service is not running")
             return
         else:
             if not ret:
                 log.warning("Stratis DBus service is not available")
+                return
 
-        objects = safe_dbus.call_sync(STRATIS_SERVICE,
-                                      STRATIS_PATH,
-                                      "org.freedesktop.DBus.ObjectManager",
-                                      "GetManagedObjects",
-                                      None)[0]
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, "org.freedesktop.DBus.ObjectManager")
 
+        objects = proxy.GetManagedObjects()
         for path, interfaces in objects.items():
             if STRATIS_POOL_INTF in interfaces.keys():
                 pool_info = self._get_pool_info(path)

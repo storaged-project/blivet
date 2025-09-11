@@ -18,12 +18,13 @@ from collections import namedtuple
 from enum import Enum
 
 from .errors import DependencyError
-from . import safe_dbus
 
 import gi
 gi.require_version("BlockDev", "3.0")
+gi.require_version("Gio", "2.0")
 
 from gi.repository import BlockDev as blockdev
+from gi.repository import Gio
 
 import logging
 log = logging.getLogger("blivet")
@@ -34,6 +35,9 @@ console_log = logging.getLogger("blivet.console")
 from threading import Lock
 # this will get set to anaconda's program_log_lock in enable_installer_mode
 program_log_lock = Lock()
+
+from dasbus.connection import SystemMessageBus
+from dasbus.error import DBusError
 
 try:
     import selinux
@@ -47,6 +51,12 @@ SYSTEMD_SERVICE = "org.freedesktop.systemd1"
 SYSTEMD_MANAGER_PATH = "/org/freedesktop/systemd1"
 SYSTEMD_MANAGER_IFACE = "org.freedesktop.systemd1.Manager"
 VIRT_PROP_NAME = "Virtualization"
+
+DBUS_INTRO_IFACE = "org.freedesktop.DBus.Introspectable"
+DBUS_PROPS_IFACE = "org.freedesktop.DBus.Properties"
+
+
+SystemBus = SystemMessageBus()
 
 
 class Path(str):
@@ -1103,13 +1113,14 @@ class DependencyGuard(object, metaclass=abc.ABCMeta):
 
 def detect_virt():
     """ Return True if we are running in a virtual machine. """
+
     try:
-        vm = safe_dbus.get_property_sync(SYSTEMD_SERVICE, SYSTEMD_MANAGER_PATH,
-                                         SYSTEMD_MANAGER_IFACE, VIRT_PROP_NAME)
-    except (safe_dbus.DBusCallError, safe_dbus.DBusPropertyError):
+        proxy = SystemBus.get_proxy(SYSTEMD_SERVICE, SYSTEMD_MANAGER_PATH, SYSTEMD_MANAGER_IFACE)
+        vm = proxy.Virtualization
+    except DBusError:
         return False
     else:
-        return vm[0] in ('qemu', 'kvm', 'xen', 'microsoft', 'amazon')
+        return vm in ('qemu', 'kvm', 'xen', 'microsoft', 'amazon')
 
 
 def natural_sort_key(device):
@@ -1143,3 +1154,19 @@ def get_kernel_module_parameter(module, parameter):
                     parameter, module, str(e))
 
     return value
+
+
+def check_object_available(service, obj_path, iface=None):
+    try:
+        proxy = SystemBus.get_proxy(service, obj_path, DBUS_INTRO_IFACE)
+        intro_data = proxy.Introspect()
+    except DBusError as e:
+        log.error("Error when checking DBus object availability: %s", str(e))
+        return False
+    node_info = Gio.DBusNodeInfo.new_for_xml(intro_data)
+    if not iface:
+        # just check if any interface is available (there are none for
+        # non-existing objects)
+        return bool(node_info.interfaces)
+    else:
+        return any(intface.name == iface for intface in node_info.interfaces)
