@@ -171,8 +171,10 @@ class LUKS(DeviceFormat):
 
         self.escrow_cert = kwargs.get("escrow_cert")
         self.add_backup_passphrase = kwargs.get("add_backup_passphrase", False)
-        self.min_luks_entropy = kwargs.get("min_luks_entropy")
+        if self.escrow_cert and not availability.BLOCKDEV_CRYPTO_PLUGIN_ESCROW.available:
+            raise LUKSError("Escrow certificate is not fully supported: %s" % ",".join(availability.BLOCKDEV_CRYPTO_PLUGIN_ESCROW.availability_errors))
 
+        self.min_luks_entropy = kwargs.get("min_luks_entropy")
         if self.min_luks_entropy is None:
             self.min_luks_entropy = luks_data.min_entropy
 

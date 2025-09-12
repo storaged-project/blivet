@@ -426,8 +426,7 @@ BLOCKDEV_CRYPTO_ALL_MODES = (blockdev.CryptoTechMode.CREATE |
                              blockdev.CryptoTechMode.RESIZE)
 BLOCKDEV_CRYPTO = BlockDevTechInfo(plugin_name="crypto",
                                    check_fn=blockdev.crypto_is_tech_avail,
-                                   technologies={blockdev.CryptoTech.LUKS: BLOCKDEV_CRYPTO_ALL_MODES,
-                                                 blockdev.CryptoTech.ESCROW: blockdev.CryptoTechMode.CREATE})
+                                   technologies={blockdev.CryptoTech.LUKS: BLOCKDEV_CRYPTO_ALL_MODES})
 BLOCKDEV_CRYPTO_TECH = BlockDevMethod(BLOCKDEV_CRYPTO)
 
 BLOCKDEV_CRYPTO_INTEGRITY = BlockDevTechInfo(plugin_name="crypto",
@@ -441,6 +440,11 @@ BLOCKDEV_CRYPTO_BITLK = BlockDevTechInfo(plugin_name="crypto",
                                          check_fn=blockdev.crypto_is_tech_avail,
                                          technologies={blockdev.CryptoTech.BITLK: blockdev.CryptoTechMode.OPEN_CLOSE})
 BLOCKDEV_CRYPTO_TECH_BITLK = BlockDevMethod(BLOCKDEV_CRYPTO_BITLK)
+
+BLOCKDEV_CRYPTO_ESCROW = BlockDevTechInfo(plugin_name="crypto",
+                                          check_fn=blockdev.crypto_is_tech_avail,
+                                          technologies={blockdev.CryptoTech.ESCROW: blockdev.CryptoTechMode.CREATE})
+BLOCKDEV_CRYPTO_TECH_ESCROW = BlockDevMethod(BLOCKDEV_CRYPTO_ESCROW)
 
 # libblockdev dm plugin required technologies and modes
 BLOCKDEV_DM_ALL_MODES = (blockdev.DMTechMode.CREATE_ACTIVATE |
@@ -587,6 +591,8 @@ BLOCKDEV_CRYPTO_PLUGIN_INTEGRITY = blockdev_plugin("libblockdev crypto plugin (i
                                                    BLOCKDEV_CRYPTO_TECH_INTEGRITY)
 BLOCKDEV_CRYPTO_PLUGIN_BITLK = blockdev_plugin("libblockdev crypto plugin (BitLocker technology)",
                                                BLOCKDEV_CRYPTO_TECH_BITLK)
+BLOCKDEV_CRYPTO_PLUGIN_ESCROW = blockdev_plugin("libblockdev crypto plugin (Escrow technology)",
+                                                BLOCKDEV_CRYPTO_TECH_ESCROW)
 BLOCKDEV_DM_PLUGIN = blockdev_plugin("libblockdev dm plugin", BLOCKDEV_DM_TECH)
 BLOCKDEV_LOOP_PLUGIN = blockdev_plugin("libblockdev loop plugin", BLOCKDEV_LOOP_TECH)
 BLOCKDEV_LVM_PLUGIN = blockdev_plugin("libblockdev lvm plugin", BLOCKDEV_LVM_TECH)
