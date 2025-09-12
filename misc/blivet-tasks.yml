@@ -52,6 +52,7 @@
       - stratis-cli
       - libblockdev-tools
       - udisks2-iscsi
+      - python3-dasbus
   when: ansible_distribution == 'Fedora' and test_dependencies|bool
 
 ####### CentOS 9/10
@@ -101,6 +102,7 @@
       - stratis-cli
       - libblockdev-tools
       - udisks2-iscsi
+      - python3-dasbus
   when: ansible_distribution == 'CentOS' and test_dependencies|bool
 
 - name: Install additional test dependencies (CentOS 9)

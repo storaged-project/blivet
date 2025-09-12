@@ -36,15 +36,15 @@ import logging
 log = logging.getLogger("blivet")
 
 from . import raid
-from .. import safe_dbus
 from ..size import Size
 from ..i18n import N_
 from ..flags import flags
 from ..static_data import lvs_info
 from ..tasks import availability
-from ..util import run_program
+from ..util import run_program, SystemBus
 
 from contextlib import contextmanager
+from dasbus.error import DBusError
 
 # some of lvm's defaults that we have no way to ask it for
 LVM_PE_START = Size("1 MiB")
@@ -347,13 +347,11 @@ def lvm_dbusd_refresh():
         return
 
     try:
-        rc = safe_dbus.call_sync("com.redhat.lvmdbus1",
-                                 "/com/redhat/lvmdbus1/Manager",
-                                 "com.redhat.lvmdbus1.Manager",
-                                 "Refresh",
-                                 None)
-    except safe_dbus.DBusCallError as e:
+        proxy = SystemBus.get_proxy("com.redhat.lvmdbus1", "/com/redhat/lvmdbus1/Manager",
+                                    "com.redhat.lvmdbus1.Manager")
+        rc = proxy.Refresh()
+    except DBusError as e:
         log.error("Exception occurred when calling LVM DBusD refresh: %s", str(e))
     else:
-        if rc[0] != 0:
+        if rc != 0:
             log.error("Failed to call LVM DBusD refresh: %s", rc)

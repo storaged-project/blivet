@@ -23,7 +23,6 @@ from . import udev
 from . import util
 from .flags import flags
 from .i18n import _
-from . import safe_dbus
 import os
 import re
 import shutil
@@ -32,10 +31,11 @@ import itertools
 from collections import namedtuple
 
 import gi
-gi.require_version("GLib", "2.0")
 gi.require_version("BlockDev", "3.0")
-from gi.repository import GLib
 from gi.repository import BlockDev
+
+from dasbus.error import DBusError
+from dasbus.typing import get_variant, Str
 
 import logging
 log = logging.getLogger("blivet")
@@ -112,14 +112,14 @@ class iSCSIDependencyGuard(util.DependencyGuard):
 
     def _check_avail(self):
         try:
-            if not safe_dbus.check_object_available(UDISKS_SERVICE, UDISKS_MANAGER_PATH, MANAGER_IFACE):
+            if not util.check_object_available(UDISKS_SERVICE, UDISKS_MANAGER_PATH, MANAGER_IFACE):
                 return False
             # Load the iscsi UDisks module (this also autostarts udisksd if needed)
-            safe_dbus.call_sync(UDISKS_SERVICE, UDISKS_MANAGER_PATH, MANAGER_IFACE,
-                                "EnableModule", GLib.Variant("(sb)", ("iscsi", True,)))
-        except safe_dbus.DBusCallError:
+            proxy = util.SystemBus.get_proxy(UDISKS_SERVICE, UDISKS_MANAGER_PATH, MANAGER_IFACE)
+            proxy.EnableModule("iscsi", True)
+        except DBusError:
             return False
-        return safe_dbus.check_object_available(UDISKS_SERVICE, UDISKS_MANAGER_PATH, INITIATOR_IFACE)
+        return util.check_object_available(UDISKS_SERVICE, UDISKS_MANAGER_PATH, INITIATOR_IFACE)
 
 
 udisks_iscsi_required = iSCSIDependencyGuard()
@@ -153,8 +153,6 @@ class iSCSI(object):
         self.started = False
         self.ifaces = {}
 
-        self.__connection = None
-
         if flags.ibft:
             try:
                 initiatorname = self._call_initiator_method("GetFirmwareInitiatorName")[0]
@@ -164,8 +162,7 @@ class iSCSI(object):
             else:
                 # write the firmware initiator to /etc/iscsi/initiatorname.iscsi
                 log.info("Setting up firmware iSCSI initiator name %s", self.initiator)
-                args = GLib.Variant("(sa{sv})", (initiatorname, None))
-                self._call_initiator_method("SetInitiatorName", args)
+                self._call_initiator_method("SetInitiatorName", (initiatorname, None))
 
     # So that users can write iscsi() to get the singleton instance
     def __call__(self):
@@ -180,13 +177,6 @@ class iSCSI(object):
     def available(self):
         return True
 
-    @property
-    def _connection(self):
-        if not self.__connection:
-            self.__connection = safe_dbus.get_new_system_connection()
-
-        return self.__connection
-
     @udisks_iscsi_required(critical=True, eval_mode=util.EvalMode.onetime)
     def _call_initiator_method(self, method, args=None):
         """Class a method of the ISCSI.Initiator DBus object
@@ -196,9 +186,13 @@ class iSCSI(object):
         :type params: GLib.Variant
 
         """
-        return safe_dbus.call_sync(UDISKS_SERVICE, UDISKS_MANAGER_PATH,
-                                   INITIATOR_IFACE, method, args,
-                                   connection=self._connection)
+        proxy = util.SystemBus.get_proxy(UDISKS_SERVICE, UDISKS_MANAGER_PATH, INITIATOR_IFACE)
+        try:
+            ret = getattr(proxy, method)(*args)
+        except DBusError as e:
+            raise errors.ISCSIError(str(e)) from e
+        else:
+            return ret
 
     @property
     def initiator_set(self):
@@ -212,7 +206,7 @@ class iSCSI(object):
             return self._initiator
 
         # udisks returns initiatorname as a NULL terminated bytearray
-        raw_initiator = bytes(self._call_initiator_method("GetInitiatorNameRaw")[0][:-1])
+        raw_initiator = bytes(self._call_initiator_method("GetInitiatorNameRaw", [])[:-1])
         return raw_initiator.decode("utf-8", errors="replace")
 
     @initiator.setter
@@ -226,8 +220,7 @@ class iSCSI(object):
             raise errors.ISCSIError(_("Cannot change initiator name with an active session"))
 
         log.info("Setting up iSCSI initiator name %s", self.initiator)
-        args = GLib.Variant("(sa{sv})", (val, None))
-        self._call_initiator_method("SetInitiatorName", args)
+        self._call_initiator_method("SetInitiatorName", (val, None))
 
         if self.initiator_set and val != self._initiator:
             log.info("Restarting iscsid after initiator name change")
@@ -272,27 +265,25 @@ class iSCSI(object):
 
         :type node_info: :class:`NodeInfo`
         :param dict extra: extra configuration for the node (e.g. authentication info)
-        :raises :class:`~.safe_dbus.DBusCallError`: if login fails
+        :raises :class:`~.errors.ISCSIError`: if login fails
 
         """
 
         if extra is None:
             extra = dict()
-        extra["node.startup"] = GLib.Variant("s", "onboot")
-        extra["node.session.auth.chap_algs"] = GLib.Variant("s", "SHA1,MD5")
+        extra["node.startup"] = get_variant(Str, "onboot")
+        extra["node.session.auth.chap_algs"] = get_variant(Str, "SHA1,MD5")
 
-        args = GLib.Variant("(sisisa{sv})", node_info.conn_info + (extra,))
+        args = node_info.conn_info + (extra,)
         self._call_initiator_method("Login", args)
 
     @udisks_iscsi_required(critical=False, eval_mode=util.EvalMode.onetime)
     def _get_active_sessions(self):
         try:
-            objects = safe_dbus.call_sync(UDISKS_SERVICE,
-                                          UDISKS_PATH,
-                                          'org.freedesktop.DBus.ObjectManager',
-                                          'GetManagedObjects',
-                                          None)[0]
-        except safe_dbus.DBusCallError as e:
+            proxy = util.SystemBus.get_proxy(UDISKS_SERVICE, UDISKS_PATH,
+                                             'org.freedesktop.DBus.ObjectManager')
+            objects = proxy.GetManagedObjects()
+        except DBusError as e:
             log.info("iscsi: Failed to get active sessions: %s", str(e))
             return []
 
@@ -321,10 +312,9 @@ class iSCSI(object):
         except BlockDev.UtilsError as e:
             log.error("failed to load iscsi_ibft: %s", str(e))
 
-        args = GLib.Variant("(a{sv})", ([], ))
         try:
-            found_nodes, _n_nodes = self._call_initiator_method("DiscoverFirmware", args)
-        except safe_dbus.DBusCallError as e:
+            found_nodes, _n_nodes = self._call_initiator_method("DiscoverFirmware", ([], ))
+        except errors.ISCSIError as e:
             log.info("iscsi: No IBFT info found: %s", str(e))
             # an exception here means there is no ibft firmware, just return
             return
@@ -342,7 +332,7 @@ class iSCSI(object):
                 log.info("iscsi IBFT: logged into %s at %s:%s through %s",
                          node.name, node.address, node.port, node.iface)
                 self.ibft_nodes.append(node)
-            except safe_dbus.DBusCallError as e:
+            except errors.ISCSIError as e:
                 log.error("Could not log into ibft iscsi target %s: %s",
                           node.name, str(e))
 
@@ -448,16 +438,15 @@ class iSCSI(object):
             self.startup()
             auth_info = dict()
             if username:
-                auth_info["username"] = GLib.Variant("s", username)
+                auth_info["username"] = get_variant(Str, username)
             if password:
-                auth_info["password"] = GLib.Variant("s", password)
+                auth_info["password"] = get_variant(Str, password)
             if r_username:
-                auth_info["reverse-username"] = GLib.Variant("s", r_username)
+                auth_info["reverse-username"] = get_variant(Str, r_username)
             if r_password:
-                auth_info["reverse-password"] = GLib.Variant("s", r_password)
+                auth_info["reverse-password"] = get_variant(Str, r_password)
 
-            args = GLib.Variant("(sqa{sv})", (ipaddr, int(port), auth_info))
-            nodes, _n_nodes = self._call_initiator_method("DiscoverSendTargets", args)
+            nodes, _n_nodes = self._call_initiator_method("DiscoverSendTargets", (ipaddr, int(port), auth_info))
 
             found_nodes = _to_node_infos(nodes)
             t_info = TargetInfo(ipaddr, port)
@@ -486,13 +475,13 @@ class iSCSI(object):
 
         auth_info = dict()
         if username:
-            auth_info["username"] = GLib.Variant("s", username)
+            auth_info["username"] = get_variant(Str, username)
         if password:
-            auth_info["password"] = GLib.Variant("s", password)
+            auth_info["password"] = get_variant(Str, password)
         if r_username:
-            auth_info["reverse-username"] = GLib.Variant("s", r_username)
+            auth_info["reverse-username"] = get_variant(Str, r_username)
         if r_password:
-            auth_info["reverse-password"] = GLib.Variant("s", r_password)
+            auth_info["reverse-password"] = get_variant(Str, r_password)
 
         try:
             self._login(node, auth_info)
@@ -509,7 +498,7 @@ class iSCSI(object):
                 node.r_username = r_username
             if r_password:
                 node.r_password = r_password
-        except safe_dbus.DBusCallError as e:
+        except errors.ISCSIError as e:
             msg = str(e)
             log.warning("iSCSI: could not log into %s: %s", node.name, msg)
 

@@ -8,7 +8,7 @@ version = "3.12.1"
 description = "Python module for system storage configuration"
 readme = "README.md"
 license = {file = "COPYING"}
-dependencies = ["pyudev"]
+dependencies = ["pyudev", "dasbus"]
 maintainers = [
   {name = "Vojtech Trefny", email = "vtrefny@redhat.com"}
 ]
