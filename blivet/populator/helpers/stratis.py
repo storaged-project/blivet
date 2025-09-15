@@ -46,12 +46,17 @@ class StratisFormatPopulator(FormatPopulator):
         if super(StratisFormatPopulator, cls).match(data, device):
             return True
 
+        # encrypted pools blockdevs can have either LUKS or stratis signature
+        format_name = udev.device_get_format(data)
+        if format_name not in ("crypto_LUKS", "stratis"):
+            return False
+
         # locked stratis pools are managed here
         for pool in stratis_info.locked_pools:
             if device.path in pool.devices:
                 return True
 
-        # unlocked encrypted pools are also managed here
+        # unlocked old-style metadata encrypted pools are also managed here
         if udev.device_get_format(data) == "crypto_LUKS":
             holders = udev.device_get_holders(data)
             if holders:

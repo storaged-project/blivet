@@ -20,20 +20,17 @@
 # Author(s): Vojtech Trefny <vtrefny@redhat.com>
 #
 
-import gi
-gi.require_version("GLib", "2.0")
-gi.require_version("Gio", "2.0")
-
-from gi.repository import GLib, Gio
-
 import json
 import os
+
+from dasbus.typing import UnixFD
+from dasbus.unix import GLibClientUnix
+from dasbus.error import DBusError
 
 from ..errors import StratisError
 from ..size import Size
 from ..static_data import stratis_info
 from ..tasks import availability
-from .. import safe_dbus
 from .. import util
 
 
@@ -107,13 +104,10 @@ def remove_pool(pool_uuid):
     pool_info = stratis_info.pools[pool_uuid]
 
     try:
-        (succ, _uuid), rc, err = safe_dbus.call_sync(STRATIS_SERVICE,
-                                                     STRATIS_PATH,
-                                                     STRATIS_MANAGER_INTF,
-                                                     "DestroyPool",
-                                                     GLib.Variant("(o)", (pool_info.object_path,)),
-                                                     timeout=STRATIS_CALL_TIMEOUT)
-    except safe_dbus.DBusCallError as e:
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF)
+        (succ, _uuid), rc, err = proxy.DestroyPool(pool_info.object_path,
+                                                   timeout=STRATIS_CALL_TIMEOUT)
+    except DBusError as e:
         raise StratisError("Failed to remove stratis pool: %s" % str(e))
     else:
         if not succ:
@@ -136,13 +130,10 @@ def remove_filesystem(pool_uuid, fs_uuid):
     fs_info = stratis_info.filesystems[fs_uuid]
 
     try:
-        (succ, _uuid), rc, err = safe_dbus.call_sync(STRATIS_SERVICE,
-                                                     pool_info.object_path,
-                                                     STRATIS_POOL_INTF,
-                                                     "DestroyFilesystems",
-                                                     GLib.Variant("(ao)", ([fs_info.object_path],)),
-                                                     timeout=STRATIS_CALL_TIMEOUT)
-    except safe_dbus.DBusCallError as e:
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, pool_info.object_path, STRATIS_POOL_INTF)
+        (succ, _uuid), rc, err = proxy.DestroyFilesystems([fs_info.object_path],
+                                                          timeout=STRATIS_CALL_TIMEOUT)
+    except DBusError as e:
         raise StratisError("Failed to remove stratis filesystem: %s" % str(e))
     else:
         if not succ:
@@ -159,16 +150,11 @@ def set_key(key_desc, passphrase, key_file):
     else:
         raise RuntimeError("Passphrase or key file must be provided")
 
-    fd_list = Gio.UnixFDList()
-    fd_list.append(fd)
-
     try:
-        ((_changed, _set), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
-                                                          STRATIS_PATH,
-                                                          STRATIS_MANAGER_INTF,
-                                                          "SetKey",
-                                                          GLib.Variant("(sh)", (key_desc, 0)), fds=fd_list)
-    except safe_dbus.DBusCallError as e:
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF,
+                                         client=GLibClientUnix)
+        ((_changed, _set), rc, err) = proxy.SetKey(key_desc, UnixFD(fd))
+    except DBusError as e:
         raise StratisError("Failed to set key for new pool: %s" % str(e))
     else:
         if rc != 0:
@@ -185,12 +171,9 @@ def _unlock_pool_old(pool_uuid, method=None, desc=None, passphrase=None, keyfile
         set_key(desc, passphrase, keyfile)
 
     try:
-        (succ, err, _blockdevs) = safe_dbus.call_sync(STRATIS_SERVICE,
-                                                      STRATIS_PATH,
-                                                      STRATIS_MANAGER_INTF,
-                                                      "UnlockPool",
-                                                      GLib.Variant("(ss)", (pool_uuid, method)))
-    except safe_dbus.DBusCallError as e:
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF)
+        (succ, err, _blockdevs) = proxy.UnlockPool(pool_uuid, method)
+    except DBusError as e:
         raise StratisError("Failed to unlock pool: %s" % str(e))
     else:
         if not succ:
@@ -201,8 +184,6 @@ def _unlock_pool_old(pool_uuid, method=None, desc=None, passphrase=None, keyfile
 
 
 def _unlock_pool_new(pool_uuid, method=None, passphrase=None, keyfile=None):
-    fd_list = Gio.UnixFDList()
-
     if method == "keyring":
         if passphrase:
             (read, write) = os.pipe()
@@ -213,19 +194,16 @@ def _unlock_pool_new(pool_uuid, method=None, passphrase=None, keyfile=None):
         else:
             raise RuntimeError("Passphrase or key file must be provided")
 
-        fd_list.append(fd)
-
-        args = GLib.Variant("(ss(b(bu))(bh))", (pool_uuid, "uuid", (True, (False, 0)), (True, 0)))
+        key_arg = (True, UnixFD(fd))
     else:
-        args = GLib.Variant("(ss(b(bu))(bh))", (pool_uuid, "uuid", (True, (False, 0)), (False, 0)))
+        key_arg = (False, -1)
 
     try:
-        (succ, err, _blockdevs) = safe_dbus.call_sync(STRATIS_SERVICE,
-                                                      STRATIS_PATH,
-                                                      STRATIS_MANAGER_INTF_R8,
-                                                      "StartPool",
-                                                      args, fds=fd_list)
-    except safe_dbus.DBusCallError as e:
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF_R8,
+                                         client=GLibClientUnix)
+        (succ, err, _blockdevs) = proxy.StartPool(pool_uuid, "uuid", (True, (False, 0)), key_arg,
+                                                  timeout=STRATIS_CALL_TIMEOUT)
+    except DBusError as e:
         raise StratisError("Failed to unlock pool: %s" % str(e))
     else:
         if not succ:
@@ -243,8 +221,8 @@ def unlock_pool(pool_uuid, method, desc=None, passphrase=None, keyfile=None):
     if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
-    ret = safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH,
-                                           iface=STRATIS_MANAGER_INTF_R8)
+    ret = util.check_object_available(STRATIS_SERVICE, STRATIS_PATH,
+                                      iface=STRATIS_MANAGER_INTF_R8)
     if ret:
         return _unlock_pool_new(pool_uuid, method, passphrase, keyfile)
     else:
@@ -258,35 +236,30 @@ def create_pool(name, devices, encrypted, passphrase, key_file, clevis):
     if encrypted and not (passphrase or key_file):
         raise StratisError("Passphrase or key file must be specified for encrypted pool")
 
-    raid_opt = GLib.Variant("(bq)", (False, 0))
+    raid_opt = (False, 0)
 
     if encrypted:
         key_desc = "blivet-%s" % name  # XXX what would be a good key description?
         set_key(key_desc, passphrase, key_file)
-        key_opt = GLib.Variant("(bs)", (True, key_desc))
+        key_opt = (True, key_desc)
         if clevis:
             clevis_config = {"url": clevis.tang_url}
             if clevis.tang_thumbprint:
                 clevis_config["thp"] = clevis.tang_thumbprint
             else:
                 clevis_config["stratis:tang:trust_url"] = True
-            clevis_opt = GLib.Variant("(b(ss))", (True, (clevis.pin, json.dumps(clevis_config))))
+            clevis_opt = (True, (clevis.pin, json.dumps(clevis_config)))
         else:
-            clevis_opt = GLib.Variant("(b(ss))", (False, ("", "")))
+            clevis_opt = (False, ("", ""))
     else:
-        key_opt = GLib.Variant("(bs)", (False, ""))
-        clevis_opt = GLib.Variant("(b(ss))", (False, ("", "")))
+        key_opt = (False, "")
+        clevis_opt = (False, ("", ""))
 
     try:
-        ((succ, _paths), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
-                                                        STRATIS_PATH,
-                                                        STRATIS_MANAGER_INTF,
-                                                        "CreatePool",
-                                                        GLib.Variant("(s(bq)as(bs)(b(ss)))", (name, raid_opt,
-                                                                                              devices, key_opt,
-                                                                                              clevis_opt)),
-                                                        timeout=STRATIS_CALL_TIMEOUT)
-    except safe_dbus.DBusCallError as e:
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF)
+        ((succ, _paths), rc, err) = proxy.CreatePool(name, raid_opt, devices, key_opt, clevis_opt,
+                                                     timeout=STRATIS_CALL_TIMEOUT)
+    except DBusError as e:
         raise StratisError("Failed to create stratis pool: %s" % str(e))
     else:
         if not succ:
@@ -308,18 +281,15 @@ def create_filesystem(name, pool_uuid, fs_size=None):
 
     pool_info = stratis_info.pools[pool_uuid]
     if fs_size:
-        size_opt = GLib.Variant("(bs)", (True, str(fs_size.get_bytes())))
+        size_opt = (True, str(fs_size.get_bytes()))
     else:
-        size_opt = GLib.Variant("(bs)", (False, ""))
+        size_opt = (False, "")
 
     try:
-        ((succ, _paths), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
-                                                        pool_info.object_path,
-                                                        STRATIS_POOL_INTF,
-                                                        "CreateFilesystems",
-                                                        GLib.Variant("(a(s(bs)))", ([GLib.Variant("(s(bs))", (name, size_opt))],)),
-                                                        timeout=STRATIS_CALL_TIMEOUT)
-    except safe_dbus.DBusCallError as e:
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, pool_info.object_path, STRATIS_POOL_INTF)
+        ((succ, _paths), rc, err) = proxy.CreateFilesystems([(name, size_opt), ],
+                                                            timeout=STRATIS_CALL_TIMEOUT)
+    except DBusError as e:
         raise StratisError("Failed to create stratis filesystem on '%s': %s" % (pool_info.name, str(e)))
     else:
         if not succ:
@@ -339,13 +309,9 @@ def add_device(pool_uuid, device):
     pool_info = stratis_info.pools[pool_uuid]
 
     try:
-        ((succ, _paths), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
-                                                        pool_info.object_path,
-                                                        STRATIS_POOL_INTF,
-                                                        "AddDataDevs",
-                                                        GLib.Variant("(as)", ([device],)),
-                                                        timeout=STRATIS_CALL_TIMEOUT)
-    except safe_dbus.DBusCallError as e:
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, pool_info.object_path, STRATIS_POOL_INTF)
+        ((succ, _paths), rc, err) = proxy.AddDataDevs([device], timeout=STRATIS_CALL_TIMEOUT)
+    except DBusError as e:
         raise StratisError("Failed to create stratis filesystem on '%s': %s" % (pool_info.name, str(e)))
     else:
         if not succ:
@@ -359,8 +325,8 @@ def stop_pool(pool_uuid):
     if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
-    ret = safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH,
-                                           iface=STRATIS_MANAGER_INTF_R8)
+    ret = util.check_object_available(STRATIS_SERVICE, STRATIS_PATH,
+                                      iface=STRATIS_MANAGER_INTF_R8)
     if not ret:
         raise StratisError("DBus interface %s not available" % STRATIS_MANAGER_INTF_R8)
 
@@ -373,13 +339,9 @@ def stop_pool(pool_uuid):
         raise StratisError("Stratis pool %s not found" % pool_uuid)
 
     try:
-        ((succ, _uuid), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
-                                                       STRATIS_PATH,
-                                                       STRATIS_MANAGER_INTF_R8,
-                                                       "StopPool",
-                                                       GLib.Variant("(ss)", (pool_uuid, "uuid")),
-                                                       timeout=STRATIS_CALL_TIMEOUT)
-    except safe_dbus.DBusCallError as e:
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF_R8)
+        ((succ, _uuid), rc, err) = proxy.StopPool(pool_uuid, "uuid", timeout=STRATIS_CALL_TIMEOUT)
+    except DBusError as e:
         raise StratisError("Failed to stop stratis pool '%s': %s" % (pool_info.name, str(e)))
     else:
         if not succ:
@@ -393,24 +355,19 @@ def start_pool(pool_uuid):
     if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
-    ret = safe_dbus.check_object_available(STRATIS_SERVICE, STRATIS_PATH,
-                                           iface=STRATIS_MANAGER_INTF_R8)
+    ret = util.check_object_available(STRATIS_SERVICE, STRATIS_PATH,
+                                      iface=STRATIS_MANAGER_INTF_R8)
     if not ret:
         raise StratisError("DBus interface %s not available" % STRATIS_MANAGER_INTF_R8)
 
     # repopulate the stratis info cache just to be sure all values are still valid
     stratis_info.drop_cache()
 
-    args = GLib.Variant("(ss(b(bu))(bh))", (pool_uuid, "uuid", (False, (False, 0)), (False, 0)))
-
     try:
-        ((succ, _uuid), rc, err) = safe_dbus.call_sync(STRATIS_SERVICE,
-                                                       STRATIS_PATH,
-                                                       STRATIS_MANAGER_INTF_R8,
-                                                       "StartPool",
-                                                       args,
-                                                       timeout=STRATIS_CALL_TIMEOUT)
-    except safe_dbus.DBusCallError as e:
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF_R8)
+        ((succ, _uuid), rc, err) = proxy.StartPool(pool_uuid, "uuid", (False, (False, 0)), (False, -1),
+                                                   timeout=STRATIS_CALL_TIMEOUT)
+    except DBusError as e:
         raise StratisError("Failed to start stratis pool '%s': %s" % (pool_uuid, str(e)))
     else:
         if not succ:
