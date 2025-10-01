@@ -4,7 +4,6 @@ from __future__ import print_function
 
 import argparse
 import csv
-import dbus
 import os
 import pdb
 import re
@@ -13,6 +12,9 @@ import sys
 import traceback
 import unittest
 import yaml
+
+from dasbus.connection import SystemMessageBus
+from dasbus.error import DBusError
 
 
 SKIP_CONFIG = 'skip.yml'
@@ -79,16 +81,19 @@ def get_version_from_dbus():
     """ Try to get distro and version from dbus
     """
 
-    bus = dbus.SystemBus()
+    try:
+        bus = SystemMessageBus()
+        proxy = bus.get_proxy("org.freedesktop.hostname1",
+                              "/org/freedesktop/hostname1",
+                              "org.freedesktop.hostname1")
+    except DBusError:
+        return False
 
-    # get information about the distribution from systemd (hostname1)
-    sys_info = bus.get_object("org.freedesktop.hostname1", "/org/freedesktop/hostname1")
-
-    cpe = str(sys_info.Get("org.freedesktop.hostname1", "OperatingSystemCPEName", dbus_interface=dbus.PROPERTIES_IFACE))
+    cpe = str(proxy.OperatingSystemCPEName)
     if cpe:
         return get_version_from_cpe(cpe)
 
-    pretty_name = str(sys_info.Get("org.freedesktop.hostname1", "OperatingSystemPrettyName", dbus_interface=dbus.PROPERTIES_IFACE))
+    pretty_name = str(proxy.OperatingSystemPrettyName)
     if pretty_name:
         return get_version_from_pretty_name(pretty_name)
 
