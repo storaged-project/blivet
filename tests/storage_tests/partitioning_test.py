@@ -32,7 +32,7 @@ from blivet.formats import get_format
 from blivet.size import Size
 from blivet.flags import flags
 
-from .imagebackedtestcase import ImageBackedTestCase
+from .storagetestcase import StorageTestCase
 
 # disklabel-type-specific constants
 # keys: disklabel type string
@@ -680,62 +680,68 @@ class PartitioningTestCase(unittest.TestCase):
         self.assertEqual(free[1].length, 2048)
 
 
-class ExtendedPartitionTestCase(ImageBackedTestCase):
+class ExtendedPartitionTestCase(StorageTestCase):
 
-    disks = {"disk1": Size("2 GiB")}
-    initialize_disks = False
+    _num_disks = 1
 
-    def _set_up_storage(self):
-        # Don't rely on the default being an msdos disklabel since the test
-        # could be running on an EFI system.
-        for name in self.disks:
-            disk = self.blivet.devicetree.get_device_by_name(name)
+    def setUp(self):
+        super().setUp()
+
+        self._blivet_setup()
+
+        for path in self.vdevs:
+            disk = self.storage.devicetree.get_device_by_path(path)
             fmt = get_format("disklabel", label_type="msdos", device=disk.path)
-            self.blivet.format_device(disk, fmt)
+            self.storage.format_device(disk, fmt)
+
+    def _clean_up(self):
+        self._blivet_cleanup()
+
+        return super()._clean_up()
 
     def test_implicit_extended_partitions(self):
         """ Verify management of implicitly requested extended partition. """
         # By running partition allocation multiple times with enough partitions
         # to require an extended partition, we exercise the code that manages
         # the implicit extended partition.
-        p1 = self.blivet.new_partition(size=Size("100 MiB"))
-        self.blivet.create_device(p1)
+        p1 = self.storage.new_partition(size=Size("100 MiB"))
+        self.storage.create_device(p1)
 
-        p2 = self.blivet.new_partition(size=Size("200 MiB"))
-        self.blivet.create_device(p2)
+        p2 = self.storage.new_partition(size=Size("200 MiB"))
+        self.storage.create_device(p2)
 
-        p3 = self.blivet.new_partition(size=Size("300 MiB"))
-        self.blivet.create_device(p3)
+        p3 = self.storage.new_partition(size=Size("300 MiB"))
+        self.storage.create_device(p3)
 
-        p4 = self.blivet.new_partition(size=Size("400 MiB"))
-        self.blivet.create_device(p4)
+        p4 = self.storage.new_partition(size=Size("400 MiB"))
+        self.storage.create_device(p4)
 
-        do_partitioning(self.blivet)
+        do_partitioning(self.storage)
 
         # at this point there should be an extended partition
-        self.assertIsNotNone(self.blivet.disks[0].format.extended_partition,
+        self.assertIsNotNone(self.storage.disks[0].format.extended_partition,
                              "no extended partition was created")
 
         # remove the last partition request and verify that the extended goes away as a result
-        self.blivet.destroy_device(p4)
-        do_partitioning(self.blivet)
-        self.assertIsNone(self.blivet.disks[0].format.extended_partition,
+        self.storage.destroy_device(p4)
+        do_partitioning(self.storage)
+        self.assertIsNone(self.storage.disks[0].format.extended_partition,
                           "extended partition was not removed with last logical")
 
-        p5 = self.blivet.new_partition(size=Size("500 MiB"))
-        self.blivet.create_device(p5)
+        p5 = self.storage.new_partition(size=Size("500 MiB"))
+        self.storage.create_device(p5)
 
-        do_partitioning(self.blivet)
+        do_partitioning(self.storage)
 
-        p6 = self.blivet.new_partition(size=Size("450 MiB"))
-        self.blivet.create_device(p6)
+        p6 = self.storage.new_partition(size=Size("450 MiB"))
+        self.storage.create_device(p6)
 
-        do_partitioning(self.blivet)
+        do_partitioning(self.storage)
 
-        self.assertIsNotNone(self.blivet.disks[0].format.extended_partition,
+        self.assertIsNotNone(self.storage.disks[0].format.extended_partition,
                              "no extended partition was created")
 
-        self.blivet.do_it()
+        self.storage.do_it()
 
     def test_implicit_extended_partitions_installer_mode(self):
         flags.keep_empty_ext_partitions = False
@@ -744,23 +750,23 @@ class ExtendedPartitionTestCase(ImageBackedTestCase):
 
     def test_explicit_extended_partitions(self):
         """ Verify that explicitly requested extended partitions work. """
-        disk = self.blivet.disks[0]
-        p1 = self.blivet.new_partition(size=Size("500 MiB"),
+        disk = self.storage.disks[0]
+        p1 = self.storage.new_partition(size=Size("500 MiB"),
                                        part_type=parted.PARTITION_EXTENDED)
-        self.blivet.create_device(p1)
-        do_partitioning(self.blivet)
+        self.storage.create_device(p1)
+        do_partitioning(self.storage)
 
         self.assertEqual(p1.parted_partition.type, parted.PARTITION_EXTENDED)
         self.assertEqual(p1.parted_partition, disk.format.extended_partition)
 
-        p2 = self.blivet.new_partition(size=Size("1 GiB"))
-        self.blivet.create_device(p2)
-        do_partitioning(self.blivet)
+        p2 = self.storage.new_partition(size=Size("1 GiB"))
+        self.storage.create_device(p2)
+        do_partitioning(self.storage)
 
         self.assertEqual(p1.parted_partition, disk.format.extended_partition,
                          "user-specified extended partition was removed")
 
-        self.blivet.do_it()
+        self.storage.do_it()
 
 
 class DiskTagsTestCase(unittest.TestCase):
