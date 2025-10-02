@@ -239,6 +239,14 @@ class TranslationTestCase(unittest.TestCase):
         self.saved_lang = os.environ.get('LANG', 'en_US.UTF-8')
         self.addCleanup(self._clean_up)
 
+        for lang in TEST_LANGS:
+            try:
+                locale.setlocale(locale.LC_ALL, lang)
+            except locale.Error:
+                self.skipTest("required locale %s not available, skipping" % lang)
+            else:
+                locale.setlocale(locale.LC_ALL, 'C.UTF-8')
+
     def _clean_up(self):
         os.environ['LANG'] = self.saved_lang
         locale.setlocale(locale.LC_ALL, 'C.UTF-8')
