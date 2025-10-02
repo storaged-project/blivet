@@ -17,8 +17,6 @@ There are three separate test suites available:
 - *Storage tests* located in the `storage_tests` folder. These tests require
   root privileges and create block devices to run tests on. These tests can
   be run separately using `make storage-test`.
-- *VM tests* located in the `vmtests` folder. These test are not run by
-  default and require a special virtual machine to run in.
 
 To execute the Pylint code analysis tool run::
 
