@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>blivet.devicelibs package &#8212; Blivet 3.12.1 documentation</title>
+    <title>blivet.devicelibs package &#8212; Blivet 3.13.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=514cf933" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=def86cc0" />
     
-    <script src="../_static/documentation_options.js?v=bf028e07"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=6aaf4047"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="blivet.dbus.html" title="blivet.dbus package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.13.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devicelibs package</a></li> 
       </ul>
@@ -65,6 +65,101 @@
 </section>
 <section id="module-blivet.devicelibs.crypto">
 <span id="blivet-devicelibs-crypto-module"></span><h2>blivet.devicelibs.crypto module<a class="headerlink" href="#module-blivet.devicelibs.crypto" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContext">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.crypto.</span></span><span class="sig-name descname"><span class="pre">KeyslotContext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passphrase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keyfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContext" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContext.ctype">
+<span class="sig-name descname"><span class="pre">ctype</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContext.ctype" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContext.is_keyfile">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_keyfile</span></span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContext.is_keyfile" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContext.is_passphrase">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_passphrase</span></span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContext.is_passphrase" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContext.valid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">valid</span></span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContext.valid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContextList">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.crypto.</span></span><span class="sig-name descname"><span class="pre">KeyslotContextList</span></span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContextList" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContextList.add_context">
+<span class="sig-name descname"><span class="pre">add_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContextList.add_context" title="Link to this definition">¶</a></dt>
+<dd><p>Add given context to this list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContextList.add_keyfile">
+<span class="sig-name descname"><span class="pre">add_keyfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keyfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContextList.add_keyfile" title="Link to this definition">¶</a></dt>
+<dd><p>Add a passphrase keyfile context to this list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContextList.add_passphrase">
+<span class="sig-name descname"><span class="pre">add_passphrase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passphrase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContextList.add_passphrase" title="Link to this definition">¶</a></dt>
+<dd><p>Add a passphrase keyslot context to this list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContextList.clear_contexts">
+<span class="sig-name descname"><span class="pre">clear_contexts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContextList.clear_contexts" title="Link to this definition">¶</a></dt>
+<dd><p>Remove ALL keyslot contexts of given type (or any type) from this list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContextList.get_context">
+<span class="sig-name descname"><span class="pre">get_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContextList.get_context" title="Link to this definition">¶</a></dt>
+<dd><p>Get highest priority context with given type (or any type)
+from this list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContextList.get_contexts">
+<span class="sig-name descname"><span class="pre">get_contexts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContextList.get_contexts" title="Link to this definition">¶</a></dt>
+<dd><p>Get highest priority contexts of all contexts with given type (or any type)
+from this list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContextList.remove_context">
+<span class="sig-name descname"><span class="pre">remove_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContextList.remove_context" title="Link to this definition">¶</a></dt>
+<dd><p>Remove ALL keyslot contexts matching the given context (e.g. same passphrase or key file)
+from this list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContextList.remove_keyfile">
+<span class="sig-name descname"><span class="pre">remove_keyfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keyfile</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContextList.remove_keyfile" title="Link to this definition">¶</a></dt>
+<dd><p>Remove ALL keylost contexts with given keyfile from this list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContextList.remove_passphrase">
+<span class="sig-name descname"><span class="pre">remove_passphrase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passphrase</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContextList.remove_passphrase" title="Link to this definition">¶</a></dt>
+<dd><p>Remove ALL keylost contexts with given passphrase from this list</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devicelibs.crypto.KeyslotContextList.valid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">valid</span></span><a class="headerlink" href="#blivet.devicelibs.crypto.KeyslotContextList.valid" title="Link to this definition">¶</a></dt>
+<dd><p>Is at least one of the contexts set valid (non-empty passphrase, existing key file…)</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="blivet.devicelibs.crypto.calculate_integrity_metadata_size">
 <span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.crypto.</span></span><span class="sig-name descname"><span class="pre">calculate_integrity_metadata_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'crc32c'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.crypto.calculate_integrity_metadata_size" title="Link to this definition">¶</a></dt>
@@ -508,6 +603,11 @@ of the host architecture detected by blivet.arch.get_arch.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="blivet.devicelibs.lvm.is_valid_cache_md_size">
 <span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.lvm.</span></span><span class="sig-name descname"><span class="pre">is_valid_cache_md_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">md_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.is_valid_cache_md_size" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blivet.devicelibs.lvm.lvm_dbusd_refresh">
+<span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.lvm.</span></span><span class="sig-name descname"><span class="pre">lvm_dbusd_refresh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.lvm.lvm_dbusd_refresh" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -1058,8 +1158,18 @@ RAID level, including the RAID object itself.</p>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="blivet.devicelibs.stratis.start_pool">
+<span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.stratis.</span></span><span class="sig-name descname"><span class="pre">start_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool_uuid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.stratis.start_pool" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blivet.devicelibs.stratis.stop_pool">
+<span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.stratis.</span></span><span class="sig-name descname"><span class="pre">stop_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool_uuid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.stratis.stop_pool" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="blivet.devicelibs.stratis.unlock_pool">
-<span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.stratis.</span></span><span class="sig-name descname"><span class="pre">unlock_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool_uuid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.stratis.unlock_pool" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">blivet.devicelibs.stratis.</span></span><span class="sig-name descname"><span class="pre">unlock_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool_uuid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passphrase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keyfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devicelibs.stratis.unlock_pool" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -1086,6 +1196,26 @@ RAID level, including the RAID object itself.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-blivet.devicelibs.crypto">blivet.devicelibs.crypto module</a><ul>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContext"><code class="docutils literal notranslate"><span class="pre">KeyslotContext</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContext.ctype"><code class="docutils literal notranslate"><span class="pre">KeyslotContext.ctype</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContext.is_keyfile"><code class="docutils literal notranslate"><span class="pre">KeyslotContext.is_keyfile</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContext.is_passphrase"><code class="docutils literal notranslate"><span class="pre">KeyslotContext.is_passphrase</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContext.valid"><code class="docutils literal notranslate"><span class="pre">KeyslotContext.valid</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContextList"><code class="docutils literal notranslate"><span class="pre">KeyslotContextList</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContextList.add_context"><code class="docutils literal notranslate"><span class="pre">KeyslotContextList.add_context()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContextList.add_keyfile"><code class="docutils literal notranslate"><span class="pre">KeyslotContextList.add_keyfile()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContextList.add_passphrase"><code class="docutils literal notranslate"><span class="pre">KeyslotContextList.add_passphrase()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContextList.clear_contexts"><code class="docutils literal notranslate"><span class="pre">KeyslotContextList.clear_contexts()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContextList.get_context"><code class="docutils literal notranslate"><span class="pre">KeyslotContextList.get_context()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContextList.get_contexts"><code class="docutils literal notranslate"><span class="pre">KeyslotContextList.get_contexts()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContextList.remove_context"><code class="docutils literal notranslate"><span class="pre">KeyslotContextList.remove_context()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContextList.remove_keyfile"><code class="docutils literal notranslate"><span class="pre">KeyslotContextList.remove_keyfile()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContextList.remove_passphrase"><code class="docutils literal notranslate"><span class="pre">KeyslotContextList.remove_passphrase()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.crypto.KeyslotContextList.valid"><code class="docutils literal notranslate"><span class="pre">KeyslotContextList.valid</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#blivet.devicelibs.crypto.calculate_integrity_metadata_size"><code class="docutils literal notranslate"><span class="pre">calculate_integrity_metadata_size()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.crypto.calculate_luks2_max_memory"><code class="docutils literal notranslate"><span class="pre">calculate_luks2_max_memory()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.crypto.get_optimal_luks_sector_size"><code class="docutils literal notranslate"><span class="pre">get_optimal_luks_sector_size()</span></code></a></li>
@@ -1158,6 +1288,7 @@ RAID level, including the RAID object itself.</p>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.ensure_lv_is_writable"><code class="docutils literal notranslate"><span class="pre">ensure_lv_is_writable()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.is_lvm_name_valid"><code class="docutils literal notranslate"><span class="pre">is_lvm_name_valid()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.is_valid_cache_md_size"><code class="docutils literal notranslate"><span class="pre">is_valid_cache_md_size()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.lvm.lvm_dbusd_refresh"><code class="docutils literal notranslate"><span class="pre">lvm_dbusd_refresh()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.lvm_devices_add"><code class="docutils literal notranslate"><span class="pre">lvm_devices_add()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.lvm_devices_copy"><code class="docutils literal notranslate"><span class="pre">lvm_devices_copy()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.lvm.lvm_devices_remove"><code class="docutils literal notranslate"><span class="pre">lvm_devices_remove()</span></code></a></li>
@@ -1230,6 +1361,8 @@ RAID level, including the RAID object itself.</p>
 <li><a class="reference internal" href="#blivet.devicelibs.stratis.remove_filesystem"><code class="docutils literal notranslate"><span class="pre">remove_filesystem()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.stratis.remove_pool"><code class="docutils literal notranslate"><span class="pre">remove_pool()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.stratis.set_key"><code class="docutils literal notranslate"><span class="pre">set_key()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.stratis.start_pool"><code class="docutils literal notranslate"><span class="pre">start_pool()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devicelibs.stratis.stop_pool"><code class="docutils literal notranslate"><span class="pre">stop_pool()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devicelibs.stratis.unlock_pool"><code class="docutils literal notranslate"><span class="pre">unlock_pool()</span></code></a></li>
 </ul>
 </li>
@@ -1256,7 +1389,7 @@ RAID level, including the RAID object itself.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -1264,7 +1397,7 @@ RAID level, including the RAID object itself.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -1285,14 +1418,14 @@ RAID level, including the RAID object itself.</p>
         <li class="right" >
           <a href="blivet.dbus.html" title="blivet.dbus package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.13.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devicelibs package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2013-2025, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

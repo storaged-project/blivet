@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>blivet.static_data package &#8212; Blivet 3.12.1 documentation</title>
+    <title>blivet.static_data package &#8212; Blivet 3.13.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=514cf933" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=def86cc0" />
     
-    <script src="../_static/documentation_options.js?v=bf028e07"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=6aaf4047"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="blivet.populator.helpers.html" title="blivet.populator.helpers package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.13.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.static_data package</a></li> 
       </ul>
@@ -333,6 +333,11 @@ Maintains the Stratis devices info cache.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pools</span></span><a class="headerlink" href="#blivet.static_data.stratis_info.StratisInfo.pools" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.static_data.stratis_info.StratisInfo.stopped_pools">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stopped_pools</span></span><a class="headerlink" href="#blivet.static_data.stratis_info.StratisInfo.stopped_pools" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -411,6 +416,37 @@ Maintains the Stratis devices info cache.</p>
 <dt class="sig sig-object py" id="blivet.static_data.stratis_info.StratisPoolInfo.uuid">
 <span class="sig-name descname"><span class="pre">uuid</span></span><a class="headerlink" href="#blivet.static_data.stratis_info.StratisPoolInfo.uuid" title="Link to this definition">¶</a></dt>
 <dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blivet.static_data.stratis_info.StratisStoppedPoolInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.static_data.stratis_info.</span></span><span class="sig-name descname"><span class="pre">StratisStoppedPoolInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">devices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encrypted</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.static_data.stratis_info.StratisStoppedPoolInfo" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<p>Create new instance of StratisStoppedPoolInfo(uuid, name, devices, encrypted)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.static_data.stratis_info.StratisStoppedPoolInfo.devices">
+<span class="sig-name descname"><span class="pre">devices</span></span><a class="headerlink" href="#blivet.static_data.stratis_info.StratisStoppedPoolInfo.devices" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.static_data.stratis_info.StratisStoppedPoolInfo.encrypted">
+<span class="sig-name descname"><span class="pre">encrypted</span></span><a class="headerlink" href="#blivet.static_data.stratis_info.StratisStoppedPoolInfo.encrypted" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.static_data.stratis_info.StratisStoppedPoolInfo.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#blivet.static_data.stratis_info.StratisStoppedPoolInfo.name" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.static_data.stratis_info.StratisStoppedPoolInfo.uuid">
+<span class="sig-name descname"><span class="pre">uuid</span></span><a class="headerlink" href="#blivet.static_data.stratis_info.StratisStoppedPoolInfo.uuid" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
 </dd></dl>
 
 </dd></dl>
@@ -503,6 +539,7 @@ Maintains the Stratis devices info cache.</p>
 <li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisInfo.get_pool_info"><code class="docutils literal notranslate"><span class="pre">StratisInfo.get_pool_info()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisInfo.locked_pools"><code class="docutils literal notranslate"><span class="pre">StratisInfo.locked_pools</span></code></a></li>
 <li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisInfo.pools"><code class="docutils literal notranslate"><span class="pre">StratisInfo.pools</span></code></a></li>
+<li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisInfo.stopped_pools"><code class="docutils literal notranslate"><span class="pre">StratisInfo.stopped_pools</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisLockedPoolInfo"><code class="docutils literal notranslate"><span class="pre">StratisLockedPoolInfo</span></code></a><ul>
@@ -520,6 +557,13 @@ Maintains the Stratis devices info cache.</p>
 <li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisPoolInfo.physical_size"><code class="docutils literal notranslate"><span class="pre">StratisPoolInfo.physical_size</span></code></a></li>
 <li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisPoolInfo.physical_used"><code class="docutils literal notranslate"><span class="pre">StratisPoolInfo.physical_used</span></code></a></li>
 <li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisPoolInfo.uuid"><code class="docutils literal notranslate"><span class="pre">StratisPoolInfo.uuid</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisStoppedPoolInfo"><code class="docutils literal notranslate"><span class="pre">StratisStoppedPoolInfo</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisStoppedPoolInfo.devices"><code class="docutils literal notranslate"><span class="pre">StratisStoppedPoolInfo.devices</span></code></a></li>
+<li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisStoppedPoolInfo.encrypted"><code class="docutils literal notranslate"><span class="pre">StratisStoppedPoolInfo.encrypted</span></code></a></li>
+<li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisStoppedPoolInfo.name"><code class="docutils literal notranslate"><span class="pre">StratisStoppedPoolInfo.name</span></code></a></li>
+<li><a class="reference internal" href="#blivet.static_data.stratis_info.StratisStoppedPoolInfo.uuid"><code class="docutils literal notranslate"><span class="pre">StratisStoppedPoolInfo.uuid</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -547,7 +591,7 @@ Maintains the Stratis devices info cache.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -555,7 +599,7 @@ Maintains the Stratis devices info cache.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -576,14 +620,14 @@ Maintains the Stratis devices info cache.</p>
         <li class="right" >
           <a href="blivet.populator.helpers.html" title="blivet.populator.helpers package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.13.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.static_data package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2013-2025, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

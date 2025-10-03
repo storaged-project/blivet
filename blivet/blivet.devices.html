@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>blivet.devices package &#8212; Blivet 3.12.1 documentation</title>
+    <title>blivet.devices package &#8212; Blivet 3.13.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=514cf933" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=def86cc0" />
     
-    <script src="../_static/documentation_options.js?v=bf028e07"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=6aaf4047"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="blivet.devicelibs.html" title="blivet.devicelibs package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.13.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devices package</a></li> 
       </ul>
@@ -2717,6 +2717,12 @@ the DiskDevice on which it resides.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeDevice.pre_format_destroy">
+<span class="sig-name descname"><span class="pre">pre_format_destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.pre_format_destroy" title="Link to this definition">¶</a></dt>
+<dd><p>Fixup needed to run before wiping this device</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="blivet.devices.lvm.LVMLogicalVolumeDevice.read_current_size">
 <span class="sig-name descname"><span class="pre">read_current_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.read_current_size" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -4694,6 +4700,12 @@ currently unavailable.</p>
 <dd><p>A list of all disks this device depends on, including itself.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.devices.storage.StorageDevice.drop_cache">
+<span class="sig-name descname"><span class="pre">drop_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.devices.storage.StorageDevice.drop_cache" title="Link to this definition">¶</a></dt>
+<dd><p>Drop cached information stored for this device and its format</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.devices.storage.StorageDevice.encrypted">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">encrypted</span></span><a class="headerlink" href="#blivet.devices.storage.StorageDevice.encrypted" title="Link to this definition">¶</a></dt>
@@ -5127,6 +5139,12 @@ override the default value of modparent in new code.</p>
 <dd><p>The size of this pool</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.devices.stratis.StratisPoolDevice.status">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">status</span></span><a class="headerlink" href="#blivet.devices.stratis.StratisPoolDevice.status" title="Link to this definition">¶</a></dt>
+<dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -5551,6 +5569,7 @@ override the default value of modparent in new code.</p>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.min_size"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice.min_size</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.pool"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice.pool</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.populate_ksdata"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice.populate_ksdata()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.pre_format_destroy"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice.pre_format_destroy()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.read_current_size"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice.read_current_size()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.readonly"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice.readonly</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.lvm.LVMLogicalVolumeDevice.remove_hook"><code class="docutils literal notranslate"><span class="pre">LVMLogicalVolumeDevice.remove_hook()</span></code></a></li>
@@ -5869,6 +5888,7 @@ override the default value of modparent in new code.</p>
 <li><a class="reference internal" href="#blivet.devices.storage.StorageDevice.dict"><code class="docutils literal notranslate"><span class="pre">StorageDevice.dict</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.storage.StorageDevice.direct"><code class="docutils literal notranslate"><span class="pre">StorageDevice.direct</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.storage.StorageDevice.disks"><code class="docutils literal notranslate"><span class="pre">StorageDevice.disks</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devices.storage.StorageDevice.drop_cache"><code class="docutils literal notranslate"><span class="pre">StorageDevice.drop_cache()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.storage.StorageDevice.encrypted"><code class="docutils literal notranslate"><span class="pre">StorageDevice.encrypted</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.storage.StorageDevice.format"><code class="docutils literal notranslate"><span class="pre">StorageDevice.format</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.storage.StorageDevice.format_args"><code class="docutils literal notranslate"><span class="pre">StorageDevice.format_args</span></code></a></li>
@@ -5935,6 +5955,7 @@ override the default value of modparent in new code.</p>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisPoolDevice.passphrase"><code class="docutils literal notranslate"><span class="pre">StratisPoolDevice.passphrase</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisPoolDevice.remove_hook"><code class="docutils literal notranslate"><span class="pre">StratisPoolDevice.remove_hook()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.devices.stratis.StratisPoolDevice.size"><code class="docutils literal notranslate"><span class="pre">StratisPoolDevice.size</span></code></a></li>
+<li><a class="reference internal" href="#blivet.devices.stratis.StratisPoolDevice.status"><code class="docutils literal notranslate"><span class="pre">StratisPoolDevice.status</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -5962,7 +5983,7 @@ override the default value of modparent in new code.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -5970,7 +5991,7 @@ override the default value of modparent in new code.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -5991,14 +6012,14 @@ override the default value of modparent in new code.</p>
         <li class="right" >
           <a href="blivet.devicelibs.html" title="blivet.devicelibs package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.13.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.devices package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2013-2025, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

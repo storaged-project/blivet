@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Testing Blivet &#8212; Blivet 3.12.1 documentation</title>
+    <title>Testing Blivet &#8212; Blivet 3.13.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=def86cc0" />
     
-    <script src="_static/documentation_options.js?v=bf028e07"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=6aaf4047"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="dbus.html" title="DBus Interface"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.13.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Testing Blivet</a></li> 
       </ul>
     </div>  
@@ -60,19 +60,7 @@ These tests can be run separately using <cite>make unit-test</cite>.</p></li>
 <li><p><em>Storage tests</em> located in the <cite>storage_tests</cite> folder. These tests require
 root privileges and create block devices to run tests on. These tests can
 be run separately using <cite>make storage-test</cite>.</p></li>
-<li><p><em>VM tests</em> located in the <cite>vmtests</cite> folder. These test are not run by
-default and require a special virtual machine to run in.</p></li>
 </ul>
-<p>Tests descending from <code class="xref py py-class docutils literal notranslate"><span class="pre">ImageBackedTestCase</span></code> or
-<code class="xref py py-class docutils literal notranslate"><span class="pre">LoopBackedTestCase</span></code> require root access on the
-system and will be skipped if you’re running as non-root user.
-Tests descending from <code class="xref py py-class docutils literal notranslate"><span class="pre">ImageBackedTestCase</span></code> will
-also be skipped if the environment variable JENKINS_HOME is not defined. If
-you’d like to execute them use the following commands (as root):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># export JENKINS_HOME=`pwd`</span>
-<span class="c1"># make test</span>
-</pre></div>
-</div>
 <p>To execute the Pylint code analysis tool run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">check</span>
 </pre></div>
@@ -101,16 +89,12 @@ Used for tests which don’t touch disk space;</p></li>
 higher-level tests. Most of what it does is stub out operations that touch
 disks. Currently it is only used in
 <code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceActionTestCase</span></code>;</p></li>
-<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">LoopBackedTestCase</span></code>,
-<code class="xref py py-class docutils literal notranslate"><span class="pre">ImageBackedTestCase</span></code> and
-<code class="xref py py-class docutils literal notranslate"><span class="pre">StorageTestCase</span></code> - all three classes
-represent actual storage space.
-<code class="xref py py-class docutils literal notranslate"><span class="pre">ImageBackedTestCase</span></code> uses the same stacks
-as anaconda disk image installations. These mimic normal disks more closely
-than using loop devices directly. Usually
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">LoopBackedTestCase</span></code> and
+<code class="xref py py-class docutils literal notranslate"><span class="pre">StorageTestCase</span></code> - these classes
+represent actual storage space. Usually
 <code class="xref py py-class docutils literal notranslate"><span class="pre">LoopBackedTestCase</span></code> is used for stacks of
 limited depth (eg: md array with two loop members) and
-<code class="xref py py-class docutils literal notranslate"><span class="pre">ImageBackedTestCase</span></code> for stacks of greater
+<code class="xref py py-class docutils literal notranslate"><span class="pre">StorageTestCase</span></code> for stacks of greater
 or arbitrary depth.
 <code class="xref py py-class docutils literal notranslate"><span class="pre">StorageTestCase</span></code> uses <cite>targetcli</cite> to create
 virtual SCSI drives for full stack tests on “real” hardware.</p></li>
@@ -157,7 +141,7 @@ you can generate an inheritance diagram:</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -165,7 +149,7 @@ you can generate an inheritance diagram:</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -186,13 +170,13 @@ you can generate an inheritance diagram:</p>
         <li class="right" >
           <a href="dbus.html" title="DBus Interface"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.13.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Testing Blivet</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2013-2025, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

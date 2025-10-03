@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>blivet.formats package &#8212; Blivet 3.12.1 documentation</title>
+    <title>blivet.formats package &#8212; Blivet 3.13.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=514cf933" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=def86cc0" />
     
-    <script src="../_static/documentation_options.js?v=bf028e07"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=6aaf4047"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="blivet.events.html" title="blivet.events package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.13.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.formats package</a></li> 
       </ul>
@@ -156,6 +156,12 @@ an extended partition.</p>
 <dt class="sig sig-object py" id="blivet.formats.disklabel.DiskLabel.dict">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dict</span></span><a class="headerlink" href="#blivet.formats.disklabel.DiskLabel.dict" title="Link to this definition">¶</a></dt>
 <dd><p>Return an attribute of instance, which is of type owner.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.formats.disklabel.DiskLabel.drop_cache">
+<span class="sig-name descname"><span class="pre">drop_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.disklabel.DiskLabel.drop_cache" title="Link to this definition">¶</a></dt>
+<dd><p>Drop cached information stored for this format</p>
 </dd></dl>
 
 <dl class="py property">
@@ -2047,6 +2053,39 @@ attribute be set before the <code class="xref py py-meth docutils literal notran
 that you can specify the device at the last moment by specifying
 it via the ‘device’ kwarg to the <code class="xref py py-meth docutils literal notranslate"><span class="pre">create()</span></code> method.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Setting passphrase and key file kwargs is considered deprecated, the new
+API to set “keyslot contexts” should be used instead: see the <cite>contexts</cite>
+property and the <cite>crypto.KeyslotContextList</cite> class.
+This new API allows setting multiple passphrases and or key files for the
+LUKS device and will allow using more types of LUKS key slots (kernel keyring,
+TPM, FIDO etc.) in the future. Setting multiple contexts for a non-existing LUKS
+format means all the specified passphrases and key files will be used when
+creating the format: specifying two passphrase contexts and one key file context
+will mean the new LUKS format will be created with three key slots.
+For existing LUKS devices if you set multiple contexts, only the highest priority
+context (by default the first passphrase context) will be used when activating the
+LUKS device.</p>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.formats.luks.LUKS.add_key">
+<span class="sig-name descname"><span class="pre">add_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ncontext</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.luks.LUKS.add_key" title="Link to this definition">¶</a></dt>
+<dd><p>Add a new key to an existing LUKS device.</p>
+<p>Add the specified context (passphrase, key file…) to an available key slot in the
+LUKS header.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ncontext</strong> (<a class="reference internal" href="blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContext" title="blivet.devicelibs.crypto.KeyslotContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyslotContext</span></code></a> object) – new context to add the LUKS format</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The LUKS format must have at least one valid context set to be able
+to add a new key.</p>
+</div>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="blivet.formats.luks.LUKS.add_passphrase">
 <span class="sig-name descname"><span class="pre">add_passphrase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passphrase</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.luks.LUKS.add_passphrase" title="Link to this definition">¶</a></dt>
@@ -2059,6 +2098,14 @@ LUKS header.</p>
 <dt class="sig sig-object py" id="blivet.formats.luks.LUKS.configured">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">configured</span></span><a class="headerlink" href="#blivet.formats.luks.LUKS.configured" title="Link to this definition">¶</a></dt>
 <dd><p>To be ready we need a key or passphrase and a map name.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blivet.formats.luks.LUKS.contexts">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">contexts</span></span><a class="headerlink" href="#blivet.formats.luks.LUKS.contexts" title="Link to this definition">¶</a></dt>
+<dd><p>Passphrases and key files set for this LUKS format. For non-existing LUKS formats
+these will be added as key slots when creating the format, for existing LUKS formats
+at least one context needs to be set to be able to activate the format.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -2102,6 +2149,25 @@ LUKS header.</p>
 <dd><p>Path to key file to be used in /etc/crypttab</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.formats.luks.LUKS.label_format_ok">
+<span class="sig-name descname"><span class="pre">label_format_ok</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.luks.LUKS.label_format_ok" title="Link to this definition">¶</a></dt>
+<dd><p>Return True if the label has an acceptable format for this
+format. None, which represents accepting the default for this
+device, is always acceptable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><em>None</em>) – A possible label</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.formats.luks.LUKS.labeling">
+<span class="sig-name descname"><span class="pre">labeling</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.luks.LUKS.labeling" title="Link to this definition">¶</a></dt>
+<dd><p>Returns False by default since most formats are non-labeling.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.formats.luks.LUKS.name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#blivet.formats.luks.LUKS.name" title="Link to this definition">¶</a></dt>
@@ -2132,14 +2198,36 @@ LUKS header.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="blivet.formats.luks.LUKS.remove_passphrase">
-<span class="sig-name descname"><span class="pre">remove_passphrase</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.luks.LUKS.remove_passphrase" title="Link to this definition">¶</a></dt>
-<dd><p>Remove the saved passphrase (and possibly key file) from the LUKS
-header.</p>
-<dl class="simple">
-<dt>Note: If both passphrase and keyfile are set for this format, both</dt><dd><p>will be removed!</p>
+<dt class="sig sig-object py" id="blivet.formats.luks.LUKS.relabels">
+<span class="sig-name descname"><span class="pre">relabels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.luks.LUKS.relabels" title="Link to this definition">¶</a></dt>
+<dd><p>Returns False by default since most formats are non-labeling.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.formats.luks.LUKS.remove_key">
+<span class="sig-name descname"><span class="pre">remove_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.luks.LUKS.remove_key" title="Link to this definition">¶</a></dt>
+<dd><p>Remove a key from an existing LUKS device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContext" title="blivet.devicelibs.crypto.KeyslotContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyslotContext</span></code></a> object) – existing context to be removed from the LUKS format</p>
 </dd>
 </dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Key slot specified by &#64;context will be removed from this format
+even if it is the last active key slot!</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.formats.luks.LUKS.remove_passphrase">
+<span class="sig-name descname"><span class="pre">remove_passphrase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passphrase</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.luks.LUKS.remove_passphrase" title="Link to this definition">¶</a></dt>
+<dd><p>Remove specified passphrase from this device.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Key slot associated with the provided passphrase will be removed from
+this format even if it is the last active key slot!</p>
+</div>
 </dd></dl>
 
 <dl class="py property">
@@ -2164,6 +2252,20 @@ header.</p>
 <dt class="sig sig-object py" id="blivet.formats.luks.LUKS.update_size_info">
 <span class="sig-name descname"><span class="pre">update_size_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.luks.LUKS.update_size_info" title="Link to this definition">¶</a></dt>
 <dd><p>Update this format’s current size.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.formats.luks.LUKS.write_label">
+<span class="sig-name descname"><span class="pre">write_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.luks.LUKS.write_label" title="Link to this definition">¶</a></dt>
+<dd><p>Create a label for this format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p>LUKSError</p>
+</dd>
+</dl>
+<p>If self.label is None, this means accept the default, so raise
+an LUKSError in this case.</p>
+<p>Raises a LUKSError if the label can not be set.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2780,6 +2882,12 @@ setup and teared down.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.formats.DeviceFormat.drop_cache">
+<span class="sig-name descname"><span class="pre">drop_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#blivet.formats.DeviceFormat.drop_cache" title="Link to this definition">¶</a></dt>
+<dd><p>Drop cached information stored for this format</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="blivet.formats.DeviceFormat.dump">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dump</span></span><a class="headerlink" href="#blivet.formats.DeviceFormat.dump" title="Link to this definition">¶</a></dt>
@@ -3055,6 +3163,7 @@ for an exhaustive list of the arguments that can be passed.</p>
 <li><a class="reference internal" href="#blivet.formats.disklabel.DiskLabel.commit_to_disk"><code class="docutils literal notranslate"><span class="pre">DiskLabel.commit_to_disk()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.disklabel.DiskLabel.desc"><code class="docutils literal notranslate"><span class="pre">DiskLabel.desc</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.disklabel.DiskLabel.dict"><code class="docutils literal notranslate"><span class="pre">DiskLabel.dict</span></code></a></li>
+<li><a class="reference internal" href="#blivet.formats.disklabel.DiskLabel.drop_cache"><code class="docutils literal notranslate"><span class="pre">DiskLabel.drop_cache()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.disklabel.DiskLabel.end_alignment"><code class="docutils literal notranslate"><span class="pre">DiskLabel.end_alignment</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.disklabel.DiskLabel.extended_partition"><code class="docutils literal notranslate"><span class="pre">DiskLabel.extended_partition</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.disklabel.DiskLabel.first_partition"><code class="docutils literal notranslate"><span class="pre">DiskLabel.first_partition</span></code></a></li>
@@ -3241,8 +3350,10 @@ for an exhaustive list of the arguments that can be passed.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS"><code class="docutils literal notranslate"><span class="pre">LUKS</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.formats.luks.LUKS.add_key"><code class="docutils literal notranslate"><span class="pre">LUKS.add_key()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.add_passphrase"><code class="docutils literal notranslate"><span class="pre">LUKS.add_passphrase()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.configured"><code class="docutils literal notranslate"><span class="pre">LUKS.configured</span></code></a></li>
+<li><a class="reference internal" href="#blivet.formats.luks.LUKS.contexts"><code class="docutils literal notranslate"><span class="pre">LUKS.contexts</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.controllable"><code class="docutils literal notranslate"><span class="pre">LUKS.controllable</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.destroyable"><code class="docutils literal notranslate"><span class="pre">LUKS.destroyable</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.dict"><code class="docutils literal notranslate"><span class="pre">LUKS.dict</span></code></a></li>
@@ -3250,16 +3361,21 @@ for an exhaustive list of the arguments that can be passed.</p>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.formattable"><code class="docutils literal notranslate"><span class="pre">LUKS.formattable</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.has_key"><code class="docutils literal notranslate"><span class="pre">LUKS.has_key</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.key_file"><code class="docutils literal notranslate"><span class="pre">LUKS.key_file</span></code></a></li>
+<li><a class="reference internal" href="#blivet.formats.luks.LUKS.label_format_ok"><code class="docutils literal notranslate"><span class="pre">LUKS.label_format_ok()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.formats.luks.LUKS.labeling"><code class="docutils literal notranslate"><span class="pre">LUKS.labeling()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.name"><code class="docutils literal notranslate"><span class="pre">LUKS.name</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.opal_admin_passphrase"><code class="docutils literal notranslate"><span class="pre">LUKS.opal_admin_passphrase</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.passphrase"><code class="docutils literal notranslate"><span class="pre">LUKS.passphrase</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.populate_ksdata"><code class="docutils literal notranslate"><span class="pre">LUKS.populate_ksdata()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.protected"><code class="docutils literal notranslate"><span class="pre">LUKS.protected</span></code></a></li>
+<li><a class="reference internal" href="#blivet.formats.luks.LUKS.relabels"><code class="docutils literal notranslate"><span class="pre">LUKS.relabels()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.formats.luks.LUKS.remove_key"><code class="docutils literal notranslate"><span class="pre">LUKS.remove_key()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.remove_passphrase"><code class="docutils literal notranslate"><span class="pre">LUKS.remove_passphrase()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.resizable"><code class="docutils literal notranslate"><span class="pre">LUKS.resizable</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.status"><code class="docutils literal notranslate"><span class="pre">LUKS.status</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.supported"><code class="docutils literal notranslate"><span class="pre">LUKS.supported</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS.update_size_info"><code class="docutils literal notranslate"><span class="pre">LUKS.update_size_info()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.formats.luks.LUKS.write_label"><code class="docutils literal notranslate"><span class="pre">LUKS.write_label()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.formats.luks.LUKS2PBKDFArgs"><code class="docutils literal notranslate"><span class="pre">LUKS2PBKDFArgs</span></code></a></li>
@@ -3361,6 +3477,7 @@ for an exhaustive list of the arguments that can be passed.</p>
 <li><a class="reference internal" href="#blivet.formats.DeviceFormat.device"><code class="docutils literal notranslate"><span class="pre">DeviceFormat.device</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.DeviceFormat.dict"><code class="docutils literal notranslate"><span class="pre">DeviceFormat.dict</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.DeviceFormat.do_resize"><code class="docutils literal notranslate"><span class="pre">DeviceFormat.do_resize()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.formats.DeviceFormat.drop_cache"><code class="docutils literal notranslate"><span class="pre">DeviceFormat.drop_cache()</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.DeviceFormat.dump"><code class="docutils literal notranslate"><span class="pre">DeviceFormat.dump</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.DeviceFormat.formattable"><code class="docutils literal notranslate"><span class="pre">DeviceFormat.formattable</span></code></a></li>
 <li><a class="reference internal" href="#blivet.formats.DeviceFormat.hidden"><code class="docutils literal notranslate"><span class="pre">DeviceFormat.hidden</span></code></a></li>
@@ -3418,7 +3535,7 @@ for an exhaustive list of the arguments that can be passed.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -3426,7 +3543,7 @@ for an exhaustive list of the arguments that can be passed.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -3447,14 +3564,14 @@ for an exhaustive list of the arguments that can be passed.</p>
         <li class="right" >
           <a href="blivet.events.html" title="blivet.events package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.13.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.formats package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2013-2025, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

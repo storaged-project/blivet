@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>blivet.tasks package &#8212; Blivet 3.12.1 documentation</title>
+    <title>blivet.tasks package &#8212; Blivet 3.13.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=514cf933" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=def86cc0" />
     
-    <script src="../_static/documentation_options.js?v=bf028e07"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=6aaf4047"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="blivet.static_data.html" title="blivet.static_data package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.13.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" accesskey="U">blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.tasks package</a></li> 
       </ul>
@@ -698,6 +698,27 @@ checking consistency of a filesystem.</p>
 <section id="module-blivet.tasks.fslabeling">
 <span id="blivet-tasks-fslabeling-module"></span><h2>blivet.tasks.fslabeling module<a class="headerlink" href="#module-blivet.tasks.fslabeling" title="Link to this heading">¶</a></h2>
 <dl class="py class">
+<dt class="sig sig-object py" id="blivet.tasks.fslabeling.ExFATLabeling">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.tasks.fslabeling.</span></span><span class="sig-name descname"><span class="pre">ExFATLabeling</span></span><a class="headerlink" href="#blivet.tasks.fslabeling.ExFATLabeling" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.tasks.fslabeling.FSLabeling" title="blivet.tasks.fslabeling.FSLabeling"><code class="xref py py-class docutils literal notranslate"><span class="pre">FSLabeling</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="blivet.tasks.fslabeling.ExFATLabeling.label_format_ok">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">label_format_ok</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.tasks.fslabeling.ExFATLabeling.label_format_ok" title="Link to this definition">¶</a></dt>
+<dd><p>Returns True if this label is correctly formatted for this
+filesystem, otherwise False.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – the label for this filesystem</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="blivet.tasks.fslabeling.Ext2FSLabeling">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.tasks.fslabeling.</span></span><span class="sig-name descname"><span class="pre">Ext2FSLabeling</span></span><a class="headerlink" href="#blivet.tasks.fslabeling.Ext2FSLabeling" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#blivet.tasks.fslabeling.FSLabeling" title="blivet.tasks.fslabeling.FSLabeling"><code class="xref py py-class docutils literal notranslate"><span class="pre">FSLabeling</span></code></a></p>
@@ -1054,6 +1075,43 @@ filesystem, otherwise False.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="blivet.tasks.fsmkfs.BTRFSMkfs.fstype">
 <span class="sig-name descname"><span class="pre">fstype</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'btrfs'</span></em><a class="headerlink" href="#blivet.tasks.fsmkfs.BTRFSMkfs.fstype" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blivet.tasks.fsmkfs.ExFATMkfs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blivet.tasks.fsmkfs.</span></span><span class="sig-name descname"><span class="pre">ExFATMkfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">an_fs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#blivet.tasks.fsmkfs.ExFATMkfs" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#blivet.tasks.fsmkfs.FSBlockDevMkfs" title="blivet.tasks.fsmkfs.FSBlockDevMkfs"><code class="xref py py-class docutils literal notranslate"><span class="pre">FSBlockDevMkfs</span></code></a></p>
+<p>Initializer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>an_fs</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><em>FS</em></a>) – a filesystem object</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.tasks.fsmkfs.ExFATMkfs.can_label">
+<span class="sig-name descname"><span class="pre">can_label</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#blivet.tasks.fsmkfs.ExFATMkfs.can_label" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.tasks.fsmkfs.ExFATMkfs.can_nodiscard">
+<span class="sig-name descname"><span class="pre">can_nodiscard</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#blivet.tasks.fsmkfs.ExFATMkfs.can_nodiscard" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.tasks.fsmkfs.ExFATMkfs.can_set_uuid">
+<span class="sig-name descname"><span class="pre">can_set_uuid</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#blivet.tasks.fsmkfs.ExFATMkfs.can_set_uuid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.tasks.fsmkfs.ExFATMkfs.ext">
+<span class="sig-name descname"><span class="pre">ext</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;blivet.tasks.availability.ExternalResource</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#blivet.tasks.fsmkfs.ExFATMkfs.ext" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.tasks.fsmkfs.ExFATMkfs.fstype">
+<span class="sig-name descname"><span class="pre">fstype</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'exfat'</span></em><a class="headerlink" href="#blivet.tasks.fsmkfs.ExFATMkfs.fstype" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2203,6 +2261,11 @@ is False</p></li>
 <dd class="field-odd"><p><strong>an_fs</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><em>FS</em></a>) – a filesystem object</p>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.tasks.fssize.Ext2FSSize.udev">
+<span class="sig-name descname"><span class="pre">udev</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#blivet.tasks.fssize.Ext2FSSize.udev" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -2255,6 +2318,11 @@ is False</p></li>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.tasks.fssize.FSSize.udev">
+<span class="sig-name descname"><span class="pre">udev</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#blivet.tasks.fssize.FSSize.udev" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -2321,6 +2389,11 @@ is False</p></li>
 <dd class="field-odd"><p><strong>an_fs</strong> (<a class="reference internal" href="blivet.formats.html#blivet.formats.fs.FS" title="blivet.formats.fs.FS"><em>FS</em></a>) – a filesystem object</p>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="blivet.tasks.fssize.XFSSize.udev">
+<span class="sig-name descname"><span class="pre">udev</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#blivet.tasks.fssize.XFSSize.udev" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </section>
@@ -3175,6 +3248,10 @@ this filesystem, otherwise False.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-blivet.tasks.fslabeling">blivet.tasks.fslabeling module</a><ul>
+<li><a class="reference internal" href="#blivet.tasks.fslabeling.ExFATLabeling"><code class="docutils literal notranslate"><span class="pre">ExFATLabeling</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.tasks.fslabeling.ExFATLabeling.label_format_ok"><code class="docutils literal notranslate"><span class="pre">ExFATLabeling.label_format_ok()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#blivet.tasks.fslabeling.Ext2FSLabeling"><code class="docutils literal notranslate"><span class="pre">Ext2FSLabeling</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.tasks.fslabeling.Ext2FSLabeling.label_format_ok"><code class="docutils literal notranslate"><span class="pre">Ext2FSLabeling.label_format_ok()</span></code></a></li>
 </ul>
@@ -3240,6 +3317,14 @@ this filesystem, otherwise False.</p>
 <li><a class="reference internal" href="#blivet.tasks.fsmkfs.BTRFSMkfs.can_set_uuid"><code class="docutils literal notranslate"><span class="pre">BTRFSMkfs.can_set_uuid</span></code></a></li>
 <li><a class="reference internal" href="#blivet.tasks.fsmkfs.BTRFSMkfs.ext"><code class="docutils literal notranslate"><span class="pre">BTRFSMkfs.ext</span></code></a></li>
 <li><a class="reference internal" href="#blivet.tasks.fsmkfs.BTRFSMkfs.fstype"><code class="docutils literal notranslate"><span class="pre">BTRFSMkfs.fstype</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#blivet.tasks.fsmkfs.ExFATMkfs"><code class="docutils literal notranslate"><span class="pre">ExFATMkfs</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.tasks.fsmkfs.ExFATMkfs.can_label"><code class="docutils literal notranslate"><span class="pre">ExFATMkfs.can_label</span></code></a></li>
+<li><a class="reference internal" href="#blivet.tasks.fsmkfs.ExFATMkfs.can_nodiscard"><code class="docutils literal notranslate"><span class="pre">ExFATMkfs.can_nodiscard</span></code></a></li>
+<li><a class="reference internal" href="#blivet.tasks.fsmkfs.ExFATMkfs.can_set_uuid"><code class="docutils literal notranslate"><span class="pre">ExFATMkfs.can_set_uuid</span></code></a></li>
+<li><a class="reference internal" href="#blivet.tasks.fsmkfs.ExFATMkfs.ext"><code class="docutils literal notranslate"><span class="pre">ExFATMkfs.ext</span></code></a></li>
+<li><a class="reference internal" href="#blivet.tasks.fsmkfs.ExFATMkfs.fstype"><code class="docutils literal notranslate"><span class="pre">ExFATMkfs.fstype</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.tasks.fsmkfs.Ext2FSMkfs"><code class="docutils literal notranslate"><span class="pre">Ext2FSMkfs</span></code></a><ul>
@@ -3464,12 +3549,16 @@ this filesystem, otherwise False.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-blivet.tasks.fssize">blivet.tasks.fssize module</a><ul>
-<li><a class="reference internal" href="#blivet.tasks.fssize.Ext2FSSize"><code class="docutils literal notranslate"><span class="pre">Ext2FSSize</span></code></a></li>
+<li><a class="reference internal" href="#blivet.tasks.fssize.Ext2FSSize"><code class="docutils literal notranslate"><span class="pre">Ext2FSSize</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.tasks.fssize.Ext2FSSize.udev"><code class="docutils literal notranslate"><span class="pre">Ext2FSSize.udev</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#blivet.tasks.fssize.FATFSSize"><code class="docutils literal notranslate"><span class="pre">FATFSSize</span></code></a></li>
 <li><a class="reference internal" href="#blivet.tasks.fssize.FSSize"><code class="docutils literal notranslate"><span class="pre">FSSize</span></code></a><ul>
 <li><a class="reference internal" href="#blivet.tasks.fssize.FSSize.depends_on"><code class="docutils literal notranslate"><span class="pre">FSSize.depends_on</span></code></a></li>
 <li><a class="reference internal" href="#blivet.tasks.fssize.FSSize.description"><code class="docutils literal notranslate"><span class="pre">FSSize.description</span></code></a></li>
 <li><a class="reference internal" href="#blivet.tasks.fssize.FSSize.do_task"><code class="docutils literal notranslate"><span class="pre">FSSize.do_task()</span></code></a></li>
+<li><a class="reference internal" href="#blivet.tasks.fssize.FSSize.udev"><code class="docutils literal notranslate"><span class="pre">FSSize.udev</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.tasks.fssize.NTFSSize"><code class="docutils literal notranslate"><span class="pre">NTFSSize</span></code></a></li>
@@ -3480,7 +3569,10 @@ this filesystem, otherwise False.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#blivet.tasks.fssize.UnimplementedFSSize"><code class="docutils literal notranslate"><span class="pre">UnimplementedFSSize</span></code></a></li>
-<li><a class="reference internal" href="#blivet.tasks.fssize.XFSSize"><code class="docutils literal notranslate"><span class="pre">XFSSize</span></code></a></li>
+<li><a class="reference internal" href="#blivet.tasks.fssize.XFSSize"><code class="docutils literal notranslate"><span class="pre">XFSSize</span></code></a><ul>
+<li><a class="reference internal" href="#blivet.tasks.fssize.XFSSize.udev"><code class="docutils literal notranslate"><span class="pre">XFSSize.udev</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-blivet.tasks.fssync">blivet.tasks.fssync module</a><ul>
@@ -3666,7 +3758,7 @@ this filesystem, otherwise False.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -3674,7 +3766,7 @@ this filesystem, otherwise False.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -3695,14 +3787,14 @@ this filesystem, otherwise False.</p>
         <li class="right" >
           <a href="blivet.static_data.html" title="blivet.static_data package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.13.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="blivet.html" >blivet package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet.tasks package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2013-2025, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

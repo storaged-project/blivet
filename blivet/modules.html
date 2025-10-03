@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>blivet &#8212; Blivet 3.12.1 documentation</title>
+    <title>blivet &#8212; Blivet 3.13.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=514cf933" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=def86cc0" />
     
-    <script src="../_static/documentation_options.js?v=bf028e07"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=6aaf4047"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -25,7 +25,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.13.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet</a></li> 
       </ul>
     </div>  
@@ -469,6 +469,17 @@
 <li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicefactory.DeviceFactory.size_set_class"><code class="docutils literal notranslate"><span class="pre">DeviceFactory.size_set_class</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.devicefactory.DeviceTypes"><code class="docutils literal notranslate"><span class="pre">DeviceTypes</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicefactory.DeviceTypes.BTRFS"><code class="docutils literal notranslate"><span class="pre">DeviceTypes.BTRFS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicefactory.DeviceTypes.DISK"><code class="docutils literal notranslate"><span class="pre">DeviceTypes.DISK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicefactory.DeviceTypes.LVM"><code class="docutils literal notranslate"><span class="pre">DeviceTypes.LVM</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicefactory.DeviceTypes.LVM_THINP"><code class="docutils literal notranslate"><span class="pre">DeviceTypes.LVM_THINP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicefactory.DeviceTypes.LVM_VDO"><code class="docutils literal notranslate"><span class="pre">DeviceTypes.LVM_VDO</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicefactory.DeviceTypes.MD"><code class="docutils literal notranslate"><span class="pre">DeviceTypes.MD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicefactory.DeviceTypes.PARTITION"><code class="docutils literal notranslate"><span class="pre">DeviceTypes.PARTITION</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicefactory.DeviceTypes.STRATIS"><code class="docutils literal notranslate"><span class="pre">DeviceTypes.STRATIS</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.devicefactory.LVMFactory"><code class="docutils literal notranslate"><span class="pre">LVMFactory</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicefactory.LVMFactory.child_factory_class"><code class="docutils literal notranslate"><span class="pre">LVMFactory.child_factory_class</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.devicefactory.LVMFactory.child_factory_fstype"><code class="docutils literal notranslate"><span class="pre">LVMFactory.child_factory_fstype</span></code></a></li>
@@ -823,18 +834,6 @@
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.partitioning.update_extended_partitions"><code class="docutils literal notranslate"><span class="pre">update_extended_partitions()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.safe_dbus">blivet.safe_dbus module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.DBusCallError"><code class="docutils literal notranslate"><span class="pre">DBusCallError</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.DBusPropertyError"><code class="docutils literal notranslate"><span class="pre">DBusPropertyError</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.SafeDBusError"><code class="docutils literal notranslate"><span class="pre">SafeDBusError</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.call_sync"><code class="docutils literal notranslate"><span class="pre">call_sync()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.check_object_available"><code class="docutils literal notranslate"><span class="pre">check_object_available()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.get_new_session_connection"><code class="docutils literal notranslate"><span class="pre">get_new_session_connection()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.get_new_system_connection"><code class="docutils literal notranslate"><span class="pre">get_new_system_connection()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.get_properties_sync"><code class="docutils literal notranslate"><span class="pre">get_properties_sync()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.safe_dbus.get_property_sync"><code class="docutils literal notranslate"><span class="pre">get_property_sync()</span></code></a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="blivet.html#module-blivet.size">blivet.size module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.size.Size"><code class="docutils literal notranslate"><span class="pre">Size</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="blivet.html#blivet.size.Size.convert_to"><code class="docutils literal notranslate"><span class="pre">Size.convert_to()</span></code></a></li>
@@ -882,6 +881,7 @@
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_get_fcoe_nic"><code class="docutils literal notranslate"><span class="pre">device_get_fcoe_nic()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_get_format"><code class="docutils literal notranslate"><span class="pre">device_get_format()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_get_format_blocksize"><code class="docutils literal notranslate"><span class="pre">device_get_format_blocksize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_get_format_lastblock"><code class="docutils literal notranslate"><span class="pre">device_get_format_lastblock()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_get_format_size"><code class="docutils literal notranslate"><span class="pre">device_get_format_size()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_get_format_version"><code class="docutils literal notranslate"><span class="pre">device_get_format_version()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.udev.device_get_holders"><code class="docutils literal notranslate"><span class="pre">device_get_holders()</span></code></a></li>
@@ -1000,6 +1000,7 @@
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.util.canonicalize_UUID"><code class="docutils literal notranslate"><span class="pre">canonicalize_UUID()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.util.capture_output"><code class="docutils literal notranslate"><span class="pre">capture_output()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.util.capture_output_binary"><code class="docutils literal notranslate"><span class="pre">capture_output_binary()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.util.check_object_available"><code class="docutils literal notranslate"><span class="pre">check_object_available()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.util.compare"><code class="docutils literal notranslate"><span class="pre">compare()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.util.create_sparse_file"><code class="docutils literal notranslate"><span class="pre">create_sparse_file()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="blivet.html#blivet.util.create_sparse_tempfile"><code class="docutils literal notranslate"><span class="pre">create_sparse_tempfile()</span></code></a></li>
@@ -1096,7 +1097,7 @@
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -1104,7 +1105,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -1119,13 +1120,13 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Blivet 3.13.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">blivet</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2013-2025, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

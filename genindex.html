@@ -4,12 +4,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; Blivet 3.12.1 documentation</title>
+    <title>Index &#8212; Blivet 3.13.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=def86cc0" />
     
-    <script src="_static/documentation_options.js?v=bf028e07"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/documentation_options.js?v=6aaf4047"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="#" />
@@ -24,7 +24,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.13.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>  
@@ -117,6 +117,8 @@
       </ul></li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.device.Device.add_child">add_child() (blivet.devices.device.Device method)</a>
 </li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContextList.add_context">add_context() (blivet.devicelibs.crypto.KeyslotContextList method)</a>
+</li>
       <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.stratis.add_device">add_device() (in module blivet.devicelibs.stratis)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.fstab.FSTabManager.add_entry">add_entry() (blivet.fstab.FSTabManager method)</a>
@@ -147,6 +149,10 @@
       </ul></li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeBase.add_internal_lv">add_internal_lv() (blivet.devices.lvm.LVMLogicalVolumeBase method)</a>
 </li>
+      <li><a href="blivet/blivet.formats.html#blivet.formats.luks.LUKS.add_key">add_key() (blivet.formats.luks.LUKS method)</a>
+</li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContextList.add_keyfile">add_keyfile() (blivet.devicelibs.crypto.KeyslotContextList method)</a>
+</li>
       <li><a href="blivet/blivet.events.html#blivet.events.manager.EventManager.add_mask">add_mask() (blivet.events.manager.EventManager method)</a>
 </li>
       <li><a href="blivet/blivet.dbus.html#blivet.dbus.manager.ObjectManager.add_object">add_object() (blivet.dbus.manager.ObjectManager method)</a>
@@ -159,9 +165,11 @@
         <li><a href="blivet/blivet.html#blivet.partitioning.add_partition">(in module blivet.partitioning)</a>
 </li>
       </ul></li>
-      <li><a href="blivet/blivet.formats.html#blivet.formats.luks.LUKS.add_passphrase">add_passphrase() (blivet.formats.luks.LUKS method)</a>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContextList.add_passphrase">add_passphrase() (blivet.devicelibs.crypto.KeyslotContextList method)</a>
 
       <ul>
+        <li><a href="blivet/blivet.formats.html#blivet.formats.luks.LUKS.add_passphrase">(blivet.formats.luks.LUKS method)</a>
+</li>
         <li><a href="blivet/blivet.static_data.html#blivet.static_data.luks_data.LUKS_Data.add_passphrase">(blivet.static_data.luks_data.LUKS_Data method)</a>
 </li>
       </ul></li>
@@ -179,12 +187,12 @@
       </ul></li>
       <li><a href="blivet/blivet.html#blivet.fcoe.FCoE.add_san">add_san() (blivet.fcoe.FCoE method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.html#blivet.iscsi.iSCSI.add_target">add_target() (blivet.iscsi.iSCSI method)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.align">align() (blivet.devices.lvm.LVMVolumeGroupDevice method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.html#blivet.partitioning.align_size_for_disklabel">align_size_for_disklabel() (in module blivet.partitioning)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.align_target_size">align_target_size() (blivet.devices.partition.PartitionDevice method)</a>
@@ -992,13 +1000,6 @@
 </li>
       </ul></li>
       <li>
-    blivet.safe_dbus
-
-      <ul>
-        <li><a href="blivet/blivet.html#module-blivet.safe_dbus">module</a>
-</li>
-      </ul></li>
-      <li>
     blivet.size
 
       <ul>
@@ -1254,8 +1255,12 @@
       </ul></li>
       <li><a href="blivet/blivet.populator.helpers.html#blivet.populator.helpers.boot.BootFormatPopulator">BootFormatPopulator (class in blivet.populator.helpers.boot)</a>
 </li>
-      <li><a href="blivet/blivet.formats.html#blivet.formats.fs.BTRFS">BTRFS (class in blivet.formats.fs)</a>
+      <li><a href="blivet/blivet.html#blivet.devicefactory.DeviceTypes.BTRFS">BTRFS (blivet.devicefactory.DeviceTypes attribute)</a>
+
+      <ul>
+        <li><a href="blivet/blivet.formats.html#blivet.formats.fs.BTRFS">(class in blivet.formats.fs)</a>
 </li>
+      </ul></li>
       <li><a href="blivet/blivet.html#blivet.blivet.Blivet.btrfs_volumes">btrfs_volumes (blivet.blivet.Blivet property)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSDevice">BTRFSDevice (class in blivet.devices.btrfs)</a>
@@ -1318,8 +1323,6 @@
 </li>
       <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.calculate_luks2_max_memory">calculate_luks2_max_memory() (in module blivet.devicelibs.crypto)</a>
 </li>
-      <li><a href="blivet/blivet.html#blivet.safe_dbus.call_sync">call_sync() (in module blivet.safe_dbus)</a>
-</li>
       <li><a href="blivet/blivet.html#blivet.callbacks.CallbackList">CallbackList (class in blivet.callbacks)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.callbacks.Callbacks">Callbacks (class in blivet.callbacks)</a>
@@ -1327,6 +1330,8 @@
       <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.BTRFSMkfs.can_label">can_label (blivet.tasks.fsmkfs.BTRFSMkfs attribute)</a>
 
       <ul>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.ExFATMkfs.can_label">(blivet.tasks.fsmkfs.ExFATMkfs attribute)</a>
+</li>
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.Ext2FSMkfs.can_label">(blivet.tasks.fsmkfs.Ext2FSMkfs attribute)</a>
 </li>
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.F2FSMkfs.can_label">(blivet.tasks.fsmkfs.F2FSMkfs attribute)</a>
@@ -1351,6 +1356,8 @@
       <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.BTRFSMkfs.can_nodiscard">can_nodiscard (blivet.tasks.fsmkfs.BTRFSMkfs attribute)</a>
 
       <ul>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.ExFATMkfs.can_nodiscard">(blivet.tasks.fsmkfs.ExFATMkfs attribute)</a>
+</li>
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.Ext2FSMkfs.can_nodiscard">(blivet.tasks.fsmkfs.Ext2FSMkfs attribute)</a>
 </li>
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.F2FSMkfs.can_nodiscard">(blivet.tasks.fsmkfs.F2FSMkfs attribute)</a>
@@ -1375,6 +1382,8 @@
       <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.BTRFSMkfs.can_set_uuid">can_set_uuid (blivet.tasks.fsmkfs.BTRFSMkfs attribute)</a>
 
       <ul>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.ExFATMkfs.can_set_uuid">(blivet.tasks.fsmkfs.ExFATMkfs attribute)</a>
+</li>
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.Ext2FSMkfs.can_set_uuid">(blivet.tasks.fsmkfs.Ext2FSMkfs attribute)</a>
 </li>
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.F2FSMkfs.can_set_uuid">(blivet.tasks.fsmkfs.F2FSMkfs attribute)</a>
@@ -1436,7 +1445,7 @@
 </li>
       <li><a href="blivet/blivet.formats.html#blivet.formats.fs.FS.check_module">check_module() (blivet.formats.fs.FS method)</a>
 </li>
-      <li><a href="blivet/blivet.html#blivet.safe_dbus.check_object_available">check_object_available() (in module blivet.safe_dbus)</a>
+      <li><a href="blivet/blivet.html#blivet.util.check_object_available">check_object_available() (in module blivet.util)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeBase.check_size">check_size() (blivet.devices.lvm.LVMLogicalVolumeBase method)</a>
 
@@ -1458,8 +1467,6 @@
         <li><a href="blivet/blivet.html#blivet.devicefactory.StratisFactory.child_factory_class">(blivet.devicefactory.StratisFactory attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.html#blivet.devicefactory.BTRFSFactory.child_factory_fstype">child_factory_fstype (blivet.devicefactory.BTRFSFactory attribute)</a>
 
       <ul>
@@ -1472,6 +1479,8 @@
         <li><a href="blivet/blivet.html#blivet.devicefactory.StratisFactory.child_factory_fstype">(blivet.devicefactory.StratisFactory attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.devices.html#blivet.devices.device.Device.children">children (blivet.devices.device.Device property)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.partitioning.Chunk">Chunk (class in blivet.partitioning)</a>
@@ -1482,6 +1491,8 @@
         <li><a href="blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.chunk_size">(blivet.devices.md.MDRaidArrayDevice property)</a>
 </li>
       </ul></li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContextList.clear_contexts">clear_contexts() (blivet.devicelibs.crypto.KeyslotContextList method)</a>
+</li>
       <li><a href="blivet/blivet.static_data.html#blivet.static_data.luks_data.LUKS_Data.clear_passphrases">clear_passphrases() (blivet.static_data.luks_data.LUKS_Data method)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.threads.clear_thread_exception">clear_thread_exception() (in module blivet.threads)</a>
@@ -1570,6 +1581,8 @@
       </ul></li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.container.ContainerDevice">ContainerDevice (class in blivet.devices.container)</a>
 </li>
+      <li><a href="blivet/blivet.formats.html#blivet.formats.luks.LUKS.contexts">contexts (blivet.formats.luks.LUKS property)</a>
+</li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.luks.IntegrityDevice.controllable">controllable (blivet.devices.luks.IntegrityDevice property)</a>
 
       <ul>
@@ -1636,6 +1649,8 @@
 </li>
       <li><a href="blivet/blivet.html#blivet.callbacks.CreateFormatPreData">CreateFormatPreData (class in blivet.callbacks)</a>
 </li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContext.ctype">ctype (blivet.devicelibs.crypto.KeyslotContext attribute)</a>
+</li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSDevice.current_size">current_size (blivet.devices.btrfs.BTRFSDevice property)</a>
 
       <ul>
@@ -1672,8 +1687,6 @@
 </li>
       <li><a href="blivet/blivet.dbus.html#blivet.dbus.blivet.DBusBlivet">DBusBlivet (class in blivet.dbus.blivet)</a>
 </li>
-      <li><a href="blivet/blivet.html#blivet.safe_dbus.DBusCallError">DBusCallError</a>
-</li>
       <li><a href="blivet/blivet.dbus.html#blivet.dbus.device.DBusDevice">DBusDevice (class in blivet.dbus.device)</a>
 </li>
       <li><a href="blivet/blivet.dbus.html#blivet.dbus.format.DBusFormat">DBusFormat (class in blivet.dbus.format)</a>
@@ -1681,8 +1694,6 @@
       <li><a href="blivet/blivet.tasks.html#blivet.tasks.availability.DBusMethod">DBusMethod (class in blivet.tasks.availability)</a>
 </li>
       <li><a href="blivet/blivet.dbus.html#blivet.dbus.object.DBusObject">DBusObject (class in blivet.dbus.object)</a>
-</li>
-      <li><a href="blivet/blivet.html#blivet.safe_dbus.DBusPropertyError">DBusPropertyError</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.dm.DMLinearDevice.deactivate">deactivate() (blivet.devices.dm.DMLinearDevice method)</a>
 </li>
@@ -1884,6 +1895,8 @@
 </li>
       <li><a href="blivet/blivet.html#blivet.udev.device_get_format_blocksize">device_get_format_blocksize() (in module blivet.udev)</a>
 </li>
+      <li><a href="blivet/blivet.html#blivet.udev.device_get_format_lastblock">device_get_format_lastblock() (in module blivet.udev)</a>
+</li>
       <li><a href="blivet/blivet.html#blivet.udev.device_get_format_size">device_get_format_size() (in module blivet.udev)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.udev.device_get_format_version">device_get_format_version() (in module blivet.udev)</a>
@@ -2016,8 +2029,6 @@
 </li>
       <li><a href="blivet/blivet.html#blivet.udev.device_is_dasd">device_is_dasd() (in module blivet.udev)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.html#blivet.udev.device_is_disk">device_is_disk() (in module blivet.udev)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.udev.device_is_dm">device_is_dm() (in module blivet.udev)</a>
@@ -2026,6 +2037,8 @@
 </li>
       <li><a href="blivet/blivet.html#blivet.udev.device_is_dm_bitlk">device_is_dm_bitlk() (in module blivet.udev)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.html#blivet.udev.device_is_dm_crypt">device_is_dm_crypt() (in module blivet.udev)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.udev.device_is_dm_integrity">device_is_dm_integrity() (in module blivet.udev)</a>
@@ -2123,6 +2136,8 @@
 </li>
         <li><a href="blivet/blivet.static_data.html#blivet.static_data.stratis_info.StratisLockedPoolInfo.devices">(blivet.static_data.stratis_info.StratisLockedPoolInfo attribute)</a>
 </li>
+        <li><a href="blivet/blivet.static_data.html#blivet.static_data.stratis_info.StratisStoppedPoolInfo.devices">(blivet.static_data.stratis_info.StratisStoppedPoolInfo attribute)</a>
+</li>
       </ul></li>
       <li><a href="blivet/blivet.html#blivet.errors.DeviceSetupError">DeviceSetupError</a>
 </li>
@@ -2133,6 +2148,8 @@
       <li><a href="blivet/blivet.html#blivet.devicetree.DeviceTreeBase">DeviceTreeBase (class in blivet.devicetree)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.errors.DeviceTreeError">DeviceTreeError</a>
+</li>
+      <li><a href="blivet/blivet.html#blivet.devicefactory.DeviceTypes">DeviceTypes (class in blivet.devicefactory)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.errors.DeviceUserDeniedFormatError">DeviceUserDeniedFormatError</a>
 </li>
@@ -2217,6 +2234,8 @@
       <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.lvm.disable_lvm_autoactivation">disable_lvm_autoactivation() (in module blivet.devicelibs.lvm)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.iscsi.iSCSI.discover">discover() (blivet.iscsi.iSCSI method)</a>
+</li>
+      <li><a href="blivet/blivet.html#blivet.devicefactory.DeviceTypes.DISK">DISK (blivet.devicefactory.DeviceTypes attribute)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.disk">disk (blivet.devices.partition.PartitionDevice property)</a>
 </li>
@@ -2362,9 +2381,15 @@
         <li><a href="blivet/blivet.devices.html#blivet.devices.stratis.StratisPoolDevice.dracut_setup_args">(blivet.devices.stratis.StratisPoolDevice method)</a>
 </li>
       </ul></li>
-      <li><a href="blivet/blivet.static_data.html#blivet.static_data.lvm_info.LVsInfo.drop_cache">drop_cache() (blivet.static_data.lvm_info.LVsInfo method)</a>
+      <li><a href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.drop_cache">drop_cache() (blivet.devices.storage.StorageDevice method)</a>
 
       <ul>
+        <li><a href="blivet/blivet.formats.html#blivet.formats.DeviceFormat.drop_cache">(blivet.formats.DeviceFormat method)</a>
+</li>
+        <li><a href="blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel.drop_cache">(blivet.formats.disklabel.DiskLabel method)</a>
+</li>
+        <li><a href="blivet/blivet.static_data.html#blivet.static_data.lvm_info.LVsInfo.drop_cache">(blivet.static_data.lvm_info.LVsInfo method)</a>
+</li>
         <li><a href="blivet/blivet.static_data.html#blivet.static_data.lvm_info.PVsInfo.drop_cache">(blivet.static_data.lvm_info.PVsInfo method)</a>
 </li>
         <li><a href="blivet/blivet.static_data.html#blivet.static_data.lvm_info.VGsInfo.drop_cache">(blivet.static_data.lvm_info.VGsInfo method)</a>
@@ -2428,6 +2453,8 @@
         <li><a href="blivet/blivet.devices.html#blivet.devices.stratis.StratisPoolDevice.encrypted">(blivet.devices.stratis.StratisPoolDevice property)</a>
 </li>
         <li><a href="blivet/blivet.static_data.html#blivet.static_data.stratis_info.StratisPoolInfo.encrypted">(blivet.static_data.stratis_info.StratisPoolInfo attribute)</a>
+</li>
+        <li><a href="blivet/blivet.static_data.html#blivet.static_data.stratis_info.StratisStoppedPoolInfo.encrypted">(blivet.static_data.stratis_info.StratisStoppedPoolInfo attribute)</a>
 </li>
       </ul></li>
       <li><a href="blivet/blivet.html#blivet.blivet.Blivet.encryption_passphrase">encryption_passphrase (blivet.blivet.Blivet property)</a>
@@ -2506,6 +2533,10 @@
       </ul></li>
       <li><a href="blivet/blivet.formats.html#blivet.formats.fs.ExFATFS">ExFATFS (class in blivet.formats.fs)</a>
 </li>
+      <li><a href="blivet/blivet.tasks.html#blivet.tasks.fslabeling.ExFATLabeling">ExFATLabeling (class in blivet.tasks.fslabeling)</a>
+</li>
+      <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.ExFATMkfs">ExFATMkfs (class in blivet.tasks.fsmkfs)</a>
+</li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.cache.Cache.exists">exists (blivet.devices.cache.Cache property)</a>
 
       <ul>
@@ -2546,6 +2577,8 @@
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsminsize.NTFSMinSize.ext">(blivet.tasks.fsminsize.NTFSMinSize attribute)</a>
 </li>
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.BTRFSMkfs.ext">(blivet.tasks.fsmkfs.BTRFSMkfs attribute)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.ExFATMkfs.ext">(blivet.tasks.fsmkfs.ExFATMkfs attribute)</a>
 </li>
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.Ext2FSMkfs.ext">(blivet.tasks.fsmkfs.Ext2FSMkfs attribute)</a>
 </li>
@@ -2913,6 +2946,8 @@
       <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.BTRFSMkfs.fstype">fstype (blivet.tasks.fsmkfs.BTRFSMkfs attribute)</a>
 
       <ul>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.ExFATMkfs.fstype">(blivet.tasks.fsmkfs.ExFATMkfs attribute)</a>
+</li>
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.Ext2FSMkfs.fstype">(blivet.tasks.fsmkfs.Ext2FSMkfs attribute)</a>
 </li>
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.fsmkfs.Ext3FSMkfs.fstype">(blivet.tasks.fsmkfs.Ext3FSMkfs attribute)</a>
@@ -3002,6 +3037,10 @@
         <li><a href="blivet/blivet.html#blivet.devicefactory.PartitionFactory.get_container">(blivet.devicefactory.PartitionFactory method)</a>
 </li>
       </ul></li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContextList.get_context">get_context() (blivet.devicelibs.crypto.KeyslotContextList method)</a>
+</li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContextList.get_contexts">get_contexts() (blivet.devicelibs.crypto.KeyslotContextList method)</a>
+</li>
       <li><a href="blivet/blivet.html#blivet.util.get_cow_sysfs_path">get_cow_sysfs_path() (in module blivet.util)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.util.get_current_entropy">get_current_entropy() (in module blivet.util)</a>
@@ -3090,14 +3129,10 @@
 </li>
       <li><a href="blivet/blivet.html#blivet.mounts.MountsCache.get_mountpoints">get_mountpoints() (blivet.mounts.MountsCache method)</a>
 </li>
-      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.raid.RAIDn.get_net_array_size">get_net_array_size() (blivet.devicelibs.raid.RAIDn method)</a>
-</li>
-      <li><a href="blivet/blivet.html#blivet.safe_dbus.get_new_session_connection">get_new_session_connection() (in module blivet.safe_dbus)</a>
-</li>
-      <li><a href="blivet/blivet.html#blivet.safe_dbus.get_new_system_connection">get_new_system_connection() (in module blivet.safe_dbus)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.raid.RAIDn.get_net_array_size">get_net_array_size() (blivet.devicelibs.raid.RAIDn method)</a>
+</li>
       <li><a href="blivet/blivet.html#blivet.partitioning.get_next_partition_type">get_next_partition_type() (in module blivet.partitioning)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.iscsi.iSCSI.get_node">get_node() (blivet.iscsi.iSCSI method)</a>
@@ -3129,10 +3164,6 @@
       <li><a href="blivet/blivet.html#blivet.arch.get_ppc_mac_id">get_ppc_mac_id() (in module blivet.arch)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.arch.get_ppc_machine">get_ppc_machine() (in module blivet.arch)</a>
-</li>
-      <li><a href="blivet/blivet.html#blivet.safe_dbus.get_properties_sync">get_properties_sync() (in module blivet.safe_dbus)</a>
-</li>
-      <li><a href="blivet/blivet.html#blivet.safe_dbus.get_property_sync">get_property_sync() (in module blivet.safe_dbus)</a>
 </li>
       <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.raid.get_raid_level">get_raid_level() (in module blivet.devicelibs.raid)</a>
 </li>
@@ -3432,10 +3463,10 @@
         <li><a href="blivet/blivet.formats.html#blivet.formats.fs.FS.is_empty">(blivet.formats.fs.FS property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.is_extended">is_extended (blivet.devices.partition.PartitionDevice property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.is_fips_enabled">is_fips_enabled() (in module blivet.devicelibs.crypto)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.deviceaction.DeviceAction.is_format">is_format (blivet.deviceaction.DeviceAction property)</a>
@@ -3447,6 +3478,8 @@
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMInternalLogicalVolumeMixin.is_internal_lv">is_internal_lv (blivet.devices.lvm.LVMInternalLogicalVolumeMixin property)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.arch.is_ipseries">is_ipseries() (in module blivet.arch)</a>
+</li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContext.is_keyfile">is_keyfile (blivet.devicelibs.crypto.KeyslotContext property)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.partition.PartitionDevice.is_logical">is_logical (blivet.devices.partition.PartitionDevice property)</a>
 </li>
@@ -3482,6 +3515,8 @@
         <li><a href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.is_name_valid">(blivet.devices.storage.StorageDevice method)</a>
 </li>
       </ul></li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContext.is_passphrase">is_passphrase (blivet.devicelibs.crypto.KeyslotContext property)</a>
+</li>
       <li><a href="blivet/blivet.html#blivet.arch.is_pmac">is_pmac() (in module blivet.arch)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.arch.is_powernv">is_powernv() (in module blivet.arch)</a>
@@ -3592,6 +3627,10 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContext">KeyslotContext (class in blivet.devicelibs.crypto)</a>
+</li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContextList">KeyslotContextList (class in blivet.devicelibs.crypto)</a>
+</li>
       <li><a href="blivet/blivet.formats.html#blivet.formats.DeviceFormat.ks_mountpoint">ks_mountpoint (blivet.formats.DeviceFormat property)</a>
 </li>
   </ul></td>
@@ -3613,7 +3652,11 @@
       <ul>
         <li><a href="blivet/blivet.formats.html#blivet.formats.fs.FS.label_format_ok">(blivet.formats.fs.FS method)</a>
 </li>
+        <li><a href="blivet/blivet.formats.html#blivet.formats.luks.LUKS.label_format_ok">(blivet.formats.luks.LUKS method)</a>
+</li>
         <li><a href="blivet/blivet.formats.html#blivet.formats.swap.SwapSpace.label_format_ok">(blivet.formats.swap.SwapSpace method)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fslabeling.ExFATLabeling.label_format_ok">(blivet.tasks.fslabeling.ExFATLabeling class method)</a>
 </li>
         <li><a href="blivet/blivet.tasks.html#blivet.tasks.fslabeling.Ext2FSLabeling.label_format_ok">(blivet.tasks.fslabeling.Ext2FSLabeling class method)</a>
 </li>
@@ -3646,6 +3689,8 @@
 
       <ul>
         <li><a href="blivet/blivet.formats.html#blivet.formats.fs.FS.labeling">(blivet.formats.fs.FS method)</a>
+</li>
+        <li><a href="blivet/blivet.formats.html#blivet.formats.luks.LUKS.labeling">(blivet.formats.luks.LUKS method)</a>
 </li>
         <li><a href="blivet/blivet.formats.html#blivet.formats.swap.SwapSpace.labeling">(blivet.formats.swap.SwapSpace method)</a>
 </li>
@@ -3740,6 +3785,10 @@
 </li>
       <li><a href="blivet/blivet.html#blivet.partitioning.lv_compare">lv_compare() (in module blivet.partitioning)</a>
 </li>
+      <li><a href="blivet/blivet.html#blivet.devicefactory.DeviceTypes.LVM">LVM (blivet.devicefactory.DeviceTypes attribute)</a>
+</li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.lvm.lvm_dbusd_refresh">lvm_dbusd_refresh() (in module blivet.devicelibs.lvm)</a>
+</li>
       <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.lvm.lvm_devices_add">lvm_devices_add() (in module blivet.devicelibs.lvm)</a>
 </li>
       <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.lvm.lvm_devices_copy">lvm_devices_copy() (in module blivet.devicelibs.lvm)</a>
@@ -3751,6 +3800,10 @@
       <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.lvm.lvm_devices_restore">lvm_devices_restore() (in module blivet.devicelibs.lvm)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMVolumeGroupDevice.lvm_metadata_space">lvm_metadata_space (blivet.devices.lvm.LVMVolumeGroupDevice property)</a>
+</li>
+      <li><a href="blivet/blivet.html#blivet.devicefactory.DeviceTypes.LVM_THINP">LVM_THINP (blivet.devicefactory.DeviceTypes attribute)</a>
+</li>
+      <li><a href="blivet/blivet.html#blivet.devicefactory.DeviceTypes.LVM_VDO">LVM_VDO (blivet.devicefactory.DeviceTypes attribute)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMCacheType.lvmcache">lvmcache (blivet.devices.lvm.LVMCacheType attribute)</a>
 </li>
@@ -3941,6 +3994,8 @@
 </li>
       </ul></li>
       <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.edd.EddEntry.mbr_sig">mbr_sig (blivet.devicelibs.edd.EddEntry attribute)</a>
+</li>
+      <li><a href="blivet/blivet.html#blivet.devicefactory.DeviceTypes.MD">MD (blivet.devicefactory.DeviceTypes attribute)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMCacheStats.md_block_size">md_block_size (blivet.devices.lvm.LVMCacheStats property)</a>
 </li>
@@ -4284,8 +4339,6 @@
 </li>
         <li><a href="blivet/blivet.populator.html#module-blivet.populator.populator">blivet.populator.populator</a>
 </li>
-        <li><a href="blivet/blivet.html#module-blivet.safe_dbus">blivet.safe_dbus</a>
-</li>
         <li><a href="blivet/blivet.html#module-blivet.size">blivet.size</a>
 </li>
         <li><a href="blivet/blivet.static_data.html#module-blivet.static_data">blivet.static_data</a>
@@ -4439,6 +4492,8 @@
         <li><a href="blivet/blivet.static_data.html#blivet.static_data.stratis_info.StratisFilesystemInfo.name">(blivet.static_data.stratis_info.StratisFilesystemInfo attribute)</a>
 </li>
         <li><a href="blivet/blivet.static_data.html#blivet.static_data.stratis_info.StratisPoolInfo.name">(blivet.static_data.stratis_info.StratisPoolInfo attribute)</a>
+</li>
+        <li><a href="blivet/blivet.static_data.html#blivet.static_data.stratis_info.StratisStoppedPoolInfo.name">(blivet.static_data.stratis_info.StratisStoppedPoolInfo attribute)</a>
 </li>
       </ul></li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMInternalLogicalVolumeMixin.name_suffix">name_suffix (blivet.devices.lvm.LVMInternalLogicalVolumeMixin property)</a>
@@ -4829,6 +4884,8 @@
         <li><a href="blivet/blivet.formats.html#blivet.formats.swap.SwapSpace.parted_system">(blivet.formats.swap.SwapSpace attribute)</a>
 </li>
       </ul></li>
+      <li><a href="blivet/blivet.html#blivet.devicefactory.DeviceTypes.PARTITION">PARTITION (blivet.devicefactory.DeviceTypes attribute)</a>
+</li>
       <li><a href="blivet/blivet.html#blivet.partitioning.partition_compare">partition_compare() (in module blivet.partitioning)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.md.MDBiosRaidArrayDevice.partitionable">partitionable (blivet.devices.md.MDBiosRaidArrayDevice property)</a>
@@ -5007,6 +5064,8 @@
         <li><a href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.pre_commit_fixup">(blivet.devices.storage.StorageDevice method)</a>
 </li>
       </ul></li>
+      <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeDevice.pre_format_destroy">pre_format_destroy() (blivet.devices.lvm.LVMLogicalVolumeDevice method)</a>
+</li>
       <li><a href="blivet/blivet.dbus.html#blivet.dbus.object.DBusObject.present">present (blivet.dbus.object.DBusObject property)</a>
 </li>
       <li><a href="blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel.primary_partitions">primary_partitions (blivet.formats.disklabel.DiskLabel property)</a>
@@ -5234,6 +5293,8 @@
       <ul>
         <li><a href="blivet/blivet.formats.html#blivet.formats.fs.FS.relabels">(blivet.formats.fs.FS method)</a>
 </li>
+        <li><a href="blivet/blivet.formats.html#blivet.formats.luks.LUKS.relabels">(blivet.formats.luks.LUKS method)</a>
+</li>
         <li><a href="blivet/blivet.formats.html#blivet.formats.swap.SwapSpace.relabels">(blivet.formats.swap.SwapSpace method)</a>
 </li>
       </ul></li>
@@ -5258,6 +5319,8 @@
 </li>
       </ul></li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.device.Device.remove_child">remove_child() (blivet.devices.device.Device method)</a>
+</li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContextList.remove_context">remove_context() (blivet.devicelibs.crypto.KeyslotContextList method)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.blivet.Blivet.remove_empty_extended_partitions">remove_empty_extended_partitions() (blivet.blivet.Blivet method)</a>
 </li>
@@ -5291,6 +5354,10 @@
       </ul></li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lvm.LVMLogicalVolumeBase.remove_internal_lv">remove_internal_lv() (blivet.devices.lvm.LVMLogicalVolumeBase method)</a>
 </li>
+      <li><a href="blivet/blivet.formats.html#blivet.formats.luks.LUKS.remove_key">remove_key() (blivet.formats.luks.LUKS method)</a>
+</li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContextList.remove_keyfile">remove_keyfile() (blivet.devicelibs.crypto.KeyslotContextList method)</a>
+</li>
       <li><a href="blivet/blivet.events.html#blivet.events.manager.EventManager.remove_mask">remove_mask() (blivet.events.manager.EventManager method)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.partitioning.remove_new_partitions">remove_new_partitions() (in module blivet.partitioning)</a>
@@ -5299,20 +5366,24 @@
 </li>
       <li><a href="blivet/blivet.formats.html#blivet.formats.disklabel.DiskLabel.remove_partition">remove_partition() (blivet.formats.disklabel.DiskLabel method)</a>
 </li>
-      <li><a href="blivet/blivet.formats.html#blivet.formats.luks.LUKS.remove_passphrase">remove_passphrase() (blivet.formats.luks.LUKS method)</a>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContextList.remove_passphrase">remove_passphrase() (blivet.devicelibs.crypto.KeyslotContextList method)</a>
+
+      <ul>
+        <li><a href="blivet/blivet.formats.html#blivet.formats.luks.LUKS.remove_passphrase">(blivet.formats.luks.LUKS method)</a>
 </li>
+      </ul></li>
       <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.stratis.remove_pool">remove_pool() (in module blivet.devicelibs.stratis)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSVolumeDevice.remove_subvolume">remove_subvolume() (blivet.devices.btrfs.BTRFSVolumeDevice method)</a>
 </li>
       <li><a href="blivet/blivet.dbus.html#blivet.dbus.blivet.DBusBlivet.RemoveDevice">RemoveDevice() (blivet.dbus.blivet.DBusBlivet method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.devices.html#blivet.devices.lib.ParentList.removefunc">removefunc (blivet.devices.lib.ParentList attribute)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.callbacks.ReportProgressData">ReportProgressData (class in blivet.callbacks)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.html#blivet.partitioning.Request">Request (class in blivet.partitioning)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.deviceaction.ActionAddMember.requires">requires() (blivet.deviceaction.ActionAddMember method)</a>
@@ -5492,8 +5563,6 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.html#blivet.blivet.Blivet.safe_device_name">safe_device_name() (blivet.blivet.Blivet method)</a>
-</li>
-      <li><a href="blivet/blivet.html#blivet.safe_dbus.SafeDBusError">SafeDBusError</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.partitioning.SameSizeSet">SameSizeSet (class in blivet.partitioning)</a>
 </li>
@@ -5687,14 +5756,14 @@
         <li><a href="blivet/blivet.html#blivet.partitioning.VGChunk.sort_requests">(blivet.partitioning.VGChunk method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.dbus.html#blivet.dbus.blivet.sorted_object_paths_from_list">sorted_object_paths_from_list() (in module blivet.dbus.blivet)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.btrfs.BTRFSSnapShotDevice.source">source (blivet.devices.btrfs.BTRFSSnapShotDevice attribute)</a>
 </li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.md.MDRaidArrayDevice.spares">spares (blivet.devices.md.MDRaidArrayDevice property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="blivet/blivet.devices.html#blivet.devices.file.SparseFileDevice">SparseFileDevice (class in blivet.devices.file)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.util.sparsetmpfile">sparsetmpfile() (in module blivet.util)</a>
@@ -5704,6 +5773,8 @@
       <li><a href="blivet/blivet.devices.html#blivet.devices.lib.Tags.ssd">ssd (blivet.devices.lib.Tags attribute)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.iscsi.iSCSI.stabilize">stabilize() (blivet.iscsi.iSCSI method)</a>
+</li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.stratis.start_pool">start_pool() (in module blivet.devicelibs.stratis)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.util.Path.startswith">startswith() (blivet.util.Path method)</a>
 </li>
@@ -5740,6 +5811,8 @@
 </li>
         <li><a href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice.status">(blivet.devices.storage.StorageDevice property)</a>
 </li>
+        <li><a href="blivet/blivet.devices.html#blivet.devices.stratis.StratisPoolDevice.status">(blivet.devices.stratis.StratisPoolDevice property)</a>
+</li>
         <li><a href="blivet/blivet.formats.html#blivet.formats.biosboot.BIOSBoot.status">(blivet.formats.biosboot.BIOSBoot property)</a>
 </li>
         <li><a href="blivet/blivet.formats.html#blivet.formats.DeviceFormat.status">(blivet.formats.DeviceFormat property)</a>
@@ -5765,9 +5838,15 @@
         <li><a href="blivet/blivet.formats.html#blivet.formats.swap.SwapSpace.status">(blivet.formats.swap.SwapSpace property)</a>
 </li>
       </ul></li>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.stratis.stop_pool">stop_pool() (in module blivet.devicelibs.stratis)</a>
+</li>
+      <li><a href="blivet/blivet.static_data.html#blivet.static_data.stratis_info.StratisInfo.stopped_pools">stopped_pools (blivet.static_data.stratis_info.StratisInfo property)</a>
+</li>
       <li><a href="blivet/blivet.devices.html#blivet.devices.storage.StorageDevice">StorageDevice (class in blivet.devices.storage)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.errors.StorageError">StorageError</a>
+</li>
+      <li><a href="blivet/blivet.html#blivet.devicefactory.DeviceTypes.STRATIS">STRATIS (blivet.devicefactory.DeviceTypes attribute)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.blivet.Blivet.stratis_pools">stratis_pools (blivet.blivet.Blivet property)</a>
 </li>
@@ -5792,6 +5871,8 @@
       <li><a href="blivet/blivet.devices.html#blivet.devices.stratis.StratisPoolDevice">StratisPoolDevice (class in blivet.devices.stratis)</a>
 </li>
       <li><a href="blivet/blivet.static_data.html#blivet.static_data.stratis_info.StratisPoolInfo">StratisPoolInfo (class in blivet.static_data.stratis_info)</a>
+</li>
+      <li><a href="blivet/blivet.static_data.html#blivet.static_data.stratis_info.StratisStoppedPoolInfo">StratisStoppedPoolInfo (class in blivet.static_data.stratis_info)</a>
 </li>
       <li><a href="blivet/blivet.formats.html#blivet.formats.fs.StratisXFS">StratisXFS (class in blivet.formats.fs)</a>
 </li>
@@ -6095,6 +6176,14 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="blivet/blivet.tasks.html#blivet.tasks.fssize.Ext2FSSize.udev">udev (blivet.tasks.fssize.Ext2FSSize attribute)</a>
+
+      <ul>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fssize.FSSize.udev">(blivet.tasks.fssize.FSSize attribute)</a>
+</li>
+        <li><a href="blivet/blivet.tasks.html#blivet.tasks.fssize.XFSSize.udev">(blivet.tasks.fssize.XFSSize attribute)</a>
+</li>
+      </ul></li>
       <li><a href="blivet/blivet.html#blivet.errors.UdevError">UdevError</a>
 </li>
       <li><a href="blivet/blivet.events.html#blivet.events.manager.UdevEventManager">UdevEventManager (class in blivet.events.manager)</a>
@@ -6302,6 +6391,8 @@
 </li>
         <li><a href="blivet/blivet.static_data.html#blivet.static_data.stratis_info.StratisPoolInfo.uuid">(blivet.static_data.stratis_info.StratisPoolInfo attribute)</a>
 </li>
+        <li><a href="blivet/blivet.static_data.html#blivet.static_data.stratis_info.StratisStoppedPoolInfo.uuid">(blivet.static_data.stratis_info.StratisStoppedPoolInfo attribute)</a>
+</li>
       </ul></li>
       <li><a href="blivet/blivet.tasks.html#blivet.tasks.availability.FSOperation.UUID">UUID (blivet.tasks.availability.FSOperation attribute)</a>
 </li>
@@ -6331,6 +6422,12 @@
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContext.valid">valid (blivet.devicelibs.crypto.KeyslotContext property)</a>
+
+      <ul>
+        <li><a href="blivet/blivet.devicelibs.html#blivet.devicelibs.crypto.KeyslotContextList.valid">(blivet.devicelibs.crypto.KeyslotContextList property)</a>
+</li>
+      </ul></li>
       <li><a href="blivet/blivet.events.html#blivet.events.manager.validate_cb">validate_cb() (in module blivet.events.manager)</a>
 </li>
       <li><a href="blivet/blivet.html#blivet.util.variable_copy">variable_copy() (in module blivet.util)</a>
@@ -6422,6 +6519,8 @@
       <li><a href="blivet/blivet.formats.html#blivet.formats.fs.FS.write_label">write_label() (blivet.formats.fs.FS method)</a>
 
       <ul>
+        <li><a href="blivet/blivet.formats.html#blivet.formats.luks.LUKS.write_label">(blivet.formats.luks.LUKS method)</a>
+</li>
         <li><a href="blivet/blivet.formats.html#blivet.formats.swap.SwapSpace.write_label">(blivet.formats.swap.SwapSpace method)</a>
 </li>
       </ul></li>
@@ -6500,7 +6599,7 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -6508,7 +6607,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -6523,13 +6622,13 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.12.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Blivet 3.13.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2013-2025, Red Hat, Inc..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>
