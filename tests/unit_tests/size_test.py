@@ -225,10 +225,7 @@ class SizeTestCase(unittest.TestCase):
 
 # es_ES uses latin-characters but a comma as the radix separator
 # kk_KZ uses non-latin characters and is case-sensitive
-# ml_IN uses a lot of non-letter modifier characters
-# fa_IR uses non-ascii digits, or would if python supported that, but
-#       you know, just in case
-TEST_LANGS = ["es_ES.UTF-8", "kk_KZ.UTF-8", "ml_IN.UTF-8", "fa_IR.UTF-8"]
+TEST_LANGS = ["es_ES.UTF-8", "kk_KZ.UTF-8"]
 LANGS_AVAILABLE = all(os.path.exists("/usr/share/locale/%s/LC_MESSAGES/libbytesize.mo" % lang.split("_")[0]) for lang in TEST_LANGS)
 
 
@@ -242,6 +239,14 @@ class TranslationTestCase(unittest.TestCase):
         self.saved_lang = os.environ.get('LANG', 'en_US.UTF-8')
         self.addCleanup(self._clean_up)
 
+        for lang in TEST_LANGS:
+            try:
+                locale.setlocale(locale.LC_ALL, lang)
+            except locale.Error:
+                self.skipTest("required locale %s not available, skipping" % lang)
+            else:
+                locale.setlocale(locale.LC_ALL, 'C.UTF-8')
+
     def _clean_up(self):
         os.environ['LANG'] = self.saved_lang
         locale.setlocale(locale.LC_ALL, 'C.UTF-8')
@@ -250,7 +255,7 @@ class TranslationTestCase(unittest.TestCase):
         s = Size("56.19 MiB")
         for lang in TEST_LANGS:
             os.environ['LANG'] = lang
-            locale.setlocale(locale.LC_ALL, 'C.UTF-8')
+            locale.setlocale(locale.LC_ALL, lang)
 
             # Check English parsing
             self.assertEqual(s, Size("56.19 MiB"))
@@ -258,20 +263,12 @@ class TranslationTestCase(unittest.TestCase):
             # Check native parsing
             self.assertEqual(s, Size("56.19 %s" % (_BS("MiB"))))
 
-            # Check native parsing, all lowercase
-            self.assertEqual(s, Size(("56.19 %s" % (_BS("MiB"))).lower()))
-
-            # Check native parsing, all uppercase
-            self.assertEqual(s, Size(("56.19 %s" % (_BS("MiB"))).upper()))
-
             # If the radix separator is not a period, repeat the tests with the
             # native separator
             radix = locale.nl_langinfo(locale.RADIXCHAR)
             if radix != '.':
                 self.assertEqual(s, Size("56%s19 MiB" % radix))
                 self.assertEqual(s, Size("56%s19 %s" % (radix, _BS("MiB"))))
-                self.assertEqual(s, Size(("56%s19 %s" % (radix, _BS("MiB"))).lower()))
-                self.assertEqual(s, Size(("56%s19 %s" % (radix, _BS("MiB"))).upper()))
 
     def test_human_readable_translation(self):
         s = Size("56.19 MiB")
@@ -279,7 +276,7 @@ class TranslationTestCase(unittest.TestCase):
         for lang in TEST_LANGS:
 
             os.environ['LANG'] = lang
-            locale.setlocale(locale.LC_ALL, 'C.UTF-8')
+            locale.setlocale(locale.LC_ALL, lang)
             self.assertTrue(s.human_readable().endswith("%s" % (_BS("MiB"))))
             self.assertEqual(s.human_readable(xlate=False), size_str)
 

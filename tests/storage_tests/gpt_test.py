@@ -1,106 +1,97 @@
 import unittest
 from uuid import UUID
 
-from .vmbackedtestcase import VMBackedTestCase
+from .storagetestcase import StorageTestCase
 
 from blivet.devicelibs import gpt
 from blivet.devices import LUKSDevice
 from blivet.flags import flags
 from blivet import formats
-from blivet.formats import disklabel
+from blivet.formats import get_format
 from blivet import partitioning
 from blivet.size import Size
-from blivet.util import set_up_logging
 
 import parted
 
 
-class GPTTestBase(VMBackedTestCase):
+class GPTTestBase(StorageTestCase):
+
+    _num_disks = 1
 
     # Default parted GUID for "Linux Data" partition
     LINUX_DATA_GUID = UUID("0fc63daf-8483-4772-8e79-3d69d8477de4")
 
-    def __init__(self, *args, **kwargs):
-        super(GPTTestBase, self).__init__(*args, **kwargs)
-
-        self.root = None
-        self.home = None
-        self.tmp = None
-        self.srv = None
-        self.etc = None
-        self.swap = None
-        self.usrluks = None
-        self.usr = None
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-        set_up_logging()
-
-    def set_up_disks(self):
-        disklabel.DiskLabel.set_default_label_type("gpt")
+    def setUp(self):
+        super().setUp()
+        self._blivet_setup()
+        self._set_up_storage()
 
     def _clean_up(self):
-        super(GPTTestBase, self)._clean_up()
-
-        disklabel.DiskLabel.set_default_label_type(None)
+        self._blivet_cleanup()
+        return super()._clean_up()
 
     def _set_up_storage(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        self.storage.format_device(disk, get_format("disklabel", label_type="gpt"))
+
         # A part whose UUID varies per architecture, without FS formatted
-        self.root = self.blivet.new_partition(
+        self.root = self.storage.new_partition(
             size=Size("10MiB"), maxsize=Size("50GiB"), grow=True,
-            parents=self.blivet.disks, mountpoint="/")
-        self.blivet.create_device(self.root)
+            parents=[disk], mountpoint="/")
+        self.storage.create_device(self.root)
 
         # A part whose UUID is fixed per architecture, without FS formatted
-        self.home = self.blivet.new_partition(
-            size=Size("50MiB"), parents=self.blivet.disks,
+        self.home = self.storage.new_partition(
+            size=Size("50MiB"), parents=[disk],
             mountpoint="/home")
-        self.blivet.create_device(self.home)
+        self.storage.create_device(self.home)
 
         # A part whose UUID is fixed per architecture, with FS formatted
-        self.tmp = self.blivet.new_partition(
+        self.tmp = self.storage.new_partition(
             fmt_type="ext4", size=Size("50MiB"),
-            parents=self.blivet.disks, mountpoint="/tmp")
-        self.blivet.create_device(self.tmp)
+            parents=[disk], mountpoint="/tmp")
+        self.storage.create_device(self.tmp)
 
         # A part whose UUID specified explicitly, with FS formatted
-        self.srv = self.blivet.new_partition(
+        self.srv = self.storage.new_partition(
             fmt_type="ext4", size=Size("50MiB"),
-            parents=self.blivet.disks, mountpoint="/srv",
+            parents=[disk], mountpoint="/srv",
             part_type_uuid=gpt.gpt_part_uuid_for_mountpoint("/srv"))
-        self.blivet.create_device(self.srv)
+        self.storage.create_device(self.srv)
 
         # A part with no special UUID assignment
-        self.etc = self.blivet.new_partition(
-            size=Size("20MiB"), parents=self.blivet.disks,
+        self.etc = self.storage.new_partition(
+            size=Size("20MiB"), parents=[disk],
             mountpoint="/etc")
-        self.blivet.create_device(self.etc)
+        self.storage.create_device(self.etc)
 
         # A part whose UUID is based off fmt type
-        self.swap = self.blivet.new_partition(
-            fmt_type="swap", size=Size("20MiB"), parents=self.blivet.disks)
-        self.blivet.create_device(self.swap)
+        self.swap = self.storage.new_partition(
+            fmt_type="swap", size=Size("20MiB"), parents=[disk])
+        self.storage.create_device(self.swap)
 
         # An encrypted part
-        self.usrluks = self.blivet.new_partition(
+        self.usrluks = self.storage.new_partition(
             fmt_type="luks", fmt_args={
                 "passphrase": "123456",
             }, size=Size("100MiB"),
-            parents=self.blivet.disks, mountpoint="/usr")
-        self.blivet.create_device(self.usrluks)
+            parents=[disk], mountpoint="/usr")
+        self.storage.create_device(self.usrluks)
 
         self.usr = LUKSDevice(
             name="luks-user", size=self.usrluks.size, parents=self.usrluks)
-        self.blivet.create_device(self.usr)
+        self.storage.create_device(self.usr)
 
         extfs = formats.get_format(
             fmt_type="ext4", device=self.usr.path, mountpoint="/usr")
-        self.blivet.format_device(self.usr, extfs)
+        self.storage.format_device(self.usr, extfs)
 
         # Allocate the partitions
-        partitioning.do_partitioning(self.blivet)
+        partitioning.do_partitioning(self.storage)
+
+        self.storage.do_it()
 
 
 class GPTDiscoverableTestCase(GPTTestBase):

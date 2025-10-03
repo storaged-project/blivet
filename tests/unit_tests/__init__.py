@@ -11,6 +11,7 @@ from .events_test import *
 from .misc_test import *
 from .nvme_test import *
 from .parentlist_test import *
+from .partitioning_test import *
 from .populator_test import *
 from .size_test import *
 from .task_tests import *

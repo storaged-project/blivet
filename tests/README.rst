@@ -17,18 +17,6 @@ There are three separate test suites available:
 - *Storage tests* located in the `storage_tests` folder. These tests require
   root privileges and create block devices to run tests on. These tests can
   be run separately using `make storage-test`.
-- *VM tests* located in the `vmtests` folder. These test are not run by
-  default and require a special virtual machine to run in.
-
-Tests descending from :class:`~.imagebackedtestcase.ImageBackedTestCase` or
-:class:`~.loopbackedtestcase.LoopBackedTestCase` require root access on the
-system and will be skipped if you're running as non-root user.
-Tests descending from :class:`~.imagebackedtestcase.ImageBackedTestCase` will
-also be skipped if the environment variable JENKINS_HOME is not defined. If
-you'd like to execute them use the following commands (as root)::
-
-    # export JENKINS_HOME=`pwd`
-    # make test
 
 To execute the Pylint code analysis tool run::
 
@@ -64,16 +52,12 @@ inherit from them.
   :class:`~tests.unit_tests.action_test.DeviceActionTestCase`;
 
 
-- :class:`~tests.storage_tests.loopbackedtestcase.LoopBackedTestCase`,
-  :class:`~tests.storage_tests.imagebackedtestcase.ImageBackedTestCase` and
-  :class:`~tests.storage_tests.storagetestcase.StorageTestCase` - all three classes
-  represent actual storage space.
-  :class:`~tests.storage_tests.imagebackedtestcase.ImageBackedTestCase` uses the same stacks
-  as anaconda disk image installations. These mimic normal disks more closely
-  than using loop devices directly. Usually
+- :class:`~tests.storage_tests.loopbackedtestcase.LoopBackedTestCase` and
+  :class:`~tests.storage_tests.storagetestcase.StorageTestCase` - these classes
+  represent actual storage space. Usually
   :class:`~tests.storage_tests.loopbackedtestcase.LoopBackedTestCase` is used for stacks of
   limited depth (eg: md array with two loop members) and
-  :class:`~tests.storage_tests.imagebackedtestcase.ImageBackedTestCase` for stacks of greater
+  :class:`~tests.storage_tests.storagetestcase.StorageTestCase` for stacks of greater
   or arbitrary depth.
   :class:`~tests.storage_tests.storagetestcase.StorageTestCase` uses `targetcli` to create
   virtual SCSI drives for full stack tests on "real" hardware.

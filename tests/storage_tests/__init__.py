@@ -5,3 +5,5 @@ from .partitioning_test import *
 from .unsupported_disklabel_test import *
 
 from .iscsi_test import *
+from .gpt_test import *
+from .reset_test import *
