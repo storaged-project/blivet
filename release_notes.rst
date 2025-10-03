@@ -1,3 +1,52 @@
+3.13.0
+=======
+
+* `Multiple contexts support for LUKS devices`_
+* `ExFAT filesystem creating support`_
+* `Stratis 3.8.0 support`_
+* `Optional format destroy action`_
+* `LUKS label and subsystem support`_
+* `DBus client functions now use dasbus library`_
+* `Python build process modernization`_
+
+Multiple contexts support for LUKS devices
+-------------------------------------------
+Blivet now allows using multiple passphrases or key files
+when creating a new or managing an existing LUKS device.
+In the future more context types (kernel keyring, TPM etc.)
+will be supported.
+
+ExFAT filesystem creating support
+----------------------------------
+ExFAT filesystem can now be created by blivet.
+
+Stratis 3.8.0 support
+----------------------
+Blivet support for Stratis devices was adjusted to work
+with the latest 3.8.0 release. This includes for example
+working with stopped Stratis pools.
+
+Optional format destroy action
+-------------------------------
+ActionDestroyFormat can now be marked as optional to ignore
+errors when removing the format fails. This is enabled by
+default when removing a device.
+
+LUKS label and subsystem support
+---------------------------------
+Label and subsystem can now be specified when creating a new
+LUKS format.
+
+DBus client functions now use dasbus library
+---------------------------------------------
+Blivet now uses the dasbus library for DBus client calls
+replacing our custom GLib based implementation.
+
+Python build process modernization
+-----------------------------------
+With the upcoming deprecation of `setup.py install`, blivet
+has updated its build process to use modern Python features.
+
 3.12.0
 =======
 * `Better resilience during initial storage scan`_
