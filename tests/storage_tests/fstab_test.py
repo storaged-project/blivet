@@ -119,6 +119,14 @@ class FstabTestCase(StorageTestCase):
             self.assertIsNotNone(dev)
             self.assertEqual(dev, lv)
 
+            dev = fstab.get_device(devicetree=self.storage.devicetree, spec="/dev/mapper/blivetTestVG-blivetTestLVMine")
+            self.assertIsNotNone(dev)
+            self.assertEqual(dev, lv)
+
+            dev = fstab.get_device(devicetree=self.storage.devicetree, entry=entry)
+            self.assertIsNotNone(dev)
+            self.assertEqual(dev, lv)
+
             # remove the device
             dev = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestLVMine")
             self.storage.recursive_remove(dev)
@@ -240,6 +248,15 @@ class FstabTestCase(StorageTestCase):
             self.assertEqual(dev, sub)
 
             dev = fstab.find_device(devicetree=self.storage.devicetree, entry=entry)
+            self.assertIsNotNone(dev)
+            self.assertEqual(dev, sub)
+
+            dev = fstab.get_device(devicetree=self.storage.devicetree, spec="UUID=%s" % vol.uuid,
+                                   mntopts=["subvol=blivetTestSubVol1"])
+            self.assertIsNotNone(dev)
+            self.assertEqual(dev, sub)
+
+            dev = fstab.get_device(devicetree=self.storage.devicetree, entry=entry)
             self.assertIsNotNone(dev)
             self.assertEqual(dev, sub)
 
