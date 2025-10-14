@@ -530,6 +530,7 @@ class FSTabManager(object):
         _mntopts = mntopts or (entry.mntopts if entry is not None else None)
         _mntopts_str = ",".join(_mntopts) if _mntopts is not None else None
         _vfstype = vfstype or (entry.vfstype if entry is not None else None)
+        _file = file or (entry.file if entry is not None else None)
 
         # find device in the tree
         device = devicetree.resolve_device(_spec, options=_mntopts_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
@@ -557,7 +558,7 @@ class FSTabManager(object):
             raise UnrecognizedFSTabEntryError("Unrecognized filesystem type for %s: '%s'" % (_spec, vfstype))
 
         if hasattr(device.format, "mountpoint"):
-            device.format.mountpoint = file
+            device.format.mountpoint = _file
 
         device.format.options = _mntopts
 

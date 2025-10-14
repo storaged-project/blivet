@@ -126,6 +126,7 @@ class FstabTestCase(StorageTestCase):
             dev = fstab.get_device(devicetree=self.storage.devicetree, entry=entry)
             self.assertIsNotNone(dev)
             self.assertEqual(dev, lv)
+            self.assertEqual(dev.format.mountpoint, "/mnt/test2")
 
             # remove the device
             dev = self.storage.devicetree.get_device_by_name("blivetTestVG-blivetTestLVMine")
@@ -259,6 +260,7 @@ class FstabTestCase(StorageTestCase):
             dev = fstab.get_device(devicetree=self.storage.devicetree, entry=entry)
             self.assertIsNotNone(dev)
             self.assertEqual(dev, sub)
+            self.assertEqual(dev.format.mountpoint, "/home")
 
             # non-existing subvolume, should not return the volume
             dev = fstab.find_device(devicetree=self.storage.devicetree, spec="UUID=%s" % vol.uuid,
