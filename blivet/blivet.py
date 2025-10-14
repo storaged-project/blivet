@@ -54,10 +54,8 @@ import logging
 log = logging.getLogger("blivet")
 
 
-# Default path to fstab file. Left empty to prevent blivet from using
-# fstab functionality by default.
-# TODO Change to "/etc/fstab" at next major version
-FSTAB_PATH = ""
+# Default path to fstab file.
+FSTAB_PATH = "/etc/fstab"
 
 
 class Blivet(object, metaclass=SynchronizedMeta):
