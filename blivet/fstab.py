@@ -560,7 +560,7 @@ class FSTabManager(object):
         if hasattr(device.format, "mountpoint"):
             device.format.mountpoint = _file
 
-        device.format.options = _mntopts
+        device.format.options = _mntopts_str
 
         return device
 
