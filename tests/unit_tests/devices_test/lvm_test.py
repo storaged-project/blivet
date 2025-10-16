@@ -508,6 +508,11 @@ class LVMDeviceTest(unittest.TestCase):
                                exists=False)
         self.assertFalse(vg.is_empty)
 
+    def test_vg_size_zero(self):
+        vg = LVMVolumeGroupDevice("testvg", parents=[])
+        self.assertEqual(vg.size, Size(0))
+        self.assertEqual(vg.extents, 0)
+
     def test_lvm_vdo_pool(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
                            size=Size("1 GiB"), exists=True)
