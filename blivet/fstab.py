@@ -529,21 +529,23 @@ class FSTabManager(object):
         _spec = spec or (entry.spec if entry is not None else None)
         _mntopts = mntopts or (entry.mntopts if entry is not None else None)
         _mntopts_str = ",".join(_mntopts) if _mntopts is not None else None
+        _vfstype = vfstype or (entry.vfstype if entry is not None else None)
+        _file = file or (entry.file if entry is not None else None)
 
         # find device in the tree
         device = devicetree.resolve_device(_spec, options=_mntopts_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
 
         if device is None:
-            if vfstype == "swap":
+            if _vfstype == "swap":
                 # swap file
                 device = FileDevice(_spec,
                                     parents=devicetree.resolve_device(_spec),
-                                    fmt=get_format(vfstype, device=_spec, exists=True),
+                                    fmt=get_format(_vfstype, device=_spec, exists=True),
                                     exists=True)
-            elif vfstype == "bind" or (_mntopts is not None and "bind" in _mntopts):
+            elif _vfstype == "bind" or (_mntopts is not None and "bind" in _mntopts):
                 # bind mount... set vfstype so later comparison won't
                 # turn up false positives
-                vfstype = "bind"
+                _vfstype = "bind"
 
                 parents = devicetree.resolve_device(_spec)
                 device = DirectoryDevice(_spec, parents=parents, exists=True)
@@ -552,14 +554,13 @@ class FSTabManager(object):
         if device is None:
             raise UnrecognizedFSTabEntryError("Could not resolve entry %s %s" % (_spec, vfstype))
 
-        fmt = get_format(vfstype, device=device.path, exists=True)
-        if vfstype != "auto" and None in (device.format.type, fmt.type):
+        if _vfstype != "auto" and device.format.type is None:
             raise UnrecognizedFSTabEntryError("Unrecognized filesystem type for %s: '%s'" % (_spec, vfstype))
 
         if hasattr(device.format, "mountpoint"):
-            device.format.mountpoint = file
+            device.format.mountpoint = _file
 
-        device.format.options = _mntopts
+        device.format.options = _mntopts_str
 
         return device
 
