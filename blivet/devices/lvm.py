@@ -582,6 +582,8 @@ class LVMVolumeGroupDevice(ContainerDevice):
     def size(self):
         """ The size of this VG """
         # TODO: just ask lvm if isModified returns False
+        if not self.pvs:
+            return Size(0)
         return sum(self._get_pv_usable_space(pv) for pv in self.pvs)
 
     @property
