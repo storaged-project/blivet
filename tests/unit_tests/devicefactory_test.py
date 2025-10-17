@@ -60,7 +60,9 @@ class DeviceFactoryTestCase(unittest.TestCase):
     def setUp(self, *args):  # pylint: disable=unused-argument,arguments-differ
         if self.device_type is None:
             raise unittest.SkipTest("abstract base class")
+        self._prepare_storage()
 
+    def _prepare_storage(self):
         self.b = blivet.Blivet()  # don't populate it
         self.disk_files = [create_sparse_tempfile("factorytest", self._disk_size),
                            create_sparse_tempfile("factorytest", self._disk_size)]
@@ -360,6 +362,18 @@ class PartitionFactoryTestCase(DeviceFactoryTestCase):
         return delta
 
 
+class PartitionFactoryUnitializedTestCase(PartitionFactoryTestCase):
+    def _prepare_storage(self):
+        self.b = blivet.Blivet()  # don't populate it
+        self.disk_files = [create_sparse_tempfile("factorytest", self._disk_size),
+                           create_sparse_tempfile("factorytest", self._disk_size)]
+        for filename in self.disk_files:
+            disk = DiskFile(filename)
+            self.b.devicetree._add_device(disk)
+
+        self.addCleanup(self._clean_up_disk_files)
+
+
 class LVMFactoryTestCase(DeviceFactoryTestCase):
     device_class = LVMLogicalVolumeDevice
     device_type = devicefactory.DeviceTypes.LVM
@@ -599,6 +613,18 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         # second device with same name should be automatically renamed
         device2 = self._factory_device(device_type, **kwargs)
         self.assertEqual(device2.lvname, "name00")
+
+
+class LVMFactoryUninitializedTestCase(LVMFactoryTestCase):
+    def _prepare_storage(self):
+        self.b = blivet.Blivet()  # don't populate it
+        self.disk_files = [create_sparse_tempfile("factorytest", self._disk_size),
+                           create_sparse_tempfile("factorytest", self._disk_size)]
+        for filename in self.disk_files:
+            disk = DiskFile(filename)
+            self.b.devicetree._add_device(disk)
+
+        self.addCleanup(self._clean_up_disk_files)
 
 
 class LVMThinPFactoryTestCase(LVMFactoryTestCase):
