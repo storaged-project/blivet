@@ -354,8 +354,18 @@ class iScsiDiskDevice(DiskDevice, NetworkStorageDevice):
         self.offload = kwargs.pop("offload")
         name = kwargs.pop("name")
         self.target = kwargs.pop("target")
+        lun = kwargs.pop("lun")
         try:
-            self.lun = int(kwargs.pop("lun"))
+            self.lun = int(lun)
+        except ValueError as e:
+            # See systemd udev function format_lun_number()
+            import re
+            m = re.fullmatch('0x([0-9a-fA-F]{4})([0-9a-fA-F]{4})00000000', lun)
+            if m is None:
+                log.warning("Failed to extract hex from lun '%s'", lun)
+                self.lun = None
+            else:
+                self.lun = int(m.group(1), 16) + (1 << 16) * int(m.group(2), 16)
         except TypeError as e:
             log.warning("Failed to set lun attribute of iscsi disk: %s", e)
             self.lun = None
