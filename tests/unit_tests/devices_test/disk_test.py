@@ -5,7 +5,7 @@ except ImportError:
     from mock import patch
 import unittest
 
-from blivet.devices import DiskDevice
+from blivet.devices import DiskDevice, iScsiDiskDevice
 from blivet.devicelibs import disk as disklib
 from blivet.devicelibs import raid
 from blivet.size import Size
@@ -51,3 +51,16 @@ class DiskDeviceRAIDPropertiesTestCase(unittest.TestCase):
             self.assertIsNone(test3.raid_level)
             self.assertIsNone(test3.raid_stripe_size)
             self.assertIsNone(test3.raid_disk_count)
+
+
+class iScsiDiskDeviceTestCase(unittest.TestCase):
+    def test_iscsi_lun(self):
+        kwargs = {"node": "", "ibft": "", "nic": "", "initiator": "",
+                  "offload": False, "name": "", "target": "",
+                  "address": "", "port": "", "iface": "", "id_path": ""}
+
+        disk1 = iScsiDiskDevice("test1", lun="1", **kwargs)
+        self.assertEqual(disk1.lun, 1)
+
+        disk2 = iScsiDiskDevice("test1", lun="0x0101000000000000", **kwargs)
+        self.assertEqual(disk2.lun, 257)
