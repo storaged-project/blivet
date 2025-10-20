@@ -699,6 +699,37 @@ class DeviceFactory(object):
     def _set_container_raid_level(self):
         pass
 
+    def _filter_disks(self, disks, min_free, initialize=True):
+        """ Filter unusable disks from selection
+
+            :keyword disks: list of disks to filter
+            :type disks: list of blivet.devices.disk.DiskDevice
+            :keyword min_free: minimum free space required on a disk
+            :type min_free: blivet.size.Size
+            :keyword initialize: whether to initialize disks without partition table
+                                 if the disk is empty, creation of partition table will
+                                 be scheduled and the disk won't be filtered out
+            :type initialize: bool
+        """
+        filtered_disks = []
+
+        for d in disks:
+            if not d.partitioned and d.format.type is None and initialize:
+                log.info("Partition set factory: initializing disk %s")
+                self.storage.initialize_disk(d)
+
+            if not d.partitioned and d.format.type is not None:
+                log.debug("Ignoring disk %s: format %s found on disk", d.name, d.format.type)
+            if not d.format.supported:
+                log.debug("Ignoring disk %s: format %s is not supported", d.name, d.format.name)
+            elif d.format.free < min_free:
+                log.debug("Ignoring disk %s: not enough free space. Required: %s, free: %s",
+                          d.name, min_free, d.format.free)
+            else:
+                filtered_disks.append(d)
+
+        return filtered_disks
+
     #
     # properties and methods related to the factory device
     #
@@ -1086,15 +1117,7 @@ class PartitionFactory(DeviceFactory):
         return device
 
     def _configure(self):
-        disks = []
-        for disk in self.disks:
-            if not disk.partitioned:
-                log.debug("removing unpartitioned disk %s", disk.name)
-            elif not disk.format.supported:
-                log.debug("removing disk with unsupported format %s", disk.name)
-            else:
-                disks.append(disk)
-
+        disks = self._filter_disks(self.disks, min_free=Size(0))
         if not disks:
             raise DeviceFactoryError("no usable disks specified for partition")
 
@@ -1195,18 +1218,7 @@ class PartitionSetFactory(PartitionFactory):
 
         # drop any new disks that don't have free space
         min_free = min(Size("500MiB"), self.parent_factory.size)
-
-        for d in add_disks:
-            if not d.partitioned:
-                log.debug("Ignoring disk %s: disk is not partitioned", d.name)
-            elif not d.format.supported:
-                log.debug("Ignoring disk %s: format %s is not supported", d.name, d.format.name)
-            elif d.format.free < min_free:
-                log.debug("Ignoring disk %s: not enough free space. Required: %s, free: %s",
-                          d.name, min_free, d.format.free)
-
-        add_disks = [d for d in add_disks if d.partitioned and
-                     d.format.supported and d.format.free >= min_free]
+        add_disks = self._filter_disks(add_disks, min_free)
 
         log.debug("add_disks: %s", [d.name for d in add_disks])
         log.debug("remove_disks: %s", [d.name for d in remove_disks])
