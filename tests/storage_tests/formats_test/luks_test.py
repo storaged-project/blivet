@@ -304,6 +304,10 @@ class LUKSResetTestCase(StorageTestCase):
         self.assertIsNotNone(disk)
         self.assertTrue(disk.format.has_key)
 
+        # remove passphrase and try to save it (should not fail)
+        disk.format.passphrase = None
+        blivet.static_data.luks_data.save_passphrase(disk)
+
     def test_label_subsystem(self):
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
         self.assertIsNotNone(disk)
