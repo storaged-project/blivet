@@ -13,10 +13,6 @@ License: LGPL-2.1-or-later
 Source0: http://github.com/storaged-project/blivet/releases/download/%{realname}-%{realversion}/%{realname}-%{realversion}.tar.gz
 Source1: http://github.com/storaged-project/blivet/releases/download/%{realname}-%{realversion}/%{realname}-%{realversion}-tests.tar.gz
 
-%if 0%{?rhel} >= 9
-Patch0: 0001-remove-btrfs-plugin.patch
-%endif
-
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
 %global partedver 1.8.1
