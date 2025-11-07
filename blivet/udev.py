@@ -708,9 +708,14 @@ def device_dm_subsystem_match(info, subsystem):
     if name is None:
         return False
 
-    _subsystem = blockdev.dm.get_subsystem_from_name(name)
-    if not _subsystem:
+    try:
+        _subsystem = blockdev.dm.get_subsystem_from_name(name)
+    except blockdev.DMError as e:
+        log.error("Failed to get subsystem for %s: %s", name, str(e))
         return False
+    else:
+        if not _subsystem:
+            return False
 
     return _subsystem.lower() == subsystem.lower()
 
