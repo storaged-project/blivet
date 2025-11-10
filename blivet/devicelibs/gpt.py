@@ -238,7 +238,6 @@ def gpt_part_uuid_for_mountpoint(path, arch=None):
 
         "/efi": GPT_VOL_ESP,
         "/boot/efi": GPT_VOL_ESP,
-        "/boot": GPT_VOL_XBOOTLDR,
         "/home": GPT_VOL_HOME,
         "/var": GPT_VOL_VAR,
         "/srv": GPT_VOL_SRV,
