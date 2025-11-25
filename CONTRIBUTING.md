@@ -58,7 +58,7 @@ Generate documentation for the new release
 ```
 make -C doc html
 ```
-Copy the documentation from `doc/_build/html` to a temporary directory, switch to the `gh-pages`, copy the documentation back and commit and push the changes.
+Copy the documentation from `doc/_build/html` to the `blivet` folder in the [Storaged project website repository](https://github.com/storaged-project/storaged-project.github.io) and commit and push the changes.
 
 ### Fedora Build Procedure
 
