@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.13.0
+Version: 3.13.1
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -133,6 +133,24 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Tue Nov 25 2025 Vojtech Trefny <vtrefny@redhat.com> - 3.13.1-1
+- infra: bump actions/checkout from 5 to 6 (49699333+dependabot[bot])
+- CONTRIBUTING: Update directions for updating documentation (vtrefny)
+- tests: Do not patch builtins.open directly (vtrefny)
+- Protect against errors when checking DM subsystem (vtrefny)
+- Do not set XBOOTLDR GUID for /boot partition (#2406974) (vtrefny)
+- pylint: Remove suggestion-mode from pylintrc (vtrefny)
+- tests: Add check for saving passphrase with context not set (vtrefny)
+- infra: bump actions/upload-artifact from 4 to 5 (49699333+dependabot[bot])
+- Fix luks save_passphrase for missing format context (rvykydal)
+- tests: Add a simple test case for parsing iSCSI lun (vtrefny)
+- iSCSI: don't crash when LUN ID >= 256 (rmetrich)
+- Allow using uninitialized disks in device factory (vtrefny)
+- Make sure size for VGs without PVs is Size not int (vtrefny)
+- Fix setting mount options in FSTabManager.get_device (vtrefny)
+- Fix working with mountpoint in FSTabManager.get_device (vtrefny)
+- Fix working with fstype in FSTabManager.get_device (vtrefny)
+
 * Fri Oct 03 2025 Vojtech Trefny <vtrefny@redhat.com> - 3.13.0-1
 - tests: Skip translation tests if required locales aren't available (vtrefny)
 - tests: Select only available libbytesize locales for size tests (vtrefny)
