@@ -18,14 +18,14 @@ jobs:
 
     steps:
       - name: Clone Anaconda repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: rhinstaller/anaconda
           path: anaconda
           ref: '${{ env.TARGET_BRANCH }}'
 
       - name: Clone current PR
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: blivet
           submodules: true
