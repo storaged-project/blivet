@@ -292,4 +292,4 @@ epub_copyright = '2013, David Lehman'
 #extensions.extend(('sphinx.ext.inheritance_diagram', 'sphinx.ext.graphviz'))
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/3': None}
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
