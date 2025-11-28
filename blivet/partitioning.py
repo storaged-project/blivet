@@ -36,6 +36,7 @@ from .devices import Device, PartitionDevice, device_path_to_name
 from .size import Size
 from .i18n import _, N_
 from .util import compare
+from .arch import is_efi
 
 import logging
 log = logging.getLogger("blivet")
@@ -252,7 +253,7 @@ def get_best_free_space_region(disk, part_type, req_size, start=None,
             log.debug("free range start sector beyond max for new partitions")
             continue
 
-        if boot:
+        if boot and not is_efi():
             max_boot = Size("2 TiB")
             free_start = Size(free_geom.start * disk.device.sectorSize)
             req_end = free_start + req_size
