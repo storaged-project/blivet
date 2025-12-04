@@ -1,10 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # Debian based distributions do not have python3-libmount (and never will). This does manual
 # installation of it.
 # Requires autopoint and bison packages to work.
-
-from __future__ import print_function
 
 import os
 import re

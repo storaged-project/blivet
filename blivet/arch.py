@@ -25,12 +25,6 @@
 #            Dennis Gilmore <dgilmore@ausil.us>
 #            David Marlin <dmarlin@redhat.com>
 #
-# The absolute_import is needed so that we can
-# import the "platform" module from the Python
-# standard library but not the local blivet module
-# that is also called "platform".
-from __future__ import absolute_import
-
 import os
 
 from .storage_log import log_exception_info

@@ -21,9 +21,6 @@
 #
 # Red Hat Author(s): David Cantrell <dcantrell@redhat.com>
 
-# we need integer division to work the same with both Python 2 and 3
-from __future__ import division
-
 import locale
 import os
 import pickle
