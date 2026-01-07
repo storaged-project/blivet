@@ -41,19 +41,20 @@ class Tags(str, Enum):
 def _collect_device_major_data():
     by_major = {}
     by_device = {}
-    for line in open("/proc/devices").readlines():
-        try:
-            (major, device) = line.split()
-        except ValueError:
-            continue
-        try:
-            by_major[int(major)] = device
-            if device not in by_device:
-                by_device[device] = []
+    with open("/proc/devices") as devices:
+        for line in devices:
+            try:
+                (major, device) = line.split()
+            except ValueError:
+                continue
+            try:
+                by_major[int(major)] = device
+                if device not in by_device:
+                    by_device[device] = []
 
-            by_device[device].append(int(major))
-        except ValueError:
-            continue
+                by_device[device].append(int(major))
+            except ValueError:
+                continue
     return (by_major, by_device)
 
 
