@@ -523,30 +523,31 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         stratis_info.drop_cache()
 
     def handle_nodev_filesystems(self):
-        for line in open("/proc/mounts").readlines():
-            try:
-                (_devspec, mountpoint, fstype, _options, _rest) = line.split(None, 4)
-            except ValueError:
-                log.error("failed to parse /proc/mounts line: %s", line)
-                continue
-            if fstype in formats.fslib.nodev_filesystems:
-                if not flags.include_nodev:
+        with open("/proc/mounts") as mounts:
+            for line in mounts:
+                try:
+                    (_devspec, mountpoint, fstype, _options, _rest) = line.split(None, 4)
+                except ValueError:
+                    log.error("failed to parse /proc/mounts line: %s", line)
                     continue
+                if fstype in formats.fslib.nodev_filesystems:
+                    if not flags.include_nodev:
+                        continue
 
-                log.info("found nodev %s filesystem mounted at %s",
-                         fstype, mountpoint)
-                # nodev filesystems require some special handling.
-                # For now, a lot of this is based on the idea that it's a losing
-                # battle to require the presence of an FS class for every type
-                # of nodev filesystem. Based on that idea, we just instantiate
-                # NoDevFS directly and then hack in the fstype as the device
-                # attribute.
-                fmt = formats.get_format("nodev")
-                fmt.device = fstype
+                    log.info("found nodev %s filesystem mounted at %s",
+                             fstype, mountpoint)
+                    # nodev filesystems require some special handling.
+                    # For now, a lot of this is based on the idea that it's a losing
+                    # battle to require the presence of an FS class for every type
+                    # of nodev filesystem. Based on that idea, we just instantiate
+                    # NoDevFS directly and then hack in the fstype as the device
+                    # attribute.
+                    fmt = formats.get_format("nodev")
+                    fmt.device = fstype
 
-                # NoDevice also needs some special works since they don't have
-                # per-instance names in the kernel.
-                device = NoDevice(fmt=fmt)
-                n = len([d for d in self.devices if d.format.type == fstype])
-                device._name += ".%d" % n
-                self._add_device(device)
+                    # NoDevice also needs some special works since they don't have
+                    # per-instance names in the kernel.
+                    device = NoDevice(fmt=fmt)
+                    n = len([d for d in self.devices if d.format.type == fstype])
+                    device._name += ".%d" % n
+                    self._add_device(device)
