@@ -93,8 +93,14 @@ class FCoE(object):
         udev.settle()
 
     def _start_edd(self):
+        fcoe_edd_script_path = "/usr/libexec/fcoe/fcoe_edd.sh"
+
+        if not os.path.isfile(fcoe_edd_script_path):
+            log.debug("FCoE EDD script not found at %s, skipping.", fcoe_edd_script_path)
+            return
+
         try:
-            buf = util.capture_output(["/usr/libexec/fcoe/fcoe_edd.sh", "-i"])
+            buf = util.capture_output([fcoe_edd_script_path, "-i"])
         except OSError as e:
             log.info("Failed to read FCoE EDD info: %s", e.strerror)
             return
