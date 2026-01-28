@@ -39,7 +39,7 @@ jobs:
           # - Install dependencies for blivet.
           # - Install blivet to the container.
           # - Run Anaconda tests.
-          podman run -i --rm -v ./blivet:/blivet:z -v ./anaconda:/anaconda:z quay.io/rhinstaller/anaconda-ci:$TARGET_BRANCH sh -c " \
+          podman run -i --rm -v ./blivet:/blivet:z -v ./anaconda:/anaconda:z quay.io/rhinstaller/anaconda-ci:latest sh -c " \
               set -xe; \
               rpm -e --nodeps python3-blivet blivet-data; \
               dnf install -y python3-blockdev libblockdev-plugins-all python3-bytesize libbytesize python3-pyparted python3-libmount parted libselinux-python3; \
