@@ -1454,6 +1454,9 @@ class LVMFactory(DeviceFactory):
                 space -= self.vg.free_space
                 # we need to account for the LVM metadata being placed somewhere
                 space += self.vg.lvm_metadata_space
+                # account for unusable space in the PV (difference between PV size and its usable
+                # space), this is dues to PV metadata and data alignment to
+                space += sum(pv.size - self.vg._get_pv_usable_space(pv) for pv in self.vg.parents)
             else:
                 # we need to account for the LVM metadata being placed on each disk
                 # (and thus taking up to one extent from each disk)
