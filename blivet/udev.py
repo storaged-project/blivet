@@ -387,7 +387,8 @@ def device_get_zfcp_attribute(info, attr=None):
         log.warning("%s is not a valid zfcp attribute", attribute)
         return None
 
-    return open(attribute, "r").read().strip()
+    with open(attribute, "r") as f:
+        return f.read().strip()
 
 
 def device_get_dasd_bus_id(info):
@@ -404,7 +405,8 @@ def device_get_dasd_flag(info, flag=None):
     if not os.path.isfile(path):
         return None
 
-    return open(path, 'r').read().strip()
+    with open(path, 'r') as f:
+        return f.read().strip()
 
 
 def device_is_cdrom(info):
