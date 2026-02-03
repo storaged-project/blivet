@@ -188,7 +188,10 @@ class iSCSI(object):
         """
         proxy = util.SystemBus.get_proxy(UDISKS_SERVICE, UDISKS_MANAGER_PATH, INITIATOR_IFACE)
         try:
-            ret = getattr(proxy, method)(*args)
+            if args is None:
+                ret = getattr(proxy, method)()
+            else:
+                ret = getattr(proxy, method)(*args)
         except DBusError as e:
             raise errors.ISCSIError(str(e)) from e
         else:
