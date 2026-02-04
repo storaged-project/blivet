@@ -155,7 +155,7 @@ class iSCSI(object):
 
         if flags.ibft:
             try:
-                initiatorname = self._call_initiator_method("GetFirmwareInitiatorName")[0]
+                initiatorname = self._call_initiator_method("GetFirmwareInitiatorName")
                 self._initiator = initiatorname
             except Exception as e:  # pylint: disable=broad-except
                 log.info("failed to get initiator name from iscsi firmware: %s", str(e))
