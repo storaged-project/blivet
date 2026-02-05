@@ -23,7 +23,13 @@ prepare:
     playbook: misc/install-test-dependencies.yml
 
 execute:
-    how: tmt
-    script:
-      - sudo python3 tests/run_tests.py -l -j
-      - tmt-file-submit -l /tmp/blivet.log
+    - name: tests
+      how: tmt
+      script:
+        - |
+          set +eo pipefail
+          sudo python3 tests/run_tests.py -l -j ; rc=$?
+          tmt-file-submit -l /tmp/blivet.log
+          journalctl -b --no-pager > /tmp/journal.log
+          tmt-file-submit -l /tmp/journal.log
+          exit $rc
