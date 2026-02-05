@@ -155,7 +155,7 @@ class iSCSI(object):
 
         if flags.ibft:
             try:
-                initiatorname = self._call_initiator_method("GetFirmwareInitiatorName")[0]
+                initiatorname = self._call_initiator_method("GetFirmwareInitiatorName")
                 self._initiator = initiatorname
             except Exception as e:  # pylint: disable=broad-except
                 log.info("failed to get initiator name from iscsi firmware: %s", str(e))
@@ -188,7 +188,10 @@ class iSCSI(object):
         """
         proxy = util.SystemBus.get_proxy(UDISKS_SERVICE, UDISKS_MANAGER_PATH, INITIATOR_IFACE)
         try:
-            ret = getattr(proxy, method)(*args)
+            if args is None:
+                ret = getattr(proxy, method)()
+            else:
+                ret = getattr(proxy, method)(*args)
         except DBusError as e:
             raise errors.ISCSIError(str(e)) from e
         else:
