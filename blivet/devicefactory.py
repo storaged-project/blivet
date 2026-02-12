@@ -715,7 +715,7 @@ class DeviceFactory(object):
 
         for d in disks:
             if not d.partitioned and d.format.type is None and initialize:
-                log.info("Partition set factory: initializing disk %s")
+                log.info("Partition set factory: initializing disk %s", d.name)
                 self.storage.initialize_disk(d)
 
             if not d.partitioned and d.format.type is not None:
