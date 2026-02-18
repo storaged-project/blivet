@@ -1042,7 +1042,7 @@ register_device_format(FATFS)
 class EFIFS(FATFS):
     _type = "efi"
     _name = N_("EFI System Partition")
-    _min_size = Size("50 MiB")
+    _min_size = Size("32 MiB")
     _check = True
     _mount_class = fsmount.EFIFSMount
     parted_flag = PARTITION_BOOT
