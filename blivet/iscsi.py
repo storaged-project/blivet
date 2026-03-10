@@ -330,6 +330,7 @@ class iSCSI(object):
                 log.info("iscsi IBFT: already logged in node %s at %s:%s through %s",
                          node.name, node.address, node.port, node.iface)
                 self.ibft_nodes.append(node)
+                continue
             try:
                 self._login(node)
                 log.info("iscsi IBFT: logged into %s at %s:%s through %s",
