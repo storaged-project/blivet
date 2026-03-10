@@ -272,7 +272,7 @@ class RAIDn(RAIDLevel, metaclass=abc.ABCMeta):
             num_members = len(member_sizes)
 
         if chunk_size is None or chunk_size == Size(0):
-            raise RaidError("chunk_size parameter value %s is not acceptable")
+            raise RaidError("chunk_size parameter value %s is not acceptable" % chunk_size)
 
         if superblock_size_func is None:
             raise RaidError("superblock_size_func value of None is not acceptable")
