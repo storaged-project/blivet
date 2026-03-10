@@ -583,7 +583,7 @@ class FS(DeviceFormat):
 
         else:
             tmpdir = tempfile.mkdtemp(prefix="blivet-tmp.%s" % os.path.basename(self.device))
-            if self.mountopts and "ro" not in self.mountopts:
+            if self.mountopts and "ro" not in self.mountopts.split(","):
                 options = self.mountopts + ",ro"
             else:
                 options = "ro"
