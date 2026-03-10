@@ -722,9 +722,9 @@ class FSTabManager(object):
                 return None
             return FSTabEntry(entry=found_entry)
 
-        if file is not None:
+        if _file is not None:
             try:
-                found_entry = self._table.find_target(file, MNT_ITER_FORWARD)
+                found_entry = self._table.find_target(_file, MNT_ITER_FORWARD)
             except LibmountException:
                 return None
             return FSTabEntry(entry=found_entry)
