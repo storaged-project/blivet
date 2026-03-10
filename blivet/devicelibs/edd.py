@@ -676,7 +676,7 @@ def collect_mbrs(devices, root=None):
             sdata = "".join(["%02x" % (x,) for x in sdata])
             os.close(fd)
             testdata_log.debug("device %s data[440:443] = %s", path, sdata)
-        except OSError as e:
+        except (OSError, struct.error) as e:
             testdata_log.debug("device %s data[440:443] raised %s", path, e)
             log.error("edd: could not read mbrsig from disk %s: %s",
                       dev.name, str(e))
