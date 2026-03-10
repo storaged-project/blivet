@@ -1007,8 +1007,15 @@ class Blivet(object, metaclass=SynchronizedMeta):
         if new_size < device.size:
             actions.reverse()
 
-        for action in actions:
-            self.devicetree.actions.add(action)
+        added = []
+        try:
+            for action in actions:
+                self.devicetree.actions.add(action)
+                added.append(action)
+        except Exception:
+            for action in reversed(added):
+                self.devicetree.actions.remove(action)
+            raise
 
     def safe_device_name(self, name, device_type=None):
         """ Convert a device name to something safe and return that.
