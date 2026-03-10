@@ -331,7 +331,7 @@ class EddEntry(object):
                     log.warning("edd: can not match interface for %s: %s",
                                 self.sysfspath, interface)
             except AttributeError as e:
-                if e.args == "'NoneType' object has no attribute 'group'":
+                if e.args == ("'NoneType' object has no attribute 'group'",):
                     log.warning("edd: can not match interface for %s: %s",
                                 self.sysfspath, interface)
                 else:
