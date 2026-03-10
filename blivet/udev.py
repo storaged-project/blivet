@@ -455,8 +455,8 @@ def device_get_serial(udev_info):
 def device_get_wwn(udev_info):
     """ Return the WWID as reported by udev without '0x' prefix. """
     wwn = udev_info.get("ID_WWN_WITH_EXTENSION")
-    if wwn:
-        wwn = wwn[2:]  # strip off the leading '0x'
+    if wwn and wwn.startswith("0x"):
+        wwn = wwn[2:]
     return wwn
 
 
