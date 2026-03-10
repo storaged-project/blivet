@@ -92,7 +92,7 @@ class LUKSDevice(DMCryptDevice):
             self.raw_device.size = newsize + self.raw_device.format._header_size
 
             # just run the StorageDevice._set_size to make sure we are in the format limits
-            super(LUKSDevice, self)._set_size(newsize - self.raw_device.format._header_size)
+            super(LUKSDevice, self)._set_size(newsize)
         else:
             raise DeviceError("Cannot set size for an existing LUKS device")
 
@@ -246,7 +246,7 @@ class IntegrityDevice(DMIntegrityDevice):
             self.raw_device.size = newsize + self.metadata_size
 
             # just run the StorageDevice._set_size to make sure we are in the format limits
-            super(IntegrityDevice, self)._set_size(newsize - self.metadata_size)
+            super(IntegrityDevice, self)._set_size(newsize)
         else:
             raise DeviceError("Cannot set size for an existing integrity device")
 

@@ -112,6 +112,19 @@ class LUKSDeviceSizeTest(StorageDeviceSizeTest):
         parent.format = LUKS()
         return LUKSDevice(*args, **kwargs, parents=[parent])
 
+    def test_size_setter(self):
+        initial_size = Size("10 GiB")
+        new_size = Size("2 GiB")
+
+        dev = self._get_device('sizetest', size=initial_size)
+        self.assertEqual(dev.size, initial_size)
+
+        dev.size = new_size
+        self.assertEqual(dev.size, new_size)
+        self.assertEqual(dev.raw_device.size, new_size + crypto.LUKS_METADATA_SIZE)
+        # verify _size is not double-subtracted
+        self.assertEqual(dev._size, new_size)
+
     def test_size_getter(self):
         initial_size = Size("10 GiB")
         dev = self._get_device('sizetest', size=initial_size)
