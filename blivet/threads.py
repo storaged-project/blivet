@@ -69,7 +69,7 @@ class SynchronizedMeta(type):
             elif isinstance(obj, property):
                 obj = property(fget=exclusive(obj.__get__),
                                fset=exclusive(obj.__set__),
-                               fdel=exclusive(obj.__delattr__),
+                               fdel=exclusive(obj.__delete__),
                                doc=obj.__doc__)
 
             new_dct[n] = obj
