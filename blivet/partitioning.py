@@ -949,7 +949,8 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
 
                     if new_part_type == parted.PARTITION_EXTENDED:
                         e = disklabel.extended_partition
-                        disklabel.parted_disk.removePartition(e)
+                        if e:
+                            disklabel.parted_disk.removePartition(e)
 
                     log.debug("total growth: %d sectors", new_growth)
 
