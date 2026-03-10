@@ -803,12 +803,12 @@ class FS(DeviceFormat):
     def reset_uuid(self):
         """Generate a new UUID for the file system and set/write it."""
 
-        orig_uuid = self.uuid
-        self.uuid = self.generate_new_uuid()
-
         if self.status:
             # XXX: does any FS support this?
             raise FSError("Cannot reset UUID on a mounted file system")
+
+        orig_uuid = self.uuid
+        self.uuid = self.generate_new_uuid()
 
         try:
             self.write_uuid()
