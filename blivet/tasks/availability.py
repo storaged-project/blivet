@@ -457,7 +457,6 @@ BLOCKDEV_DM_TECH = BlockDevMethod(BLOCKDEV_DM)
 
 # libblockdev loop plugin required technologies and modes
 BLOCKDEV_LOOP_ALL_MODES = (blockdev.LoopTechMode.CREATE |
-                           blockdev.LoopTechMode.CREATE |
                            blockdev.LoopTechMode.DESTROY |
                            blockdev.LoopTechMode.MODIFY |
                            blockdev.LoopTechMode.QUERY)
