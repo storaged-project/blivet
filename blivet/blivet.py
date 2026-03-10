@@ -1158,7 +1158,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
     def dump_state(self, suffix):
         """ Dump the current device list to the storage shelf. """
-        key = "devices.%d.%s" % (time.time(), suffix)
+        key = "devices.%f.%s" % (time.time(), suffix)
         with contextlib.closing(shelve.open(self._dump_file)) as shelf:
             try:
                 shelf[key] = [d.dict for d in self.devices]  # pylint: disable=unsupported-assignment-operation
