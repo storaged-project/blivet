@@ -540,7 +540,11 @@ def device_get_holders(info):
 
     holders = list()
     for name in names:
-        holders.append(get_device(device_node="/dev/" + name))
+        holder = get_device(device_node="/dev/" + name)
+        if not holder:
+            log.warning("Failed to get udev info for %s, ignoring", name)
+        else:
+            holders.append(holder)
 
     return holders
 
