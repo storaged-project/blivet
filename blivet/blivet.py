@@ -1190,8 +1190,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
             log.debug("invalid default fstype (%s): %r", newtype, fmt)
             raise ValueError("new value %s is not valid as a default fs type" % newtype)
 
-        self._default_fstype = newtype  # pylint: disable=attribute-defined-outside-init
-
     @property
     def default_fstype(self):
         return self._default_fstype
