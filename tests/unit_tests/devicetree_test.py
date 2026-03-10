@@ -162,11 +162,6 @@ class DeviceTreeTestCase(unittest.TestCase):
             tree._remove_device(lv)
             self.assertFalse(lv.name in tree.names)
 
-    # XXX: the lvm_devices_* functions are decorated with needs_config_refresh decorator which
-    #      at this point is already applied as a no-op because LVM libblockdev plugin is not available
-    @patch("blivet.devicelibs.lvm.lvm_devices_add", new=lvm._lvm_devices.add)
-    @patch("blivet.devicelibs.lvm.lvm_devices_remove", new=lvm._lvm_devices.remove)
-    @patch("blivet.devicelibs.lvm.lvm_devices_reset", new=lvm._lvm_devices.clear)
     def test_reset(self):
         dt = DeviceTree()
         names = ["fakedev1", "fakedev2"]
@@ -194,8 +189,6 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertIsInstance(dt.actions, ActionList)
 
         self.assertEqual(dt._hidden, empty_list)
-
-        self.assertEqual(lvm._lvm_devices, set())
 
         self.assertEqual(dt.exclusive_disks, empty_list)
         self.assertEqual(dt.ignored_disks, empty_list)
@@ -557,41 +550,6 @@ class DeviceTreeTestCase(unittest.TestCase):
         tree.unhide(sda)
         self.assertEqual(tree.get_related_disks(sda), set([sda, sdb]))
         self.assertEqual(tree.get_related_disks(sdb), set([sda, sdb]))
-
-    # XXX: the lvm_devices_* functions are decorated with needs_config_refresh decorator which
-    #      at this point is already applied as a no-op because LVM libblockdev plugin is not available
-    @patch("blivet.devicelibs.lvm.lvm_devices_add", new=lvm._lvm_devices.add)
-    @patch("blivet.devicelibs.lvm.lvm_devices_remove", new=lvm._lvm_devices.remove)
-    def test_lvm_filter_hide_unhide(self):
-        tree = DeviceTree()
-
-        sda = DiskDevice("test_sda", size=Size("30 GiB"))
-        sdb = DiskDevice("test_sdb", size=Size("30 GiB"))
-
-        tree._add_device(sda)
-        tree._add_device(sdb)
-
-        self.assertTrue(sda in tree.devices)
-        self.assertTrue(sdb in tree.devices)
-
-        sda.format = get_format("lvmpv", device=sda.path)
-        sdb.format = get_format("lvmpv", device=sdb.path)
-
-        # LVMPhysicalVolume._create would do this
-        lvm.lvm_devices_add(sda.path)
-        lvm.lvm_devices_add(sdb.path)
-
-        self.assertSetEqual(lvm._lvm_devices, {sda.path, sdb.path})
-
-        tree.hide(sda)
-        self.assertSetEqual(lvm._lvm_devices, {sdb.path})
-        tree.hide(sdb)
-        self.assertSetEqual(lvm._lvm_devices, set())
-
-        tree.unhide(sda)
-        self.assertSetEqual(lvm._lvm_devices, {sda.path})
-        tree.unhide(sdb)
-        self.assertSetEqual(lvm._lvm_devices, {sda.path, sdb.path})
 
 
 class DeviceTreeIgnoredExclusiveMultipathTestCase(unittest.TestCase):

@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import unittest
 from uuid import UUID
 from unittest.mock import patch
 
@@ -10,6 +11,78 @@ import parted
 from ..storagetestcase import StorageTestCase
 
 import blivet
+
+from blivet.devicelibs import lvm
+from blivet.devices import DiskDevice
+from blivet.devicetree import DeviceTree
+from blivet.formats import get_format
+from blivet.size import Size
+
+
+class LVMDevicesTestCase(unittest.TestCase):
+
+    def tearDown(self):
+        lvm.lvm_devices_reset()
+
+    def test_1lvm_devices(self):
+        # add
+        blivet.devicelibs.lvm.lvm_devices_add("/dev/sda")
+        blivet.devicelibs.lvm.lvm_devices_add("/dev/sdb")
+        self.assertEqual(blivet.devicelibs.lvm._lvm_devices, {"/dev/sda", "/dev/sdb"})
+
+        # copy should be independent
+        copy = blivet.devicelibs.lvm.lvm_devices_copy()
+        copy.add("/dev/sdc")
+        self.assertNotIn("/dev/sdc", blivet.devicelibs.lvm._lvm_devices)
+
+        # remove
+        blivet.devicelibs.lvm.lvm_devices_remove("/dev/sda")
+        self.assertEqual(blivet.devicelibs.lvm._lvm_devices, {"/dev/sdb"})
+        blivet.devicelibs.lvm.lvm_devices_remove("/dev/nonexistent")  # should not raise
+
+        # reset
+        blivet.devicelibs.lvm.lvm_devices_reset()
+        self.assertEqual(blivet.devicelibs.lvm._lvm_devices, set())
+
+        # restore
+        blivet.devicelibs.lvm.lvm_devices_restore({"/dev/sda", "/dev/sdb"})
+        self.assertEqual(blivet.devicelibs.lvm._lvm_devices, {"/dev/sda", "/dev/sdb"})
+
+        # empty_lvm_devices context manager
+        with blivet.devicelibs.lvm.empty_lvm_devices():
+            self.assertEqual(blivet.devicelibs.lvm._lvm_devices, set())
+        self.assertEqual(blivet.devicelibs.lvm._lvm_devices, {"/dev/sda", "/dev/sdb"})
+
+    def test_lvm_filter_hide_unhide(self):
+        tree = DeviceTree()
+
+        sda = DiskDevice("test_sda", size=Size("30 GiB"))
+        sdb = DiskDevice("test_sdb", size=Size("30 GiB"))
+
+        tree._add_device(sda)
+        tree._add_device(sdb)
+
+        self.assertTrue(sda in tree.devices)
+        self.assertTrue(sdb in tree.devices)
+
+        sda.format = get_format("lvmpv", device=sda.path)
+        sdb.format = get_format("lvmpv", device=sdb.path)
+
+        # LVMPhysicalVolume._create would do this
+        lvm.lvm_devices_add(sda.path)
+        lvm.lvm_devices_add(sdb.path)
+
+        self.assertSetEqual(lvm._lvm_devices, {sda.path, sdb.path})
+
+        tree.hide(sda)
+        self.assertSetEqual(lvm._lvm_devices, {sdb.path})
+        tree.hide(sdb)
+        self.assertSetEqual(lvm._lvm_devices, set())
+
+        tree.unhide(sda)
+        self.assertSetEqual(lvm._lvm_devices, {sda.path})
+        tree.unhide(sdb)
+        self.assertSetEqual(lvm._lvm_devices, {sda.path, sdb.path})
 
 
 class LVMTestCase(StorageTestCase):

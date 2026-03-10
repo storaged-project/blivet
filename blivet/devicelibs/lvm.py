@@ -183,6 +183,7 @@ def lvm_devices_copy():
 
 @needs_config_refresh
 def lvm_devices_restore(devices):
+    global _lvm_devices
     log.debug("lvm filter: restoring the lvm devices list to %s", ", ".join(list(devices)))
     _lvm_devices = devices
 
