@@ -20,6 +20,7 @@ class LVMTestCase(unittest.TestCase):
             m.assert_called_with("/etc/lvm/lvmlocal.conf", "a")
             handle = m()
             handle.write.assert_called_once_with("global { event_activation = 0 }")
+            self.assertFalse(lvm.AUTO_ACTIVATION)
 
         localconf = "test\ntest"
         with patch("blivet.devicelibs.lvm.open", mock_open(read_data=localconf)) as m:
@@ -39,3 +40,4 @@ class LVMTestCase(unittest.TestCase):
             m.assert_called_with("/etc/lvm/lvmlocal.conf", "w+")
             handle = m()
             handle.write.assert_called_once_with("test\n")
+            self.assertTrue(lvm.AUTO_ACTIVATION)

@@ -339,7 +339,7 @@ def reenable_lvm_autoactivation(lvmconf=LVM_LOCAL_CONF):
     log.info("LVM auto-activation configuration is now removed from %s", lvmconf)
 
     global AUTO_ACTIVATION
-    AUTO_ACTIVATION = False
+    AUTO_ACTIVATION = True
 
 
 def lvm_dbusd_refresh():
