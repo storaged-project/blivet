@@ -972,7 +972,8 @@ def device_get_iscsi_nic(info):
 def device_get_iscsi_initiator(info):
     initiator_name = None
     if device_is_partoff_iscsi(info):
-        host = re.match(r'.*/(host\d+)', device_get_sysfs_path(info)).groups()[0]
+        match = re.match(r'.*/(host\d+)', device_get_sysfs_path(info))
+        host = match.groups()[0] if match else None
         if host:
             initiator_file = "/sys/class/iscsi_host/%s/initiatorname" % host
             if os.access(initiator_file, os.R_OK):
