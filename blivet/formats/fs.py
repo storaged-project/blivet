@@ -782,17 +782,13 @@ class FS(DeviceFormat):
 
         if self.uuid is None:
             err = "makes no sense to write an UUID when not requested"
-
-        if not self.exists:
+        elif not self.exists:
             err = "filesystem has not been created"
-
-        if not self._writeuuid.available:
+        elif not self._writeuuid.available:
             err = "no application to set UUID for filesystem %s" % self.type
-
-        if not self.uuid_format_ok(self.uuid):
+        elif not self.uuid_format_ok(self.uuid):
             err = "bad UUID format for application %s" % self._writeuuid
-
-        if not os.path.exists(self.device):
+        elif not os.path.exists(self.device):
             err = "device does not exist"
 
         if err is not None:
