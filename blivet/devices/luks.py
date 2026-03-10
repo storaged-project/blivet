@@ -230,7 +230,7 @@ class IntegrityDevice(DMIntegrityDevice):
             # fully controlled by LUKS and we don't need the integrity-specific tools
             return not LUKSDevice.unavailable_type_dependencies()
         else:
-            return super(IntegrityDevice, self).controllable()
+            return super(IntegrityDevice, self).controllable
 
     def _get_size(self):
         if not self.exists:
