@@ -134,15 +134,18 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
     def devices(self):
         """ List of devices currently in the tree """
         devices = []
+        uuids = set()
         for device in self._devices:
             if not getattr(device, "complete", True):
                 continue
 
-            if device.uuid and device.uuid in [d.uuid for d in devices] and \
+            if device.uuid and device.uuid in uuids and \
                not flags.allow_inconsistent_config and \
                not isinstance(device, NoDevice):
                 raise DuplicateUUIDError("duplicate uuids in device tree")
 
+            if device.uuid:
+                uuids.add(device.uuid)
             devices.append(device)
 
         return devices
