@@ -92,7 +92,7 @@ def save_thread_exception(thread, exc_info):
     global _exception_thread
     global _thread_exception
 
-    if _exception_thread is None or _thread_exception is None:
+    if _exception_thread is not None or _thread_exception is not None:
         return
 
     _exception_thread = thread
