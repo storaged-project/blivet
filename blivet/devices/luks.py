@@ -62,7 +62,7 @@ class LUKSDevice(DMCryptDevice):
         """
         DMCryptDevice.__init__(self, name, fmt=fmt, size=size,
                                parents=parents, sysfs_path=sysfs_path,
-                               uuid=None, exists=exists)
+                               uuid=uuid, exists=exists)
 
     @property
     def raw_device(self):
@@ -208,7 +208,7 @@ class IntegrityDevice(DMIntegrityDevice):
         """
         DMIntegrityDevice.__init__(self, name, fmt=fmt, size=size,
                                    parents=parents, sysfs_path=sysfs_path,
-                                   uuid=None, exists=exists)
+                                   uuid=uuid, exists=exists)
 
     @property
     def raw_device(self):
