@@ -787,8 +787,10 @@ def create_sparse_file(path, size):
         :returns: None
     """
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
-    os.ftruncate(fd, size)
-    os.close(fd)
+    try:
+        os.ftruncate(fd, size)
+    finally:
+        os.close(fd)
 
 
 @contextmanager
