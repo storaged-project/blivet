@@ -415,9 +415,8 @@ def get_sysfs_attr(path, attr, root=None):
         log.warning("%s is not a valid attribute", attr)
         return None
 
-    f = open(fullattr, "r", encoding="utf-8", errors="replace")
-    data = f.read()
-    f.close()
+    with open(fullattr, "r", encoding="utf-8", errors="replace") as f:
+        data = f.read()
     sdata = "".join(["%02x" % (ord(x),) for x in data])
     testdata_log.debug("sysfs attr %s: %s", attribute, sdata)
     return data.strip()
