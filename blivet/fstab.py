@@ -104,15 +104,9 @@ class FSTabEntry(object):
             allow to store None as a valid value, blocking all value resets.
         """
 
-        affected_params = [self._entry.source,
-                           self._entry.target,
-                           self._entry.fstype,
-                           self._entry.options,
-                           self._entry.comment]
-
-        for param in affected_params:
-            if param is None:
-                param = ""
+        for attr in ("source", "target", "fstype", "options", "comment"):
+            if getattr(self._entry, attr) is None:
+                setattr(self._entry, attr, "")
 
     @property
     def entry(self):
