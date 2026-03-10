@@ -685,6 +685,7 @@ class FSTabManager(object):
                 if str(e) == "No such file or directory":
                     log.info("Underlying directory of fstab '%s' does not exist. creating...", dest_file)
                     os.makedirs(os.path.split(dest_file)[0])
+                    clean_table.write_file(dest_file)
                 else:
                     raise
 
