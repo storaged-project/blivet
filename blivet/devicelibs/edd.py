@@ -54,7 +54,7 @@ re_interface_edd3_sata = re.compile(r'^SATA\s*device: (\S*)\s*$')
 # so there's no way to distinguish these from EDD 3, even though SATA does
 # differ.  In theory, if we're on <4.0, pmp should always be all 0's.
 re_interface_edd4_sata = re.compile(r'^SATA\s*device: (\S*)\s*pmp: (\S*)\s*$')
-re_interface_sas = re.compile(r'^SAS\s*sas_address: (\S*)\s*lun: \(\S*\)\s*$')
+re_interface_sas = re.compile(r'^SAS\s*sas_address: (\S*)\s*lun: (\S*)\s*$')
 # to make life difficult, when it finds an unknown interface type string,
 # the kernel prints the values without the string.  But it does print the
 # anchoring tab that would go between them...
