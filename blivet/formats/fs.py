@@ -560,10 +560,11 @@ class FS(DeviceFormat):
         except Exception:  # pylint: disable=broad-except
             log_exception_info(log.info, "test mount failed")
 
-        if ret:
-            self.unmount()
-
-        os.rmdir(mountpoint)
+        try:
+            if ret:
+                self.unmount()
+        finally:
+            os.rmdir(mountpoint)
 
         return ret
 
