@@ -322,7 +322,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
                 lv.setup()
 
         # if format was already scheduled for removal, use original_format
-        if member.format != "lvmpv":
+        if member.format.type != "lvmpv":
             fmt = member.original_format
         else:
             fmt = member.format
