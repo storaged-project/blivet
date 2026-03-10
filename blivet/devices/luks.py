@@ -124,6 +124,8 @@ class LUKSDevice(DMCryptDevice):
         if self.align_target_size(newsize) != newsize:
             raise ValueError("new size would violate alignment requirements")
 
+        self.raw_device.format.target_size = newsize
+
     def _get_target_size(self):
         return self.raw_device.format.target_size
 
