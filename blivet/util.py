@@ -584,7 +584,7 @@ def get_option_value(opt_name, options):
         if "=" not in opt:
             continue
 
-        name, val = opt.split("=")
+        name, val = opt.split("=", 1)
         if name == opt_name:
             return val.strip()
 
