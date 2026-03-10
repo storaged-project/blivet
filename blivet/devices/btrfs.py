@@ -128,6 +128,7 @@ class BTRFSDevice(StorageDevice):
             try:
                 blockdev.fs.mount(fmt.device, tmpdir, fmt.type, fmt.mountopts)
             except blockdev.FSError as e:
+                os.rmdir(tmpdir)
                 raise errors.BTRFSError("failed to temporarily mount %s for btrfs operation" % fmt.device) from e
 
             try:
