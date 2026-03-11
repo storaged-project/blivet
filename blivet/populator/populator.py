@@ -103,7 +103,11 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
         name = udev.device_get_name(info)
         sysfs_path = udev.device_get_sysfs_path(info)
         parent_dir = os.path.normpath("%s/slaves" % sysfs_path)
-        parent_names = os.listdir(parent_dir)
+        try:
+            parent_names = os.listdir(parent_dir)
+        except OSError as e:
+            log.error("failed to read parent dir for %s: %s", name, e)
+            raise DeviceTreeError("failed to read parent dir for device %s" % name) from e
         parent_devices = []
         if not parent_names:
             log.error("no parents found for %s", name)
