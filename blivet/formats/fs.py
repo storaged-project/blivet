@@ -593,6 +593,7 @@ class FS(DeviceFormat):
                            options=options)
             except FSError as e:
                 log.debug("temp mount failed: %s", e)
+                os.rmdir(tmpdir)
                 raise
 
             try:
