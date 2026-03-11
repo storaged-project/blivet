@@ -851,9 +851,10 @@ class StorageDevice(Device):
     def removable(self):
         devpath = os.path.normpath(self.sysfs_path)
         remfile = os.path.normpath("%s/removable" % devpath)
-        return (self.sysfs_path and os.path.exists(devpath) and
-                os.access(remfile, os.R_OK) and
-                open(remfile).readline().strip() == "1")
+        if self.sysfs_path and os.path.exists(devpath) and os.access(remfile, os.R_OK):
+            with open(remfile) as f:
+                return f.readline().strip() == "1"
+        return False
 
     @property
     def direct(self):
