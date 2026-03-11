@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 
 from ..storagetestcase import StorageTestCase
@@ -103,6 +104,48 @@ class StratisTestCase(StratisTestCaseBase):
 
         self.storage.do_it()
         self.storage.reset()
+
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+
+        bd = self.storage.devicetree.get_device_by_path(self.vdevs[0] + "1")
+        self.assertIsNotNone(bd)
+        self.assertIsInstance(bd, blivet.devices.PartitionDevice)
+        self.assertIsNotNone(bd.format)
+        self.assertEqual(bd.format.type, "stratis")
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertIsInstance(pool, blivet.devices.StratisPoolDevice)
+        self.assertIsNotNone(pool.format)
+        self.assertIsNone(pool.format.type)
+        self.assertEqual(bd.format.pool_name, pool.name)
+        self.assertEqual(len(pool.parents), 1)
+        self.assertEqual(pool.parents[0], bd)
+        self.assertTrue(pool.encrypted)
+        self.assertIsNone(pool._clevis)
+
+    def test_stratis_encrypted_keyfile(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.storage.initialize_disk(disk)
+
+        bd = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="stratis",
+                                        parents=[disk])
+        self.storage.create_device(bd)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        with tempfile.NamedTemporaryFile(prefix="blivet_test") as temp:
+            temp.write(b"fipsneeds8chars")
+            temp.flush()
+
+            pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd],
+                                                 encrypted=True, key_file=temp.name)
+            self.storage.create_device(pool)
+
+            self.storage.do_it()
+            self.storage.reset()
 
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
         self.assertIsNotNone(disk)
