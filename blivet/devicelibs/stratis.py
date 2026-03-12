@@ -160,8 +160,6 @@ def set_key(key_desc, passphrase, key_file):
         if rc != 0:
             raise StratisError("Failed to set key for new pool: %s (%d)" % (err, rc))
     finally:
-        if key_file:
-            os.close(fd)
         if passphrase:
             os.close(write)
 
@@ -209,8 +207,6 @@ def _unlock_pool_new(pool_uuid, method=None, passphrase=None, keyfile=None):
         if not succ:
             raise StratisError("Failed to unlock pool: %s" % err)
     finally:
-        if keyfile:
-            os.close(fd)
         if passphrase:
             os.close(write)
         # repopulate the stratis info cache so the started pool is in correct list of pools

@@ -214,7 +214,8 @@ class FCoE(object):
         cfg_dir = root + "/etc/fcoe"
         example_cfg = os.path.join(cfg_dir, "cfg-ethx")
         if os.access(example_cfg, os.R_OK):
-            lines = open(example_cfg, "r").readlines()
+            with open(example_cfg, "r") as f:
+                lines = f.readlines()
         else:
             anaconda_cfg = """FCOE_ENABLE="yes"
 DCB_REQUIRED="yes"

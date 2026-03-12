@@ -560,10 +560,11 @@ class FS(DeviceFormat):
         except Exception:  # pylint: disable=broad-except
             log_exception_info(log.info, "test mount failed")
 
-        if ret:
-            self.unmount()
-
-        os.rmdir(mountpoint)
+        try:
+            if ret:
+                self.unmount()
+        finally:
+            os.rmdir(mountpoint)
 
         return ret
 
@@ -583,7 +584,7 @@ class FS(DeviceFormat):
 
         else:
             tmpdir = tempfile.mkdtemp(prefix="blivet-tmp.%s" % os.path.basename(self.device))
-            if self.mountopts and "ro" not in self.mountopts:
+            if self.mountopts and "ro" not in self.mountopts.split(","):
                 options = self.mountopts + ",ro"
             else:
                 options = "ro"
@@ -592,6 +593,7 @@ class FS(DeviceFormat):
                            options=options)
             except FSError as e:
                 log.debug("temp mount failed: %s", e)
+                os.rmdir(tmpdir)
                 raise
 
             try:
@@ -782,17 +784,13 @@ class FS(DeviceFormat):
 
         if self.uuid is None:
             err = "makes no sense to write an UUID when not requested"
-
-        if not self.exists:
+        elif not self.exists:
             err = "filesystem has not been created"
-
-        if not self._writeuuid.available:
+        elif not self._writeuuid.available:
             err = "no application to set UUID for filesystem %s" % self.type
-
-        if not self.uuid_format_ok(self.uuid):
+        elif not self.uuid_format_ok(self.uuid):
             err = "bad UUID format for application %s" % self._writeuuid
-
-        if not os.path.exists(self.device):
+        elif not os.path.exists(self.device):
             err = "device does not exist"
 
         if err is not None:
@@ -803,12 +801,12 @@ class FS(DeviceFormat):
     def reset_uuid(self):
         """Generate a new UUID for the file system and set/write it."""
 
-        orig_uuid = self.uuid
-        self.uuid = self.generate_new_uuid()
-
         if self.status:
             # XXX: does any FS support this?
             raise FSError("Cannot reset UUID on a mounted file system")
+
+        orig_uuid = self.uuid
+        self.uuid = self.generate_new_uuid()
 
         try:
             self.write_uuid()

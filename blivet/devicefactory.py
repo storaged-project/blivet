@@ -720,7 +720,7 @@ class DeviceFactory(object):
 
             if not d.partitioned and d.format.type is not None:
                 log.debug("Ignoring disk %s: format %s found on disk", d.name, d.format.type)
-            if not d.format.supported:
+            elif not d.format.supported:
                 log.debug("Ignoring disk %s: format %s is not supported", d.name, d.format.name)
             elif d.format.free < min_free:
                 log.debug("Ignoring disk %s: not enough free space. Required: %s, free: %s",

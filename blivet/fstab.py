@@ -104,15 +104,9 @@ class FSTabEntry(object):
             allow to store None as a valid value, blocking all value resets.
         """
 
-        affected_params = [self._entry.source,
-                           self._entry.target,
-                           self._entry.fstype,
-                           self._entry.options,
-                           self._entry.comment]
-
-        for param in affected_params:
-            if param is None:
-                param = ""
+        for attr in ("source", "target", "fstype", "options", "comment"):
+            if getattr(self._entry, attr) is None:
+                setattr(self._entry, attr, "")
 
     @property
     def entry(self):
@@ -691,6 +685,7 @@ class FSTabManager(object):
                 if str(e) == "No such file or directory":
                     log.info("Underlying directory of fstab '%s' does not exist. creating...", dest_file)
                     os.makedirs(os.path.split(dest_file)[0])
+                    clean_table.write_file(dest_file)
                 else:
                     raise
 
@@ -727,9 +722,9 @@ class FSTabManager(object):
                 return None
             return FSTabEntry(entry=found_entry)
 
-        if file is not None:
+        if _file is not None:
             try:
-                found_entry = self._table.find_target(file, MNT_ITER_FORWARD)
+                found_entry = self._table.find_target(_file, MNT_ITER_FORWARD)
             except LibmountException:
                 return None
             return FSTabEntry(entry=found_entry)

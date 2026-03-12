@@ -455,8 +455,8 @@ def device_get_serial(udev_info):
 def device_get_wwn(udev_info):
     """ Return the WWID as reported by udev without '0x' prefix. """
     wwn = udev_info.get("ID_WWN_WITH_EXTENSION")
-    if wwn:
-        wwn = wwn[2:]  # strip off the leading '0x'
+    if wwn and wwn.startswith("0x"):
+        wwn = wwn[2:]
     return wwn
 
 
@@ -540,7 +540,11 @@ def device_get_holders(info):
 
     holders = list()
     for name in names:
-        holders.append(get_device(device_node="/dev/" + name))
+        holder = get_device(device_node="/dev/" + name)
+        if not holder:
+            log.warning("Failed to get udev info for %s, ignoring", name)
+        else:
+            holders.append(holder)
 
     return holders
 
@@ -972,7 +976,8 @@ def device_get_iscsi_nic(info):
 def device_get_iscsi_initiator(info):
     initiator_name = None
     if device_is_partoff_iscsi(info):
-        host = re.match(r'.*/(host\d+)', device_get_sysfs_path(info)).groups()[0]
+        match = re.match(r'.*/(host\d+)', device_get_sysfs_path(info))
+        host = match.groups()[0] if match else None
         if host:
             initiator_file = "/sys/class/iscsi_host/%s/initiatorname" % host
             if os.access(initiator_file, os.R_OK):

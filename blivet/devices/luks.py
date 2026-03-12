@@ -62,7 +62,7 @@ class LUKSDevice(DMCryptDevice):
         """
         DMCryptDevice.__init__(self, name, fmt=fmt, size=size,
                                parents=parents, sysfs_path=sysfs_path,
-                               uuid=None, exists=exists)
+                               uuid=uuid, exists=exists)
 
     @property
     def raw_device(self):
@@ -92,7 +92,7 @@ class LUKSDevice(DMCryptDevice):
             self.raw_device.size = newsize + self.raw_device.format._header_size
 
             # just run the StorageDevice._set_size to make sure we are in the format limits
-            super(LUKSDevice, self)._set_size(newsize - self.raw_device.format._header_size)
+            super(LUKSDevice, self)._set_size(newsize)
         else:
             raise DeviceError("Cannot set size for an existing LUKS device")
 
@@ -123,6 +123,8 @@ class LUKSDevice(DMCryptDevice):
 
         if self.align_target_size(newsize) != newsize:
             raise ValueError("new size would violate alignment requirements")
+
+        self.raw_device.format.target_size = newsize
 
     def _get_target_size(self):
         return self.raw_device.format.target_size
@@ -206,7 +208,7 @@ class IntegrityDevice(DMIntegrityDevice):
         """
         DMIntegrityDevice.__init__(self, name, fmt=fmt, size=size,
                                    parents=parents, sysfs_path=sysfs_path,
-                                   uuid=None, exists=exists)
+                                   uuid=uuid, exists=exists)
 
     @property
     def raw_device(self):
@@ -230,7 +232,7 @@ class IntegrityDevice(DMIntegrityDevice):
             # fully controlled by LUKS and we don't need the integrity-specific tools
             return not LUKSDevice.unavailable_type_dependencies()
         else:
-            return super(IntegrityDevice, self).controllable()
+            return super(IntegrityDevice, self).controllable
 
     def _get_size(self):
         if not self.exists:
@@ -244,7 +246,7 @@ class IntegrityDevice(DMIntegrityDevice):
             self.raw_device.size = newsize + self.metadata_size
 
             # just run the StorageDevice._set_size to make sure we are in the format limits
-            super(IntegrityDevice, self)._set_size(newsize - self.metadata_size)
+            super(IntegrityDevice, self)._set_size(newsize)
         else:
             raise DeviceError("Cannot set size for an existing integrity device")
 

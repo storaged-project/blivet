@@ -1007,8 +1007,15 @@ class Blivet(object, metaclass=SynchronizedMeta):
         if new_size < device.size:
             actions.reverse()
 
-        for action in actions:
-            self.devicetree.actions.add(action)
+        added = []
+        try:
+            for action in actions:
+                self.devicetree.actions.add(action)
+                added.append(action)
+        except Exception:
+            for action in reversed(added):
+                self.devicetree.actions.remove(action)
+            raise
 
     def safe_device_name(self, name, device_type=None):
         """ Convert a device name to something safe and return that.
@@ -1151,7 +1158,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
     def dump_state(self, suffix):
         """ Dump the current device list to the storage shelf. """
-        key = "devices.%d.%s" % (time.time(), suffix)
+        key = "devices.%f.%s" % (time.time(), suffix)
         with contextlib.closing(shelve.open(self._dump_file)) as shelf:
             try:
                 shelf[key] = [d.dict for d in self.devices]  # pylint: disable=unsupported-assignment-operation
@@ -1182,8 +1189,6 @@ class Blivet(object, metaclass=SynchronizedMeta):
                 not fmt.linux_native):
             log.debug("invalid default fstype (%s): %r", newtype, fmt)
             raise ValueError("new value %s is not valid as a default fs type" % newtype)
-
-        self._default_fstype = newtype  # pylint: disable=attribute-defined-outside-init
 
     @property
     def default_fstype(self):

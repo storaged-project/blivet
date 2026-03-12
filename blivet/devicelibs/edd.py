@@ -54,7 +54,7 @@ re_interface_edd3_sata = re.compile(r'^SATA\s*device: (\S*)\s*$')
 # so there's no way to distinguish these from EDD 3, even though SATA does
 # differ.  In theory, if we're on <4.0, pmp should always be all 0's.
 re_interface_edd4_sata = re.compile(r'^SATA\s*device: (\S*)\s*pmp: (\S*)\s*$')
-re_interface_sas = re.compile(r'^SAS\s*sas_address: (\S*)\s*lun: \(\S*\)\s*$')
+re_interface_sas = re.compile(r'^SAS\s*sas_address: (\S*)\s*lun: (\S*)\s*$')
 # to make life difficult, when it finds an unknown interface type string,
 # the kernel prints the values without the string.  But it does print the
 # anchoring tab that would go between them...
@@ -331,7 +331,7 @@ class EddEntry(object):
                     log.warning("edd: can not match interface for %s: %s",
                                 self.sysfspath, interface)
             except AttributeError as e:
-                if e.args == "'NoneType' object has no attribute 'group'":
+                if e.args == ("'NoneType' object has no attribute 'group'",):
                     log.warning("edd: can not match interface for %s: %s",
                                 self.sysfspath, interface)
                 else:
@@ -676,7 +676,7 @@ def collect_mbrs(devices, root=None):
             sdata = "".join(["%02x" % (x,) for x in sdata])
             os.close(fd)
             testdata_log.debug("device %s data[440:443] = %s", path, sdata)
-        except OSError as e:
+        except (OSError, struct.error) as e:
             testdata_log.debug("device %s data[440:443] raised %s", path, e)
             log.error("edd: could not read mbrsig from disk %s: %s",
                       dev.name, str(e))

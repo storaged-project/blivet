@@ -415,9 +415,8 @@ def get_sysfs_attr(path, attr, root=None):
         log.warning("%s is not a valid attribute", attr)
         return None
 
-    f = open(fullattr, "r", encoding="utf-8", errors="replace")
-    data = f.read()
-    f.close()
+    with open(fullattr, "r", encoding="utf-8", errors="replace") as f:
+        data = f.read()
     sdata = "".join(["%02x" % (ord(x),) for x in data])
     testdata_log.debug("sysfs attr %s: %s", attribute, sdata)
     return data.strip()
@@ -585,7 +584,7 @@ def get_option_value(opt_name, options):
         if "=" not in opt:
             continue
 
-        name, val = opt.split("=")
+        name, val = opt.split("=", 1)
         if name == opt_name:
             return val.strip()
 
@@ -788,8 +787,10 @@ def create_sparse_file(path, size):
         :returns: None
     """
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
-    os.ftruncate(fd, size)
-    os.close(fd)
+    try:
+        os.ftruncate(fd, size)
+    finally:
+        os.close(fd)
 
 
 @contextmanager

@@ -92,7 +92,7 @@ class FATFSMinSize(FSMinSize):
             info = BlockDev.fs.vfat_get_info(self.fs.device)
         except BlockDev.FSError as e:
             raise FSError("failed to get fs min size: %s" % e)
-        min_size = Size((info.free_cluster_count - info.free_cluster_count) * info.cluster_size)
+        min_size = Size((info.cluster_count - info.free_cluster_count) * info.cluster_size)
         # resizing below 32 MiB would require changing from VFAT/FAT32 to FAT16 which is not
         # currently supported by libparted which libblockdev uses for FAT resize
         return max(min_size, Size("32 MiB"))

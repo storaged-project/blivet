@@ -642,18 +642,18 @@ def do_partitioning(storage, boot_disk=None):
 
         update_extended_partitions(storage, disks)
 
-        for part in [p for p in storage.partitions if not p.exists]:
-            problem = part.check_size()
-            if problem < 0:
-                raise PartitioningError(_("partition is too small for %(format)s formatting "
-                                          "(allowable size is %(min_size)s to %(max_size)s)")
-                                        % {"format": part.format.name, "min_size": part.format.min_size,
-                                            "max_size": part.format.max_size})
-            elif problem > 0:
-                raise PartitioningError(_("partition is too large for %(format)s formatting "
-                                          "(allowable size is %(min_size)s to %(max_size)s)")
-                                        % {"format": part.format.name, "min_size": part.format.min_size,
-                                            "max_size": part.format.max_size})
+    for part in [p for p in storage.partitions if not p.exists]:
+        problem = part.check_size()
+        if problem < 0:
+            raise PartitioningError(_("partition is too small for %(format)s formatting "
+                                      "(allowable size is %(min_size)s to %(max_size)s)")
+                                    % {"format": part.format.name, "min_size": part.format.min_size,
+                                        "max_size": part.format.max_size})
+        elif problem > 0:
+            raise PartitioningError(_("partition is too large for %(format)s formatting "
+                                      "(allowable size is %(min_size)s to %(max_size)s)")
+                                    % {"format": part.format.name, "min_size": part.format.min_size,
+                                        "max_size": part.format.max_size})
 
 
 def align_size_for_disklabel(size, disklabel):
@@ -949,7 +949,8 @@ def allocate_partitions(storage, disks, partitions, freespace, boot_disk=None):
 
                     if new_part_type == parted.PARTITION_EXTENDED:
                         e = disklabel.extended_partition
-                        disklabel.parted_disk.removePartition(e)
+                        if e:
+                            disklabel.parted_disk.removePartition(e)
 
                     log.debug("total growth: %d sectors", new_growth)
 

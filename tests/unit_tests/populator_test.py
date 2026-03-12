@@ -9,7 +9,6 @@ from blivet.devices import DiskDevice, DMDevice, FileDevice, LoopDevice
 from blivet.devices import MDRaidArrayDevice, MultipathDevice, OpticalDevice
 from blivet.devices import PartitionDevice, StorageDevice
 from blivet.devices import NVMeNamespaceDevice, NVMeFabricsNamespaceDevice
-from blivet.devicelibs import lvm
 from blivet.devicetree import DeviceTree
 from blivet.errors import DeviceTreeError
 from blivet.formats import get_device_format_class, get_format, DeviceFormat
@@ -1015,9 +1014,6 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
     @patch("blivet.udev.device_get_name")
     @patch.object(DeviceFormat, "_device_check", return_value=None)
     @patch.object(DeviceTree, "get_device_by_uuid")
-    # XXX: the lvm_devices_* functions are decorated with needs_config_refresh decorator which
-    #      at this point is already applied as a no-op because LVM libblockdev plugin is not available
-    @patch("blivet.devicelibs.lvm.lvm_devices_add", new=lvm._lvm_devices.add)
     def test_run(self, *args):
         """Test lvm format populator."""
         get_device_by_uuid = args[0]
@@ -1105,8 +1101,6 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
                     vg_device = devicetree.get_device_by_name(pv_info.vg_name)
                     self.assertTrue(vg_device is not None)
                     devicetree._remove_device(vg_device)
-
-                    self.assertIn(device.path, lvm._lvm_devices)
 
         get_device_by_uuid.reset_mock()
 

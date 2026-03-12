@@ -1118,10 +1118,10 @@ class PartitionDevice(StorageDevice):
         if self.format.max_size and self.size > self.format.max_size:
             return 1
         elif (self.format.min_size and
-              (not self.req_grow and
-               self.size < self.format.min_size) or
-              (self.req_grow and self.req_max_size and
-               self.req_max_size < self.format.min_size)):
+              ((not self.req_grow and
+                self.size < self.format.min_size) or
+               (self.req_grow and self.req_max_size and
+                self.req_max_size < self.format.min_size))):
             return -1
         return 0
 

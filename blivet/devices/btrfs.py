@@ -128,6 +128,7 @@ class BTRFSDevice(StorageDevice):
             try:
                 blockdev.fs.mount(fmt.device, tmpdir, fmt.type, fmt.mountopts)
             except blockdev.FSError as e:
+                os.rmdir(tmpdir)
                 raise errors.BTRFSError("failed to temporarily mount %s for btrfs operation" % fmt.device) from e
 
             try:
@@ -420,7 +421,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             if mountpoint:
                 subvolid = blockdev.btrfs.get_default_subvolume_id(mountpoint)
             elif flags.auto_dev_updates:
-                subvolid = blockdev.btrfs.get_default_subvolume_id(mountpoint)
+                with self._do_temp_mount() as tmp_mountpoint:
+                    subvolid = blockdev.btrfs.get_default_subvolume_id(tmp_mountpoint)
         except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as e:
             log.debug("failed to get default subvolume id: %s", e)
 

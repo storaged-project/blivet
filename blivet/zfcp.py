@@ -37,10 +37,9 @@ log = logging.getLogger("blivet")
 
 
 def logged_write_line_to_file(fn, value):
-    f = open(fn, "w")
     log.debug("echo %s > %s", value, fn)
-    f.write("%s\n" % (value))
-    f.close()
+    with open(fn, "w") as f:
+        f.write("%s\n" % (value))
 
 
 zfcpsysfs = "/sys/bus/ccw/drivers/zfcp"
