@@ -13,6 +13,8 @@ VERSION_TAG=$(PKGNAME)-$(VERSION)
 
 COVERAGE=$(PYTHON) -m coverage
 
+ANSIBLE_BECOME_FLAG := $(shell [ "$$(id -u)" -eq 0 ] && echo "" || echo "-K")
+
 all:
 	$(MAKE) -C po
 
@@ -55,7 +57,7 @@ potfile:
 install-requires:
 	@echo "*** Installing the dependencies required for testing and analysis ***"
 	@which ansible-playbook &>/dev/null || ( echo "Please install Ansible to install testing dependencies"; exit 1 )
-	@ansible-playbook -K -i "localhost," -c local misc/install-test-dependencies.yml --extra-vars "python=$(PYTHON)"
+	@ansible-playbook $(ANSIBLE_BECOME_FLAG) -i "localhost," -c local misc/install-test-dependencies.yml --extra-vars "python=$(PYTHON)"
 
 unit-test:
 	@echo "*** Running unit tests with $(PYTHON) ***"
