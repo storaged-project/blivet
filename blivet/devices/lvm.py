@@ -493,7 +493,7 @@ class LVMVolumeGroupDevice(ContainerDevice):
     @thpool_reserve.setter
     def thpool_reserve(self, value):
         if value is not None and not isinstance(value, ThPoolReserveSpec):
-            raise AttributeError("Invalid thpool_reserve given, must be of type ThPoolReserveSpec")
+            raise ValueError("Invalid thpool_reserve given, must be of type ThPoolReserveSpec")
         self._thpool_reserve = value
 
     @property
@@ -830,7 +830,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
             elif isinstance(pv_spec, StorageDevice):
                 self._pv_specs.append(LVPVSpec(pv_spec, Size(0)))
             else:
-                raise AttributeError("Invalid PV spec '%s' for the '%s' LV" % (pv_spec, self.name))
+                raise ValueError("Invalid PV spec '%s' for the '%s' LV" % (pv_spec, self.name))
         # Make sure any destination PVs are actually PVs in this VG
         if not set(spec.pv for spec in self._pv_specs).issubset(set(self.vg.parents)):
             missing = [r.name for r in
@@ -1442,7 +1442,7 @@ class LVMInternalLogicalVolumeMixin(object):
     # internal LVs follow different rules limiting size
     def _set_size(self, newsize):
         if not isinstance(newsize, Size):
-            raise AttributeError("new size must of type Size")
+            raise ValueError("new size must be of type Size")
 
         if not self.takes_extra_space:
             if newsize <= self.parent_lv.size:  # pylint: disable=no-member
@@ -1942,7 +1942,7 @@ class LVMThinLogicalVolumeMixin(object):
 
     def _set_size(self, newsize):
         if not isinstance(newsize, Size):
-            raise AttributeError("new size must of type Size")
+            raise ValueError("new size must be of type Size")
 
         newsize = self.vg.align(newsize)
         newsize = self.vg.align(util.numeric_type(newsize))
@@ -2079,7 +2079,7 @@ class LVMVDOPoolMixin(object):
 
     def _set_size(self, newsize):
         if not isinstance(newsize, Size):
-            raise AttributeError("new size must of type Size")
+            raise ValueError("new size must be of type Size")
 
         if newsize < self.min_size:
             raise ValueError("Requested size %s is smaller than minimum %s" % (newsize, self.min_size))
@@ -2211,7 +2211,7 @@ class LVMVDOLogicalVolumeMixin(object):
 
     def _set_size(self, newsize):
         if not isinstance(newsize, Size):
-            raise AttributeError("new size must of type Size")
+            raise ValueError("new size must be of type Size")
 
         newsize = self.vg.align(newsize)
         newsize = self.vg.align(util.numeric_type(newsize))
@@ -2698,7 +2698,7 @@ class LVMLogicalVolumeDevice(LVMLogicalVolumeBase, LVMInternalLogicalVolumeMixin
     @type_specific
     def _set_size(self, newsize):
         if not isinstance(newsize, Size):
-            raise AttributeError("new size must be of type Size")
+            raise ValueError("new size must be of type Size")
 
         newsize = self.vg.align(newsize, roundup=self.growable)
         log.debug("trying to set lv %s size to %s", self.name, newsize)
