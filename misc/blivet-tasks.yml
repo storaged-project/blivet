@@ -27,6 +27,11 @@
   package:
     state: present
     name:
+      - f2fs-tools
+      - gfs2-utils
+      - kernel-modules-extra
+      - glibc-langpack-es
+      - glibc-langpack-kk
       - dosfstools
       - e2fsprogs
       - xfsprogs
@@ -53,6 +58,12 @@
       - libblockdev-tools
       - udisks2-iscsi
       - python3-dasbus
+      - f2fs-tools
+      - gfs2-utils
+      - kernel-modules-extra
+      - glibc-langpack-es
+      - glibc-langpack-kk
+      - udftools
   when: ansible_distribution == 'Fedora' and test_dependencies|bool
 
 ####### CentOS 9/10
