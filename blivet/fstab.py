@@ -812,6 +812,7 @@ class FSTabManager(object):
                 # allow change of spec of existing devices
                 self.remove_entry(entry=found)
                 self.add_entry(spec=spec,
+                               file=action.device.format.mountpoint,
                                mntopts=action.device.format.options,
                                freq=action.device.format.freq,
                                passno=action.device.format.passno,
