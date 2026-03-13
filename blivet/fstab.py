@@ -634,7 +634,7 @@ class FSTabManager(object):
         if fs:
             self._table.remove_fs(fs.entry)
         else:
-            raise ValueError("Cannot remove entry (%s) from fstab, because it is not there" % entry)
+            raise ValueError("Cannot remove entry (spec=%s, file=%s, entry=%s) from fstab, because it is not there" % (spec, file, entry))
 
     def write(self, dest_file=None):
         """ Commit the self._table into the self._dest_file. Setting dest_file parameter overrides
