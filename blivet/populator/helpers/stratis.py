@@ -145,7 +145,6 @@ class StratisFormatPopulator(FormatPopulator):
         # now add filesystems on this pool
         for fs_info in stratis_info.filesystems.values():
             if fs_info.pool_uuid != pool_uuid:
-                print(fs_info.pool_uuid, pool_uuid)
                 continue
 
             fs_device = self._devicetree.get_device_by_uuid(fs_info.uuid)
