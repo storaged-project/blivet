@@ -634,7 +634,7 @@ class FSTabManager(object):
         if fs:
             self._table.remove_fs(fs.entry)
         else:
-            raise ValueError("Cannot remove entry (%s) from fstab, because it is not there" % entry)
+            raise ValueError("Cannot remove entry (spec=%s, file=%s, entry=%s) from fstab, because it is not there" % (spec, file, entry))
 
     def write(self, dest_file=None):
         """ Commit the self._table into the self._dest_file. Setting dest_file parameter overrides
@@ -812,6 +812,7 @@ class FSTabManager(object):
                 # allow change of spec of existing devices
                 self.remove_entry(entry=found)
                 self.add_entry(spec=spec,
+                               file=action.device.format.mountpoint,
                                mntopts=action.device.format.options,
                                freq=action.device.format.freq,
                                passno=action.device.format.passno,
