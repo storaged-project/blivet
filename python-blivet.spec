@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storageapis.wordpress.com/projects/blivet
-Version: 3.13.1
+Version: 3.13.2
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -133,6 +133,14 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Tue Mar 24 2026 Vojtech Trefny <vtrefny@redhat.com> - 3.13.2-1
+- fs: Set EFIFS min size to 32 MiB (vtrefny)
+- Fix log message in DeviceFactory._filter_disks (vtrefny)
+- iscsi: Fix getting firmware initiator name (vtrefny)
+- iscsi: Fix calling initiator methods without argument (vtrefny)
+- doc: Fix generating documentation with Sphinx 8 (vtrefny)
+- Only enforce /boot location limit on non-EFI systems (#2391443) (vtrefny)
+
 * Tue Nov 25 2025 Vojtech Trefny <vtrefny@redhat.com> - 3.13.1-1
 - infra: bump actions/checkout from 5 to 6 (49699333+dependabot[bot])
 - CONTRIBUTING: Update directions for updating documentation (vtrefny)
