@@ -251,7 +251,12 @@ class StratisTestCase(StratisTestCaseBase):
         return Version(out)
 
     def test_stratis_pool_start_stop(self):
-        if self._get_stratis_version() < Version("3.8.0"):
+        try:
+            stratis_version = self._get_stratis_version()
+        except (FileNotFoundError, OSError):
+            self.skipTest("stratis CLI not available")
+
+        if stratis_version < Version("3.8.0"):
             self.skipTest("Stratis 3.8.0 or newer needed for start/stop support")
 
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
