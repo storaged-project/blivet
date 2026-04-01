@@ -601,8 +601,12 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                                                   extra={"--select": "vg_uuid=%s" % pv_info.vg_uuid,
                                                          "--devices": self.path})
                     else:
-                        blockdev.lvm.vgremove(pv_info.vg_name,
-                                              extra={"--select": "vg_uuid=%s" % pv_info.vg_uuid})
+                        lvm.lvm_devices_add(self.path)
+                        try:
+                            blockdev.lvm.vgremove(pv_info.vg_name,
+                                                  extra={"--select": "vg_uuid=%s" % pv_info.vg_uuid})
+                        finally:
+                            lvm.lvm_devices_remove(self.path)
                 except blockdev.LVMError as e:
                     log.error("Failed to remove stale volume group from newly-created md array %s: %s",
                               self.path, str(e))
@@ -615,7 +619,11 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
                     with lvm.empty_lvm_devices():
                         blockdev.lvm.pvremove(self.path, extra={"--devices": self.path})
                 else:
-                    blockdev.lvm.pvremove(self.path)
+                    lvm.lvm_devices_add(self.path)
+                    try:
+                        blockdev.lvm.pvremove(self.path)
+                    finally:
+                        lvm.lvm_devices_remove(self.path)
             except blockdev.LVMError as err:
                 raise errors.MDRaidError(err)
 
