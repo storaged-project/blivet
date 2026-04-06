@@ -29,6 +29,7 @@ class BlivetLintConfig(CensorshipConfig):
             FalsePositive(r"No name '.*' in module 'libmount'"),
             FalsePositive(r"Unknown option value for 'disable', expected a valid pylint message and got 'possibly-used-before-assignment'"),
             FalsePositive(r"No value for argument 'self' in function call"),
+            FalsePositive(r"No name 'setup' in module 'setuptools'"),
         ]
 
     def _files(self):
