@@ -36,6 +36,61 @@ Note that there is a minimum review period of 24 hours for any patch. The purpos
 
 Note that all CI checks are expected to pass for the pull request to be merged. Ask the maintainers if you cannot reproduce a CI failure locally or if you suspect the failed test run is caused by the CI infrastructure issue.
 
+## Development Environment Setup
+
+### Python
+
+Blivet is implemented in Python and is required to support Python versions >= 3.9. As a result, only
+language features available in the supported Python baseline may be used within the library.
+
+### Installing Dependencies
+
+Blivet requires various system packages and Python libraries for development and testing.
+The easiest way to install all required dependencies is using the Ansible playbook:
+
+```bash
+$ sudo make install-requires
+```
+
+This will use Ansible to automatically install all build dependencies, runtime dependencies, and testing tools for your distribution.
+The playbook supports Fedora, CentOS (9 and 10+), Debian, and Ubuntu.  You will need `make` and `ansible` to run this.
+
+**Note:** You will be prompted for your sudo password (via `-K` flag) unless you are already running as root.
+This will be shown with a `BECOMING` prompt. If the Ansible install fails, manually run ansible with debug flags (e.g., `-vvv`) to help isolate the issue.
+
+The dependency definitions are maintained in `misc/blivet-tasks.yml`, which is used by the Ansible playbook.
+If you would like to *not* use Ansible, this file will give you details about what packages you need to install manually.
+
+### Recommended Testing Environment
+
+**It is strongly recommended to run blivet tests in a virtual machine.** Here's why:
+
+1. **Storage Operations Are Destructive**: Blivet tests manipulate storage devices, partitions, filesystems, and LVM configurations. While tests use loopback/LIO target devices and temporary storage, bugs or test failures could potentially affect your system's storage configuration and/or delete all your most important data.
+
+2. **Root Privileges Required**: Many blivet tests require root privileges to perform operations like creating filesystems, managing partitions, and configuring storage devices. Running these tests in a VM provides isolation and safety.
+
+3. **Clean State**: VMs can be easily snapshotted before running tests, allowing you to restore to a known-good state if something goes wrong.
+
+4. **Kernel Modules**: Some tests require specific kernel modules (e.g., `dm_raid`, `dm_integrity`) that may not be loaded on your host system. A dedicated test VM can be configured with all necessary modules.
+
+5. **Test Isolation**: Running tests in a VM prevents interference with your host system's storage management services (LVM, device-mapper, etc.).
+
+#### Setting Up a Test VM
+
+A typical test VM configuration should have:
+- At least 2GB RAM (4GB recommended)
+- 20GB+ disk space
+- Snapshot capability for easy rollback
+- One of the supported distributions (Fedora, CentOS, Debian, or Ubuntu)
+
+After creating your VM:
+1. Install the operating system
+2. Install `make` and `ansible` (e.g., `sudo dnf install make ansible` on Fedora)
+3. Clone the blivet repository
+4. Run `make install-requires` to install all dependencies
+5. Take a snapshot for quick restoration
+6. Run tests with `make check` or `make ci`
+
 ## Release & Build Procedures
 
 ### Upstream Release Procedure

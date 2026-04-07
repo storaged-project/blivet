@@ -29,30 +29,35 @@
     name:
       - dosfstools
       - e2fsprogs
-      - xfsprogs
-      - hfsplus-tools
-      - ntfsprogs
       - exfatprogs
-      - python3-coverage
-      - python3-pocketlint
-      - python3-pycodestyle
-      - python3-pyudev
-      - python3-pyparted
+      - f2fs-tools
+      - gfs2-utils
+      - glibc-langpack-es
+      - glibc-langpack-kk
+      - hfsplus-tools
+      - iscsi-initiator-utils
+      - kernel-modules-extra
+      - libblockdev-tools
       - libselinux-python3
+      - ntfsprogs
       - python3-blockdev
       - python3-bytesize
+      - python3-coverage
+      - python3-dasbus
       - python3-libmount
       - python3-libvirt
       - python3-paramiko
+      - python3-pocketlint
+      - python3-pycodestyle
+      - python3-pyparted
+      - python3-pyudev
       - python3-yaml
-      - targetcli
-      - iscsi-initiator-utils
-      - gfs2-utils
-      - stratisd
       - stratis-cli
-      - libblockdev-tools
+      - stratisd
+      - targetcli
+      - udftools
       - udisks2-iscsi
-      - python3-dasbus
+      - xfsprogs
   when: ansible_distribution == 'Fedora' and test_dependencies|bool
 
 ####### CentOS 9/10
@@ -84,25 +89,31 @@
   package:
     state: present
     name:
+      - btrfs-progs
       - dosfstools
       - e2fsprogs
-      - xfsprogs
-      - python3-pyudev
-      - python3-pyparted
+      - exfatprogs
+      - glibc-langpack-es
+      - glibc-langpack-kk
+      - iscsi-initiator-utils
+      - kernel-modules-extra
+      - libblockdev-tools
       - libselinux-python3
+      - ntfsprogs
       - python3-blockdev
       - python3-bytesize
+      - python3-dasbus
       - python3-libmount
       - python3-libvirt
       - python3-pip
+      - python3-pyparted
+      - python3-pyudev
       - python3-yaml
-      - targetcli
-      - iscsi-initiator-utils
-      - stratisd
       - stratis-cli
-      - libblockdev-tools
+      - stratisd
+      - targetcli
       - udisks2-iscsi
-      - python3-dasbus
+      - xfsprogs
   when: ansible_distribution == 'CentOS' and test_dependencies|bool
 
 - name: Install additional test dependencies (CentOS 9)
@@ -158,26 +169,31 @@
       - automake
       - autopoint
       - bison
+      - git
       - libtool
       - pkg-config
       - dosfstools
       - e2fsprogs
-      - xfsprogs
       - exfatprogs
+      - f2fs-tools
+      - gfs2-utils
+      - hfsprogs
       - ntfs-3g
-      - python3-coverage
-      - python3-pycodestyle
-      - pycodestyle
+      - udftools
+      - xfsprogs
       - gettext
-      - python3-polib
-      - python3-paramiko
+      - libblockdev-tools
+      - open-iscsi
+      - pycodestyle
+      - python3-coverage
+      - python3-dasbus
       - python3-libvirt
+      - python3-paramiko
       - python3-pip
+      - python3-polib
+      - python3-pycodestyle
       - python3-yaml
       - targetcli-fb
-      - open-iscsi
-      - gfs2-utils
-      - libblockdev-tools
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' and test_dependencies|bool
 
 - name: Install libmount (Debian/Ubuntu)

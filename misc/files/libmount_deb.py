@@ -58,7 +58,10 @@ def main():
     if not match:
         raise RuntimeError('Getting mount version failed:\n%s' % out)
 
-    libmount_version = 'v'+match.group(1)
+    version_str = match.group(1)
+    # util-linux tags don't include trailing .0 (e.g. v2.41 not v2.41.0)
+    version_str = re.sub(r'\.0$', '', version_str)
+    libmount_version = 'v' + version_str
 
     print('Done. (libmount version: %s)' % libmount_version)
 
