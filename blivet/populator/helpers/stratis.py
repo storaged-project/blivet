@@ -176,6 +176,11 @@ class StratisFormatPopulator(FormatPopulator):
             # possibly stopped pool
             pool_info = next((pool_info for pool_info in stratis_info.stopped_pools if self.device.path in pool_info.devices), None)
             if pool_info:
+                if not pool_info.name:
+                    # no name -> probably broken or partially constructed pool
+                    # we cannot add a device without name
+                    log.warning("Ignoring stopped stratis pool %s without name", pool_info.uuid)
+                    return
                 pool_device = self._add_stopped_pool_device(pool_info)
             else:
                 # no stopped pool info, no bd info -> nothing we can do
