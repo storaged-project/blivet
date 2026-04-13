@@ -142,6 +142,10 @@ class LVMPhysicalVolume(DeviceFormat):
         return super(LVMPhysicalVolume, self).formattable and self._plugin.available
 
     @property
+    def _format_resource(self):
+        return self._plugin
+
+    @property
     def supported(self):
         return super(LVMPhysicalVolume, self).supported and self._plugin.available
 

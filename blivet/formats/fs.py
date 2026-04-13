@@ -839,6 +839,12 @@ class FS(DeviceFormat):
         return super(FS, self).formattable and self._mkfs.available
 
     @property
+    def _format_resource(self):
+        if self._mkfs and hasattr(self._mkfs, "ext"):
+            return self._mkfs.ext
+        return None
+
+    @property
     def resizable(self):
         """ Can formats of this filesystem type be resized? """
         return super(FS, self).resizable and self._resize.available

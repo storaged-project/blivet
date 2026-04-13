@@ -199,7 +199,8 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         raid1 = self.bvt.new_partition(size=Size("1GiB"), fmt_type="mdmember")
         raid2 = self.bvt.new_partition(size=Size("1GiB"), fmt_type="mdmember")
 
-        with self.assertRaisesRegex(ValueError, "resource to create this format.*unavailable"):
+        msg = "resource libblockdev lvm plugin to create this format lvmpv is unavailable: libblockdev plugin lvm not loaded"
+        with self.assertRaisesRegex(ValueError, msg):
             self.bvt.create_device(pv_fail)
 
         # to be able to test functions like destroy_device it is necessary to have some
