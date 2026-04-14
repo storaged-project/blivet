@@ -672,6 +672,11 @@ class DeviceFormat(ObjectID, metaclass=SynchronizedMeta):
         return self._formattable
 
     @property
+    def _format_resource(self):
+        """ External resource to create this format """
+        return None
+
+    @property
     def supported(self):
         """ Is this format a supported type?
 

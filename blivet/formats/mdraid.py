@@ -85,6 +85,10 @@ class MDRaidMember(DeviceFormat):
         return super(MDRaidMember, self).formattable and self._plugin.available
 
     @property
+    def _format_resource(self):
+        return self._plugin
+
+    @property
     def supported(self):
         return super(MDRaidMember, self).supported and self._plugin.available
 

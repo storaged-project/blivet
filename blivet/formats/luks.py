@@ -280,6 +280,10 @@ class LUKS(DeviceFormat):
         return super(LUKS, self).formattable and self._plugin.available
 
     @property
+    def _format_resource(self):
+        return self._plugin
+
+    @property
     def supported(self):
         return super(LUKS, self).supported and self._plugin.available
 
@@ -697,6 +701,10 @@ class Integrity(DeviceFormat):
     @property
     def formattable(self):
         return super(Integrity, self).formattable and self._plugin.available
+
+    @property
+    def _format_resource(self):
+        return self._plugin
 
     @property
     def status(self):

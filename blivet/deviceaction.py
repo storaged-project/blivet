@@ -602,7 +602,14 @@ class ActionCreateFormat(DeviceAction):
             raise ValueError("specified format already exists")
 
         if not self._format.formattable:
-            raise ValueError("resource to create this format %s is unavailable" % self._format.type)
+            if self._format._format_resource:
+                avail_errors = ", ".join(self._format._format_resource.availability_errors)
+                msg = "resource %s to create this format %s is unavailable: %s" % (self._format._format_resource.name,
+                                                                                   self._format.type,
+                                                                                   avail_errors)
+            else:
+                msg = "resource to create this format %s is unavailable" % self._format.type
+            raise ValueError(msg)
 
     def apply(self):
         """ apply changes related to the action to the device(s) """

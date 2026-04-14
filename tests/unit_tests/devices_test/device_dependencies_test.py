@@ -140,6 +140,7 @@ class MockingDeviceDependenciesTestCase2(unittest.TestCase):
         self.assertFalse(fmt.destroyable)
 
 
+@unittest.skipUnless(os.geteuid() == 0, "requires root privileges")
 class MissingWeakDependenciesTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -148,7 +149,7 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         self.plugins = blockdev.plugin_specs_from_names(blockdev.get_available_plugin_names())  # pylint: disable=no-value-for-parameter
 
         loaded_plugins = self.load_all_plugins()
-        if not all(p in loaded_plugins for p in ("btrfs", "crypto", "lvm", "md")):
+        if not all(p in loaded_plugins for p in ("btrfs", "crypto", "lvm", "mdraid")):
             # we don't have all plugins needed for this test case
             self.skipTest("Missing libblockdev plugins needed from weak dependencies test.")
 
@@ -176,18 +177,13 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         self.bvt = blivet.Blivet()  # pylint: disable=attribute-defined-outside-init
         availability.CACHE_AVAILABILITY = False
 
-        # reinitialize blockdev without the plugins
-        # TODO: uncomment (workaround (1/2) for blivet.reset fail)
-        # self.unload_all_plugins()
         disk1 = DiskFile(self.disk1_file)
 
         self.bvt.exclusive_disks = [disk1.name]
-        if os.geteuid() == 0:
-            try:
-                self.bvt.reset()
-            except blockdev.BlockDevNotImplementedError:  # pylint: disable=catching-non-exception
-                self.fail("Improper handling of missing libblockdev plugin")
-        # TODO: remove line (workaround (2/2) for blivet.reset fail)
+        try:
+            self.bvt.reset()
+        except blockdev.BlockDevNotImplementedError:  # pylint: disable=catching-non-exception
+            self.fail("Improper handling of missing libblockdev plugin")
         self.unload_all_plugins()
 
         self.bvt.devicetree._add_device(disk1)
@@ -199,7 +195,8 @@ class MissingWeakDependenciesTestCase(unittest.TestCase):
         raid1 = self.bvt.new_partition(size=Size("1GiB"), fmt_type="mdmember")
         raid2 = self.bvt.new_partition(size=Size("1GiB"), fmt_type="mdmember")
 
-        with self.assertRaisesRegex(ValueError, "resource to create this format.*unavailable"):
+        msg = "resource libblockdev lvm plugin to create this format lvmpv is unavailable: libblockdev plugin lvm not loaded"
+        with self.assertRaisesRegex(ValueError, msg):
             self.bvt.create_device(pv_fail)
 
         # to be able to test functions like destroy_device it is necessary to have some
