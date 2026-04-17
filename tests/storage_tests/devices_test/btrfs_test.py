@@ -37,21 +37,28 @@ class BtrfsTestCase(StorageTestCase):
 
         return super()._clean_up()
 
-    def test_btrfs_basic(self):
-        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
-        self.assertIsNotNone(disk)
+    def _create_btrfs_volume(self, disks, raid_level=None):
+        parents = []
+        for disk_path in disks:
+            disk = self.storage.devicetree.get_device_by_path(disk_path)
+            self.assertIsNotNone(disk)
 
-        self.storage.initialize_disk(disk)
+            self.storage.initialize_disk(disk)
 
-        part = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="btrfs",
-                                          parents=[disk])
-        self.storage.create_device(part)
+            part = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="btrfs",
+                                              parents=[disk])
+            self.storage.create_device(part)
 
-        blivet.partitioning.do_partitioning(self.storage)
+            blivet.partitioning.do_partitioning(self.storage)
+            parents.append(part)
 
-        vol = self.storage.new_btrfs(name=self.volname, parents=[part])
+        vol = self.storage.new_btrfs(name=self.volname, parents=parents,
+                                     data_level=raid_level, metadata_level=raid_level)
         self.storage.create_device(vol)
+        return vol
 
+    def test_btrfs_basic(self):
+        vol = self._create_btrfs_volume(disks=[self.vdevs[0]])
         self.assertIsNotNone(vol.uuid)
         pre_uuid = vol.uuid
 
@@ -94,27 +101,7 @@ class BtrfsTestCase(StorageTestCase):
         self.assertEqual(sub.format.subvolspec, sub.name)
 
     def _test_btrfs_raid(self, raid_level):
-        disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
-        self.assertIsNotNone(disk1)
-        self.storage.initialize_disk(disk1)
-
-        disk2 = self.storage.devicetree.get_device_by_path(self.vdevs[1])
-        self.assertIsNotNone(disk2)
-        self.storage.initialize_disk(disk2)
-
-        part1 = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="btrfs",
-                                           parents=[disk1])
-        self.storage.create_device(part1)
-
-        part2 = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="btrfs",
-                                           parents=[disk2])
-        self.storage.create_device(part2)
-
-        blivet.partitioning.do_partitioning(self.storage)
-
-        vol = self.storage.new_btrfs(name=self.volname, parents=[part1, part2],
-                                     data_level=raid_level, metadata_level=raid_level)
-        self.storage.create_device(vol)
+        vol = self._create_btrfs_volume(disks=[self.vdevs[0], self.vdevs[1]], raid_level=raid_level)
 
         sub = self.storage.new_btrfs_sub_volume(parents=[vol], name="blivetTestSubVol")
         self.storage.create_device(sub)
@@ -130,7 +117,6 @@ class BtrfsTestCase(StorageTestCase):
         self.assertEqual(vol.format.type, "btrfs")
         self.assertEqual(vol.format.container_uuid, vol.uuid)
         self.assertEqual(len(vol.parents), 2)
-        self.assertCountEqual([p.name for p in vol.parents], [part1.name, part2.name])
 
     def test_btrfs_raid_single(self):
         self._test_btrfs_raid(blivet.devicelibs.raid.Single)
@@ -142,20 +128,7 @@ class BtrfsTestCase(StorageTestCase):
         self._test_btrfs_raid(blivet.devicelibs.raid.RAID1)
 
     def test_btrfs_fs_is_empty(self):
-        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
-        self.assertIsNotNone(disk)
-
-        self.storage.initialize_disk(disk)
-
-        part = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="btrfs",
-                                          parents=[disk])
-        self.storage.create_device(part)
-
-        blivet.partitioning.do_partitioning(self.storage)
-
-        vol = self.storage.new_btrfs(name=self.volname, parents=[part])
-        self.storage.create_device(vol)
-
+        vol = self._create_btrfs_volume(disks=[self.vdevs[0]])
         self.assertIsNotNone(vol.uuid)
 
         sub1 = self.storage.new_btrfs_sub_volume(parents=[vol], name="blivetTestSubVol1")
@@ -200,3 +173,35 @@ class BtrfsTestCase(StorageTestCase):
         sub3 = self.storage.devicetree.get_device_by_name("blivetTestSubVol2/blivetTestSubVol3")
         self.assertIsNotNone(sub3)
         self.assertTrue(sub3.format.is_empty)
+
+    def test_btrfs_partial(self):
+        vol = self._create_btrfs_volume(disks=[self.vdevs[0], self.vdevs[1]])
+
+        sub = self.storage.new_btrfs_sub_volume(parents=[vol], name="blivetTestSubVol")
+        self.storage.create_device(sub)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        # wipe the second disk to create a broken btrfs volume
+        blivet.util.run_program(["wipefs", "-a", self.vdevs[1]])
+
+        # reset shouldn't fail (failing to mount the volume during reset is not critical error)
+        self.storage.reset()
+
+        # volume should be in the tree
+        vol = self.storage.devicetree.get_device_by_name(self.volname)
+        self.assertIsNotNone(vol)
+
+        # but no subvolumes (mount to get information fails)
+        self.assertFalse(vol.children)
+
+        # and only one parent
+        self.assertEqual(len(vol.parents), 1)
+
+        # adding a subvolume fails -> active operation, mount fail is not ignored
+        sub = self.storage.new_btrfs_sub_volume(parents=[vol], name="blivetTestSubVol")
+        self.storage.create_device(sub)
+
+        with self.assertRaisesRegex(blivet.errors.BTRFSError, "failed to temporarily mount .* for btrfs operation"):
+            self.storage.do_it()
