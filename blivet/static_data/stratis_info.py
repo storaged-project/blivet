@@ -211,8 +211,14 @@ class StratisInfo(object):
                 else:
                     encrypted = bool(feats["encryption"])
 
+            if "name" in pools_info[pool_uuid].keys():
+                pool_name = pools_info[pool_uuid]["name"].get_string()
+            else:
+                log.warning("Stopped Stratis pool %s does not have name", pool_uuid)
+                pool_name = None
+
             info = StratisStoppedPoolInfo(uuid=pool_uuid,
-                                          name=pools_info[pool_uuid]["name"].get_string(),
+                                          name=pool_name,
                                           devices=[d["devnode"] for d in pools_info[pool_uuid]["devs"]],
                                           encrypted=encrypted)
             stopped_pools.append(info)
