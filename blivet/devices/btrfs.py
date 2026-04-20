@@ -406,8 +406,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
                 with self._do_temp_mount(orig=True) as mountpoint:
                     subvols = self._list_subvolumes(mountpoint=mountpoint,
                                                     snapshots_only=snapshots_only)
-            except errors.FSError:
-                pass
+            except (errors.FSError, errors.BTRFSError) as e:
+                log.debug("failed to list subvolumes: %s", e)
 
         return subvols
 
@@ -423,7 +423,7 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             elif flags.auto_dev_updates:
                 with self._do_temp_mount() as tmp_mountpoint:
                     subvolid = blockdev.btrfs.get_default_subvolume_id(tmp_mountpoint)
-        except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError) as e:
+        except (blockdev.BtrfsError, blockdev.BlockDevNotImplementedError, errors.BTRFSError) as e:
             log.debug("failed to get default subvolume id: %s", e)
 
         self._default_subvolume_id = subvolid
