@@ -841,7 +841,7 @@ class FS(DeviceFormat):
     @property
     def _format_resource(self):
         if self._mkfs and hasattr(self._mkfs, "ext"):
-            return self._mkfs.ext
+            return self._mkfs.ext  # pylint: disable=no-member
         return None
 
     @property
