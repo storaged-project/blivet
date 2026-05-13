@@ -578,6 +578,35 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         device2 = self._factory_device(device_type, **kwargs)
         self.assertEqual(device2.lvname, "name00")
 
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    def test_lvm_shrink_pv_overhead(self, *args):  # pylint: disable=unused-argument
+        if self.device_type != devicefactory.DeviceTypes.LVM:
+            self.skipTest("only applies to plain LVM")
+
+        device_type = self.device_type
+
+        # Create a large LV filling most of the VG, then shrink it.
+        # _get_total_space must use worst-case PV overhead so that after
+        # manage_size_sets shrinks the PV partitions, the VG still has
+        # enough usable space (PE alignment losses change with PV size).
+        kwargs = {"disks": self.b.disks,
+                  "size": Size("1500 MiB"),
+                  "fstype": "ext4"}
+        device = self._factory_device(device_type, **kwargs)
+        vg = device.raw_device.container
+        self.assertGreaterEqual(vg.free_space, Size(0))
+
+        kwargs["device"] = device
+        kwargs["size"] = Size("200 MiB")
+        device = self._factory_device(device_type, **kwargs)
+        vg = device.raw_device.container
+        self.assertGreaterEqual(vg.free_space, Size(0))
 
 class LVMThinPFactoryTestCase(LVMFactoryTestCase):
     # TODO: check that the LV we get is a thin pool

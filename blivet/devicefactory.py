@@ -1411,11 +1411,21 @@ class LVMFactory(DeviceFactory):
             if self.vg:
                 space += sum(p.size for p in self.vg.parents)
                 space -= self.vg.free_space
-                # we need to account for the LVM metadata being placed somewhere
-                space += self.vg.lvm_metadata_space
-                # account for unusable space in the PV (difference between PV size and its usable
-                # space), this is dues to PV metadata and data alignment to
-                space += sum(pv.size - self.vg._get_pv_usable_space(pv) for pv in self.vg.parents)
+                # Worst-case PV overhead: metadata + pe_size per PV.
+                # PE alignment losses change when manage_size_sets resizes PVs,
+                # so current overhead (already in sum - free) is not enough.
+                if self.vg.parents:
+                    worst_case_overhead = sum(
+                        self.vg._get_pv_metadata_space(pv) + self._pe_size
+                        for pv in self.vg.parents
+                    )
+                    current_overhead = sum(
+                        pv.size - self.vg._get_pv_usable_space(pv)
+                        for pv in self.vg.parents
+                    )
+                    space += max(worst_case_overhead - current_overhead, Size(0))
+                else:
+                    space += len(self.disks) * self._pe_size
             else:
                 # we need to account for the LVM metadata being placed on each disk
                 # (and thus taking up to one extent from each disk)
