@@ -614,6 +614,68 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
         device2 = self._factory_device(device_type, **kwargs)
         self.assertEqual(device2.lvname, "name00")
 
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    def test_lvm_shrink_pv_overhead(self, *args):  # pylint: disable=unused-argument
+        if self.device_type != devicefactory.DeviceTypes.LVM:
+            self.skipTest("only applies to plain LVM")
+
+        device_type = self.device_type
+
+        # Create a large LV filling most of the VG, then shrink it.
+        # _get_total_space must use worst-case PV overhead so that after
+        # manage_size_sets shrinks the PV partitions, the VG still has
+        # enough usable space (PE alignment losses change with PV size).
+        kwargs = {"disks": self.b.disks,
+                  "size": Size("1500 MiB"),
+                  "fstype": "ext4"}
+        device = self._factory_device(device_type, **kwargs)
+        vg = device.raw_device.container
+        self.assertGreaterEqual(vg.free_space, Size(0))
+
+        kwargs["device"] = device
+        kwargs["size"] = Size("200 MiB")
+        device = self._factory_device(device_type, **kwargs)
+        vg = device.raw_device.container
+        self.assertGreaterEqual(vg.free_space, Size(0))
+
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.mdraid.MDRaidMember.formattable", return_value=True)
+    @patch("blivet.formats.mdraid.MDRaidMember.destroyable", return_value=True)
+    @patch("blivet.devices.md.MDRaidArrayDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.dm.DMDevice.type_external_dependencies", return_value=set())
+    def test_lvm_on_md_pv_space(self, *args):  # pylint: disable=unused-argument
+        if self.device_type != devicefactory.DeviceTypes.LVM:
+            self.skipTest("only applies to plain LVM")
+
+        device_type = self.device_type
+
+        # Create with partition PVs, then switch to MD RAID PVs.
+        # The LV should retain its size after the switch -- _get_total_space
+        # must account for PV overhead so the MD array is large enough.
+        kwargs = {"disks": self.b.disks,
+                  "size": Size("400 MiB"),
+                  "fstype": "ext4"}
+        device = self._factory_device(device_type, **kwargs)
+        lv_size_before = device.raw_device.size
+
+        kwargs["device"] = device
+        kwargs["container_raid_level"] = "raid1"
+        device = self._factory_device(device_type, **kwargs)
+        vg = device.raw_device.container
+        self.assertGreaterEqual(vg.free_space, Size(0))
+        self.assertEqual(device.raw_device.size, lv_size_before)
+
 
 class LVMFactoryUninitializedTestCase(LVMFactoryTestCase):
     def _prepare_storage(self):
