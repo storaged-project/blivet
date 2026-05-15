@@ -251,7 +251,7 @@ class ActionList(object, metaclass=SynchronizedMeta):
         devices = devices or []
         # removal of partitions makes use of original_format, so it has to stay
         # up to date in case of multiple passes through this method
-        for disk in (d for d in devices if d.partitioned and d.format.supported):
+        for disk in (d for d in devices if d.partitioned and d.format.supported and d.format.parted_disk):
             disk.format.update_orig_parted_disk()
             disk.original_format = copy.deepcopy(disk.format)
 
