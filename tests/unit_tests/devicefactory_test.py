@@ -586,9 +586,6 @@ class LVMFactoryTestCase(DeviceFactoryTestCase):
     @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
     @patch("blivet.formats.fs.XFS.formattable", return_value=True)
     def test_lvm_shrink_pv_overhead(self, *args):  # pylint: disable=unused-argument
-        if self.device_type != devicefactory.DeviceTypes.LVM:
-            self.skipTest("only applies to plain LVM")
-
         device_type = self.device_type
 
         # Create a large LV filling most of the VG, then shrink it.
@@ -639,6 +636,9 @@ class LVMThinPFactoryTestCase(LVMFactoryTestCase):
                 delta += DEFAULT_THPOOL_RESERVE.min
 
         return delta
+
+    def test_lvm_shrink_pv_overhead(self, *args):  # pylint: disable=unused-argument
+        self.skipTest("only applies to plain LVM")
 
 
 class LVMVDOFactoryTestCase(LVMFactoryTestCase):
@@ -787,6 +787,9 @@ class LVMVDOFactoryTestCase(LVMFactoryTestCase):
     @patch("blivet.devices.lvm.LVMVDOLogicalVolumeMixin.type_external_dependencies", return_value=set())
     def test_lv_unique_name(self, *args):  # pylint: disable=unused-argument,arguments-differ
         super(LVMVDOFactoryTestCase, self).test_lv_unique_name()
+
+    def test_lvm_shrink_pv_overhead(self, *args):  # pylint: disable=unused-argument
+        self.skipTest("only applies to plain LVM")
 
 
 class MDFactoryTestCase(DeviceFactoryTestCase):
