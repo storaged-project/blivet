@@ -169,6 +169,7 @@
       - automake
       - autopoint
       - bison
+      - flex
       - git
       - libtool
       - pkg-config
