@@ -544,7 +544,7 @@ class PartitionTestCase(StorageTestCase):
         self.storage.reset()
 
         # create MD RAID with metadata 1.0 on the first partition
-        ret = blivet.util.run_program(["mdadm", "--create", "blivetMDTest", "--level=linear",
+        ret = blivet.util.run_program(["mdadm", "--create", "blivetMDTest", "--level=raid0",
                                        "--metadata=1.0", "--raid-devices=1", "--force", part1.path])
         self.assertEqual(ret, 0, "Failed to create RAID array for partition wipe test")
         ret = blivet.util.run_program(["mdadm", "--stop", "/dev/md/blivetMDTest"])
