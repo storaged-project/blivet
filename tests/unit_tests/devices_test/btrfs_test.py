@@ -6,6 +6,7 @@ import blivet
 from blivet.devices import StorageDevice
 from blivet.devices import BTRFSVolumeDevice
 from blivet.devices import BTRFSSubVolumeDevice
+from blivet.devicelibs import btrfs
 from blivet.size import Size
 from blivet.formats.fs import BTRFS
 
@@ -125,3 +126,78 @@ class BlivetNewBtrfsVolumeDeviceTest(unittest.TestCase):
                     vol.list_subvolumes()
                     blockdev.list_subvolumes.assert_not_called()
                     blockdev.get_default_subvolume_id.assert_not_called()
+
+    def test_btrfs_update_raid_levels(self):
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("btrfs"),
+                           size=Size("2 GiB"), exists=True)
+
+        vol = BTRFSVolumeDevice("testvolume", parents=[bd], exists=True)
+        self.assertIsNone(vol.data_level)
+        self.assertIsNone(vol.metadata_level)
+
+        with patch("blivet.devices.btrfs.btrfs.get_raid_levels", return_value=("single", "dup")):
+            vol._update_raid_levels()
+
+        self.assertEqual(vol.data_level.name, "single")
+        self.assertEqual(vol.metadata_level.name, "dup")
+
+    def test_btrfs_update_raid_levels_raid56(self):
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("btrfs"),
+                           size=Size("2 GiB"), exists=True)
+
+        vol = BTRFSVolumeDevice("testvolume", parents=[bd], exists=True)
+
+        with patch("blivet.devices.btrfs.btrfs.get_raid_levels", return_value=("raid5", "raid6")):
+            vol._update_raid_levels()
+
+        self.assertEqual(vol.data_level.name, "raid5")
+        self.assertEqual(vol.metadata_level.name, "raid6")
+
+
+@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in DEVICE_CLASSES), "some unsupported device classes required for this test")
+class BtrfsGetRaidLevelsTest(unittest.TestCase):
+    def test_get_raid_levels(self):
+        def fake_isdir(path):
+            dirs = {"/sys/fs/btrfs/fake-uuid/allocation",
+                    "/sys/fs/btrfs/fake-uuid/allocation/data",
+                    "/sys/fs/btrfs/fake-uuid/allocation/data/raid1",
+                    "/sys/fs/btrfs/fake-uuid/allocation/metadata",
+                    "/sys/fs/btrfs/fake-uuid/allocation/metadata/dup"}
+            return path in dirs
+
+        with patch("blivet.devicelibs.btrfs.os.path.isdir", side_effect=fake_isdir):
+            with patch("blivet.devicelibs.btrfs.os.listdir") as mock_listdir:
+                mock_listdir.side_effect = lambda path: {
+                    "/sys/fs/btrfs/fake-uuid/allocation/data": ["bytes_used", "raid1", "total_bytes"],
+                    "/sys/fs/btrfs/fake-uuid/allocation/metadata": ["bytes_used", "dup", "total_bytes"],
+                }.get(path, [])
+                data_level, metadata_level = btrfs.get_raid_levels("fake-uuid")
+
+        self.assertEqual(data_level, "raid1")
+        self.assertEqual(metadata_level, "dup")
+
+    def test_get_raid_levels_raid1c(self):
+        def fake_isdir(path):
+            dirs = {"/sys/fs/btrfs/fake-uuid/allocation",
+                    "/sys/fs/btrfs/fake-uuid/allocation/data",
+                    "/sys/fs/btrfs/fake-uuid/allocation/data/raid1c3",
+                    "/sys/fs/btrfs/fake-uuid/allocation/metadata",
+                    "/sys/fs/btrfs/fake-uuid/allocation/metadata/raid1c4"}
+            return path in dirs
+
+        with patch("blivet.devicelibs.btrfs.os.path.isdir", side_effect=fake_isdir):
+            with patch("blivet.devicelibs.btrfs.os.listdir") as mock_listdir:
+                mock_listdir.side_effect = lambda path: {
+                    "/sys/fs/btrfs/fake-uuid/allocation/data": ["raid1c3", "total_bytes"],
+                    "/sys/fs/btrfs/fake-uuid/allocation/metadata": ["raid1c4", "total_bytes"],
+                }.get(path, [])
+                data_level, metadata_level = btrfs.get_raid_levels("fake-uuid")
+
+        self.assertEqual(data_level, "raid1")
+        self.assertEqual(metadata_level, "raid1")
+
+        with patch("blivet.devicelibs.btrfs.os.path.isdir", return_value=False):
+            data_level, metadata_level = btrfs.get_raid_levels("nonexistent-uuid")
+
+        self.assertIsNone(data_level)
+        self.assertIsNone(metadata_level)
