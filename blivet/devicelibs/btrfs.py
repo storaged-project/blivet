@@ -55,6 +55,39 @@ def is_btrfs_name_valid(name):
     return '\x00' not in name
 
 
+KNOWN_RAID_LEVELS = ("single", "dup", "raid0", "raid1", "raid10",
+                     "raid5", "raid6", "raid1c3", "raid1c4")
+
+RAID_LEVEL_MAPPING = {"raid1c3": "raid1",
+                      "raid1c4": "raid1"}
+
+
+def get_raid_levels(uuid):
+    sysfs_path = "/sys/fs/btrfs/%s/allocation" % uuid
+    data_level = None
+    metadata_level = None
+
+    for alloc_type in ("data", "metadata"):
+        type_path = os.path.join(sysfs_path, alloc_type)
+        if not os.path.isdir(type_path):
+            continue
+        try:
+            entries = os.listdir(type_path)
+        except OSError as e:
+            log.debug("failed to read %s: %s", type_path, e)
+            continue
+        for entry in entries:
+            if entry in KNOWN_RAID_LEVELS and os.path.isdir(os.path.join(type_path, entry)):
+                level = RAID_LEVEL_MAPPING.get(entry, entry)
+                if alloc_type == "data":
+                    data_level = level
+                else:
+                    metadata_level = level
+                break
+
+    return (data_level, metadata_level)
+
+
 def get_mountpoint_subvolumes(mountpoint):
     """ Get list of subvolume names on given mounted btrfs filesystem
     """

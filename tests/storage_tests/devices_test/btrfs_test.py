@@ -117,6 +117,8 @@ class BtrfsTestCase(StorageTestCase):
         self.assertEqual(vol.format.type, "btrfs")
         self.assertEqual(vol.format.container_uuid, vol.uuid)
         self.assertEqual(len(vol.parents), 2)
+        self.assertEqual(vol.data_level, raid_level)
+        self.assertEqual(vol.metadata_level, raid_level)
 
     def test_btrfs_raid_single(self):
         self._test_btrfs_raid(blivet.devicelibs.raid.Single)

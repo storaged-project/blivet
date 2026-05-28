@@ -371,6 +371,23 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
                 return None
         return None
 
+    def _update_raid_levels(self):
+        data_level, metadata_level = btrfs.get_raid_levels(self.uuid)
+
+        if data_level and self._data_level is None:
+            try:
+                self._data_level = raid.ALL_LEVELS.raid_level(data_level)
+            except errors.RaidError:
+                log.warning("failed to set data RAID level to '%s' for %s",
+                            data_level, self.name)
+
+        if metadata_level and self._metadata_level is None:
+            try:
+                self._metadata_level = raid.ALL_LEVELS.raid_level(metadata_level)
+            except errors.RaidError:
+                log.warning("failed to set metadata RAID level to '%s' for %s",
+                            metadata_level, self.name)
+
     def _list_subvolumes(self, mountpoint, snapshots_only=False):
         subvols = []
         try:
@@ -380,6 +397,8 @@ class BTRFSVolumeDevice(BTRFSDevice, ContainerDevice, RaidDevice):
             log.debug("failed to list subvolumes: %s", e)
         else:
             self._get_default_subvolume_id(mountpoint)
+
+        self._update_raid_levels()
 
         return subvols
 
