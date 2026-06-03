@@ -21,6 +21,7 @@
 #
 
 import os
+import warnings
 
 try:
     from libmount import Table, Fs, MNT_ITER_FORWARD
@@ -478,21 +479,24 @@ class FSTabManager(object):
             :type spec: str
             :keyword mntopts: list of mount option strings (see man fstab(5) fs_mntopts)
             :type mnops: list
-            :keyword blkid_tab: Blkidtab object
-            :type blkid_tab: :class: `BlkidTab`
-            :keyword crypt_tab: Crypttab object
-            :type crypt_tab: :class: `CryptTab`
+            :keyword blkid_tab: deprecated, ignored
+            :keyword crypt_tab: deprecated, ignored
             :keyword entry: fstab entry with its spec (and mntopts) filled as an alternative input type
             :type: :class: `FSTabEntry`
             :returns: found device or None
             :rtype: :class: `~.devices.StorageDevice` or None
         """
 
+        if blkid_tab is not None:
+            warnings.warn("the 'blkid_tab' argument is deprecated", DeprecationWarning, stacklevel=2)
+        if crypt_tab is not None:
+            warnings.warn("the 'crypt_tab' argument is deprecated", DeprecationWarning, stacklevel=2)
+
         _spec = spec or (entry.spec if entry is not None else None)
         _mntopts = mntopts or (entry.mntopts if entry is not None else None)
         _mntopts_str = ",".join(_mntopts) if _mntopts is not None else None
 
-        return devicetree.resolve_device(_spec, options=_mntopts_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
+        return devicetree.resolve_device(_spec, options=_mntopts_str)
 
     def get_device(self, devicetree, spec=None, file=None, vfstype=None,
                    mntopts=None, blkid_tab=None, crypt_tab=None, *, entry=None):
@@ -506,15 +510,18 @@ class FSTabManager(object):
             :type spec: str
             :keyword mntopts: list of mount option strings (see man fstab(5) fs_mntopts)
             :type mnops: list
-            :keyword blkid_tab: Blkidtab object
-            :type blkid_tab: :class: `BlkidTab`
-            :keyword crypt_tab: Crypttab object
-            :type crypt_tab: :class: `CryptTab`
+            :keyword blkid_tab: deprecated, ignored
+            :keyword crypt_tab: deprecated, ignored
             :keyword entry: fstab entry with its values filled as an alternative input type
             :type: :class: `FSTabEntry`
             :returns: found device
             :rtype: :class: `~.devices.StorageDevice`
         """
+
+        if blkid_tab is not None:
+            warnings.warn("the 'blkid_tab' argument is deprecated", DeprecationWarning, stacklevel=2)
+        if crypt_tab is not None:
+            warnings.warn("the 'crypt_tab' argument is deprecated", DeprecationWarning, stacklevel=2)
 
         from blivet.formats import get_format
         from blivet.devices import DirectoryDevice, FileDevice
@@ -527,7 +534,7 @@ class FSTabManager(object):
         _file = file or (entry.file if entry is not None else None)
 
         # find device in the tree
-        device = devicetree.resolve_device(_spec, options=_mntopts_str, blkid_tab=blkid_tab, crypt_tab=crypt_tab)
+        device = devicetree.resolve_device(_spec, options=_mntopts_str)
 
         if device is None:
             if _vfstype == "swap":
