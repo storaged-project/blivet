@@ -192,6 +192,7 @@ class KeyslotContext(object):
             return True
         if self.is_keyfile:
             return os.access(self._key_file, os.R_OK)
+        return False
 
     @property
     def is_passphrase(self):
