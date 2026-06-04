@@ -71,6 +71,7 @@ class PPCPRePBoot(DeviceFormat):
                 any previously set value of this instance's "device" attribute.
         """
         super(PPCPRePBoot, self)._create(**kwargs)
+        fd = None
         try:
             fd = os.open(self.device, os.O_RDWR)
             length = os.lseek(fd, 0, os.SEEK_END)
@@ -87,7 +88,7 @@ class PPCPRePBoot(DeviceFormat):
         except OSError as e:
             log.error("error zeroing out %s: %s", self.device, e)
         finally:
-            if fd:
+            if fd is not None:
                 os.close(fd)
 
     @property

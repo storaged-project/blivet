@@ -1195,7 +1195,7 @@ class LVMLogicalVolumeBase(DMDevice, RaidDevice):
 
         if old_name == new_name:
             raise ValueError("device is already named '%s'" % old_name)
-        if not lvm.is_lvm_name_valid(self.name):
+        if not lvm.is_lvm_name_valid(new_name):
             raise ValueError("'%s' is not a valid name for %s" % (new_name, self.type))
 
         if not dry_run:

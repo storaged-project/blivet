@@ -328,7 +328,7 @@ def reenable_lvm_autoactivation(lvmconf=LVM_LOCAL_CONF):
     with open(lvmconf, "r") as f:
         lines = f.readlines()
 
-    if "global { event_activation = 0 }" not in lines:
+    if not any(line.strip("\n") == "global { event_activation = 0 }" for line in lines):
         raise RuntimeError("LVM auto-activation is not configured in %s" % lvmconf)
 
     with open(lvmconf, "w+") as f:

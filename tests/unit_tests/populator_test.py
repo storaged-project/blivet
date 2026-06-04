@@ -208,12 +208,12 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
         device_is_loop = args[0]
         loop_info = args[7]
         data = {'SYS_PATH': 'dummy'}
-        loop_info.return_value = Mock(baking_file="foobar")
+        loop_info.return_value = Mock(backing_file="foobar")
         self.assertEqual(get_device_helper(data), self.helper_class)
 
-        loop_info.return_value = Mock(baking_file=None)
+        loop_info.return_value = Mock(backing_file=None)
         self.assertEqual(get_device_helper(data), self.helper_class)
-        loop_info.return_value = Mock(baking_file="foobar")
+        loop_info.return_value = Mock(backing_file="foobar")
 
         # verify that setting one of the required True return values to False prevents success
         device_is_loop.return_value = False
