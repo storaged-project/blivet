@@ -109,6 +109,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         # resolve by UUID with options
         self.assertEqual(dt.resolve_device("UUID=%s" % btrfs_uuid, options="subvol=%s" % sub1.name), sub1)
         self.assertEqual(dt.resolve_device("UUID=%s" % btrfs_uuid, options="subvol=%s" % sub2.name), sub2)
+        self.assertEqual(dt.resolve_device("UUID=%s" % btrfs_uuid, options="subvol=/%s" % sub1.name), sub1)
 
         # try to resolve non-existing subvolume (should return None)
         self.assertIsNone(dt.resolve_device("UUID=%s" % btrfs_uuid, subvolspec="non-existing"))

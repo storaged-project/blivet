@@ -787,7 +787,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
                 if attr and val:
                     for subvol in volume.subvolumes:
-                        if getattr(subvol, attr, None) == val:
+                        if getattr(subvol, attr, None) == val.lstrip("/"):
                             device = subvol
                             break
                     else:
