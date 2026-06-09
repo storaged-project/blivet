@@ -88,6 +88,68 @@ class PopulatorTestCase(unittest.TestCase):
         self.assertIsNotNone(device)
         self.assertIsInstance(device, StorageDevice)
 
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.udev.device_get_symlinks", return_value=[])
+    @patch.object(DeviceTree, "_reason_to_skip_device", return_value=None)
+    @patch.object(DeviceTree, "_clear_new_multipath_member")
+    @patch.object(DeviceTree, "_get_device_helper")
+    def test_handle_device_original_format_update(self, *args):
+        """Test that original_format is updated when a device already in the
+           tree has its format detected for the first time.
+
+           This covers the case where an MD array is added to the tree by the
+           MDRaidMember helper but handle_device(update_orig_fmt=True) is
+           skipped due to a sysfs race. When the main scan loop later calls
+           handle_device (without update_orig_fmt), the detected format should
+           still be saved as original_format.
+        """
+        get_device_helper_patch = args[0]
+
+        devicetree = DeviceTree()
+
+        name = "md127"
+        info = dict(SYS_NAME=name, SYS_PATH="/fake/sys/path/md127")
+
+        # Pre-add device to the tree with no format (simulates an MD array
+        # added by the MDRaidMember helper without handle_device being called)
+        device = StorageDevice(name, exists=True)
+        devicetree._add_device(device)
+
+        self.assertIsNone(device.format.type)
+        self.assertIsNone(device.original_format.type)
+
+        # handle_device should find the device already in tree
+        # (device_added=False, update_orig_fmt=False)
+        get_device_helper_patch.return_value = None
+
+        luks_fmt = get_format("luks", device=device.path, exists=True)
+
+        def fake_handle_format(_info, dev, force=False):  # pylint: disable=unused-argument
+            dev.format = luks_fmt
+
+        with patch.object(DeviceTree, "handle_format", side_effect=fake_handle_format):
+            devicetree.handle_device(info)
+
+        self.assertEqual(device.format.type, "luks")
+        self.assertEqual(device.original_format.type, "luks",
+                         msg="original_format should be updated when it was "
+                             "never set and a format is detected")
+
+        # Now test that original_format is NOT updated when it was already
+        # properly set (e.g., on a second scan of the same device)
+        new_fmt = get_format("ext4", device=device.path, exists=True)
+
+        def fake_handle_format_ext4(_info, dev, force=False):  # pylint: disable=unused-argument
+            dev.format = new_fmt
+
+        with patch.object(DeviceTree, "handle_format", side_effect=fake_handle_format_ext4):
+            devicetree.handle_device(info)
+
+        self.assertEqual(device.format.type, "ext4")
+        self.assertEqual(device.original_format.type, "luks",
+                         msg="original_format should not be overwritten once "
+                             "it has been properly set")
+
 
 class PopulatorHelperTestCase(unittest.TestCase):
     helper_class = None

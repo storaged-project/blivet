@@ -323,7 +323,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
 
         # now handle the device's formatting
         self.handle_format(info, device)
-        if device_added or update_orig_fmt:
+        if device_added or update_orig_fmt or (not device.original_format.type and device.format.type and device.format.exists):
             device.original_format = copy.deepcopy(device.format)
         device.device_links = udev.device_get_symlinks(info)
         callbacks.device_scanned(device_name=name)
