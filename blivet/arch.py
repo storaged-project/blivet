@@ -378,6 +378,15 @@ def is_loongarch(bits=None):
     return False
 
 
+def is_e2k():
+    """
+    :return: True if the hardware supports Elbrus2000, False otherwise.
+    :rtype: boolean
+
+    """
+    return os.uname()[4] == 'e2k'
+
+
 def is_pmac():
     return is_ppc() and get_ppc_machine() == "PMac" and get_ppc_mac_gen() == "NewWorld"
 
@@ -417,6 +426,8 @@ def get_arch():
         return 'loongarch32'
     elif is_loongarch(bits=64):
         return 'loongarch64'
+    elif is_e2k():
+        return 'e2k'
     else:
         return os.uname()[4]
 
