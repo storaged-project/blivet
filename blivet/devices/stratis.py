@@ -48,7 +48,7 @@ class StratisPoolDevice(ContainerDevice):
 
     _type = "stratis pool"
     _resizable = False
-    _packages = ["stratisd", "stratis-cli"]
+    _packages = ["stratisd", "stratis-cli", "stratisd-dracut"]
     _dev_dir = "/dev/stratis"
     _format_immutable = True
     _external_dependencies = [availability.STRATISPREDICTUSAGE_APP, availability.STRATIS_DBUS]
@@ -280,7 +280,7 @@ class StratisFilesystemDevice(StorageDevice):
 
     _type = "stratis filesystem"
     _resizable = False
-    _packages = ["stratisd", "stratis-cli"]
+    _packages = ["stratisd", "stratis-cli", "stratisd-dracut"]
     _dev_dir = "/dev/stratis"
     _external_dependencies = [availability.STRATISPREDICTUSAGE_APP, availability.STRATIS_DBUS]
     _min_size = Size("512 MiB")
