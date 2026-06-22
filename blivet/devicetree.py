@@ -23,6 +23,7 @@
 import os
 import pprint
 import re
+import warnings
 
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -638,10 +639,8 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
 
             :param devspec: a string describing a block device
             :type devspec: str
-            :keyword blkid_tab: blkid info
-            :type blkid_tab: :class:`~.BlkidTab`
-            :keyword crypt_tab: crypto info
-            :type crypt_tab: :class:`~.CryptTab`
+            :keyword blkid_tab: deprecated, ignored
+            :keyword crypt_tab: deprecated, ignored
             :keyword options: mount options
             :type options: str
             :keyword subvolspec: btrfs subvolume specification
@@ -649,6 +648,11 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
             :returns: the device
             :rtype: :class:`~.devices.StorageDevice` or None
         """
+        if blkid_tab is not None:
+            warnings.warn("the 'blkid_tab' argument is deprecated", DeprecationWarning, stacklevel=2)
+        if crypt_tab is not None:
+            warnings.warn("the 'crypt_tab' argument is deprecated", DeprecationWarning, stacklevel=2)
+
         # find device in the tree
         device = None
         if devspec.startswith("UUID=") or devspec.startswith("PARTUUID="):
@@ -711,51 +715,16 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                 device = self.get_device_by_path(devspec)
 
             if device is None:
-                if blkid_tab:
-                    # try to use the blkid.tab to correlate the device
-                    # path with a UUID
-                    blkid_tab_ent = blkid_tab.get(devspec)
-                    if blkid_tab_ent:
-                        log.debug("found blkid.tab entry for '%s'", devspec)
-                        uuid = blkid_tab_ent.get("UUID")
-                        if uuid:
-                            device = self.get_device_by_uuid(uuid)
-                            if device:
-                                devstr = device.name
-                            else:
-                                devstr = "None"
-                            log.debug("found device '%s' in tree", devstr)
-                        if device and device.format and \
-                           device.format.type == "luks":
-                            map_name = device.format.map_name
-                            log.debug("luks device; map name is '%s'", map_name)
-                            mapped_dev = self.get_device_by_name(map_name)
-                            if mapped_dev:
-                                device = mapped_dev
+                # dear lvm: can we please have a few more device nodes
+                #           for each logical volume?
+                #           three just doesn't seem like enough.
+                name = devspec[5:]      # strip off leading "/dev/"
 
-                if device is None and crypt_tab and \
-                   devspec.startswith("/dev/mapper/"):
-                    # try to use a dm-crypt mapping name to
-                    # obtain the underlying device, possibly
-                    # using blkid.tab
-                    crypt_tab_ent = crypt_tab.get(devspec.split("/")[-1])
-                    if crypt_tab_ent:
-                        luks_dev = crypt_tab_ent['device']
-                        try:
-                            device = luks_dev.children[0]
-                        except IndexError as e:
-                            pass
-                elif device is None:
-                    # dear lvm: can we please have a few more device nodes
-                    #           for each logical volume?
-                    #           three just doesn't seem like enough.
-                    name = devspec[5:]      # strip off leading "/dev/"
-
-                    (vg_name, _slash, lv_name) = name.partition("/")
-                    if lv_name and "/" not in lv_name:
-                        # looks like we may have one
-                        lv = "%s-%s" % (vg_name, lv_name)
-                        device = self.get_device_by_name(lv)
+                (vg_name, _slash, lv_name) = name.partition("/")
+                if lv_name and "/" not in lv_name:
+                    # looks like we may have one
+                    lv = "%s-%s" % (vg_name, lv_name)
+                    device = self.get_device_by_name(lv)
 
         # check mount options for btrfs volumes in case it's a subvol
         if device and device.type.startswith("btrfs") and (subvolspec or options):
