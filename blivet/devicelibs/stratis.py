@@ -308,10 +308,10 @@ def add_device(pool_uuid, device):
         proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, pool_info.object_path, STRATIS_POOL_INTF)
         ((succ, _paths), rc, err) = proxy.AddDataDevs([device], timeout=STRATIS_CALL_TIMEOUT)
     except DBusError as e:
-        raise StratisError("Failed to create stratis filesystem on '%s': %s" % (pool_info.name, str(e)))
+        raise StratisError("Failed to add device '%s' to stratis pool '%s': %s" % (device, pool_info.name, str(e)))
     else:
         if not succ:
-            raise StratisError("Failed to create stratis filesystem on '%s': %s (%d)" % (pool_info.name, err, rc))
+            raise StratisError("Failed to add device '%s' to stratis pool '%s': %s (%d)" % (device, pool_info.name, err, rc))
 
     # repopulate the stratis info cache so the new filesystem will be added
     stratis_info.drop_cache()
