@@ -197,7 +197,7 @@ class StratisInfo(object):
             proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF_R8)
             pools_info = proxy.StoppedPools
         except DBusError as e:
-            log.error("Failed to get list of locked Stratis pools: %s", str(e))
+            log.error("Failed to get list of stopped Stratis pools: %s", str(e))
             return stopped_pools
 
         for pool_uuid in pools_info.keys():
