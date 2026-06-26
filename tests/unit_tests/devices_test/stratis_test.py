@@ -63,7 +63,8 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                 encrypted=False,
                                                                 passphrase=None,
                                                                 key_file=None,
-                                                                clevis=None)
+                                                                clevis=None,
+                                                                overprovisioning=False)
 
         # we would get this from pool._post_create
         pool.uuid = "c4fc9ebe-e173-4cab-8d81-cc6abddbe02d"
@@ -101,7 +102,8 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                 encrypted=True,
                                                                 passphrase="secret",
                                                                 key_file=None,
-                                                                clevis=None)
+                                                                clevis=None,
+                                                                overprovisioning=False)
 
     def test_new_encrypted_stratis_clevis(self):
         b = blivet.Blivet()
@@ -129,7 +131,8 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                 encrypted=True,
                                                                 passphrase="secret",
                                                                 key_file=None,
-                                                                clevis=clevis)
+                                                                clevis=clevis,
+                                                                overprovisioning=False)
 
     def test_new_stratis_no_size(self):
         b = blivet.Blivet()
@@ -139,7 +142,7 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
         b.devicetree._add_device(bd)
 
         with patch("blivet.devicetree.DeviceTree.names", []):
-            pool = b.new_stratis_pool(name="testpool", parents=[bd])
+            pool = b.new_stratis_pool(name="testpool", parents=[bd], overprovisioning=True)
         self.assertEqual(pool.name, "testpool")
         self.assertEqual(pool.size, bd.size)
 
@@ -169,7 +172,8 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                 encrypted=False,
                                                                 passphrase=None,
                                                                 key_file=None,
-                                                                clevis=None)
+                                                                clevis=None,
+                                                                overprovisioning=True)
 
         # we would get this from pool._post_create
         pool.uuid = "c4fc9ebe-e173-4cab-8d81-cc6abddbe02d"

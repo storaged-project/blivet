@@ -44,7 +44,7 @@ class StratisTestCase(StratisTestCaseBase):
         self.assertIsNotNone(disk)
         self.storage.initialize_disk(disk)
 
-        bd = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="stratis",
+        bd = self.storage.new_partition(size=blivet.size.Size("1.5 GiB"), fmt_type="stratis",
                                         parents=[disk])
         self.storage.create_device(bd)
 
@@ -54,7 +54,7 @@ class StratisTestCase(StratisTestCaseBase):
         self.storage.create_device(pool)
 
         fs = self.storage.new_stratis_filesystem(name="blivetTestFS", parents=[pool],
-                                                 size=blivet.size.Size("800 MiB"))
+                                                 size=blivet.size.Size("512 MiB"))
         self.storage.create_device(fs)
 
         self.storage.do_it()
@@ -77,6 +77,7 @@ class StratisTestCase(StratisTestCaseBase):
         self.assertEqual(bd.format.pool_name, pool.name)
         self.assertEqual(len(pool.parents), 1)
         self.assertEqual(pool.parents[0], bd)
+        self.assertEqual(pool.overprovisioning, False)
 
         fs = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS")
         self.assertIsNotNone(fs)
@@ -178,7 +179,7 @@ class StratisTestCase(StratisTestCaseBase):
 
         blivet.partitioning.do_partitioning(self.storage)
 
-        pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd])
+        pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd], overprovisioning=True)
         self.storage.create_device(pool)
 
         self.storage.do_it()
@@ -186,6 +187,7 @@ class StratisTestCase(StratisTestCaseBase):
 
         pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
         self.assertIsNotNone(pool)
+        self.assertEqual(pool.overprovisioning, True)
 
         with self.assertRaisesRegex(blivet.errors.StratisError, "not enough free space in the pool"):
             fs = self.storage.new_stratis_filesystem(name="blivetTestFS", parents=[pool],
@@ -263,7 +265,7 @@ class StratisTestCase(StratisTestCaseBase):
         self.assertIsNotNone(disk)
         self.storage.initialize_disk(disk)
 
-        bd = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="stratis",
+        bd = self.storage.new_partition(size=blivet.size.Size("1.5 GiB"), fmt_type="stratis",
                                         parents=[disk])
         self.storage.create_device(bd)
 
@@ -273,7 +275,7 @@ class StratisTestCase(StratisTestCaseBase):
         self.storage.create_device(pool)
 
         fs = self.storage.new_stratis_filesystem(name="blivetTestFS", parents=[pool],
-                                                 size=blivet.size.Size("800 MiB"))
+                                                 size=blivet.size.Size("512 MiB"))
         self.storage.create_device(fs)
 
         self.storage.do_it()

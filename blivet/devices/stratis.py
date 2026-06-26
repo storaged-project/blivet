@@ -139,6 +139,12 @@ class StratisPoolDevice(ContainerDevice):
         """ Whether this pool has overprovisioning enabled or not """
         return self._overprovisioning
 
+    @overprovisioning.setter
+    def overprovisioning(self, enabled):
+        if self.exists:
+            raise StratisError("Cannot set %s overprovisioning for existing Stratis pool %s" % ("enable" if enabled else "disable", self.name))
+        self._overprovisioning = enabled
+
     @property
     def encrypted(self):
         """ True if this device is encrypted. """
@@ -199,7 +205,8 @@ class StratisPoolDevice(ContainerDevice):
                                        encrypted=self.encrypted,
                                        passphrase=self.__passphrase,
                                        key_file=self._key_file,
-                                       clevis=self._clevis)
+                                       clevis=self._clevis,
+                                       overprovisioning=self._overprovisioning)
 
     def _post_create(self):
         self.exists = True
