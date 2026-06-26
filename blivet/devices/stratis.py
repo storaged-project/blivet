@@ -63,11 +63,14 @@ class StratisPoolDevice(ContainerDevice):
             :type key_file: str
             :keyword clevis: clevis configuration
             :type: StratisClevisConfig
+            :keyword overprovisioning: whether overprovisioning is enabled for this pool or not
+            :type overprovisioning: bool
         """
         self._encrypted = kwargs.pop("encrypted", False)
         self.__passphrase = kwargs.pop("passphrase", None)
         self._key_file = kwargs.pop("key_file", None)
         self._clevis = kwargs.pop("clevis", None)
+        self._overprovisioning = kwargs.pop("overprovisioning", False)
 
         super(StratisPoolDevice, self).__init__(*args, **kwargs)
 
@@ -130,6 +133,11 @@ class StratisPoolDevice(ContainerDevice):
     def free_space(self):
         """ Free space in the pool usable for new filesystems """
         return self._physical_size - self._physical_used
+
+    @property
+    def overprovisioning(self):
+        """ Whether this pool has overprovisioning enabled or not """
+        return self._overprovisioning
 
     @property
     def encrypted(self):
