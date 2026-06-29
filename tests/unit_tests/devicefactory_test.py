@@ -1102,7 +1102,8 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
         kwargs = {"disks": self.b.disks,
                   "mountpoint": "/factorytest",
                   "container_size": Size("5 GiB"),
-                  "size": Size("2.5 GiB")}
+                  "size": Size("2.5 GiB"),
+                  "device": device}
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
 

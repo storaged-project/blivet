@@ -2137,8 +2137,8 @@ class StratisFactory(DeviceFactory):
         if self.container_size == SIZE_POLICY_AUTO:
             # automatic container size management
             if self.pool:
-                space += sum(p.size for p in self.pool.parents)
-                space -= (self.pool.size - sum(fs.size for fs in self.pool.children))
+                space += sum(fs.size for fs in self.pool.children)
+                space += stratis.pool_used([d.size for d in self.disks], self.encrypted)
             else:
                 # we need to account for the stratis metadata
                 space += stratis.pool_used([d.size for d in self.disks], self.encrypted)

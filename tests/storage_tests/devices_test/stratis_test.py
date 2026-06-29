@@ -6,7 +6,9 @@ from packaging.version import Version
 
 import blivet
 
+from blivet import devicefactory
 from blivet.devices.stratis import StratisFilesystemDevice, StratisClevisConfig
+from blivet.size import Size
 
 
 class StratisTestCaseBase(StorageTestCase):
@@ -458,3 +460,127 @@ class StratisTestCaseClevis(StratisTestCaseBase):
         self.assertEqual(pool._clevis.pin, "tpm2")
         self.assertIsNone(pool._clevis.tang_url)
         self.assertIsNone(pool._clevis.tang_thumbprint)
+
+
+class StratisDeviceFactoryTestCase(StratisTestCaseBase):
+
+    _num_disks = 2
+    _disk_size = 5 * 1024**3
+
+    def test_factory_create(self):
+        disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk1)
+        disk2 = self.storage.devicetree.get_device_by_path(self.vdevs[1])
+        self.assertIsNotNone(disk2)
+
+        device = self.storage.factory_device(devicefactory.DeviceTypes.STRATIS,
+                                             size=Size("1 GiB"),
+                                             disks=[disk1, disk2],
+                                             name="blivetTestFS1",
+                                             container_name="blivetTestPool")
+        self.assertIsNotNone(device)
+        self.assertIsInstance(device, StratisFilesystemDevice)
+        self.assertEqual(device.fsname, "blivetTestFS1")
+        self.assertEqual(device.pool.name, "blivetTestPool")
+        self.assertFalse(device.pool.encrypted)
+
+        device = self.storage.factory_device(devicefactory.DeviceTypes.STRATIS,
+                                             size=Size("7 GiB"),
+                                             disks=[disk1, disk2],
+                                             name="blivetTestFS2",
+                                             container_name="blivetTestPool")
+        self.assertIsNotNone(device)
+        self.assertIsInstance(device, StratisFilesystemDevice)
+        self.assertEqual(device.fsname, "blivetTestFS2")
+        self.assertEqual(device.pool.name, "blivetTestPool")
+        self.assertFalse(device.pool.encrypted)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+
+        fs1 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS1")
+        self.assertIsNotNone(fs1)
+        self.assertEqual(fs1.pool, pool)
+        self.assertAlmostEqual(fs1.size, Size("1 GiB"), delta=Size("10 MiB"))
+
+        fs2 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS2")
+        self.assertIsNotNone(fs2)
+        self.assertEqual(fs2.pool, pool)
+        self.assertAlmostEqual(fs2.size, Size("7 GiB"), delta=Size("10 MiB"))
+
+    def test_factory_encrypted(self):
+        disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk1)
+        disk2 = self.storage.devicetree.get_device_by_path(self.vdevs[1])
+        self.assertIsNotNone(disk2)
+
+        device = self.storage.factory_device(devicefactory.DeviceTypes.STRATIS,
+                                             disks=[disk1, disk2],
+                                             name="blivetTestFS1",
+                                             container_name="blivetTestPool",
+                                             container_encrypted=True)
+        self.assertIsNotNone(device)
+        self.assertIsInstance(device, StratisFilesystemDevice)
+        self.assertEqual(device.fsname, "blivetTestFS1")
+        self.assertEqual(device.pool.name, "blivetTestPool")
+        self.assertTrue(device.pool.encrypted)
+        device.pool.passphrase = "fipsneeds8chars"
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertTrue(pool.encrypted)
+
+        fs1 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS1")
+        self.assertIsNotNone(fs1)
+        self.assertEqual(fs1.pool, pool)
+        self.assertAlmostEqual(fs1.size, Size("9 GiB"), delta=Size("100 MiB"))
+
+    def test_factory_grow(self):
+        disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk1)
+        disk2 = self.storage.devicetree.get_device_by_path(self.vdevs[1])
+        self.assertIsNotNone(disk2)
+
+        device = self.storage.factory_device(devicefactory.DeviceTypes.STRATIS,
+                                             size=Size("1 GiB"),
+                                             disks=[disk1, disk2],
+                                             name="blivetTestFS1",
+                                             container_name="blivetTestPool")
+        self.assertIsNotNone(device)
+        self.assertIsInstance(device, StratisFilesystemDevice)
+        self.assertEqual(device.fsname, "blivetTestFS1")
+        self.assertEqual(device.pool.name, "blivetTestPool")
+        self.assertFalse(device.pool.encrypted)
+
+        device = self.storage.factory_device(devicefactory.DeviceTypes.STRATIS,
+                                             disks=[disk1, disk2],
+                                             name="blivetTestFS2",
+                                             container_name="blivetTestPool")
+        self.assertIsNotNone(device)
+        self.assertIsInstance(device, StratisFilesystemDevice)
+        self.assertEqual(device.fsname, "blivetTestFS2")
+        self.assertEqual(device.pool.name, "blivetTestPool")
+        self.assertFalse(device.pool.encrypted)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+
+        fs1 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS1")
+        self.assertIsNotNone(fs1)
+        self.assertEqual(fs1.pool, pool)
+        self.assertAlmostEqual(fs1.size, Size("1 GiB"), delta=Size("10 MiB"))
+
+        # no size specified -> all available space should be used (10 GiB free space - 1 GiB for FS1 - ~1 GiB for metadata)
+        fs2 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS2")
+        self.assertIsNotNone(fs2)
+        self.assertEqual(fs2.pool, pool)
+        self.assertAlmostEqual(fs2.size, Size("8 GiB"), delta=Size("10 MiB"))
