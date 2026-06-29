@@ -301,6 +301,10 @@ class StratisFilesystemDevice(StorageDevice):
     _min_size = Size("512 MiB")
 
     def __init__(self, name, parents=None, size=None, uuid=None, exists=False):
+
+        if not exists and size is None and not parents[0]._overprovisioning:
+            raise StratisError("size must be specified for stratis filesystems on non-overprovisioned pools")
+
         if size is None:
             size = devicelibs.stratis.STRATIS_FS_SIZE
 
