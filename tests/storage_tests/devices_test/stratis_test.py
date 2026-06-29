@@ -88,6 +88,26 @@ class StratisTestCase(StratisTestCaseBase):
         self.assertEqual(len(fs.parents), 1)
         self.assertEqual(fs.parents[0], pool)
 
+        # now try again but use entire free space in the pool
+        self.storage.destroy_device(fs)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+
+        fs = self.storage.new_stratis_filesystem(name="blivetTestFS", parents=[pool],
+                                                 size=pool.free_space)
+        self.storage.create_device(fs)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertEqual(pool.free_space, 0)
+
     def test_stratis_encrypted(self):
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
         self.assertIsNotNone(disk)

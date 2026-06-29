@@ -132,7 +132,12 @@ class StratisPoolDevice(ContainerDevice):
     @property
     def free_space(self):
         """ Free space in the pool usable for new filesystems """
-        return self._physical_size - self._physical_used
+        if self.overprovisioning:
+            # overprovisioning enabled -- count only actually used space
+            return self._physical_size - self._physical_used
+        else:
+            # no overprovisioning -- count all allocated space
+            return self._physical_size - sum(fs.size for fs in self.filesystems) - self._pool_metadata_size
 
     @property
     def overprovisioning(self):
