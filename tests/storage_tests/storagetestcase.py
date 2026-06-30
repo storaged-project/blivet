@@ -9,6 +9,8 @@ import unittest
 
 from contextlib import contextmanager
 
+import parted
+
 import blivet
 
 _lio_devs = dict()
@@ -217,6 +219,11 @@ class StorageTestCase(unittest.TestCase):
 
     def _clean_up(self):
         for dev in self.vdevs:
+            try:
+                parted.getDevice(dev).removeFromCache()
+            except Exception:  # pylint: disable=broad-except
+                pass
+
             try:
                 delete_lio_device(dev)
             except RuntimeError:
