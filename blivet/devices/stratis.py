@@ -367,9 +367,15 @@ class StratisFilesystemDevice(StorageDevice):
             raise ValueError("new size must of type Size")
 
         if not self.exists:
-            md_size = devicelibs.stratis.filesystem_md_size(newsize)
-            if md_size > self.pool.free_space:
-                raise DeviceError("not enough free space in pool")
+            if self.pool.overprovisioning:
+                md_size = devicelibs.stratis.filesystem_md_size(newsize)
+                if md_size > self.pool.free_space:
+                    raise DeviceError("not enough free space in pool")
+            else:
+                # free_space uses virtual filesystem sizes; add back this
+                # filesystem's current allocation since it is reclaimable
+                if newsize > self.pool.free_space + self.size:
+                    raise DeviceError("not enough free space in pool")
 
         super(StratisFilesystemDevice, self)._set_size(newsize)
 
