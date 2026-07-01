@@ -25,6 +25,10 @@ class StratisTestCaseBase(StorageTestCase):
 
         self._blivet_setup()
 
+    def _get_stratis_version(self):
+        out = blivet.util.capture_output(["stratis", "--version"])
+        return Version(out)
+
     def _clean_up(self):
         self.storage.reset()
         for disk in self.storage.disks:
@@ -269,10 +273,6 @@ class StratisTestCase(StratisTestCaseBase):
         bd2 = self.storage.devicetree.get_device_by_path(self.vdevs[1] + "1")
         self.assertEqual(bd2.format.pool_name, pool.name)
         self.assertEqual(bd2.format.pool_uuid, pool.uuid)
-
-    def _get_stratis_version(self):
-        out = blivet.util.capture_output(["stratis", "--version"])
-        return Version(out)
 
     def test_stratis_pool_start_stop(self):
         try:
@@ -539,7 +539,13 @@ class StratisDeviceFactoryTestCase(StratisTestCaseBase):
         fs1 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS1")
         self.assertIsNotNone(fs1)
         self.assertEqual(fs1.pool, pool)
-        self.assertAlmostEqual(fs1.size, Size("9 GiB"), delta=Size("100 MiB"))
+
+        stratis_version = self._get_stratis_version()
+        if stratis_version <= Version("3.7.0"):
+            # older versions of stratis have smaller metadata for encrypted pools
+            self.assertAlmostEqual(fs1.size, Size("9.5 GiB"), delta=Size("100 MiB"))
+        else:
+            self.assertAlmostEqual(fs1.size, Size("9 GiB"), delta=Size("100 MiB"))
 
     def test_factory_grow(self):
         disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])

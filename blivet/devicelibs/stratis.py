@@ -264,7 +264,7 @@ def create_pool(name, devices, encrypted, passphrase, key_file, clevis, overprov
     try:
         proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, pool_path,
                                          STRATIS_POOL_INTF)
-        proxy.Overprovisioning = overprovisioning
+        proxy.Overprovisioning = overprovisioning  # pylint: disable=assigning-non-slot
     except DBusError as e:
         raise StratisError("Failed to enable overprovisioning on stratis pool: %s" % str(e))
 
