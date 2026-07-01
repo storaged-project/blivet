@@ -304,7 +304,8 @@ class DeviceFactory(object):
                          "container_name": None,
                          "container_size": SIZE_POLICY_AUTO,
                          "container_raid_level": None,
-                         "container_encrypted": None}
+                         "container_encrypted": None,
+                         "container_overprovisioned": None}
     _device_min_size = Size(0)  # no limit by default, limited only by filesystem size
 
     def __init__(self, storage, **kwargs):
@@ -345,6 +346,9 @@ class DeviceFactory(object):
             :type container_raid_level: any valid RAID level descriptor
             :keyword container_encrypted: whether to encrypt the container
             :type container_encrypted: bool
+            :keyword container_overprovisioned: whether to enable overprovisioning
+                                                on the container (Stratis only)
+            :type container_overprovisioned: bool
             :keyword container_size: requested container size
             :type container_size: :class:`~.size.Size`, :const:`SIZE_POLICY_AUTO` (the default),
                                   or :const:`SIZE_POLICY_MAX`
@@ -409,6 +413,9 @@ class DeviceFactory(object):
     def _is_container_encrypted(self):
         return all(isinstance(p, LUKSDevice) for p in self.device.container.parents)
 
+    def _is_container_overprovisioned(self):
+        return False
+
     def _update_defaults_from_device(self):
         """ Update default settings based on passed in device, if provided. """
         if self.device is None:
@@ -440,6 +447,7 @@ class DeviceFactory(object):
                   hasattr(self.device.container.pvs[0].raw_device, "level")):
                 self.container_raid_level = self.device.container.pvs[0].raw_device.level
             self.container_encrypted = self._is_container_encrypted()
+            self.container_overprovisioned = self._is_container_overprovisioned()
 
     @property
     def encrypted(self):
@@ -2121,6 +2129,7 @@ class StratisFactory(DeviceFactory):
             return
 
         self.container.encrypted = self.container_encrypted or False
+        self.container.overprovisioning = self.container_overprovisioned or False
         self._set_container_members()
 
     #
@@ -2185,6 +2194,10 @@ class StratisFactory(DeviceFactory):
     def _get_device_size(self):
         """ Return the factory device size including container limitations. """
         size = self.size
+
+        if self.container_overprovisioned:
+            return size
+
         free = self.pool.free_space
         if self.device:
             free += self.device.size
@@ -2213,6 +2226,12 @@ class StratisFactory(DeviceFactory):
             kwargs["encrypted"] = True
         else:
             kwargs["encrypted"] = False
+
+        if self.container_overprovisioned:
+            kwargs["overprovisioning"] = True
+        else:
+            kwargs["overprovisioning"] = False
+
         return self.storage.new_stratis_pool(*args, **kwargs)
 
     #
@@ -2296,3 +2315,6 @@ class StratisFactory(DeviceFactory):
 
     def _is_container_encrypted(self):
         return self.container.encrypted
+
+    def _is_container_overprovisioned(self):
+        return self.container.overprovisioning

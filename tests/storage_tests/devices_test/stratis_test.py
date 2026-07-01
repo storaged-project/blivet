@@ -500,6 +500,7 @@ class StratisDeviceFactoryTestCase(StratisTestCaseBase):
 
         pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
         self.assertIsNotNone(pool)
+        self.assertFalse(pool.overprovisioning)
 
         fs1 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS1")
         self.assertIsNotNone(fs1)
@@ -590,3 +591,52 @@ class StratisDeviceFactoryTestCase(StratisTestCaseBase):
         self.assertIsNotNone(fs2)
         self.assertEqual(fs2.pool, pool)
         self.assertAlmostEqual(fs2.size, Size("8 GiB"), delta=Size("10 MiB"))
+
+    def test_factory_overprovisioning(self):
+        disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk1)
+        disk2 = self.storage.devicetree.get_device_by_path(self.vdevs[1])
+        self.assertIsNotNone(disk2)
+
+        device = self.storage.factory_device(devicefactory.DeviceTypes.STRATIS,
+                                             size=Size("20 GiB"),
+                                             disks=[disk1, disk2],
+                                             name="blivetTestFS1",
+                                             container_name="blivetTestPool",
+                                             container_overprovisioned=True)
+        self.assertIsNotNone(device)
+        self.assertIsInstance(device, StratisFilesystemDevice)
+        self.assertEqual(device.fsname, "blivetTestFS1")
+        self.assertEqual(device.pool.name, "blivetTestPool")
+        self.assertTrue(device.pool.overprovisioning)
+        self.assertFalse(device.pool.encrypted)
+
+        device = self.storage.factory_device(devicefactory.DeviceTypes.STRATIS,
+                                             size=Size("20 GiB"),
+                                             disks=[disk1, disk2],
+                                             name="blivetTestFS2",
+                                             container_name="blivetTestPool",
+                                             container_overprovisioned=True)
+        self.assertIsNotNone(device)
+        self.assertIsInstance(device, StratisFilesystemDevice)
+        self.assertEqual(device.fsname, "blivetTestFS2")
+        self.assertEqual(device.pool.name, "blivetTestPool")
+        self.assertTrue(device.pool.overprovisioning)
+        self.assertFalse(device.pool.encrypted)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertTrue(pool.overprovisioning)
+
+        fs1 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS1")
+        self.assertIsNotNone(fs1)
+        self.assertEqual(fs1.pool, pool)
+        self.assertAlmostEqual(fs1.size, Size("20 GiB"), delta=Size("10 MiB"))
+
+        fs2 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS2")
+        self.assertIsNotNone(fs2)
+        self.assertEqual(fs2.pool, pool)
+        self.assertAlmostEqual(fs2.size, Size("20 GiB"), delta=Size("10 MiB"))

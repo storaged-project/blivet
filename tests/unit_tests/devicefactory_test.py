@@ -1061,6 +1061,7 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
                                    delta=Size("1.3 GiB"))
 
         self.assertEqual(device.pool.encrypted, kwargs.get("container_encrypted", False))
+        self.assertEqual(device.pool.overprovisioning, kwargs.get("container_overprovisioned", False))
 
         return device
 
@@ -1116,6 +1117,58 @@ class StratisFactoryTestCase(DeviceFactoryTestCase):
         kwargs["container_encrypted"] = False
         device = self._factory_device(device_type, **kwargs)
         self._validate_factory_device(device, device_type, **kwargs)
+
+        # enable overprovisioning on the container
+        kwargs["container_overprovisioned"] = True
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # disable overprovisioning on the container
+        kwargs["container_overprovisioned"] = False
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+    @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.stratis.StratisPoolDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    def test_device_factory_overprovisioning(self, *args):  # pylint: disable=unused-argument,arguments-differ
+        device_type = self.device_type
+
+        # create a device with overprovisioning enabled from scratch
+        kwargs = {"disks": self.b.disks,
+                  "mountpoint": "/factorytest",
+                  "size": Size("2.5 GiB"),
+                  "container_overprovisioned": True}
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+        self.assertTrue(device.pool.overprovisioning)
+
+        # resize the device
+        kwargs["device"] = device
+        kwargs["size"] = Size("4 GiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # resize the device down
+        kwargs["size"] = Size("2 GiB")
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+
+        # create with overprovisioning and encryption
+        for partition in self.b.partitions:
+            self.b.recursive_remove(partition)
+
+        kwargs = {"disks": self.b.disks,
+                  "mountpoint": "/factorytest",
+                  "size": Size("2.5 GiB"),
+                  "container_overprovisioned": True,
+                  "container_encrypted": True}
+        device = self._factory_device(device_type, **kwargs)
+        self._validate_factory_device(device, device_type, **kwargs)
+        self.assertTrue(device.pool.overprovisioning)
+        self.assertTrue(device.pool.encrypted)
 
     @patch("blivet.devices.stratis.StratisFilesystemDevice.type_external_dependencies", return_value=set())
     @patch("blivet.devices.stratis.StratisPoolDevice.type_external_dependencies", return_value=set())
