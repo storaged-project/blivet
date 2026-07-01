@@ -1,5 +1,6 @@
 import unittest
-from unittest.mock import patch, sentinel, DEFAULT
+from unittest import mock
+from unittest.mock import patch, DEFAULT
 
 from blivet.actionlist import ActionList
 from blivet.deviceaction import ActionDestroyFormat
@@ -70,7 +71,7 @@ class UnsupportedDiskLabelTestCase(unittest.TestCase):
         self.assertFalse(self.partition2.is_magic)
 
         # Verify that probe returns without changing anything.
-        partition1_type = sentinel.partition1_type
+        partition1_type = mock.sentinel.partition1_type
         self.partition1._part_type = partition1_type
         self.partition1.probe()
         self.assertEqual(self.partition1.part_type, partition1_type)

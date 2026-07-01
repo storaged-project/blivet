@@ -1,5 +1,6 @@
 import unittest
-from unittest.mock import patch, sentinel, PropertyMock
+from unittest import mock
+from unittest.mock import patch, PropertyMock
 
 from blivet.errors import DeviceFormatError
 from blivet.formats import DeviceFormat
@@ -310,9 +311,9 @@ class FSMethodsTestCase(FormatMethodsTestCase):
 
     def _test_setup_backend(self):
         with patch.object(self.format, "_mount"):
-            self.patches["fs_os"].path.normpath.return_value = sentinel.mountpoint
+            self.patches["fs_os"].path.normpath.return_value = mock.sentinel.mountpoint
             self.format.setup()
-            self.format._mount.do_task.assert_called_with(sentinel.mountpoint, options="")  # pylint: disable=no-member
+            self.format._mount.do_task.assert_called_with(mock.sentinel.mountpoint, options="")  # pylint: disable=no-member
 
     def _test_teardown_backend(self):
         self.patches["util"].umount.return_value = 0
@@ -392,12 +393,12 @@ class LVMPhysicalVolumeMethodsTestCase(FormatMethodsTestCase):
         self.patches["blockdev"].lvm.pvremove.assert_called_with(self.format.device)
 
     def _test_create_backend(self):
-        self.patches["blockdev"].ExtraArg.new.return_value = sentinel.extra_arg
+        self.patches["blockdev"].ExtraArg.new.return_value = mock.sentinel.extra_arg
         self.format.exists = False
         self.format.create()
         self.patches["blockdev"].lvm.pvcreate.assert_called_with(self.format.device,
                                                                  data_alignment=self.format.data_alignment,  # pylint: disable=no-member
-                                                                 extra=[sentinel.extra_arg])
+                                                                 extra=[mock.sentinel.extra_arg])
 
 
 class MDRaidMemberMethodsTestCase(FormatMethodsTestCase):
