@@ -1,5 +1,6 @@
 import unittest
-from unittest.mock import call, patch, sentinel, Mock, PropertyMock
+from unittest import mock
+from unittest.mock import call, patch, Mock, PropertyMock
 
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -151,7 +152,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch.object(DMDevice, "update_sysfs_path")
     @patch.object(DeviceTree, "_add_parent_devices")
     @patch("blivet.udev.device_get_name")
-    @patch("blivet.udev.device_get_sysfs_path", return_value=sentinel.sysfs_path)
+    @patch("blivet.udev.device_get_sysfs_path", return_value=mock.sentinel.sysfs_path)
     def test_run(self, *args):
         """Test dm device populator."""
         device_get_name = args[1]
@@ -163,7 +164,7 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
         device = Mock()
         device.id = 0
         devicetree.get_device_by_name.return_value = device
-        data = {"DM_UUID": sentinel.dm_uuid}
+        data = {"DM_UUID": mock.sentinel.dm_uuid}
         helper = self.helper_class(devicetree, data)
 
         parent = Mock()
@@ -178,9 +179,9 @@ class DMDevicePopulatorTestCase(PopulatorHelperTestCase):
         device = helper.run()
         self.assertIsInstance(device, DMDevice)
         self.assertTrue(device in devicetree.devices)
-        self.assertEqual(device.dm_uuid, sentinel.dm_uuid)
+        self.assertEqual(device.dm_uuid, mock.sentinel.dm_uuid)
         self.assertEqual(device.name, device_name)
-        self.assertEqual(device.sysfs_path, sentinel.sysfs_path)
+        self.assertEqual(device.sysfs_path, mock.sentinel.sysfs_path)
         self.assertEqual(list(device.parents), [parent])
 
 
@@ -229,7 +230,7 @@ class LoopDevicePopulatorTestCase(PopulatorHelperTestCase):
     @patch.object(LoopDevice, "status", return_value=True)
     @patch("blivet.populator.helpers.loop.blockdev.loop.info")
     @patch("blivet.udev.device_get_name")
-    @patch("blivet.udev.device_get_sysfs_path", return_value=sentinel.sysfs_path)
+    @patch("blivet.udev.device_get_sysfs_path", return_value=mock.sentinel.sysfs_path)
     def test_run(self, *args):
         """Test loop device populator."""
         device_get_name = args[1]
@@ -326,13 +327,13 @@ class LVMDevicePopulatorTestCase(PopulatorHelperTestCase):
         # pylint: disable=unused-argument
         def _get_device_by_device_id(device_id, **kwargs):
             if device_id == "LVM-" + lv_name:
-                return sentinel.lv_device
+                return mock.sentinel.lv_device
 
         get_device_by_device_id.side_effect = _get_device_by_device_id
         device_get_lv_vg_name.return_value = vg_name
         helper = self.helper_class(devicetree, data)
 
-        self.assertEqual(helper.run(), sentinel.lv_device)
+        self.assertEqual(helper.run(), mock.sentinel.lv_device)
         self.assertEqual(devicetree.get_device_by_device_id.call_count, 3)  # pylint: disable=no-member
         get_device_by_device_id.assert_has_calls(
             [call("LVM-" + vg_name, hidden=True),
@@ -1048,7 +1049,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         pv_info = Mock()
 
         pv_info.vg_name = "testvgname"
-        pv_info.vg_uuid = sentinel.vg_uuid
+        pv_info.vg_uuid = mock.sentinel.vg_uuid
         pv_info.pe_start = 0
         pv_info.pv_free = 0
         pv_info.pv_size = "10g"
@@ -1109,7 +1110,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         lv1.id = 0
         lv1.vg_name = pv_info.vg_name
         lv1.lv_name = "testlv1"
-        lv1.uuid = sentinel.lv1_uuid
+        lv1.uuid = mock.sentinel.lv1_uuid
         lv1.attr = "-wi-ao----"
         lv1.size = "2g"
         lv1.segtype = "linear"
@@ -1119,7 +1120,7 @@ class LVMFormatPopulatorTestCase(FormatPopulatorTestCase):
         lv2.id = 0
         lv2.vg_name = pv_info.vg_name
         lv2.lv_name = "testlv2"
-        lv2.uuid = sentinel.lv2_uuid
+        lv2.uuid = mock.sentinel.lv2_uuid
         lv2.attr = "-wi-ao----"
         lv2.size = "7g"
         lv2.segtype = "linear"
@@ -1188,7 +1189,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
         data = dict()
         device = Mock()
         device.id = 0
-        device.name = sentinel.dev1_name
+        device.name = mock.sentinel.dev1_name
         device.parents = []
         device.size = Size("10g")
         devicetree._add_device(device)
@@ -1200,7 +1201,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
 
         # member belongs to a valid array which is already in the tree
         md_info = Mock()
-        md_info.uuid = sentinel.md_uuid
+        md_info.uuid = mock.sentinel.md_uuid
         blockdev.md.examine.return_value = md_info
 
         md_device = Mock()
@@ -1230,7 +1231,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
         blockdev.md.examine.return_value = md_info
 
         device_is_md.return_value = True
-        md_udev = {"MD_LEVEL": md_info.level, "MD_UUID": sentinel.md_uuid, "MD_DEVNAME": array_name}
+        md_udev = {"MD_LEVEL": md_info.level, "MD_UUID": mock.sentinel.md_uuid, "MD_DEVNAME": array_name}
         get_devices.return_value = [md_udev]
 
         with patch("blivet.udev.device_get_format", return_value=self.udev_type):
@@ -1256,7 +1257,7 @@ class MDFormatPopulatorTestCase(FormatPopulatorTestCase):
         # second of two members belonging to a valid array
         device2 = Mock()
         device2.id = 0
-        device2.name = sentinel.dev2_name
+        device2.name = mock.sentinel.dev2_name
         device2.parents = []
         device2.size = Size("10g")
         devicetree._add_device(device2)

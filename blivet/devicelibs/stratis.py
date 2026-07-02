@@ -36,7 +36,7 @@ from .. import util
 
 STRATIS_SERVICE = "org.storage.stratis3"
 STRATIS_PATH = "/org/storage/stratis3"
-STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool.r0"
+STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool.r1"
 STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem.r0"
 STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev.r0"
 STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
@@ -225,7 +225,7 @@ def unlock_pool(pool_uuid, method, desc=None, passphrase=None, keyfile=None):
         return _unlock_pool_old(pool_uuid, method, desc, passphrase, keyfile)
 
 
-def create_pool(name, devices, encrypted, passphrase, key_file, clevis):
+def create_pool(name, devices, encrypted, passphrase, key_file, clevis, overprovisioning):
     if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
@@ -253,13 +253,20 @@ def create_pool(name, devices, encrypted, passphrase, key_file, clevis):
 
     try:
         proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF)
-        ((succ, _paths), rc, err) = proxy.CreatePool(name, raid_opt, devices, key_opt, clevis_opt,
-                                                     timeout=STRATIS_CALL_TIMEOUT)
+        ((succ, (pool_path, _paths)), rc, err) = proxy.CreatePool(name, raid_opt, devices, key_opt, clevis_opt,
+                                                                  timeout=STRATIS_CALL_TIMEOUT)
     except DBusError as e:
         raise StratisError("Failed to create stratis pool: %s" % str(e))
     else:
         if not succ:
             raise StratisError("Failed to create stratis pool: %s (%d)" % (err, rc))
+
+    try:
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, pool_path,
+                                         STRATIS_POOL_INTF)
+        proxy.Overprovisioning = overprovisioning  # pylint: disable=assigning-non-slot
+    except DBusError as e:
+        raise StratisError("Failed to enable overprovisioning on stratis pool: %s" % str(e))
 
     # repopulate the stratis info cache so the new pool will be added
     stratis_info.drop_cache()

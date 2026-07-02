@@ -1,5 +1,6 @@
 import unittest
-from unittest.mock import patch, Mock, PropertyMock, sentinel
+from unittest import mock
+from unittest.mock import patch, Mock, PropertyMock
 
 from blivet.actionlist import ActionList
 from blivet.errors import DeviceTreeError, DuplicateUUIDError, InvalidMultideviceSelection
@@ -201,7 +202,7 @@ class DeviceTreeTestCase(unittest.TestCase):
     def test_add_device(self, *args):  # pylint: disable=unused-argument
         dt = DeviceTree()
 
-        dev1 = StorageDevice("dev1", exists=False, uuid=sentinel.dev1_uuid, parents=[])
+        dev1 = StorageDevice("dev1", exists=False, uuid=mock.sentinel.dev1_uuid, parents=[])
 
         self.assertEqual(dt.devices, list())
 
@@ -219,7 +220,7 @@ class DeviceTreeTestCase(unittest.TestCase):
         self.assertRaisesRegex(DeviceTreeError, "Trying to add already existing device.", dt._add_device, dev1)
 
         # adding a device with the same UUID
-        dev_clone = StorageDevice("dev_clone", exists=False, uuid=sentinel.dev1_uuid, parents=[])
+        dev_clone = StorageDevice("dev_clone", exists=False, uuid=mock.sentinel.dev1_uuid, parents=[])
         with patch("blivet.devicetree.flags") as flags:
             flags.allow_inconsistent_config = False
             self.assertRaisesRegex(DuplicateUUIDError, "Duplicate UUID.*", dt._add_device, dev_clone)
@@ -332,18 +333,18 @@ class DeviceTreeTestCase(unittest.TestCase):
         # basic tests: device uuid, format uuid
         dt = DeviceTree()
 
-        dev1 = PartitionDevice('part1', uuid=sentinel.uuid1)
-        dev2 = PartitionDevice('part2', uuid=sentinel.uuid2)
+        dev1 = PartitionDevice('part1', uuid=mock.sentinel.uuid1)
+        dev2 = PartitionDevice('part2', uuid=mock.sentinel.uuid2)
         dt._add_device(dev1)
         dt._add_device(dev2)
 
-        self.assertIsNone(dt.get_device_by_uuid(sentinel.uuid3))
-        self.assertEqual(dt.get_device_by_uuid(sentinel.uuid1), dev1)
-        self.assertEqual(dt.get_device_by_uuid(sentinel.uuid2), dev2)
+        self.assertIsNone(dt.get_device_by_uuid(mock.sentinel.uuid3))
+        self.assertEqual(dt.get_device_by_uuid(mock.sentinel.uuid1), dev1)
+        self.assertEqual(dt.get_device_by_uuid(mock.sentinel.uuid2), dev2)
 
         # multiple matches -> DuplicateUUIDError
-        dev2.uuid = sentinel.uuid1
-        self.assertRaises(DuplicateUUIDError, dt.get_device_by_uuid, sentinel.uuid1)
+        dev2.uuid = mock.sentinel.uuid1
+        self.assertRaises(DuplicateUUIDError, dt.get_device_by_uuid, mock.sentinel.uuid1)
 
     def test_recursive_remove(self):
         dt = DeviceTree()

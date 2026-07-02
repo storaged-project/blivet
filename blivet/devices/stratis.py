@@ -63,11 +63,14 @@ class StratisPoolDevice(ContainerDevice):
             :type key_file: str
             :keyword clevis: clevis configuration
             :type: StratisClevisConfig
+            :keyword overprovisioning: whether overprovisioning is enabled for this pool or not
+            :type overprovisioning: bool
         """
         self._encrypted = kwargs.pop("encrypted", False)
         self.__passphrase = kwargs.pop("passphrase", None)
         self._key_file = kwargs.pop("key_file", None)
         self._clevis = kwargs.pop("clevis", None)
+        self._overprovisioning = kwargs.pop("overprovisioning", False)
 
         super(StratisPoolDevice, self).__init__(*args, **kwargs)
 
@@ -129,7 +132,23 @@ class StratisPoolDevice(ContainerDevice):
     @property
     def free_space(self):
         """ Free space in the pool usable for new filesystems """
-        return self._physical_size - self._physical_used
+        if self.overprovisioning:
+            # overprovisioning enabled -- count only actually used space
+            return self._physical_size - self._physical_used
+        else:
+            # no overprovisioning -- count all allocated space
+            return self._physical_size - sum(fs.size for fs in self.filesystems) - self._pool_metadata_size
+
+    @property
+    def overprovisioning(self):
+        """ Whether this pool has overprovisioning enabled or not """
+        return self._overprovisioning
+
+    @overprovisioning.setter
+    def overprovisioning(self, enabled):
+        if self.exists:
+            raise StratisError("Cannot set %s overprovisioning for existing Stratis pool %s" % ("enable" if enabled else "disable", self.name))
+        self._overprovisioning = enabled
 
     @property
     def encrypted(self):
@@ -191,7 +210,8 @@ class StratisPoolDevice(ContainerDevice):
                                        encrypted=self.encrypted,
                                        passphrase=self.__passphrase,
                                        key_file=self._key_file,
-                                       clevis=self._clevis)
+                                       clevis=self._clevis,
+                                       overprovisioning=self._overprovisioning)
 
     def _post_create(self):
         self.exists = True
@@ -286,6 +306,10 @@ class StratisFilesystemDevice(StorageDevice):
     _min_size = Size("512 MiB")
 
     def __init__(self, name, parents=None, size=None, uuid=None, exists=False):
+
+        if not exists and size is None and not parents[0]._overprovisioning:
+            raise StratisError("size must be specified for stratis filesystems on non-overprovisioned pools")
+
         if size is None:
             size = devicelibs.stratis.STRATIS_FS_SIZE
 
@@ -343,9 +367,15 @@ class StratisFilesystemDevice(StorageDevice):
             raise ValueError("new size must of type Size")
 
         if not self.exists:
-            md_size = devicelibs.stratis.filesystem_md_size(newsize)
-            if md_size > self.pool.free_space:
-                raise DeviceError("not enough free space in pool")
+            if self.pool.overprovisioning:
+                md_size = devicelibs.stratis.filesystem_md_size(newsize)
+                if md_size > self.pool.free_space:
+                    raise DeviceError("not enough free space in pool")
+            else:
+                # free_space uses virtual filesystem sizes; add back this
+                # filesystem's current allocation since it is reclaimable
+                if newsize > self.pool.free_space + self.size:
+                    raise DeviceError("not enough free space in pool")
 
         super(StratisFilesystemDevice, self)._set_size(newsize)
 

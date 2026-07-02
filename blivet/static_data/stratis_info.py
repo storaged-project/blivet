@@ -37,14 +37,15 @@ log = logging.getLogger("blivet")
 # XXX we can't import these from devicelibs.stratis, circular imports make python mad
 STRATIS_SERVICE = "org.storage.stratis3"
 STRATIS_PATH = "/org/storage/stratis3"
-STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool.r0"
+STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool.r1"
 STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem.r0"
 STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev.r0"
 STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
 STRATIS_MANAGER_INTF_R8 = STRATIS_SERVICE + ".Manager.r8"
 
 
-StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "physical_used", "object_path", "encrypted", "clevis"])
+StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "physical_used", "object_path",
+                                                 "encrypted", "clevis", "overprovisioning"])
 StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "used_size", "pool_name",
                                                              "pool_uuid", "object_path"])
 StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_name", "pool_uuid", "object_path"])
@@ -101,7 +102,7 @@ class StratisInfo(object):
         return StratisPoolInfo(name=properties["Name"], uuid=properties["Uuid"],
                                physical_size=Size(pool_size), physical_used=Size(pool_used),
                                object_path=pool_path, encrypted=properties["Encrypted"],
-                               clevis=clevis)
+                               clevis=clevis, overprovisioning=properties["Overprovisioning"])
 
     def _get_filesystem_info(self, filesystem_path):
         properties = _get_all_properties(filesystem_path, STRATIS_FILESYSTEM_INTF)

@@ -1,5 +1,6 @@
 import unittest
-from unittest.mock import Mock, patch, sentinel
+from unittest import mock
+from unittest.mock import Mock, patch
 
 from blivet.devicelibs import disk as disklib
 from blivet.size import Size
@@ -55,7 +56,7 @@ class DiskLibTestCase(unittest.TestCase):
         _client_volumes = [Mock(system_id=_client_systems[0].id,
                                 nodes=["/dev/sda"],
                                 vpd83=0,
-                                raid_type=sentinel.RAID_TYPE_RAID0,
+                                raid_type=mock.sentinel.RAID_TYPE_RAID0,
                                 stripe_size=262144,
                                 drives=4,
                                 min_io=262144,
@@ -63,7 +64,7 @@ class DiskLibTestCase(unittest.TestCase):
                            Mock(system_id=_client_systems[1].id,
                                 nodes=["/dev/sdb"],
                                 vpd83=1,
-                                raid_type=sentinel.RAID_TYPE_OTHER,
+                                raid_type=mock.sentinel.RAID_TYPE_OTHER,
                                 stripe_size=524288,
                                 drives=2,
                                 min_io=524288,
@@ -93,9 +94,9 @@ class DiskLibTestCase(unittest.TestCase):
 
         with patch("blivet.devicelibs.disk._lsm_required._check_avail", return_value=True):
             with patch("blivet.devicelibs.disk.lsm") as _lsm:
-                _lsm.Volume.RAID_TYPE_RAID0 = sentinel.RAID_TYPE_RAID0
-                _lsm.Volume.RAID_TYPE_OTHER = sentinel.RAID_TYPE_OTHER
-                _lsm.Capabilities.VOLUME_RAID_INFO = sentinel.VOLUME_RAID_INFO
+                _lsm.Volume.RAID_TYPE_RAID0 = mock.sentinel.RAID_TYPE_RAID0
+                _lsm.Volume.RAID_TYPE_OTHER = mock.sentinel.RAID_TYPE_OTHER
+                _lsm.Capabilities.VOLUME_RAID_INFO = mock.sentinel.VOLUME_RAID_INFO
                 _lsm.LocalDisk.vpd83_search.side_effect = vpd83_search
                 client_mock = Mock(name="lsm.Client")
                 client_mock.configure_mock(**{"return_value": client_mock,
@@ -109,7 +110,7 @@ class DiskLibTestCase(unittest.TestCase):
                     bvol = disklib.volumes[lvol.nodes[0]]
                     system = system_by_id(lvol.system_id)
                     self.assertEqual(bvol.system, system.name)
-                    if client_mock.capabilities(system).supported(sentinel.VOLUME_RAID_INFO):
+                    if client_mock.capabilities(system).supported(mock.sentinel.VOLUME_RAID_INFO):
                         self.assertEqual(bvol.raid_type, disklib._get_lsm_raid_level(lvol.raid_type))
                         self.assertEqual(bvol.raid_stripe_size, Size(lvol.stripe_size))
                         self.assertEqual(bvol.raid_disk_count, lvol.drives)

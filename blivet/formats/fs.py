@@ -1238,6 +1238,7 @@ class StratisXFS(XFS):
 
     _type = "stratis xfs"
     _supported = False
+    _min_size = Size("512 MiB")
 
     _mount_class = fsmount.StratisXFSMount
     _resize_class = fsresize.UnimplementedFSResize
