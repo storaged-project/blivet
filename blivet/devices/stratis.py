@@ -93,7 +93,7 @@ class StratisPoolDevice(ContainerDevice):
     def size(self):
         """ The size of this pool """
         # sum up the sizes of the block devices
-        return sum(parent.size for parent in self.parents)
+        return sum((parent.size for parent in self.parents), Size(0))
 
     @property
     def status(self):
