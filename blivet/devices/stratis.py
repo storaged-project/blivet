@@ -103,7 +103,7 @@ class StratisPoolDevice(ContainerDevice):
 
     @property
     def _physical_size(self):
-        if self.exists:
+        if self.exists and self.status:
             pool_info = stratis_info.get_pool_info(self.name)
             if not pool_info:
                 raise DeviceError("Failed to get information about pool %s" % self.name)
