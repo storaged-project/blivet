@@ -462,6 +462,109 @@ class StratisTestCaseClevis(StratisTestCaseBase):
         self.assertIsNone(pool._clevis.tang_thumbprint)
 
 
+class StratisGrowTestCase(StratisTestCaseBase):
+
+    _num_disks = 1
+    _disk_size = 5 * 1024**3
+
+    def test_stratis_grow(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.storage.initialize_disk(disk)
+
+        bd = self.storage.new_partition(size=blivet.size.Size("4.5 GiB"), fmt_type="stratis",
+                                        parents=[disk])
+        self.storage.create_device(bd)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd])
+        self.storage.create_device(pool)
+
+        pool_free = pool.free_space
+
+        fs1 = self.storage.new_stratis_filesystem(name="blivetTestFS1", parents=[pool],
+                                                  size=blivet.size.Size("512 MiB"), grow=True)
+        self.storage.create_device(fs1)
+        fs2 = self.storage.new_stratis_filesystem(name="blivetTestFS2", parents=[pool],
+                                                  size=blivet.size.Size("512 MiB"), grow=True)
+        self.storage.create_device(fs2)
+
+        blivet.partitioning.grow_stratis(self.storage)
+
+        # both should grow equally to fill pool
+        self.assertAlmostEqual(fs1.size, fs2.size, delta=blivet.size.Size("1 MiB"))
+        self.assertAlmostEqual(fs1.size + fs2.size, pool_free, delta=blivet.size.Size("1 MiB"))
+        self.assertGreater(fs1.size, blivet.size.Size("512 MiB"))
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        fs1 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS1")
+        self.assertIsNotNone(fs1)
+        self.assertAlmostEqual(fs1.size, blivet.size.Size("1.9 GiB"), delta=blivet.size.Size("100 MiB"))
+
+        fs2 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS2")
+        self.assertIsNotNone(fs2)
+        self.assertAlmostEqual(fs2.size, blivet.size.Size("1.9 GiB"), delta=blivet.size.Size("100 MiB"))
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertAlmostEqual(pool.free_space, blivet.size.Size(0), delta=blivet.size.Size("10 MiB"))
+
+    def test_stratis_grow_maxsize(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.storage.initialize_disk(disk)
+
+        bd = self.storage.new_partition(size=blivet.size.Size("4.5 GiB"), fmt_type="stratis",
+                                        parents=[disk])
+        self.storage.create_device(bd)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd])
+        self.storage.create_device(pool)
+
+        pool_free = pool.free_space
+
+        fs1 = self.storage.new_stratis_filesystem(name="blivetTestFS1", parents=[pool],
+                                                  size=blivet.size.Size("512 MiB"), grow=True)
+        self.storage.create_device(fs1)
+        fs2 = self.storage.new_stratis_filesystem(name="blivetTestFS2", parents=[pool],
+                                                  size=blivet.size.Size("512 MiB"), grow=True,
+                                                  maxsize=blivet.size.Size("550 MiB"))
+        self.storage.create_device(fs2)
+
+        blivet.partitioning.grow_stratis(self.storage)
+
+        # fs2 should be capped at maxsize
+        self.assertAlmostEqual(fs2.size, blivet.size.Size("550 MiB"), delta=blivet.size.Size("1 MiB"))
+        # fs1 gets the rest
+        self.assertAlmostEqual(fs1.size, pool_free - fs2.size, delta=blivet.size.Size("1 MiB"))
+        self.assertGreater(fs1.size, fs2.size)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        fs1 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS1")
+        self.assertIsNotNone(fs1)
+        stratis_version = self._get_stratis_version()
+        if stratis_version <= Version("3.7.0"):
+            # older versions of stratis have smaller metadata
+            self.assertAlmostEqual(fs1.size, blivet.size.Size("3.44 GiB"), delta=blivet.size.Size("10 MiB"))
+        else:
+            self.assertAlmostEqual(fs1.size, blivet.size.Size("3.24 GiB"), delta=blivet.size.Size("10 MiB"))
+
+        fs2 = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS2")
+        self.assertIsNotNone(fs2)
+        self.assertAlmostEqual(fs2.size, blivet.size.Size("550 MiB"), delta=blivet.size.Size("1 MiB"))
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertAlmostEqual(pool.free_space, blivet.size.Size(0), delta=blivet.size.Size("10 MiB"))
+
+
 class StratisDeviceFactoryTestCase(StratisTestCaseBase):
 
     _num_disks = 2

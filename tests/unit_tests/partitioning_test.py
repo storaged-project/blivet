@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import parted
 
@@ -10,11 +10,15 @@ from blivet.partitioning import Request
 from blivet.partitioning import Chunk
 from blivet.partitioning import LVRequest
 from blivet.partitioning import VGChunk
+from blivet.partitioning import StratisRequest
+from blivet.partitioning import StratisPoolChunk
 
 from blivet.devices import StorageDevice
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import DiskDevice
+from blivet.devices import StratisPoolDevice
+from blivet.devices import StratisFilesystemDevice
 from blivet.devices.lvm import LVMCacheRequest
 
 from blivet.formats import get_format
@@ -379,3 +383,57 @@ class DiskTagsTestCase(unittest.TestCase):
         self.assertEqual(resolve_disk_tags(disks, ["0", "2"]), [disks[0], disks[2]])
         self.assertEqual(resolve_disk_tags(disks, ["local"]), disks)
         self.assertEqual(resolve_disk_tags(disks, ["canteloupe"]), [])
+
+
+STRATIS_DEVICE_CLASSES = [
+    StratisPoolDevice,
+    StratisFilesystemDevice,
+    StorageDevice
+]
+
+
+@unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in STRATIS_DEVICE_CLASSES),
+                     "some unsupported device classes required for this test")
+class StratisPartitioningTestCase(unittest.TestCase):
+
+    @patch("blivet.devicelibs.stratis.pool_used", return_value=Size(0))
+    @patch("blivet.devicelibs.stratis.filesystem_md_size", return_value=Size(0))
+    def test_stratis_pool_chunk(self, *args):  # pylint: disable=unused-argument,arguments-differ
+        bd = StorageDevice("bd1", fmt=get_format("stratis"),
+                           size=Size("10 GiB"), exists=True)
+        pool = StratisPoolDevice("testpool", parents=[bd])
+
+        fs1 = StratisFilesystemDevice("testfs1", parents=[pool],
+                                      size=Size("1 GiB"), grow=True)
+        fs2 = StratisFilesystemDevice("testfs2", parents=[pool],
+                                      size=Size("1 GiB"), grow=True)
+        fs3 = StratisFilesystemDevice("testfs3", parents=[pool],
+                                      size=Size("1 GiB"), grow=True,
+                                      maxsize=Size("3 GiB"))
+
+        req1 = StratisRequest(fs1)
+        req2 = StratisRequest(fs2)
+        req3 = StratisRequest(fs3)
+        chunk = StratisPoolChunk(pool, requests=[req1, req2, req3])
+
+        self.assertEqual(chunk.length, int(Size("10 GiB") / 512))
+        self.assertEqual(chunk.pool, int(Size("7 GiB") / 512))
+        self.assertEqual(chunk.base, 3 * int(Size("1 GiB") / 512))
+
+        self.assertEqual(chunk.length_to_size(2), Size(1024))
+        self.assertEqual(chunk.size_to_length(Size(1024)), 2)
+        self.assertTrue(chunk.has_growable)
+
+        self.assertEqual(chunk.remaining, 3)
+        self.assertFalse(chunk.done)
+
+        chunk.grow_requests()
+
+        self.assertTrue(chunk.done)
+        self.assertEqual(chunk.remaining, 2)
+
+        # fs3 is capped at maxsize=3 GiB (growth of 2 GiB)
+        self.assertEqual(req3.growth, int(Size("2 GiB") / 512))
+        # remaining 5 GiB split equally between fs1 and fs2 (2.5 GiB each)
+        self.assertEqual(req1.growth, int(Size("2.5 GiB") / 512))
+        self.assertEqual(req2.growth, int(Size("2.5 GiB") / 512))
