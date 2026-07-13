@@ -182,7 +182,14 @@ class StratisFormatPopulator(FormatPopulator):
                     # we cannot add a device without name
                     log.warning("Ignoring stopped stratis pool %s without name", pool_info.uuid)
                     return
-                pool_device = self._add_stopped_pool_device(pool_info)
+
+                pool_device = self._devicetree.get_device_by_uuid(pool_info.uuid)
+                if pool_device and self.device not in pool_device.parents:
+                    pool_device.parents.append(self.device)
+                    callbacks.parent_added(device=pool_device, parent=self.device)
+                    return
+                else:
+                    pool_device = self._add_stopped_pool_device(pool_info)
             else:
                 # no stopped pool info, no bd info -> nothing we can do
                 return

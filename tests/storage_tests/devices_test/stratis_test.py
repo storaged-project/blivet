@@ -283,17 +283,23 @@ class StratisTestCase(StratisTestCaseBase):
         if stratis_version < Version("3.8.0"):
             self.skipTest("Stratis 3.8.0 or newer needed for start/stop support")
 
-        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
-        self.assertIsNotNone(disk)
-        self.storage.initialize_disk(disk)
+        disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk1)
+        self.storage.initialize_disk(disk1)
+        disk2 = self.storage.devicetree.get_device_by_path(self.vdevs[1])
+        self.assertIsNotNone(disk2)
+        self.storage.initialize_disk(disk2)
 
-        bd = self.storage.new_partition(size=blivet.size.Size("1.5 GiB"), fmt_type="stratis",
-                                        parents=[disk])
-        self.storage.create_device(bd)
+        bd1 = self.storage.new_partition(size=blivet.size.Size("1.5 GiB"), fmt_type="stratis",
+                                         parents=[disk1])
+        self.storage.create_device(bd1)
+        bd2 = self.storage.new_partition(size=blivet.size.Size("1.5 GiB"), fmt_type="stratis",
+                                         parents=[disk2])
+        self.storage.create_device(bd2)
 
         blivet.partitioning.do_partitioning(self.storage)
 
-        pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd])
+        pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd1, bd2])
         self.storage.create_device(pool)
 
         fs = self.storage.new_stratis_filesystem(name="blivetTestFS", parents=[pool],
@@ -306,6 +312,7 @@ class StratisTestCase(StratisTestCaseBase):
         pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
         self.assertIsNotNone(pool)
         self.assertTrue(pool.status)
+        self.assertEqual(len(pool.parents), 2)
 
         # try teardown and setup
         pool.teardown()
@@ -320,6 +327,7 @@ class StratisTestCase(StratisTestCaseBase):
         pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
         self.assertIsNotNone(pool)
         self.assertFalse(pool.status)
+        self.assertEqual(len(pool.parents), 2)
 
         # start the pool again to be able to remove it
         pool.setup()
