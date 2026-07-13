@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch, PropertyMock
 
 import blivet
+import blivet.partitioning
 
 from blivet.devices import StorageDevice
 from blivet.devices import StratisPoolDevice
@@ -215,3 +216,76 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
         fs = StratisFilesystemDevice("testfs", parents=[pool], size=Size("1 GiB") + Size(1))
         # size should be rounded down to 1 GiB
         self.assertEqual(fs.size, Size("1 GiB"))
+
+    @patch("blivet.devicelibs.stratis.pool_used", return_value=Size(0))
+    @patch("blivet.devicelibs.stratis.filesystem_md_size", return_value=Size(0))
+    def test_new_stratis_grow(self, *args):  # pylint: disable=unused-argument,arguments-differ
+        b = blivet.Blivet()
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
+                           size=Size("10 GiB"), exists=False)
+        b.devicetree._add_device(bd)
+
+        with patch("blivet.devicetree.DeviceTree.names", []):
+            pool = b.new_stratis_pool(name="testpool", parents=[bd])
+            fs1 = b.new_stratis_filesystem(name="testfs1", parents=[pool],
+                                           size=Size("1 GiB"), grow=True)
+            fs2 = b.new_stratis_filesystem(name="testfs2", parents=[pool],
+                                           size=Size("1 GiB"), grow=True,
+                                           maxsize=Size("5 GiB"))
+
+        self.assertTrue(fs1.req_grow)
+        self.assertEqual(fs1.req_size, Size("1 GiB"))
+        self.assertEqual(fs1.req_max_size, Size(0))
+
+        self.assertTrue(fs2.req_grow)
+        self.assertEqual(fs2.req_size, Size("1 GiB"))
+        self.assertEqual(fs2.req_max_size, Size("5 GiB"))
+
+    @patch("blivet.devicelibs.stratis.pool_used", return_value=Size(0))
+    @patch("blivet.devicelibs.stratis.filesystem_md_size", return_value=Size(0))
+    def test_stratis_grow(self, *args):  # pylint: disable=unused-argument,arguments-differ
+        b = blivet.Blivet()
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
+                           size=Size("10 GiB"), exists=False)
+        b.devicetree._add_device(bd)
+
+        with patch("blivet.devicetree.DeviceTree.names", []):
+            pool = b.new_stratis_pool(name="testpool", parents=[bd])
+            fs1 = b.new_stratis_filesystem(name="testfs1", parents=[pool],
+                                           size=Size("1 GiB"), grow=True)
+            fs2 = b.new_stratis_filesystem(name="testfs2", parents=[pool],
+                                           size=Size("1 GiB"), grow=True)
+
+        b.create_device(pool)
+        b.create_device(fs1)
+        b.create_device(fs2)
+
+        blivet.partitioning.grow_stratis(b)
+
+        self.assertEqual(fs1.size, Size("5 GiB"))
+        self.assertEqual(fs2.size, Size("5 GiB"))
+
+    @patch("blivet.devicelibs.stratis.pool_used", return_value=Size(0))
+    @patch("blivet.devicelibs.stratis.filesystem_md_size", return_value=Size(0))
+    def test_stratis_grow_maxsize(self, *args):  # pylint: disable=unused-argument,arguments-differ
+        b = blivet.Blivet()
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
+                           size=Size("10 GiB"), exists=False)
+        b.devicetree._add_device(bd)
+
+        with patch("blivet.devicetree.DeviceTree.names", []):
+            pool = b.new_stratis_pool(name="testpool", parents=[bd])
+            fs1 = b.new_stratis_filesystem(name="testfs1", parents=[pool],
+                                           size=Size("1 GiB"), grow=True)
+            fs2 = b.new_stratis_filesystem(name="testfs2", parents=[pool],
+                                           size=Size("1 GiB"), grow=True,
+                                           maxsize=Size("3 GiB"))
+
+        b.create_device(pool)
+        b.create_device(fs1)
+        b.create_device(fs2)
+
+        blivet.partitioning.grow_stratis(b)
+
+        self.assertEqual(fs1.size, Size("7 GiB"))
+        self.assertEqual(fs2.size, Size("3 GiB"))

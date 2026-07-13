@@ -36,6 +36,7 @@ from ..size import Size, ROUND_DOWN
 from ..tasks import availability
 from ..util import default_namedtuple
 from .. import devicelibs
+from .. import util
 
 
 StratisClevisConfig = default_namedtuple("StratisClevisConfig", ["pin",
@@ -305,7 +306,12 @@ class StratisFilesystemDevice(StorageDevice):
     _external_dependencies = [availability.STRATISPREDICTUSAGE_APP, availability.STRATIS_DBUS]
     _min_size = Size("512 MiB")
 
-    def __init__(self, name, parents=None, size=None, uuid=None, exists=False):
+    def __init__(self, name, parents=None, size=None, uuid=None, exists=False,
+                 grow=None, maxsize=None):
+
+        self.req_grow = None
+        self.req_max_size = Size(0)
+        self.req_size = Size(0)
 
         if not exists and size is None and not parents[0]._overprovisioning:
             raise StratisError("size must be specified for stratis filesystems on non-overprovisioned pools")
@@ -323,6 +329,11 @@ class StratisFilesystemDevice(StorageDevice):
 
         super(StratisFilesystemDevice, self).__init__(name=name, size=size, uuid=uuid,
                                                       parents=parents, exists=exists)
+
+        if not self.exists:
+            self.req_grow = grow
+            self.req_max_size = Size(util.numeric_type(maxsize))
+            self.req_size = self._size
 
     def _get_name(self):
         """ This device's name. """
@@ -366,7 +377,7 @@ class StratisFilesystemDevice(StorageDevice):
         if not isinstance(newsize, Size):
             raise ValueError("new size must of type Size")
 
-        if not self.exists:
+        if not self.exists and not self.req_grow:
             if self.pool.overprovisioning:
                 md_size = devicelibs.stratis.filesystem_md_size(newsize)
                 if md_size > self.pool.free_space:

@@ -33,6 +33,7 @@ import _ped
 from .errors import DeviceError, PartitioningError, AlignmentError
 from .flags import flags
 from .devices import Device, PartitionDevice, device_path_to_name
+from .devices.lib import LINUX_SECTOR_SIZE
 from .size import Size
 from .i18n import _, N_
 from .util import compare
@@ -1158,6 +1159,27 @@ class LVRequest(Request):
         return reserve
 
 
+class StratisRequest(Request):
+
+    def __init__(self, fs):
+        """
+            :param fs: the stratis filesystem being requested
+            :type fs: :class:`~.devices.StratisFilesystemDevice`
+        """
+        super(StratisRequest, self).__init__(fs)
+        self.base = int(fs.size / LINUX_SECTOR_SIZE)
+
+        if fs.req_grow:
+            limits = [int(l / LINUX_SECTOR_SIZE) for l in
+                      (fs.req_max_size, fs.format.max_size) if l > Size(0)]
+
+            if limits:
+                max_sectors = min(limits)
+                self.max_growth = max_sectors - self.base
+                if self.max_growth <= 0:
+                    self.done = True
+
+
 class Chunk(object):
 
     """ A free region from which devices will be allocated """
@@ -1569,6 +1591,41 @@ class ThinPoolChunk(VGChunk):
         self.path = pool.path
         usable_extents = (pool.size / pool.vg.pe_size)
         super(VGChunk, self).__init__(usable_extents, requests=requests)  # pylint: disable=bad-super-call
+
+
+class StratisPoolChunk(Chunk):
+
+    """ A free region in a Stratis pool from which filesystems will be allocated """
+
+    def __init__(self, pool, requests=None):
+        """
+            :param pool: the stratis pool whose free space this chunk represents
+            :type pool: :class:`~.devices.StratisPoolDevice`
+            :keyword requests: list of requests to add initially
+            :type requests: list of :class:`StratisRequest`
+        """
+        self.pool = pool
+        self.path = pool.path
+        usable_size = pool._physical_size - pool._pool_metadata_size
+        usable_sectors = int(usable_size / LINUX_SECTOR_SIZE)
+        super(StratisPoolChunk, self).__init__(usable_sectors, requests=requests)
+
+    def add_request(self, req):
+        """ Add a request to this chunk.
+
+            :param req: the request to add
+            :type req: :class:`StratisRequest`
+        """
+        if not isinstance(req, StratisRequest):
+            raise ValueError(_("StratisPoolChunk requests must be of type StratisRequest"))
+
+        super(StratisPoolChunk, self).add_request(req)
+
+    def length_to_size(self, length):
+        return Size(length * LINUX_SECTOR_SIZE)
+
+    def size_to_length(self, size):
+        return int(size / LINUX_SECTOR_SIZE)
 
 
 def get_disk_chunks(disk, partitions, free):
@@ -2095,3 +2152,27 @@ def grow_lvm(storage):
             thin_chunk = ThinPoolChunk(pool, requests)
             thin_chunk.grow_requests()
             _apply_chunk_growth(thin_chunk)
+
+
+def grow_stratis(storage):
+    """ Grow Stratis filesystems according to the pool sizes. """
+    for pool in storage.stratis_pools:
+        if not pool.filesystems:
+            continue
+
+        total_free = pool.free_space
+        if total_free < 0:
+            # by now we have allocated the stratis block devices so if there isn't enough
+            # space in the pool we have a real problem
+            raise PartitioningError(_("not enough space for Stratis requests"))
+        elif not total_free:
+            log.debug("pool %s has no free space", pool.name)
+            continue
+
+        log.debug("pool %s: %s free ; filesystems: %s", pool.name, total_free,
+                  [fs.fsname for fs in pool.filesystems])
+
+        chunk = StratisPoolChunk(pool,
+                                 requests=[StratisRequest(fs) for fs in pool.filesystems])
+        chunk.grow_requests()
+        _apply_chunk_growth(chunk)
