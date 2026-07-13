@@ -199,8 +199,11 @@ def _unlock_pool_new(pool_uuid, method=None, passphrase=None, keyfile=None):
     try:
         proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF_R8,
                                          client=GLibClientUnix)
-        (succ, err, _blockdevs) = proxy.StartPool(pool_uuid, "uuid", (True, (False, 0)), key_arg,
-                                                  timeout=STRATIS_CALL_TIMEOUT)
+        ((succ, (_pool, _bd, _fs)), _code, err) = proxy.StartPool(pool_uuid,
+                                                                  "uuid",
+                                                                  (True, (False, 0)),
+                                                                  key_arg,
+                                                                  timeout=STRATIS_CALL_TIMEOUT)
     except DBusError as e:
         raise StratisError("Failed to unlock pool: %s" % str(e))
     else:

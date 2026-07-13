@@ -377,6 +377,12 @@ class StratisTestCase(StratisTestCaseBase):
         with self.assertRaisesRegex(blivet.errors.StratisError, "Passphrase or key file must be set for encrypted Stratis pool setup"):
             pool.setup()
 
+        # wrong passphrase
+        pool.passphrase = "wrongpassphrase"
+        with self.assertRaisesRegex(blivet.errors.StratisError, "Operation not permitted"):
+            pool.setup()
+
+        # coreect passphrase
         pool.passphrase = "fipsneeds8chars"
         pool.setup()
         self.assertTrue(pool.status)
