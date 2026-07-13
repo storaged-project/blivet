@@ -275,6 +275,15 @@ class StratisPoolDevice(ContainerDevice):
             # action here will be noop and pool will be removed by removing the block devices
             log.info("Ignoring destroy action for stopped stratis pool %s", self.name)
 
+            # XXX encrypted pools can be in "partially constructed" state, we cannot detect this
+            # state using the DBus API and if we don't stop this pool (which is already marked
+            # as stopped!) we cannot remove it because there are existing private stratis DM devices
+            if self.encrypted and not self.has_key:
+                try:
+                    self._teardown()
+                except StratisError as e:
+                    log.debug("Failed to stop stratis pool %s: %s", self.name, str(e))
+
     def add_hook(self, new=True):
         super(StratisPoolDevice, self).add_hook(new=new)
         if new:
