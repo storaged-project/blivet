@@ -339,7 +339,11 @@ def stop_pool(pool_uuid):
     # repopulate the stratis info cache just to be sure all values are still valid
     stratis_info.drop_cache()
 
-    pool_info = stratis_info.pools[pool_uuid]
+    if pool_uuid in stratis_info.pools.keys():
+        pool_info = stratis_info.pools[pool_uuid]
+    else:
+        # maybe already stopped or partially constructed pool
+        pool_info = next((pool for pool in stratis_info.stopped_pools if pool.uuid == pool_uuid), None)
 
     if not pool_info:
         raise StratisError("Stratis pool %s not found" % pool_uuid)
