@@ -29,6 +29,8 @@ from ...formats import get_format
 from ...devices.stratis import StratisPoolDevice, StratisFilesystemDevice, StratisClevisConfig
 from ...devicelibs.stratis import STRATIS_FS_SIZE
 from ...storage_log import log_method_call
+from ...errors import StratisError
+from ...flags import flags
 from .formatpopulator import FormatPopulator
 
 from ...static_data import stratis_info
@@ -213,6 +215,12 @@ class StratisFormatPopulator(FormatPopulator):
             log.warning("Failed to get information about Stratis pool %s (%s)",
                         bd_info.pool_name, bd_info.pool_uuid)
             return
+
+        if flags.auto_dev_updates and pool_device and not pool_device.status and not pool_device.encrypted:
+            try:
+                pool_device.setup()
+            except StratisError as e:
+                log.warning("Failed to activate Stratis pool %s: %s", pool_device.name, str(e))
 
         # now add the filesystems
         self._add_filesystems(pool_device.uuid)
