@@ -47,7 +47,7 @@ from ..storage_log import log_method_call
 from ..tasks import availability
 from ..threads import SynchronizedMeta
 from .helpers import get_device_helper, get_format_helper
-from ..static_data import lvs_info, pvs_info, vgs_info, luks_data, mpath_members, stratis_info
+from ..static_data import lvs_info, pvs_info, vgs_info, encryption_data, mpath_members, stratis_info
 from ..callbacks import callbacks
 
 import logging
@@ -76,11 +76,11 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             :keyword disk_images: dictionary of disk images
             :type list: dict
         """
-        luks_data.reset(passphrase=None, luks_dict={})
+        encryption_data.reset(passphrase=None, luks_dict={})
         self.reset(disk_images=disk_images)
 
     def reset(self, disk_images=None):
-        luks_data.reset()
+        encryption_data.reset()
         self.disk_images = {}
         if disk_images:
             # this will overwrite self.exclusive_disks
@@ -458,7 +458,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
     def save_luks_passphrase(self, device):
         """ Save a device's LUKS passphrase in case of reset. """
         # Method is here for compatibility with blivet 1.x
-        luks_data.save_passphrase(device)
+        encryption_data.save_passphrase(device)
 
     def populate(self, cleanup_only=False):
         """ Locate all storage devices.

@@ -48,7 +48,7 @@ from . import devicefactory
 from . import __version__
 from . import devicelibs
 from .threads import SynchronizedMeta
-from .static_data import luks_data
+from .static_data import encryption_data
 
 import logging
 log = logging.getLogger("blivet")
@@ -357,14 +357,14 @@ class Blivet(object, metaclass=SynchronizedMeta):
 
     @property
     def encryption_passphrase(self):
-        return luks_data.encryption_passphrase
+        return encryption_data.encryption_passphrase
 
     @encryption_passphrase.setter
     def encryption_passphrase(self, value):
-        luks_data.encryption_passphrase = value
+        encryption_data.encryption_passphrase = value
 
     def save_passphrase(self, device):
-        luks_data.save_passphrase(device)
+        encryption_data.save_passphrase(device)
 
     def recursive_remove(self, device):
         """ Remove a device after removing its dependent devices.

@@ -40,7 +40,7 @@ from .partitioning import SameSizeSet
 from .partitioning import TotalSizeSet
 from .partitioning import do_partitioning
 from .size import Size
-from .static_data import luks_data
+from .static_data import encryption_data
 
 import gi
 gi.require_version("BlockDev", "3.0")
@@ -377,7 +377,7 @@ class DeviceFactory(object):
         self.min_luks_entropy = kwargs.get("min_luks_entropy")
 
         if self.min_luks_entropy is None:
-            self.min_luks_entropy = luks_data.min_entropy
+            self.min_luks_entropy = encryption_data.min_entropy
 
         self.luks_version = kwargs.get("luks_version") or crypto.DEFAULT_LUKS_VERSION
         self.pbkdf_args = kwargs.get("pbkdf_args", None)

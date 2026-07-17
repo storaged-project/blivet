@@ -35,7 +35,7 @@ from ..flags import flags
 from ..i18n import _, N_
 from ..tasks import availability, lukstasks
 from ..size import Size, KiB
-from ..static_data import luks_data
+from ..static_data import encryption_data
 from .. import udev
 
 import logging
@@ -176,7 +176,7 @@ class LUKS(DeviceFormat):
 
         self.min_luks_entropy = kwargs.get("min_luks_entropy")
         if self.min_luks_entropy is None:
-            self.min_luks_entropy = luks_data.min_entropy
+            self.min_luks_entropy = encryption_data.min_entropy
 
         if not self.map_name and self.exists and self.uuid:
             self.map_name = "luks-%s" % self.uuid
@@ -396,15 +396,15 @@ class LUKS(DeviceFormat):
         super(LUKS, self)._create(**kwargs)  # set up the event sync
 
         if not self.pbkdf_args and self.luks_version.startswith("luks2"):
-            if luks_data.pbkdf_args:
-                self.pbkdf_args = luks_data.pbkdf_args
+            if encryption_data.pbkdf_args:
+                self.pbkdf_args = encryption_data.pbkdf_args
             else:
                 # argon is not used with FIPS so we don't need to adjust the memory when in FIPS mode
                 if not crypto.is_fips_enabled():
                     mem_limit = crypto.calculate_luks2_max_memory()
                     if mem_limit:
                         self.pbkdf_args = LUKS2PBKDFArgs(max_memory_kb=int(mem_limit.convert_to(KiB)))
-                        luks_data.pbkdf_args = self.pbkdf_args
+                        encryption_data.pbkdf_args = self.pbkdf_args
                         log.info("PBKDF arguments for LUKS2 not specified, using defaults with memory limit %s", mem_limit)
 
         if not self.luks_sector_size and self.luks_version.startswith("luks2"):

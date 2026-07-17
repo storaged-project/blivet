@@ -297,7 +297,7 @@ class LUKSResetTestCase(StorageTestCase):
         self.storage.format_device(disk, fmt)
         self.storage.do_it()
 
-        blivet.static_data.luks_data.save_passphrase(disk)
+        blivet.static_data.encryption_data.save_passphrase(disk)
         self.storage.devicetree.populate()
 
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
@@ -306,7 +306,7 @@ class LUKSResetTestCase(StorageTestCase):
 
         # remove passphrase and try to save it (should not fail)
         disk.format.passphrase = None
-        blivet.static_data.luks_data.save_passphrase(disk)
+        blivet.static_data.encryption_data.save_passphrase(disk)
 
     def test_label_subsystem(self):
         disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])

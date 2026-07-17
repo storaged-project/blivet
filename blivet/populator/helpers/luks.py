@@ -31,7 +31,7 @@ from ...errors import DeviceError, LUKSError
 from ...flags import flags
 from .devicepopulator import DevicePopulator
 from .formatpopulator import FormatPopulator
-from ...static_data import luks_data
+from ...static_data import encryption_data
 
 import logging
 log = logging.getLogger("blivet")
@@ -130,12 +130,12 @@ class LUKSFormatPopulator(FormatPopulator):
 
         # look up or create the mapped device
         if not self._devicetree.get_device_by_device_id("LUKS-" + self.device.format.map_name):
-            passphrase = luks_data.luks_devs.get(self.device.format.uuid)
+            passphrase = encryption_data.luks_devs.get(self.device.format.uuid)
             if self.device.format.configured:
                 pass
             elif passphrase:
                 self.device.format.passphrase = passphrase
-            elif self.device.format.uuid in luks_data.luks_devs:
+            elif self.device.format.uuid in encryption_data.luks_devs:
                 log.info("skipping previously-skipped luks device %s",
                          self.device.name)
             elif self._devicetree._cleanup or flags.testing:
@@ -145,11 +145,11 @@ class LUKSFormatPopulator(FormatPopulator):
                     # this makes device.configured return True
                     self.device.format.passphrase = 'yabbadabbadoo'
             else:
-                # Try each known passphrase. Include luks_data.luks_devs values in case a
+                # Try each known passphrase. Include encryption_data.luks_devs values in case a
                 # passphrase has been set for a specific device without a full
                 # reset/populate, in which case the new passphrase would not be
-                # in luks_data.passphrases.
-                passphrases = luks_data.passphrases + list(luks_data.luks_devs.values())
+                # in encryption_data.passphrases.
+                passphrases = encryption_data.passphrases + list(encryption_data.luks_devs.values())
                 for passphrase in passphrases:
                     self.device.format.passphrase = passphrase
                     try:
