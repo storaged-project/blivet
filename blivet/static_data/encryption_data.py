@@ -35,6 +35,8 @@ class Encryption_Data(object):
         self.__passphrases = []
         # dict of luks devices {device: passphrase}
         self.__luks_devs = {}
+        # dict of stratis devices {pool: passphrase}
+        self.__stratis_devs = {}
         # default pbkdf parameters for LUKS2 format creation
         self._pbkdf_args = None
 
@@ -66,6 +68,14 @@ class Encryption_Data(object):
         self.__luks_devs = value
 
     @property
+    def stratis_devs(self):
+        return self.__stratis_devs
+
+    @stratis_devs.setter
+    def stratis_devs(self, value):
+        self.__stratis_devs = value
+
+    @property
     def pbkdf_args(self):
         return self._pbkdf_args
 
@@ -84,20 +94,29 @@ class Encryption_Data(object):
         self.__passphrases.extend(passphrases)
 
     def save_passphrase(self, device):
-        """ Save a device's LUKS passphrase in case of reset. """
-        pctx = device.format.contexts.get_context("passphrase")
-        passphrase = pctx and pctx._passphrase
-        if passphrase:
+        """ Save a device's encryption passphrase in case of reset. """
+        passphrase = None
+        if device.type == "stratis pool":
+            passphrase = device._StratisPoolDevice__passphrase
+            encryption_data.stratis_devs[device.uuid] = passphrase
+        else:
+            pctx = device.format.contexts.get_context("passphrase")
             encryption_data.luks_devs[device.format.uuid] = passphrase
+            passphrase = pctx and pctx._passphrase
+        if passphrase:
             self.add_passphrase(passphrase)
 
-    def reset(self, passphrase=None, luks_dict=None):
+    def reset(self, passphrase=None, luks_dict=None, stratis_dict=None):
         self.clear_passphrases()
         self.add_passphrase(passphrase)
         self.luks_devs = {}
+        self.stratis_devs = {}
         if luks_dict and isinstance(luks_dict, dict):
             self.luks_devs = luks_dict
             self.add_passphrases([p for p in self.luks_devs.values() if p])
+        if stratis_dict and isinstance(stratis_dict, dict):
+            self.stratis_devs = stratis_dict
+            self.add_passphrases([p for p in self.stratis_devs.values() if p])
 
     @property
     def passphrases(self):

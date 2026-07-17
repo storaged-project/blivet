@@ -76,7 +76,7 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
             :keyword disk_images: dictionary of disk images
             :type list: dict
         """
-        encryption_data.reset(passphrase=None, luks_dict={})
+        encryption_data.reset(passphrase=None, luks_dict={}, stratis_dict={})
         self.reset(disk_images=disk_images)
 
     def reset(self, disk_images=None):
