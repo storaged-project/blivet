@@ -43,55 +43,12 @@ class StratisFormatPopulator(FormatPopulator):
     priority = 100
     _type_specifier = "stratis"
 
-    @classmethod
-    def match(cls, data, device):  # pylint: disable=arguments-differ,unused-argument
-        if super(StratisFormatPopulator, cls).match(data, device):
-            return True
-
-        # encrypted pools blockdevs can have either LUKS or stratis signature
-        format_name = udev.device_get_format(data)
-        if format_name not in ("crypto_LUKS", "stratis"):
-            return False
-
-        # locked stratis pools are managed here
-        for pool in stratis_info.locked_pools:
-            if device.path in pool.devices:
-                return True
-
-        # unlocked old-style metadata encrypted pools are also managed here
-        if udev.device_get_format(data) == "crypto_LUKS":
-            holders = udev.device_get_holders(data)
-            if holders:
-                fs = udev.device_get_format(holders[0])
-                if fs == cls._type_specifier:
-                    return True
-
-        return False
-
-    def _get_blockdev_uuid(self):
-        if udev.device_get_format(self.data) == "crypto_LUKS":
-            holders = udev.device_get_holders(self.data)
-            if holders:
-                return udev.device_get_uuid(holders[0])
-
-        return udev.device_get_uuid(self.data)
-
     def _get_kwargs(self):
         kwargs = super(StratisFormatPopulator, self)._get_kwargs()
 
         name = udev.device_get_name(self.data)
-        uuid = self._get_blockdev_uuid()
+        uuid = udev.device_get_uuid(self.data)
         kwargs["uuid"] = uuid
-
-        # old-style stratis block device hosting an encrypted pool
-        kwargs["locked_pool"] = False
-        for pool in stratis_info.locked_pools:
-            if self.device.path in pool.devices:
-                kwargs["locked_pool"] = True
-                kwargs["pool_uuid"] = pool.uuid
-                kwargs["locked_pool_key_desc"] = pool.key_desc
-                kwargs["locked_pool_clevis_pin"] = pool.clevis
-                return kwargs
 
         bd_info = stratis_info.blockdevs.get(uuid)
         if bd_info:
@@ -229,8 +186,7 @@ class StratisFormatPopulator(FormatPopulator):
         log_method_call(self, pv=self.device.name)
         super(StratisFormatPopulator, self).run()
 
-        if not self.device.format.locked_pool:
-            self._add_pool_device()
+        self._add_pool_device()
 
 
 class StratisXFSFormatPopulator(FormatPopulator):

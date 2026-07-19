@@ -49,7 +49,6 @@ StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size"
 StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "used_size", "pool_name",
                                                              "pool_uuid", "object_path"])
 StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_name", "pool_uuid", "object_path"])
-StratisLockedPoolInfo = namedtuple("StratisLockedPoolInfo", ["uuid", "key_desc", "clevis", "devices"])
 StratisStoppedPoolInfo = namedtuple("StratisStoppedPoolInfo", ["uuid", "name", "devices", "encrypted"])
 
 
@@ -149,37 +148,6 @@ class StratisInfo(object):
                                        pool_name=pool_name, pool_uuid=pool_info.uuid,
                                        object_path=blockdev_path)
 
-    def _get_locked_pools_info(self):
-        locked_pools = []
-
-        try:
-            proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF)
-            pools_info = proxy.LockedPools
-        except DBusError as e:
-            log.error("Failed to get list of locked Stratis pools: %s", str(e))
-            return locked_pools
-
-        for pool_uuid in pools_info.keys():
-            valid, (_err, description) = pools_info[pool_uuid]["key_description"]
-            if not valid:
-                log.info("Locked Stratis pool %s doesn't have a valid key description: %s", pool_uuid, description)
-                description = None
-            valid, (clevis_set, (pin, _options)) = pools_info[pool_uuid]["clevis_info"]
-            if not valid:
-                log.info("Locked Stratis pool %s doesn't have a valid clevis info", pool_uuid)
-                clevis = None
-            elif not clevis_set:
-                clevis = None
-            else:
-                clevis = pin
-            info = StratisLockedPoolInfo(uuid=pool_uuid,
-                                         key_desc=description,
-                                         clevis=clevis,
-                                         devices=[d["devnode"] for d in pools_info[pool_uuid]["devs"]])
-            locked_pools.append(info)
-
-        return locked_pools
-
     def _get_stopped_pools_info(self):
         stopped_pools = []
 
@@ -231,7 +199,6 @@ class StratisInfo(object):
         self._info_cache["pools"] = dict()
         self._info_cache["blockdevs"] = dict()
         self._info_cache["filesystems"] = dict()
-        self._info_cache["locked_pools"] = []
         self._info_cache["stopped_pools"] = []
 
         try:
@@ -263,7 +230,6 @@ class StratisInfo(object):
                 if bd_info:
                     self._info_cache["blockdevs"][bd_info.uuid] = bd_info
 
-        self._info_cache["locked_pools"] = self._get_locked_pools_info()
         self._info_cache["stopped_pools"] = self._get_stopped_pools_info()
 
     @property
@@ -286,13 +252,6 @@ class StratisInfo(object):
             self._get_stratis_info()
 
         return self._info_cache["blockdevs"]
-
-    @property
-    def locked_pools(self):
-        if self._info_cache is None:
-            self._get_stratis_info()
-
-        return self._info_cache["locked_pools"]
 
     @property
     def stopped_pools(self):

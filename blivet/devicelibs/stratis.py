@@ -164,24 +164,10 @@ def set_key(key_desc, passphrase, key_file):
             os.close(write)
 
 
-def _unlock_pool_old(pool_uuid, method=None, desc=None, passphrase=None, keyfile=None):
-    if method == "keyring":
-        set_key(desc, passphrase, keyfile)
+def unlock_pool(pool_uuid, method=None, passphrase=None, keyfile=None):
+    if not availability.STRATIS_DBUS.available:
+        raise StratisError("Stratis DBus service not available")
 
-    try:
-        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF)
-        (succ, err, _blockdevs) = proxy.UnlockPool(pool_uuid, method)
-    except DBusError as e:
-        raise StratisError("Failed to unlock pool: %s" % str(e))
-    else:
-        if not succ:
-            raise StratisError("Failed to unlock pool: %s" % err)
-    finally:
-        # repopulate the stratis info cache so the started pool is in correct list of pools
-        stratis_info.drop_cache()
-
-
-def _unlock_pool_new(pool_uuid, method=None, passphrase=None, keyfile=None):
     if method == "keyring":
         if passphrase:
             (read, write) = os.pipe()
@@ -214,18 +200,6 @@ def _unlock_pool_new(pool_uuid, method=None, passphrase=None, keyfile=None):
             os.close(write)
         # repopulate the stratis info cache so the started pool is in correct list of pools
         stratis_info.drop_cache()
-
-
-def unlock_pool(pool_uuid, method, desc=None, passphrase=None, keyfile=None):
-    if not availability.STRATIS_DBUS.available:
-        raise StratisError("Stratis DBus service not available")
-
-    ret = util.check_object_available(STRATIS_SERVICE, STRATIS_PATH,
-                                      iface=STRATIS_MANAGER_INTF_R8)
-    if ret:
-        return _unlock_pool_new(pool_uuid, method, passphrase, keyfile)
-    else:
-        return _unlock_pool_old(pool_uuid, method, desc, passphrase, keyfile)
 
 
 def create_pool(name, devices, encrypted, passphrase, key_file, clevis, overprovisioning):
