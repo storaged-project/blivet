@@ -22,7 +22,9 @@
 import abc
 import shutil
 
-from ..devicelibs.stratis import STRATIS_SERVICE, STRATIS_PATH
+from packaging.version import Version
+
+from ..devicelibs.stratis import STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF
 from .. import util
 
 import gi
@@ -298,13 +300,15 @@ class DBusMethod(Method):
 
     """ Methods for when application is actually a DBus service. """
 
-    def __init__(self, dbus_name, dbus_path):
+    def __init__(self, dbus_name, dbus_path, version_intf=None, version=None):
         """ Initializer.
 
             :param :class:`AppVersionInfo` version_info:
         """
         self.dbus_name = dbus_name
         self.dbus_path = dbus_path
+        self.version_intf = version_intf
+        self.version = version
         self._availability_errors = None
 
     def _service_available(self):
@@ -333,6 +337,13 @@ class DBusMethod(Method):
             else:
                 if not self._service_available():
                     return ["DBus service %s not available" % resource.name]
+        if self.version:
+            try:
+                proxy = util.SystemBus.get_proxy(self.dbus_name, self.dbus_path, self.version_intf)
+                if Version(str(proxy.Version)) < Version(self.version):
+                    return ["DBus service %s not available in required version" % resource.name]
+            except util.DBusError:
+                return ["Failed to get version for DBus service %s" % resource.name]
         return []
 
 
@@ -643,5 +654,5 @@ MULTIPATH_APP = application("multipath")
 STRATISPREDICTUSAGE_APP = application("stratis-predict-usage")
 
 # dbus services
-STRATIS_SERVICE_METHOD = DBusMethod(STRATIS_SERVICE, STRATIS_PATH)
+STRATIS_SERVICE_METHOD = DBusMethod(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF, "3.8.0")
 STRATIS_DBUS = dbus_service("stratisd", STRATIS_SERVICE_METHOD)
