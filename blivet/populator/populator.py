@@ -235,6 +235,17 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
     def _get_device_helper(self, info):
         return get_device_helper(info)
 
+    def _get_stratis_blockdev(self, info):
+        """ Traverses from a stratis DM device to the parent blockdev """
+        while True:
+            parents = udev.device_get_parents(info)
+            if not parents:
+                return
+            fs = udev.device_get_format(parents[0])
+            if fs == "stratis":
+                return udev.device_get_name(parents[0])
+            info = parents[0]
+
     def handle_device(self, info, update_orig_fmt=False):
         """
             :param :class:`pyudev.Device` info: udev info for the device
@@ -274,13 +285,15 @@ class PopulatorMixin(object, metaclass=SynchronizedMeta):
                       "corresponding stratis block device", name)
 
             # XXX for newly unlocked stratis pools we need to force run handle_format
-            # on one of the parent block devices to add the pool to the tree
-            parents = udev.device_get_parents(info)
-            if parents:
-                bname = udev.device_get_name(parents[0])
-                bdev = self.get_device_by_name(bname)
-                if bdev:
-                    self.handle_format(info, bdev, force=True)
+            # on one of the parent block devices to add the filesystems to the tree
+            bname = self._get_stratis_blockdev(info)
+            if not bname:
+                log.warning("failed to find stratis block device for %s", name)
+                return
+            bdev = self.get_device_by_name(bname)
+            if bdev:
+                bdev_info = udev.get_device(bdev.sysfs_path)
+                self.handle_format(bdev_info, bdev, force=True)
             return
 
         # make sure we note the name of every device we see

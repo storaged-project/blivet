@@ -344,7 +344,7 @@ class StratisTestCase(StratisTestCaseBase):
         self.assertIsNotNone(disk)
         self.storage.initialize_disk(disk)
 
-        bd = self.storage.new_partition(size=blivet.size.Size("1 GiB"), fmt_type="stratis",
+        bd = self.storage.new_partition(size=blivet.size.Size("1.5 GiB"), fmt_type="stratis",
                                         parents=[disk])
         self.storage.create_device(bd)
 
@@ -353,6 +353,10 @@ class StratisTestCase(StratisTestCaseBase):
         pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd],
                                              encrypted=True, passphrase="fipsneeds8chars")
         self.storage.create_device(pool)
+
+        fs = self.storage.new_stratis_filesystem(name="blivetTestFS", parents=[pool],
+                                                 size=blivet.size.Size("512 MiB"))
+        self.storage.create_device(fs)
 
         self.storage.do_it()
         self.storage.reset()
@@ -365,6 +369,13 @@ class StratisTestCase(StratisTestCaseBase):
         pool.teardown()
         self.assertFalse(pool.status)
 
+        # reset to remove the filesystems (now invisible because the pool is locked)
+        self.storage.reset()
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertFalse(pool.status)
+        self.assertEqual(len(pool.children), 0)
+
         # setup won't work without passphrase
         with self.assertRaisesRegex(blivet.errors.StratisError, "Passphrase or key file must be set for encrypted Stratis pool setup"):
             pool.setup()
@@ -374,10 +385,18 @@ class StratisTestCase(StratisTestCaseBase):
         with self.assertRaisesRegex(blivet.errors.StratisError, "Operation not permitted"):
             pool.setup()
 
-        # coreect passphrase
+        # correct passphrase
         pool.passphrase = "fipsneeds8chars"
         pool.setup()
         self.assertTrue(pool.status)
+
+        # populate should add the filesystems to the devicetree
+        self.storage.devicetree.populate()
+        self.assertEqual(len(pool.children), 1)
+
+        fs = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS")
+        self.assertIsNotNone(fs)
+        self.assertListEqual(pool.children, [fs])
 
         # teardown again to test reset with stopped pool
         pool.teardown()
