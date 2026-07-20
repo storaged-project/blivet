@@ -101,8 +101,8 @@ class Encryption_Data(object):
             encryption_data.stratis_devs[device.uuid] = passphrase
         else:
             pctx = device.format.contexts.get_context("passphrase")
-            encryption_data.luks_devs[device.format.uuid] = passphrase
             passphrase = pctx and pctx._passphrase
+            encryption_data.luks_devs[device.format.uuid] = passphrase
         if passphrase:
             self.add_passphrase(passphrase)
 
