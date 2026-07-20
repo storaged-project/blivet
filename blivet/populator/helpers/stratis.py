@@ -33,7 +33,7 @@ from ...errors import StratisError
 from ...flags import flags
 from .formatpopulator import FormatPopulator
 
-from ...static_data import stratis_info
+from ...static_data import encryption_data, stratis_info
 
 import logging
 log = logging.getLogger("blivet")
@@ -130,6 +130,40 @@ class StratisFormatPopulator(FormatPopulator):
             self._devicetree.handle_format(udev_info, fs_device)
             fs_device.original_format = copy.deepcopy(fs_device.format)
 
+    def _unlock_locked_pool(self, pool):
+        """ Try to unlock a locked stratis pool using known passphrases. """
+        passphrase = encryption_data.stratis_devs.get(pool.uuid)
+        if passphrase:
+            # we have passphrase for this pool saved
+            pool.passphrase = passphrase
+            try:
+                pool.setup()
+            except StratisError:
+                pool.passphrase = None
+                log.warning("Failed to activate encrypted Stratis pool %s with saved passphrase",
+                            pool.name)
+                # XXX unlocking stratis pool with a wrong passphrase leaves it in inconsistent state
+                pool._teardown()
+                return False
+            else:
+                return True
+        else:
+            # no passphrase, try every other passphrase we know
+            passphrases = encryption_data.passphrases + list(encryption_data.stratis_devs.values())
+            for passphrase in passphrases:
+                pool.passphrase = passphrase
+                try:
+                    pool.setup()
+                except StratisError:
+                    pool.passphrase = None
+                    # XXX unlocking stratis pool with a wrong passphrase leaves it in inconsistent state
+                    pool._teardown()
+                else:
+                    encryption_data.save_passphrase(pool)
+                    return True
+
+        return False
+
     def _add_pool_device(self):
         bd_info = stratis_info.blockdevs.get(self.device.format.uuid)
         if not bd_info:
@@ -173,11 +207,14 @@ class StratisFormatPopulator(FormatPopulator):
                         bd_info.pool_name, bd_info.pool_uuid)
             return
 
-        if flags.auto_dev_updates and pool_device and not pool_device.status and not pool_device.encrypted:
-            try:
-                pool_device.setup()
-            except StratisError as e:
-                log.warning("Failed to activate Stratis pool %s: %s", pool_device.name, str(e))
+        if flags.auto_dev_updates and pool_device and not pool_device.status:
+            if not pool_device.encrypted:
+                try:
+                    pool_device.setup()
+                except StratisError as e:
+                    log.warning("Failed to activate Stratis pool %s: %s", pool_device.name, str(e))
+            else:
+                self._unlock_locked_pool(pool_device)
 
         # now add the filesystems
         self._add_filesystems(pool_device.uuid)

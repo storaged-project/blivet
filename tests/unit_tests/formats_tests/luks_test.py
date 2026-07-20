@@ -3,13 +3,13 @@ from unittest.mock import patch
 
 from blivet.formats.luks import LUKS
 from blivet.size import Size
-from blivet.static_data import luks_data
+from blivet.static_data import encryption_data
 from blivet import blockdev
 
 
 class LUKSNodevTestCase(unittest.TestCase):
     def setUp(self):
-        luks_data.pbkdf_args = None
+        encryption_data.pbkdf_args = None
 
     def test_create_discard_option(self):
         # flags.discard_new=False --> no discard
