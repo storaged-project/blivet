@@ -372,7 +372,7 @@ class StratisFilesystemDevice(StorageDevice):
     @property
     def used_size(self):
         """ Size used by this filesystem in the pool """
-        if not self.exists:
+        if not self.exists or not self.pool.status:
             return devicelibs.stratis.filesystem_md_size(self.size)
         else:
             fs_info = stratis_info.get_filesystem_info(self.pool.name, self.fsname)
