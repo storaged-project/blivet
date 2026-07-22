@@ -1,3 +1,20 @@
+3.14.0
+=======
+* `Enhanced Stratis support`_
+* `Various bug fixes for issues discovered by AI/LLM analysis`
+
+Enhanced Stratis support
+-------------------------
+In preparation for Stratis support in the Anaconda installer,
+Stratis support underwent a major overhaul. This includes
+creating Stratis pools with overprovisioning disabled by
+default and supporting only Stratis 3.8.0 and newer.
+
+Various bug fixes for issues discovered by AI/LLM analysis
+-----------------------------------------------------------
+With help of AI/LLM tools, we were able to identify and fix
+over 50 issues in the code.
+
 3.13.0
 =======
 
