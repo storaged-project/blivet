@@ -76,7 +76,7 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                     fs.create()
                     stratis_dbus.create_filesystem.assert_called_with(name="testfs",
                                                                       pool_uuid="c4fc9ebe-e173-4cab-8d81-cc6abddbe02d",
-                                                                      fs_size=Size("1 GiB"))
+                                                                      fs_size=Size("1 GiB"), size_limit=None)
 
     def test_new_encrypted_stratis(self):
         b = blivet.Blivet()
@@ -185,7 +185,7 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                     fs.create()
                     stratis_dbus.create_filesystem.assert_called_with(name="testfs",
                                                                       pool_uuid="c4fc9ebe-e173-4cab-8d81-cc6abddbe02d",
-                                                                      fs_size=Size("1 TiB"))
+                                                                      fs_size=Size("1 TiB"), size_limit=None)
 
     def test_device_id(self):
         bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),

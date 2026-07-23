@@ -37,6 +37,7 @@ from .. import util
 STRATIS_SERVICE = "org.storage.stratis3"
 STRATIS_PATH = "/org/storage/stratis3"
 STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool.r1"
+STRATIS_POOL_INTF_R6 = STRATIS_SERVICE + ".pool.r6"
 STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem.r0"
 STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev.r0"
 STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
@@ -249,7 +250,7 @@ def create_pool(name, devices, encrypted, passphrase, key_file, clevis, overprov
     stratis_info.drop_cache()
 
 
-def create_filesystem(name, pool_uuid, fs_size=None):
+def create_filesystem(name, pool_uuid, fs_size=None, size_limit=None):
     if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
@@ -265,9 +266,14 @@ def create_filesystem(name, pool_uuid, fs_size=None):
     else:
         size_opt = (False, "")
 
+    if size_limit:
+        limit_opt = (True, str(size_limit.get_bytes()))
+    else:
+        limit_opt = (False, "")
+
     try:
-        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, pool_info.object_path, STRATIS_POOL_INTF)
-        ((succ, _paths), rc, err) = proxy.CreateFilesystems([(name, size_opt), ],
+        proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, pool_info.object_path, STRATIS_POOL_INTF_R6)
+        ((succ, _paths), rc, err) = proxy.CreateFilesystems([(name, size_opt, limit_opt), ],
                                                             timeout=STRATIS_CALL_TIMEOUT)
     except DBusError as e:
         raise StratisError("Failed to create stratis filesystem on '%s': %s" % (pool_info.name, str(e)))

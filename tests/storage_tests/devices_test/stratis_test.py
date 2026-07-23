@@ -55,7 +55,8 @@ class StratisTestCase(StratisTestCaseBase):
         self.storage.create_device(pool)
 
         fs = self.storage.new_stratis_filesystem(name="blivetTestFS", parents=[pool],
-                                                 size=blivet.size.Size("512 MiB"))
+                                                 size=blivet.size.Size("512 MiB"),
+                                                 size_limit=blivet.size.Size("1 GiB"))
         self.storage.create_device(fs)
 
         self.storage.do_it()
@@ -88,6 +89,7 @@ class StratisTestCase(StratisTestCaseBase):
         self.assertEqual(fs.pool, pool)
         self.assertEqual(len(fs.parents), 1)
         self.assertEqual(fs.parents[0], pool)
+        self.assertEqual(fs.size_limit, Size("1 GiB"))
 
         # now try again but use entire free space in the pool
         self.storage.destroy_device(fs)
