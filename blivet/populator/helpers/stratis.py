@@ -119,6 +119,7 @@ class StratisFormatPopulator(FormatPopulator):
 
             fs_device = StratisFilesystemDevice(fs_info.name, parents=[pool_device],
                                                 uuid=fs_info.uuid, size=STRATIS_FS_SIZE,
+                                                size_limit=fs_info.size_limit,
                                                 exists=True)
             self._devicetree._add_device(fs_device)
 

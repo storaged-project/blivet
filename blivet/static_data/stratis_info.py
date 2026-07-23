@@ -38,7 +38,7 @@ log = logging.getLogger("blivet")
 STRATIS_SERVICE = "org.storage.stratis3"
 STRATIS_PATH = "/org/storage/stratis3"
 STRATIS_POOL_INTF = STRATIS_SERVICE + ".pool.r1"
-STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem.r0"
+STRATIS_FILESYSTEM_INTF = STRATIS_SERVICE + ".filesystem.r6"
 STRATIS_BLOCKDEV_INTF = STRATIS_SERVICE + ".blockdev.r0"
 STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
 STRATIS_MANAGER_INTF_R8 = STRATIS_SERVICE + ".Manager.r8"
@@ -46,8 +46,8 @@ STRATIS_MANAGER_INTF_R8 = STRATIS_SERVICE + ".Manager.r8"
 
 StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "physical_used", "object_path",
                                                  "encrypted", "clevis", "overprovisioning"])
-StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "used_size", "pool_name",
-                                                             "pool_uuid", "object_path"])
+StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "used_size", "size_limit",
+                                                             "pool_name", "pool_uuid", "object_path"])
 StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_name", "pool_uuid", "object_path"])
 StratisStoppedPoolInfo = namedtuple("StratisStoppedPoolInfo", ["uuid", "name", "devices", "encrypted"])
 
@@ -120,8 +120,15 @@ class StratisInfo(object):
                         properties["Name"], used_size)
             used_size = 0
 
+        valid, size_limit = properties.get("SizeLimit",
+                                           (False, "SizeLimit not available"))
+        if not valid:
+            log.warning("Failed to get Stratis filesystem size limit for %s: %s",
+                        properties["Name"], size_limit)
+            size_limit = 0
+
         return StratisFilesystemInfo(name=properties["Name"], uuid=properties["Uuid"],
-                                     used_size=Size(used_size),
+                                     used_size=Size(used_size), size_limit=Size(size_limit),
                                      pool_name=pool_info.name, pool_uuid=pool_info.uuid,
                                      object_path=filesystem_path)
 

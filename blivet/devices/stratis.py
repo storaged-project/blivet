@@ -316,11 +316,12 @@ class StratisFilesystemDevice(StorageDevice):
     _min_size = Size("512 MiB")
 
     def __init__(self, name, parents=None, size=None, uuid=None, exists=False,
-                 grow=None, maxsize=None):
+                 grow=None, maxsize=None, size_limit=None):
 
         self.req_grow = None
         self.req_max_size = Size(0)
         self.req_size = Size(0)
+        self.size_limit = size_limit
 
         if not exists and size is None and not parents[0]._overprovisioning:
             raise StratisError("size must be specified for stratis filesystems on non-overprovisioned pools")
@@ -343,6 +344,10 @@ class StratisFilesystemDevice(StorageDevice):
             self.req_grow = grow
             self.req_max_size = Size(util.numeric_type(maxsize))
             self.req_size = self._size
+
+        if not exists and size_limit and self.pool and \
+           any(fs for fs in self.pool.filesystems if fs.size_limit and fs is not self):
+            raise StratisError("only one filesystem in pool can have size limit set")
 
     def _get_name(self):
         """ This device's name. """
@@ -403,7 +408,7 @@ class StratisFilesystemDevice(StorageDevice):
         """ Create the device. """
         log_method_call(self, self.name, status=self.status)
         devicelibs.stratis.create_filesystem(name=self.fsname, pool_uuid=self.pool.uuid,
-                                             fs_size=self.size)
+                                             fs_size=self.size, size_limit=self.size_limit)
 
     def _post_create(self):
         super(StratisFilesystemDevice, self)._post_create()
