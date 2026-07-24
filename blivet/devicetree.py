@@ -72,6 +72,9 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         :class:`~.deviceaction.DeviceAction` instances can only be registered
         for leaf devices, except for resize actions.
     """
+
+    _unsynchronized_methods = ['__str__']
+
     def __init__(self, ignored_disks=None, exclusive_disks=None):
         """
             :keyword ignored_disks: ignored disks
