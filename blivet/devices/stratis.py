@@ -32,7 +32,7 @@ from .storage import StorageDevice
 from ..static_data import stratis_info
 from ..storage_log import log_method_call
 from ..errors import DeviceError, StratisError, InconsistentParentSectorSize
-from ..size import Size, ROUND_DOWN
+from ..size import Size, MiB, ROUND_DOWN
 from ..tasks import availability
 from ..util import default_namedtuple
 from .. import devicelibs
@@ -301,6 +301,14 @@ class StratisPoolDevice(ContainerDevice):
 
         super(StratisPoolDevice, self).remove_hook(modparent=modparent)
 
+    def populate_ksdata(self, data):
+        super(StratisPoolDevice, self).populate_ksdata(data)
+        data.name = self.name
+        data.blockdevs = ["stratis.%d" % p.id for p in self.parents]
+        data.preexist = self.exists
+        data.encrypted = self.encrypted
+        data.overprovision = self.overprovisioning
+
     def dracut_setup_args(self):
         return set(["stratis.rootfs.pool_uuid=%s" % self.uuid])
 
@@ -424,6 +432,19 @@ class StratisFilesystemDevice(StorageDevice):
         """ Destroy the device. """
         log_method_call(self, self.name, status=self.status)
         devicelibs.stratis.remove_filesystem(self.pool.uuid, self.uuid)
+
+    def populate_ksdata(self, data):
+        super(StratisFilesystemDevice, self).populate_ksdata(data)
+        data.name = self.fsname
+        data.poolname = self.pool.name
+        data.preexist = self.exists
+        if not self.exists:
+            data.grow = self.req_grow
+            if self.req_grow:
+                data.size = self.req_size.convert_to(MiB)
+                data.maxSizeMB = self.req_max_size.convert_to(MiB)
+            else:
+                data.size = self.size.convert_to(MiB)
 
     def dracut_setup_args(self):
         return set(["root=%s" % self.path])
