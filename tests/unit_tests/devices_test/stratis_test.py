@@ -252,9 +252,14 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
         with patch("blivet.devicetree.DeviceTree.names", []):
             pool = b.new_stratis_pool(name="testpool", parents=[bd])
             fs1 = b.new_stratis_filesystem(name="testfs1", parents=[pool],
-                                           size=Size("1 GiB"), grow=True)
+                                           size=Size("512 MiB"), grow=True)
             fs2 = b.new_stratis_filesystem(name="testfs2", parents=[pool],
-                                           size=Size("1 GiB"), grow=True)
+                                           size=Size("1 MiB"), grow=True)
+
+        # requested size for fs2 was smaller than minimum, with grow=True, it should be
+        # automatically grown to min size (512 MiB) immediately
+        self.assertEqual(fs2.size, Size("512 MiB"))
+        self.assertEqual(fs2.req_size, Size("512 MiB"))
 
         b.create_device(pool)
         b.create_device(fs1)
