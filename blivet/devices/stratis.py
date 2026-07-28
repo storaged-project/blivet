@@ -328,6 +328,11 @@ class StratisFilesystemDevice(StorageDevice):
         if size is None:
             size = devicelibs.stratis.STRATIS_FS_SIZE
 
+        if not exists and size < self._min_size and grow:
+            log.info("%s: adjusting size to %s (min size required by stratis filesystem; grow enabled)",
+                     name, self._min_size)
+            size = self._min_size
+
         # round size down to the nearest sector
         if not exists and size % LINUX_SECTOR_SIZE:
             log.info("%s: rounding size %s down to the nearest sector", name, size)
