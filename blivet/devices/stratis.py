@@ -334,6 +334,9 @@ class StratisFilesystemDevice(StorageDevice):
         if not exists and size is None and not parents[0]._overprovisioning:
             raise StratisError("size must be specified for stratis filesystems on non-overprovisioned pools")
 
+        if not exists and grow and parents[0]._overprovisioning:
+            raise StratisError("cannot use grow for stratis filesystem on overprovisioned pool")
+
         if size is None:
             size = devicelibs.stratis.STRATIS_FS_SIZE
 

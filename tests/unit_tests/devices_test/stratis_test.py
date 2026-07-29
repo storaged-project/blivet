@@ -243,6 +243,21 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
 
     @patch("blivet.devicelibs.stratis.pool_used", return_value=Size(0))
     @patch("blivet.devicelibs.stratis.filesystem_md_size", return_value=Size(0))
+    def test_new_stratis_grow_overprovisioned(self, *args):  # pylint: disable=unused-argument,arguments-differ
+        b = blivet.Blivet()
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
+                           size=Size("10 GiB"), exists=False)
+        b.devicetree._add_device(bd)
+
+        with patch("blivet.devicetree.DeviceTree.names", []):
+            pool = b.new_stratis_pool(name="testpool", parents=[bd], overprovisioning=True)
+
+            with self.assertRaises(StratisError):
+                b.new_stratis_filesystem(name="testfs1", parents=[pool],
+                                         size=Size("1 GiB"), grow=True)
+
+    @patch("blivet.devicelibs.stratis.pool_used", return_value=Size(0))
+    @patch("blivet.devicelibs.stratis.filesystem_md_size", return_value=Size(0))
     def test_stratis_grow(self, *args):  # pylint: disable=unused-argument,arguments-differ
         b = blivet.Blivet()
         bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
