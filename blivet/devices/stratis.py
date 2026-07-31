@@ -66,12 +66,15 @@ class StratisPoolDevice(ContainerDevice):
             :type: StratisClevisConfig
             :keyword overprovisioning: whether overprovisioning is enabled for this pool or not
             :type overprovisioning: bool
+            :keyword fs_limit: maximum number of filesystems allowed in this pool
+            :type fs_limit: int
         """
         self._encrypted = kwargs.pop("encrypted", False)
         self.__passphrase = kwargs.pop("passphrase", None)
         self._key_file = kwargs.pop("key_file", None)
         self._clevis = kwargs.pop("clevis", None)
         self._overprovisioning = kwargs.pop("overprovisioning", False)
+        self._fs_limit = kwargs.pop("fs_limit", devicelibs.stratis.STRATIS_FS_LIMIT_DEFAULT)
 
         super(StratisPoolDevice, self).__init__(*args, **kwargs)
 
@@ -152,6 +155,17 @@ class StratisPoolDevice(ContainerDevice):
         self._overprovisioning = enabled
 
     @property
+    def fs_limit(self):
+        """ Maximum number of filesystems allowed in this pool """
+        return self._fs_limit
+
+    @fs_limit.setter
+    def fs_limit(self, new_limit):
+        if self.exists:
+            raise StratisError("Cannot set filesystem limit for existing Stratis pool %s" % self.name)
+        self._fs_limit = new_limit
+
+    @property
     def encrypted(self):
         """ True if this device is encrypted. """
         return self._encrypted
@@ -212,7 +226,8 @@ class StratisPoolDevice(ContainerDevice):
                                        passphrase=self.__passphrase,
                                        key_file=self._key_file,
                                        clevis=self._clevis,
-                                       overprovisioning=self._overprovisioning)
+                                       overprovisioning=self._overprovisioning,
+                                       fs_limit=self._fs_limit)
 
     def _post_create(self):
         self.exists = True

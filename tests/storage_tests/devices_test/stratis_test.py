@@ -80,6 +80,7 @@ class StratisTestCase(StratisTestCaseBase):
         self.assertEqual(len(pool.parents), 1)
         self.assertEqual(pool.parents[0], bd)
         self.assertEqual(pool.overprovisioning, False)
+        self.assertEqual(pool.fs_limit, 100)
 
         fs = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS")
         self.assertIsNotNone(fs)
@@ -227,6 +228,27 @@ class StratisTestCase(StratisTestCaseBase):
         self.assertIsNotNone(fs)
         self.assertIsInstance(fs, blivet.devices.StratisFilesystemDevice)
         self.assertAlmostEqual(fs.size, blivet.size.Size("2 GiB"), delta=blivet.size.Size("10 MiB"))
+
+    def test_stratis_fs_limit(self):
+        disk = self.storage.devicetree.get_device_by_path(self.vdevs[0])
+        self.assertIsNotNone(disk)
+        self.storage.initialize_disk(disk)
+
+        bd = self.storage.new_partition(size=blivet.size.Size("1.5 GiB"), fmt_type="stratis",
+                                        parents=[disk])
+        self.storage.create_device(bd)
+
+        blivet.partitioning.do_partitioning(self.storage)
+
+        pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd], fs_limit=110)
+        self.storage.create_device(pool)
+
+        self.storage.do_it()
+        self.storage.reset()
+
+        pool = self.storage.devicetree.get_device_by_name("blivetTestPool")
+        self.assertIsNotNone(pool)
+        self.assertEqual(pool.fs_limit, 110)
 
     def test_stratis_add_device(self):
         disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])

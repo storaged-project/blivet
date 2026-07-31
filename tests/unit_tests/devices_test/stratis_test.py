@@ -65,7 +65,8 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                 passphrase=None,
                                                                 key_file=None,
                                                                 clevis=None,
-                                                                overprovisioning=False)
+                                                                overprovisioning=False,
+                                                                fs_limit=100)
 
         # we would get this from pool._post_create
         pool.uuid = "c4fc9ebe-e173-4cab-8d81-cc6abddbe02d"
@@ -104,7 +105,8 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                 passphrase="secret",
                                                                 key_file=None,
                                                                 clevis=None,
-                                                                overprovisioning=False)
+                                                                overprovisioning=False,
+                                                                fs_limit=100)
 
     def test_new_encrypted_stratis_clevis(self):
         b = blivet.Blivet()
@@ -133,7 +135,8 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                 passphrase="secret",
                                                                 key_file=None,
                                                                 clevis=clevis,
-                                                                overprovisioning=False)
+                                                                overprovisioning=False,
+                                                                fs_limit=100)
 
     def test_new_stratis_no_size(self):
         b = blivet.Blivet()
@@ -174,7 +177,8 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                                                                 passphrase=None,
                                                                 key_file=None,
                                                                 clevis=None,
-                                                                overprovisioning=True)
+                                                                overprovisioning=True,
+                                                                fs_limit=100)
 
         # we would get this from pool._post_create
         pool.uuid = "c4fc9ebe-e173-4cab-8d81-cc6abddbe02d"
@@ -186,6 +190,33 @@ class BlivetNewStratisDeviceTest(unittest.TestCase):
                     stratis_dbus.create_filesystem.assert_called_with(name="testfs",
                                                                       pool_uuid="c4fc9ebe-e173-4cab-8d81-cc6abddbe02d",
                                                                       fs_size=Size("1 TiB"), size_limit=None)
+
+    def test_new_stratis_fs_limit(self):
+        b = blivet.Blivet()
+        bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
+                           size=Size("2 GiB"), exists=False)
+
+        b.devicetree._add_device(bd)
+
+        with patch("blivet.devicetree.DeviceTree.names", []):
+            pool = b.new_stratis_pool(name="testpool", parents=[bd], fs_limit=200)
+        self.assertEqual(pool.name, "testpool")
+        self.assertEqual(pool.fs_limit, 200)
+
+        b.create_device(pool)
+
+        with patch("blivet.devicelibs.stratis") as stratis_dbus:
+            with patch.object(pool, "_pre_create"):
+                with patch.object(pool, "_post_create"):
+                    pool.create()
+                    stratis_dbus.create_pool.assert_called_with(name='testpool',
+                                                                devices=['/dev/bd1'],
+                                                                encrypted=False,
+                                                                passphrase=None,
+                                                                key_file=None,
+                                                                clevis=None,
+                                                                overprovisioning=False,
+                                                                fs_limit=200)
 
     def test_device_id(self):
         bd = StorageDevice("bd1", fmt=blivet.formats.get_format("stratis"),
