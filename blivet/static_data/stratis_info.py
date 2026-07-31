@@ -45,7 +45,7 @@ STRATIS_MANAGER_INTF_R8 = STRATIS_SERVICE + ".Manager.r8"
 
 
 StratisPoolInfo = namedtuple("StratisPoolInfo", ["name", "uuid", "physical_size", "physical_used", "object_path",
-                                                 "encrypted", "clevis", "overprovisioning"])
+                                                 "encrypted", "clevis", "overprovisioning", "fs_limit"])
 StratisFilesystemInfo = namedtuple("StratisFilesystemInfo", ["name", "uuid", "used_size", "size_limit",
                                                              "pool_name", "pool_uuid", "object_path"])
 StratisBlockdevInfo = namedtuple("StratisBlockdevInfo", ["path", "uuid", "pool_name", "pool_uuid", "object_path"])
@@ -101,7 +101,8 @@ class StratisInfo(object):
         return StratisPoolInfo(name=properties["Name"], uuid=properties["Uuid"],
                                physical_size=Size(pool_size), physical_used=Size(pool_used),
                                object_path=pool_path, encrypted=properties["Encrypted"],
-                               clevis=clevis, overprovisioning=properties["Overprovisioning"])
+                               clevis=clevis, overprovisioning=properties["Overprovisioning"],
+                               fs_limit=properties.get("FsLimit", 0))
 
     def _get_filesystem_info(self, filesystem_path):
         properties = _get_all_properties(filesystem_path, STRATIS_FILESYSTEM_INTF)

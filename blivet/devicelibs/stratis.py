@@ -44,6 +44,7 @@ STRATIS_MANAGER_INTF = STRATIS_SERVICE + ".Manager.r0"
 STRATIS_MANAGER_INTF_R8 = STRATIS_SERVICE + ".Manager.r8"
 
 STRATIS_FS_SIZE = Size("1 TiB")
+STRATIS_FS_LIMIT_DEFAULT = 100
 
 STRATIS_CALL_TIMEOUT = 120 * 1000  # 120 s (used by stratis-cli by default) in ms
 
@@ -203,7 +204,8 @@ def unlock_pool(pool_uuid, method=None, passphrase=None, keyfile=None):
         stratis_info.drop_cache()
 
 
-def create_pool(name, devices, encrypted, passphrase, key_file, clevis, overprovisioning):
+def create_pool(name, devices, encrypted, passphrase, key_file, clevis, overprovisioning,
+                fs_limit=STRATIS_FS_LIMIT_DEFAULT):
     if not availability.STRATIS_DBUS.available:
         raise StratisError("Stratis DBus service not available")
 
@@ -245,6 +247,14 @@ def create_pool(name, devices, encrypted, passphrase, key_file, clevis, overprov
         proxy.Overprovisioning = overprovisioning  # pylint: disable=assigning-non-slot
     except DBusError as e:
         raise StratisError("Failed to enable overprovisioning on stratis pool: %s" % str(e))
+
+    if fs_limit and fs_limit != STRATIS_FS_LIMIT_DEFAULT:
+        try:
+            proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, pool_path,
+                                             STRATIS_POOL_INTF)
+            proxy.FsLimit = fs_limit  # pylint: disable=assigning-non-slot
+        except DBusError as e:
+            raise StratisError("Failed to set filesystem limit on stratis pool: %s" % str(e))
 
     # repopulate the stratis info cache so the new pool will be added
     stratis_info.drop_cache()

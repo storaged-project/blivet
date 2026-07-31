@@ -97,7 +97,8 @@ class StratisFormatPopulator(FormatPopulator):
                                         exists=True,
                                         encrypted=pool_info.encrypted,
                                         clevis=clevis_info,
-                                        overprovisioning=pool_info.overprovisioning)
+                                        overprovisioning=pool_info.overprovisioning,
+                                        fs_limit=pool_info.fs_limit)
         self._devicetree._add_device(pool_device)
         return pool_device
 
