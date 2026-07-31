@@ -40,6 +40,7 @@ class StratisBlockdev(DeviceFormat):
     _linux_native = True                 # for clearpart
     _min_size = Size("1 GiB")
     _packages = ["stratisd"]             # required packages
+    _ks_mountpoint = "stratis."
     _resizable = False
 
     def __init__(self, **kwargs):
@@ -80,6 +81,11 @@ class StratisBlockdev(DeviceFormat):
         d = super(StratisBlockdev, self).dict
         d.update({"pool_name": self.pool_name, "pool_uuid": self.pool_uuid})
         return d
+
+    def populate_ksdata(self, data):
+        data.format = not self.exists
+        data.fstype = None
+        data.mountpoint = self.ks_mountpoint
 
 
 register_device_format(StratisBlockdev)
