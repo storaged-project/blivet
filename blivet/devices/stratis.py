@@ -151,7 +151,7 @@ class StratisPoolDevice(ContainerDevice):
     @overprovisioning.setter
     def overprovisioning(self, enabled):
         if self.exists:
-            raise StratisError("Cannot set %s overprovisioning for existing Stratis pool %s" % ("enable" if enabled else "disable", self.name))
+            raise StratisError("Cannot %s overprovisioning for existing Stratis pool %s" % ("enable" if enabled else "disable", self.name))
         self._overprovisioning = enabled
 
     @property
