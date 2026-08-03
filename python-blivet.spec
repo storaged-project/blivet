@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storaged.org/blivet
-Version: 3.14.0
+Version: 3.14.1
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -133,6 +133,16 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Mon Aug 03 2026 Vojtech Trefny <vtrefny@redhat.com> - 3.14.1-1
+- Fix ksdata for oveprovisioned stratis pools (vtrefny)
+- Correctly set ksdata for stratis blockdevs (vtrefny)
+- Fix error message when setting overprovisioning on stratis pools (vtrefny)
+- Add support for setting fslimit when creating stratis pools (vtrefny)
+- Do not allow grow with overprovisioning on Stratis (vtrefny)
+- Make sure size for growable Stratis devices is at least 512 MiB (vtrefny)
+- Add populate_ksdata functions for stratis devices (vtrefny)
+- Add support for creating stratis filesystems with size limit (vtrefny)
+
 * Wed Jul 22 2026 Vojtech Trefny <vtrefny@redhat.com> - 3.14.0-1
 - Do not try to get used size for stratis filesystems in stopped pools (vtrefny)
 - Fix saving passphrases for LUKS devices (vtrefny)
