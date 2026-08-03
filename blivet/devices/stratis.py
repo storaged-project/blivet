@@ -322,7 +322,7 @@ class StratisPoolDevice(ContainerDevice):
         data.blockdevs = ["stratis.%d" % p.id for p in self.parents]
         data.preexist = self.exists
         data.encrypted = self.encrypted
-        data.overprovision = self.overprovisioning
+        data.overprovisioning = self.overprovisioning
 
     def dracut_setup_args(self):
         return set(["stratis.rootfs.pool_uuid=%s" % self.uuid])
