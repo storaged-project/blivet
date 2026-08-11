@@ -72,6 +72,9 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         :class:`~.deviceaction.DeviceAction` instances can only be registered
         for leaf devices, except for resize actions.
     """
+
+    _unsynchronized_methods = ['__str__']
+
     def __init__(self, ignored_disks=None, exclusive_disks=None):
         """
             :keyword ignored_disks: ignored disks
@@ -122,7 +125,7 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                     s += show_subtree(child, depth + 1)
             return s
 
-        roots = [d for d in self._devices if not d.parents]
+        roots = [d for d in self._devices if not d._get_parents()]
         tree = ""
         for root in roots:
             tree += show_subtree(root, 0)

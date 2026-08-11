@@ -71,6 +71,13 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
     _packages = []
     _external_dependencies = []
 
+    # Read-only methods/properties exempted from blivet_lock to prevent
+    # deadlock when __str__ is called during logging format (which holds
+    # the logging handler lock). These are safe to call without the lock
+    # since they only read state and do not modify it.
+    _unsynchronized_methods = ['__str__', '_to_string', '_get_parents',
+                               'children']
+
     def __init__(self, name, parents=None):
         """
             :param name: the device name (generally a device node's basename)
@@ -112,7 +119,7 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
 
     # Force str and unicode types in case type or name is unicode
     def _to_string(self):
-        s = "%s %s (%d)" % (self.type, self.name, self.id)
+        s = "%s %s (%d)" % (self._type, self._name, self.id)
         return s
 
     def __str__(self):
@@ -155,6 +162,9 @@ class Device(util.ObjectID, metaclass=SynchronizedMeta):
         self._init_parent_list()
         for parent in parents:
             self._parents.append(parent)
+
+    def _get_parents(self):
+        return self._parents[:]
 
     @property
     def children(self):
