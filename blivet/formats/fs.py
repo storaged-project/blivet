@@ -1255,9 +1255,9 @@ class StratisXFS(XFS):
     def _get_options(self):
         opts = super(StratisXFS, self)._get_options()
         if self.mountpoint != "/":
-            stratis_opts = "x-systemd.requires=stratis-fstab-setup@%s," \
-                           "x-systemd.after=stratis-fstab-setup@%s" % (self.pool_uuid,
-                                                                       self.pool_uuid)
+            stratis_opts = "x-systemd.requires=stratis-fstab-setup@%s.service," \
+                           "x-systemd.after=stratis-fstab-setup@%s.service" % (self.pool_uuid,
+                                                                               self.pool_uuid)
         else:
             stratis_opts = None
         return ",".join(o for o in (opts, stratis_opts) if o)
