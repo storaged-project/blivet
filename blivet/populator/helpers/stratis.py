@@ -166,6 +166,16 @@ class StratisFormatPopulator(FormatPopulator):
 
         return False
 
+    def _update_pool_info(self, pool):
+        pool_info = stratis_info.pools.get(pool.uuid)
+        if not pool_info:
+            log.warning("Failed to get information about Stratis pool %s (%s)",
+                        pool.name, pool.uuid)
+            return
+
+        pool._overprovisioning = pool_info.overprovisioning
+        pool._fs_limit = pool_info.fs_limit
+
     def _add_pool_device(self):
         bd_info = stratis_info.blockdevs.get(self.device.format.uuid)
         if not bd_info:
@@ -194,10 +204,14 @@ class StratisFormatPopulator(FormatPopulator):
                 return
 
             pool_device = self._devicetree.get_device_by_uuid(bd_info.pool_uuid)
-            if pool_device and self.device not in pool_device.parents:
-                pool_device.parents.append(self.device)
-                callbacks.parent_added(device=pool_device, parent=self.device)
-                return
+            if pool_device:
+                # update pool information for newly started pools
+                self._update_pool_info(pool_device)
+
+                if self.device not in pool_device.parents:
+                    pool_device.parents.append(self.device)
+                    callbacks.parent_added(device=pool_device, parent=self.device)
+                    return
             elif pool_device is None:
                 # started pool
                 pool_info = stratis_info.pools.get(bd_info.pool_uuid)

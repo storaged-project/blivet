@@ -375,7 +375,8 @@ class StratisTestCase(StratisTestCaseBase):
         blivet.partitioning.do_partitioning(self.storage)
 
         pool = self.storage.new_stratis_pool(name="blivetTestPool", parents=[bd],
-                                             encrypted=True, passphrase="fipsneeds8chars")
+                                             encrypted=True, passphrase="fipsneeds8chars",
+                                             overprovisioning=True)
         self.storage.create_device(pool)
 
         fs = self.storage.new_stratis_filesystem(name="blivetTestFS", parents=[pool],
@@ -414,9 +415,10 @@ class StratisTestCase(StratisTestCaseBase):
         pool.setup()
         self.assertTrue(pool.status)
 
-        # populate should add the filesystems to the devicetree
+        # populate should add the filesystems to the devicetree and update pool properties
         self.storage.devicetree.populate()
         self.assertEqual(len(pool.children), 1)
+        self.assertTrue(pool.overprovisioning)
 
         fs = self.storage.devicetree.get_device_by_name("blivetTestPool/blivetTestFS")
         self.assertIsNotNone(fs)
