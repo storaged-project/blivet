@@ -195,7 +195,7 @@
       - python3-pycodestyle
       - python3-yaml
       - targetcli-fb
-  when: ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu' and test_dependencies|bool
+  when: (ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu') and test_dependencies|bool
 
 - name: Install libmount (Debian/Ubuntu)
   block:
@@ -211,4 +211,4 @@
 
 - name: Install pocketlint using pip (Debian/Ubuntu)
   pip: name=pocketlint executable=pip3 extra_args=--break-system-packages
-  when: ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu' and test_dependencies|bool
+  when: (ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu') and test_dependencies|bool
