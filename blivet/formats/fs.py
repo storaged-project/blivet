@@ -589,7 +589,7 @@ class FS(DeviceFormat):
             else:
                 options = "ro"
             try:
-                util.mount(device=self.device, mountpoint=tmpdir, fstype=self.type,
+                util.mount(device=self.device, mountpoint=tmpdir, fstype=self.mount_type,
                            options=options)
             except FSError as e:
                 log.debug("temp mount failed: %s", e)
