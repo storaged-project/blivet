@@ -1,7 +1,7 @@
 Summary:  A python module for system storage configuration
 Name: python-blivet
 Url: https://storaged.org/blivet
-Version: 3.14.1
+Version: 3.14.2
 
 #%%global prerelease .b2
 # prerelease, if defined, should be something like .a1, .b1, .b2.dev1, or .c2
@@ -133,6 +133,15 @@ make DESTDIR=%{buildroot} install
 %{python3_sitelib}/*
 
 %changelog
+* Mon Sep 14 2026 Vojtech Trefny <vtrefny@redhat.com> - 3.14.2-1
+- fs: Fix filesystem type for temporary mounts (vtrefny)
+- misc: Fix condition for installing pocketlint on Debian/Ubuntu (vtrefny)
+- misc: Use ansible_facts instead of deprecated top-level fact variables (vtrefny)
+- Update properties for started stratis pools during populate (vtrefny)
+- Fix extra mount options for Stratis filesystems in fstab (vtrefny)
+- Directly access _type/_name in _to_string to avoid subclass property lock (zhangqiumiao1)
+- Fix deadlock between blivet_lock and logging lock (zhangqiumiao1)
+
 * Mon Aug 03 2026 Vojtech Trefny <vtrefny@redhat.com> - 3.14.1-1
 - Fix ksdata for oveprovisioned stratis pools (vtrefny)
 - Correctly set ksdata for stratis blockdevs (vtrefny)
