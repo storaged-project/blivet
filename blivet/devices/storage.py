@@ -535,6 +535,44 @@ class StorageDevice(Device):
 
         self._update_netdev_mount_option()
 
+    def flush_buffers(self):
+        """ Flush the buffer cache for this device. """
+        if not self.exists:
+            return
+
+        try:
+            util.run_program(["blockdev", "--flushbufs", self.path])
+        except OSError as e:
+            log.warning("failed to flush buffers on %s: %s", self.path, str(e))
+
+    def post_create_format(self):
+        """ Perform actions after a new format has been created on this device.
+
+            A filesystem written to a partition of an MD RAID array is written
+            through the array (and thus the member block devices) via bios that
+            bypass the members' own page caches. Those member caches, and the
+            whole-array cache, are separate address_space objects that the
+            kernel does not keep coherent with writes made through the partition
+            device. Stale pages left in a member's cache while scanning or
+            tearing down the previous on-disk layout can later be flushed back
+            over the newly created format and corrupt it. Flush the buffers of
+            the whole array and its member disks now that the format has been
+            written.
+        """
+        md_types = ("mdarray", "mdcontainer", "mdbiosraidarray")
+        devices = set()
+        for ancestor in self.ancestors:
+            if ancestor.type in md_types:
+                devices.add(ancestor)
+                devices.update(ancestor.members)
+
+        if not devices:
+            return
+
+        devices.add(self)
+        for device in devices:
+            device.flush_buffers()
+
     #
     # destroy
     #

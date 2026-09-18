@@ -675,6 +675,8 @@ class ActionCreateFormat(DeviceAction):
         self.device.format.create(device=self.device.path,
                                   options=self.device.format_args)
 
+        self.device.post_create_format()
+
         # Get the UUID now that the format is created
         udev.settle()
         self.device.update_sysfs_path()
