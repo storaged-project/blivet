@@ -177,7 +177,7 @@ class NFSMount(FSMount):
 
 
 class NTFSMount(FSMount):
-    options = ["default", "ro"]
+    options = ["defaults", "ro"]
 
 
 class SELinuxFSMount(NoDevFSMount):
