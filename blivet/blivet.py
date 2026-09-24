@@ -659,14 +659,15 @@ class Blivet(object, metaclass=SynchronizedMeta):
         name = kwargs.pop("name", None)
         if name:
             # make sure the specified name is sensible
-            safe_vg_name = self.safe_device_name(vg.name, devicefactory.DeviceTypes.LVM)
-            full_name = "%s-%s" % (safe_vg_name, name)
-            safe_name = self.safe_device_name(full_name, devicefactory.DeviceTypes.LVM)
-            if safe_name != full_name:
-                new_name = safe_name[len(safe_vg_name) + 1:]
+            safe_name = self.safe_device_name(name, devicefactory.DeviceTypes.LVM)
+            # the binding limit is on the combined vgname-lvname name, so trim
+            # the LV name (if necessary) until the full name fits
+            while safe_name and not devicelibs.lvm.is_lvm_full_name_valid(vg.name, safe_name):
+                safe_name = safe_name[:-1]
+            if safe_name != name:
                 log.warning("using '%s' instead of specified name '%s'",
-                            new_name, name)
-                name = new_name
+                            safe_name, name)
+                name = safe_name
         else:
             if kwargs.get("fmt") and kwargs["fmt"].type == "swap":
                 swap = True
@@ -1020,10 +1021,13 @@ class Blivet(object, metaclass=SynchronizedMeta):
     def safe_device_name(self, name, device_type=None):
         """ Convert a device name to something safe and return that.
 
-            LVM limits vgname + lvname to 126 characters. I don't know the limits for
-            the other various device types, so I'm going to pick a number so
-            that we don't have to have an entire library to determine
-            device name limits.
+            This only sanitizes a *single* name and caps it at a generous
+            length. For LVM the binding limit is on the combined vgname-lvname
+            name; that is enforced separately (see
+            :func:`~.devicelibs.lvm.is_lvm_full_name_valid` and
+            :meth:`new_lv`). I don't know the limits for the other various
+            device types, so I'm going to pick a number so that we don't have
+            to have an entire library to determine device name limits.
         """
 
         if device_type in (devicefactory.DeviceTypes.LVM, devicefactory.DeviceTypes.LVM_THINP):
@@ -1037,7 +1041,7 @@ class Blivet(object, metaclass=SynchronizedMeta):
         else:
             allowed = "0-9a-zA-Z._-"
 
-        max_len = 55    # No, you don't need longer names than this. Really.
+        max_len = 96    # No, you don't need longer names than this. Really.
         tmp = name.strip()
 
         if "/" not in allowed:
