@@ -4,6 +4,7 @@ from unittest.mock import patch
 from blivet.devices import LVMVolumeGroupDevice
 from blivet.devices import LVMLogicalVolumeDevice
 from blivet.devices import StorageDevice
+from blivet.devicelibs import lvm
 from blivet.size import Size
 import blivet
 
@@ -80,3 +81,47 @@ class DeviceNameTestCase(unittest.TestCase):
 
         for name in bad_names:
             self.assertFalse(lv.is_name_valid(name))
+
+    def test_lvm_name_length(self):
+        # a single VG/LV name may be up to LVM_MAX_NAME_LEN characters long
+        self.assertTrue(lvm.is_lvm_name_valid("n" * lvm.LVM_MAX_NAME_LEN))
+        self.assertFalse(lvm.is_lvm_name_valid("n" * (lvm.LVM_MAX_NAME_LEN + 1)))
+
+        # names longer than the old 55 character limit are now accepted
+        self.assertTrue(lvm.is_lvm_name_valid("n" * 96))
+
+    def test_lvm_full_name(self):
+        # the customer use case: 32 char VG name + 32 char LV name is fine
+        self.assertTrue(lvm.is_lvm_full_name_valid("v" * 32, "l" * 32))
+
+        # both parts still have to be valid on their own
+        self.assertFalse(lvm.is_lvm_full_name_valid("-badvg", "goodlv"))
+        self.assertFalse(lvm.is_lvm_full_name_valid("goodvg", "bad lv"))
+
+        # the combined device-mapper name must fit (with headroom for the
+        # suffixes LVM appends to internal LVs)
+        budget = lvm.LVM_MAX_NAME_LEN - lvm.LVM_INTERNAL_LV_SUFFIX_LEN
+        vg_name = "v" * 10
+        max_lv = budget - len(vg_name) - 1  # -1 for the '-' separator
+        self.assertTrue(lvm.is_lvm_full_name_valid(vg_name, "l" * max_lv))
+        self.assertFalse(lvm.is_lvm_full_name_valid(vg_name, "l" * (max_lv + 1)))
+
+        # hyphens in the names are doubled in the device-mapper name
+        self.assertFalse(lvm.is_lvm_full_name_valid("v" * 10, "-".join("l" * budget)))
+
+    @patch("blivet.formats.fs.Ext4FS.supported", return_value=True)
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    def test_safe_device_name_not_truncated(self, *args):  # pylint: disable=unused-argument,arguments-differ
+        # a user-specified LVM name well within the LVM limits must not be
+        # silently truncated (regression test for the customer report of
+        # unexpectedly truncated LV names during Kickstart installation)
+        b = blivet.Blivet()
+
+        # 32 characters used to be truncated when max_len was lowered to 55
+        # (as part of the vgname-lvname pair); it must survive unchanged now
+        self.assertEqual(b.safe_device_name("l" * 32, blivet.devicefactory.DeviceTypes.LVM),
+                         "l" * 32)
+
+        # names longer than the old 55 character limit are no longer truncated
+        self.assertEqual(b.safe_device_name("l" * 96, blivet.devicefactory.DeviceTypes.LVM),
+                         "l" * 96)

@@ -73,6 +73,15 @@ EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_LVM_PLUGIN]
 
 safe_name_characters = "0-9a-zA-Z._-"
 
+# LVM's NAME_LEN is 128 (including the terminating NUL), so a single VG or LV
+# name may be at most 127 characters long.
+LVM_MAX_NAME_LEN = 127
+
+# LVM appends suffixes to the names of the internal/hidden LVs it creates
+# (e.g. "_tdata", "_tmeta", "_rimage_9"). Keep this much headroom in the
+# combined vgname-lvname device-mapper name so those always fit too.
+LVM_INTERNAL_LV_SUFFIX_LEN = 9
+
 if hasattr(blockdev.LVMTech, "DEVICES"):
     try:
         blockdev.lvm.is_tech_avail(blockdev.LVMTech.DEVICES, 0)  # pylint: disable=no-member
@@ -272,14 +281,30 @@ def is_lvm_name_valid(name):
     if not re.match('^[a-zA-Z0-9+_.][a-zA-Z0-9+_.-]*$', name):
         return False
 
-    # According to the LVM developers, vgname + lvname is limited to 126 characters
-    # minus the number of hyphens, and possibly minus up to another 8 characters
-    # in some unspecified set of situations. Instead of figuring all of that out,
-    # no one gets a vg or lv name longer than, let's say, 55.
-    if len(name) > 55:
+    # A single VG or LV name may be at most NAME_LEN - 1 characters long. The
+    # more restrictive limit is on the *combined* vgname-lvname device-mapper
+    # name, which is checked separately by is_lvm_full_name_valid().
+    if len(name) > LVM_MAX_NAME_LEN:
         return False
 
     return True
+
+
+def is_lvm_full_name_valid(vg_name, lv_name):
+    """ Check whether the combination of a VG and an LV name is valid.
+
+        Both names have to be valid on their own and the device-mapper name
+        LVM derives from them has to fit within LVM's limits. That name is
+        "vgname-lvname" with any hyphen in either name doubled. On top of that
+        LVM appends suffixes (up to :data:`LVM_INTERNAL_LV_SUFFIX_LEN`
+        characters, e.g. "_tmeta" or "_rimage_9") to the names of the
+        internal/hidden LVs it creates, so we keep that much headroom.
+    """
+    if not is_lvm_name_valid(vg_name) or not is_lvm_name_valid(lv_name):
+        return False
+
+    dm_name = "%s-%s" % (vg_name.replace("-", "--"), lv_name.replace("-", "--"))
+    return len(dm_name) + LVM_INTERNAL_LV_SUFFIX_LEN <= LVM_MAX_NAME_LEN
 
 
 def recommend_thpool_chunk_size(thpool_size):
