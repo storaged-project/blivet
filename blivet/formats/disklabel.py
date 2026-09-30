@@ -604,7 +604,11 @@ class DiskLabel(DeviceFormat):
             return 0
 
     def drop_cache(self):
-        if self._parted_device and os.path.exists(self.device):
+        # libparted caches devices by their path, so the cache has to be
+        # dropped even when the device node is already gone (for example an
+        # MD RAID whose members were removed). Otherwise a device that later
+        # appears at the same path would reuse the stale cached data.
+        if self._parted_device:
             ped_device = self._parted_device.getPedDevice()
             if ped_device:
                 ped_device.cache_remove()
