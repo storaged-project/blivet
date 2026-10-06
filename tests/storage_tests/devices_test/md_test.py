@@ -1,7 +1,11 @@
 import os
 import time
+import unittest
+import uuid
 
 from contextlib import contextmanager
+
+import parted
 
 import blivet.deviceaction
 import blivet.devicelibs
@@ -220,27 +224,39 @@ class MDDiskTestCase(StorageTestCase):
 
         self._blivet_setup()
 
-    def _remove_array(self, wipefs=True):
+    def _remove_array(self, wipefs=True, members=None):
         # cleanup with mdadm
         if wipefs:
             _ret = blivet.util.run_program(["wipefs", "-a", "/dev/md/%s" % self.raidname])
         _ret = blivet.util.run_program(["mdadm", "--stop", "/dev/md/%s" % self.raidname])
-        _ret = blivet.util.run_program(["mdadm", "--zero-superblock", self.vdevs[0], self.vdevs[1]])
+        if members:
+            _ret = blivet.util.run_program(["mdadm", "--zero-superblock"] + members)
+        else:
+            _ret = blivet.util.run_program(["mdadm", "--zero-superblock", self.vdevs[0], self.vdevs[1]])
 
     def _clean_up(self):
         self._remove_array()
         return super()._clean_up()
 
+    def _prepare_members(self, disks, partitions=False):
+        members = []
+        for disk in disks:
+            disk_dev = self.storage.devicetree.get_device_by_path(disk)
+            if partitions:
+                self.storage.initialize_disk(disk_dev)
+                dev = self.storage.new_partition(size=blivet.size.Size("100 MiB"),
+                                                 parents=[disk_dev])
+                self.storage.create_device(dev)
+                blivet.partitioning.do_partitioning(self.storage)
+            else:
+                dev = disk_dev
+            self.storage.format_device(dev, blivet.formats.get_format("mdmember"))
+            members.append(dev)
+
+        return members
+
     def _create_array(self, metadata_version="1.2"):
-        disk1 = self.storage.devicetree.get_device_by_path(self.vdevs[0])
-        self.assertIsNotNone(disk1)
-        self.storage.format_device(disk1, blivet.formats.get_format("mdmember"))
-
-        disk2 = self.storage.devicetree.get_device_by_path(self.vdevs[1])
-        self.assertIsNotNone(disk2)
-        self.storage.format_device(disk2, blivet.formats.get_format("mdmember"))
-
-        members = [disk1, disk2]
+        members = self._prepare_members(disks=[self.vdevs[0], self.vdevs[1]])
 
         array = self.storage.new_mdarray(name=self.raidname, parents=members,
                                          level=blivet.devicelibs.raid.RAID1,
@@ -362,6 +378,30 @@ class MDDiskTestCase(StorageTestCase):
 
         out = blivet.util.capture_output(["blkid", "-p", "-sTYPE", "-ovalue", array.path])
         self.assertFalse(out)
+
+    @unittest.skipUnless(hasattr(parted.Partition, "type_uuid"), "requires part type UUID in pyparted")
+    def test_efi_on_md(self):
+        members = self._prepare_members(disks=[self.vdevs[0], self.vdevs[1]], partitions=True)
+
+        array = self.storage.new_mdarray(name=self.raidname, parents=members,
+                                         level=blivet.devicelibs.raid.RAID1,
+                                         total_devices=2, member_devices=2,
+                                         fmt=blivet.formats.get_format("efi", mountpoint="/boot/efi"))
+        self.storage.create_device(array)
+
+        with wait_for_resync():
+            self.storage.do_it()
+        self.storage.reset()
+
+        array = self.storage.devicetree.get_device_by_name(self.raidname)
+        self.assertIsNotNone(array)
+
+        # metadata level should be automatically set to 1.0 and member partition should have ESP part type
+        self.assertEqual(array.metadata_version, "1.0")
+        for member in array.members:
+            self.assertEqual(member.part_type_uuid, uuid.UUID("c12a7328-f81f-11d2-ba4b-00a0c93ec93b"))
+
+        self._remove_array(members=[m.path for m in array.members])
 
 
 class MDLUKSTestCase(StorageTestCase):

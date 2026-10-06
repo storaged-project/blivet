@@ -30,7 +30,10 @@ gi.require_version("BlockDev", "3.0")
 
 from gi.repository import BlockDev as blockdev
 
+import parted
+
 from ..devicelibs import mdraid, raid, lvm
+from ..devicelibs.gpt import gpt_part_uuid_for_mountpoint
 
 from .. import errors
 from ..formats import DeviceFormat
@@ -564,6 +567,20 @@ class MDRaidArrayDevice(ContainerDevice, RaidDevice):
         # UEFI firmware/bootloader cannot read 1.1 or 1.2 metadata arrays
         if getattr(self.format, "mountpoint", None) == "/boot/efi":
             self.metadata_version = "1.0"
+
+            # set GUID of member partitions to EFI type instead of RAID type
+            if hasattr(parted.Partition, "type_uuid"):
+                try:
+                    esp_uuid = gpt_part_uuid_for_mountpoint("/boot/efi")
+                except errors.GPTVolUUIDError as e:
+                    log.warning("failed to get ESP partition type UUID: %s", str(e))
+                else:
+                    for member in self.members:
+                        if member.type != "partition":
+                            continue
+                        if getattr(member.disk.format, "label_type", None) != "gpt":
+                            continue
+                        member.req_part_type_uuid = esp_uuid
 
     def _post_create(self):
         # this is critical since our status method requires a valid sysfs path
