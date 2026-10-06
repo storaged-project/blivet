@@ -564,7 +564,7 @@ class StorageDevice(Device):
         for ancestor in self.ancestors:
             if ancestor.type in md_types:
                 devices.add(ancestor)
-                devices.update(ancestor.members)
+                devices.update(ancestor.members)  # pylint: disable=no-member
 
         if not devices:
             return
