@@ -726,6 +726,7 @@ class BlivetLVMUnitTest(unittest.TestCase):
 @patch("blivet.devices.lvm.LVMLogicalVolumeDevice._external_dependencies", new=[])
 @patch("blivet.devices.lvm.LVMLogicalVolumeBase._external_dependencies", new=[])
 @patch("blivet.devices.dm.DMDevice._external_dependencies", new=[])
+@patch("blivet.devicelibs.lvm.AUTO_ACTIVATION", False)
 class BlivetNewLVMDeviceTest(BlivetLVMUnitTest):
     def test_new_lv_from_lvs(self):
         pv = StorageDevice("pv1", fmt=blivet.formats.get_format("lvmpv"),
