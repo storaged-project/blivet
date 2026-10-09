@@ -34,7 +34,7 @@ from .actionlist import ActionList
 from .callbacks import callbacks
 from .errors import DeviceError, DeviceTreeError, StorageError, DuplicateUUIDError, InvalidMultideviceSelection
 from .deviceaction import ActionDestroyDevice, ActionDestroyFormat
-from .devices import BTRFSDevice, NoDevice, PartitionDevice
+from .devices import BTRFSDevice, BTRFSSubVolumeDevice, NoDevice, PartitionDevice
 from .devices import LVMLogicalVolumeDevice, LVMVolumeGroupDevice
 from .devices.lib import Tags
 from . import formats
@@ -267,6 +267,12 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
         # order
         devices.reverse()
 
+        # devices that will actually be destroyed: all dependents plus the
+        # root device, but only if it is going to be removed as well
+        removed_devices = set(devices)
+        if remove_device:
+            removed_devices.add(device)
+
         while devices:
             log.debug("devices to remove: %s", [d.name for d in devices])
             leaves = [d for d in devices if d.isleaf]
@@ -277,7 +283,9 @@ class DeviceTreeBase(object, metaclass=SynchronizedMeta):
                        not leaf.format_immutable and leaf.format.type:
                         self.actions.add(ActionDestroyFormat(leaf, optional=True))
 
-                    self.actions.add(ActionDestroyDevice(leaf))
+                    optional = isinstance(leaf, BTRFSSubVolumeDevice) and \
+                        leaf.volume in removed_devices
+                    self.actions.add(ActionDestroyDevice(leaf, optional=optional))
                 else:
                     if not leaf.format_immutable:
                         leaf.format = None

@@ -399,6 +399,71 @@ class DeviceTreeTestCase(unittest.TestCase):
             dt.recursive_remove(dev1, actions=False, modparent=False)
             remove_device.assert_called_with(dev1, modparent=False)
 
+    def _build_btrfs_tree(self):
+        """ Build a device tree with a btrfs volume and two nested subvolumes.
+
+            :returns: the tree and its (dev, vol, sub1, sub2) devices
+        """
+        dt = DeviceTree()
+
+        dev = StorageDevice("deva", exists=True,
+                            fmt=get_format("btrfs", exists=True),
+                            size=get_format("btrfs").min_size)
+        dt._add_device(dev)
+
+        vol = BTRFSVolumeDevice("vol", exists=True, parents=[dev],
+                                fmt=get_format("btrfs", exists=True))
+        dt._add_device(vol)
+
+        sub1 = BTRFSSubVolumeDevice("sub1", exists=True, parents=[vol],
+                                    fmt=get_format("btrfs", exists=True,
+                                                   subvolspec="sub1"))
+        dt._add_device(sub1)
+
+        sub2 = BTRFSSubVolumeDevice("sub2", exists=True, parents=[sub1],
+                                    fmt=get_format("btrfs", exists=True,
+                                                   subvolspec="sub2"))
+        dt._add_device(sub2)
+
+        return dt, dev, vol, sub1, sub2
+
+    @unittest.skipUnless(not any(x.unavailable_type_dependencies() for x in (BTRFSVolumeDevice, BTRFSSubVolumeDevice)),
+                         "some unsupported device classes required for this test")
+    def test_recursive_remove_btrfs(self):
+        # removing the whole volume: destroying the subvolumes is pointless
+        # (the volume teardown wipes everything) so those actions are optional
+        dt, _dev, vol, sub1, sub2 = self._build_btrfs_tree()
+        dt.recursive_remove(vol)
+
+        destroy_device_actions = {a.device: a for a in dt.actions
+                                  if a.is_destroy and a.is_device}
+        self.assertTrue(destroy_device_actions[sub1].optional)
+        self.assertTrue(destroy_device_actions[sub2].optional)
+        # the volume itself must still be destroyed unconditionally
+        self.assertFalse(destroy_device_actions[vol].optional)
+
+        # removing just a subvolume while the volume stays: the nested
+        # subvolume must be destroyed properly, so it is not optional
+        dt, _dev, _vol, sub1, sub2 = self._build_btrfs_tree()
+        dt.recursive_remove(sub1)
+
+        destroy_device_actions = {a.device: a for a in dt.actions
+                                  if a.is_destroy and a.is_device}
+        self.assertFalse(destroy_device_actions[sub1].optional)
+        self.assertFalse(destroy_device_actions[sub2].optional)
+
+        # removing the subvolumes but keeping the volume: the volume is not
+        # destroyed, so the subvolumes must be destroyed properly and their
+        # actions are not optional
+        dt, _dev, vol, sub1, sub2 = self._build_btrfs_tree()
+        dt.recursive_remove(vol, remove_device=False)
+
+        destroy_device_actions = {a.device: a for a in dt.actions
+                                  if a.is_destroy and a.is_device}
+        self.assertNotIn(vol, destroy_device_actions)
+        self.assertFalse(destroy_device_actions[sub1].optional)
+        self.assertFalse(destroy_device_actions[sub2].optional)
+
     def test_ignored_disk_tags(self):
         tree = DeviceTree()
 

@@ -377,9 +377,10 @@ class ActionDestroyDevice(DeviceAction):
     obj = ACTION_OBJECT_DEVICE
     type_desc_str = N_("destroy device")
 
-    def __init__(self, device):
+    def __init__(self, device, optional=False):
         # XXX should we insist that device.fs be None?
         DeviceAction.__init__(self, device)
+        self.optional = optional
 
     def _check_device_dependencies(self):
         if self.device.type == "btrfs volume":
@@ -410,7 +411,14 @@ class ActionDestroyDevice(DeviceAction):
 
     def execute(self, callbacks=None):
         super(ActionDestroyDevice, self).execute(callbacks=callbacks)
-        self.device.destroy()
+        try:
+            self.device.destroy()
+        except Exception as e:  # pylint: disable=broad-except
+            if self.optional:
+                log.error("Ignoring error when executing optional action: Failed to destroy device %s: %s.",
+                          self.device.name, str(e))
+            else:
+                raise
 
     def cancel(self):
         if not self._applied:
