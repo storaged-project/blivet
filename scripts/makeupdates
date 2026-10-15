@@ -20,7 +20,7 @@
 #
 # Author: David Cantrell <dcantrell@redhat.com>
 
-import getopt  # pylint: disable=deprecated-module
+import argparse
 import os
 import shutil
 import subprocess
@@ -123,85 +123,51 @@ def createUpdatesImage(cwd, updates):
     os.system("find . | cpio -c -o | gzip -9cv > %s/updates.img" % (cwd,))
     sys.stdout.write("updates.img ready\n")
 
-def usage(cmd):
-    sys.stdout.write("Usage: %s [OPTION]...\n" % (cmd,))
-    sys.stdout.write("Options:\n")
-    sys.stdout.write("    -k, --keep       Do not delete updates subdirectory.\n")
-    sys.stdout.write("    -h, --help       Display this help and exit.\n")
-    sys.stdout.write("    -t, --tag        Make image from TAG to HEAD.\n")
-    sys.stdout.write("    -o, --offset     Make image from (latest_tag - OFFSET) to HEAD.\n")
-    sys.stdout.write("    -a, --add        Add contents of rpm to the update\n")
-    sys.stdout.write("    -p, --python     Version of python (for example, 3.9)\n")
-
 def main(argv):
-    prog = os.path.basename(argv[0])
     cwd = os.getcwd()
     spec = os.path.realpath(cwd + '/python-blivet.spec')
     updates = cwd + '/updates'
-    keep, show_help, unknown = False, False, False
-    tag = None
-    opts = []
-    offset = 0
-    add_rpms = []
-    python_version = None
 
-    try:
-        opts, _args = getopt.getopt(argv[1:], 'a:t:o:k?p:',
-                                   ['add=', 'tag=', 'offset=',
-                                    'keep', 'help', 'python='])
-    except getopt.GetoptError:
-        show_help = True
+    parser = argparse.ArgumentParser(
+        description="Generate an updates.img containing changes since the last tag.")
+    parser.add_argument('-k', '--keep', action='store_true',
+                        help="Do not delete updates subdirectory.")
+    parser.add_argument('-t', '--tag',
+                        help="Make image from TAG to HEAD.")
+    parser.add_argument('-o', '--offset', type=int, default=0,
+                        help="Make image from (latest_tag - OFFSET) to HEAD.")
+    parser.add_argument('-a', '--add', nargs='+', default=[], metavar='RPM',
+                        help="Add contents of rpm(s) to the update. "
+                             "Accepts multiple files, e.g. 'folder/*.rpm'.")
+    parser.add_argument('-p', '--python', required=True,
+                        help="Version of python (for example, 3.9).")
+    args = parser.parse_args(argv[1:])
 
-    for o, a in opts:
-        if o in ('-k', '--keep'):
-            keep = True
-        elif o in ('-?', '--help'):
-            show_help = True
-        elif o in ('-t', '--tag'):
-            tag = a
-        elif o in ('-o', '--offset'):
-            offset = int(a)
-        elif o in ('-a', '--add'):
-            add_rpms.append(os.path.abspath(a))
-        elif o in ('-p', '--python'):
-            python_version = a
-        else:
-            unknown = True
-
-    if show_help:
-        usage(prog)
-        sys.exit(0)
-    elif unknown:
-        sys.stderr.write("%s: extra operand `%s'" % (prog, argv[1],))
-        sys.stderr.write("Try `%s --help' for more information." % (prog,))
-        sys.exit(1)
-
-    if not python_version:
-        sys.stderr.write("You must specify the python version.\n")
-        sys.exit(1)
+    add_rpms = [os.path.abspath(rpm) for rpm in args.add]
 
     if not os.path.isfile(spec):
         sys.stderr.write("You must be at the top level of the blivet source tree.\n")
         sys.exit(1)
 
+    tag = args.tag
     if not tag:
-        if offset < 1:
+        if args.offset < 1:
             tag = getArchiveTag(spec)
         else:
-            tag = getArchiveTagOffset(spec, offset)
+            tag = getArchiveTagOffset(spec, args.offset)
         sys.stdout.write("Using tag: %s\n" % tag)
 
     if not os.path.isdir(updates):
         os.makedirs(updates)
 
-    copyUpdatedFiles(tag, updates, python_version)
+    copyUpdatedFiles(tag, updates, args.python)
 
     if add_rpms:
         addRpms(updates, add_rpms)
 
     createUpdatesImage(cwd, updates)
 
-    if not keep:
+    if not args.keep:
         shutil.rmtree(updates)
 
 if __name__ == "__main__":
