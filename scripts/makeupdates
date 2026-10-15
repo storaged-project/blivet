@@ -136,14 +136,18 @@ def main(argv):
                         help="Make image from TAG to HEAD.")
     parser.add_argument('-o', '--offset', type=int, default=0,
                         help="Make image from (latest_tag - OFFSET) to HEAD.")
-    parser.add_argument('-a', '--add', nargs='+', default=[], metavar='RPM',
-                        help="Add contents of rpm(s) to the update. "
-                             "Accepts multiple files, e.g. 'folder/*.rpm'.")
+    parser.add_argument('-a', '--add', action='append', nargs='+', default=[],
+                        metavar='RPM',
+                        help="Add contents of rpm(s) to the update. Accepts "
+                             "multiple files, e.g. 'folder/*.rpm', and may be "
+                             "given more than once.")
     parser.add_argument('-p', '--python', required=True,
                         help="Version of python (for example, 3.9).")
     args = parser.parse_args(argv[1:])
 
-    add_rpms = [os.path.abspath(rpm) for rpm in args.add]
+    # '-a' uses action='append' with nargs='+', so args.add is a list of
+    # groups (one per '-a'); flatten it before resolving absolute paths
+    add_rpms = [os.path.abspath(rpm) for group in args.add for rpm in group]
 
     if not os.path.isfile(spec):
         sys.stderr.write("You must be at the top level of the blivet source tree.\n")
