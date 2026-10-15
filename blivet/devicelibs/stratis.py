@@ -182,7 +182,8 @@ def unlock_pool(pool_uuid, method=None, passphrase=None, keyfile=None):
 
         key_arg = (True, UnixFD(fd))
     else:
-        key_arg = (False, 0)
+        # throwaway fd that can be closed by DBus when the call is done
+        key_arg = (False, UnixFD(os.open(os.devnull, os.O_RDONLY)))
 
     try:
         proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF_R8,
@@ -366,7 +367,8 @@ def start_pool(pool_uuid):
     try:
         proxy = util.SystemBus.get_proxy(STRATIS_SERVICE, STRATIS_PATH, STRATIS_MANAGER_INTF_R8,
                                          client=GLibClientUnix)
-        ((succ, _uuid), rc, err) = proxy.StartPool(pool_uuid, "uuid", (False, (False, 0)), (False, 0),
+        ((succ, _uuid), rc, err) = proxy.StartPool(pool_uuid, "uuid", (False, (False, 0)),
+                                                   (False, UnixFD(os.open(os.devnull, os.O_RDONLY))),
                                                    timeout=STRATIS_CALL_TIMEOUT)
     except DBusError as e:
         raise StratisError("Failed to start stratis pool '%s': %s" % (pool_uuid, str(e)))

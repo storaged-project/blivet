@@ -106,6 +106,8 @@ class DMDevice(StorageDevice):
 
     @property
     def status(self):
+        if not self.exists:
+            return False
         try:
             return blockdev.dm.map_exists(self.map_name, True, True)
         except blockdev.DMError as e:
