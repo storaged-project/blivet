@@ -1,0 +1,21 @@
+summary: Run tests on a FIPS enabled machine
+
+# disabled by default, enabled only for the dedicated FIPS job (see .packit.yaml)
+enabled: false
+
+adjust+:
+  - when: fips == yes and distro == centos
+    enabled: true
+
+prepare:
+  - name: fips
+    how: feature
+    fips: enabled
+
+  - name: ansible
+    how: ansible
+    playbook: misc/install-test-dependencies.yml
+
+execute:
+    how: tmt
+    script: sudo make test
