@@ -75,7 +75,7 @@ class GPTTestBase(StorageTestCase):
         # An encrypted part
         self.usrluks = self.storage.new_partition(
             fmt_type="luks", fmt_args={
-                "passphrase": "123456",
+                "passphrase": "fipsneeds8chars",
             }, size=Size("100MiB"),
             parents=[disk], mountpoint="/usr")
         self.storage.create_device(self.usrluks)
