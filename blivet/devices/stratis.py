@@ -468,6 +468,3 @@ class StratisFilesystemDevice(StorageDevice):
                 data.maxSizeMB = self.req_max_size.convert_to(MiB)
             else:
                 data.size = self.size.convert_to(MiB)
-
-    def dracut_setup_args(self):
-        return set(["root=%s" % self.path])
