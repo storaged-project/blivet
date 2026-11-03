@@ -16,6 +16,7 @@ jobs:
 - job: copr_build
   targets:
     - fedora-all
+    - centos-stream-10-x86_64
   trigger: pull_request
   branch: main
 
@@ -49,12 +50,28 @@ jobs:
       # fill in Release as if packit would have done it
       - bash -c "sed -i python-blivet.spec -e \"s/Release:.*/Release:\ ${PACKIT_RPMSPEC_RELEASE}%{?dist}/\""
 
-# Fedora tests for the 'main' branch
+# Tests for the 'main' branch (Fedora and CentOS Stream)
 - job: tests
   trigger: pull_request
   targets:
+    - fedora-rawhide
     - fedora-latest
+    - fedora-latest-stable
+    - centos-stream-10-x86_64
   branch: main
+
+# FIPS mode tests for the 'main' branch (CentOS Stream 10 only)
+- job: tests
+  identifier: fips
+  trigger: pull_request
+  branch: main
+  targets:
+    - centos-stream-10-x86_64
+  tf_extra_params:
+    environments:
+      - tmt:
+          context:
+            fips: "yes"
 
 # CentOS 10 Stream tests for the 'rhel10-branch'
 - job: tests

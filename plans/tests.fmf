@@ -5,6 +5,8 @@ adjust+:
     enabled: false
   - when: distro == centos
     enabled: false
+  - when: fips == yes
+    enabled: false
 
 prepare:
   - name: copr
