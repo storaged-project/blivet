@@ -86,12 +86,14 @@ jobs:
     - fedora-latest-stable
     - centos-stream-10-x86_64
   branch: main
+  skip_build: true
 
 # FIPS mode tests for the 'main' branch (CentOS Stream 10 only)
 - job: tests
   identifier: fips
   trigger: pull_request
   branch: main
+  skip_build: true
   targets:
     - centos-stream-10-x86_64
   tf_extra_params:
