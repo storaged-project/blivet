@@ -16,9 +16,36 @@ jobs:
 - job: copr_build
   targets:
     - fedora-all
+  trigger: pull_request
+  branch: main
+
+# CentOS builds for the 'main' branch
+- job: copr_build
+  targets:
     - centos-stream-10-x86_64
   trigger: pull_request
   branch: main
+  actions:
+    post-upstream-clone:
+      # bump release to 99 to always be ahead of Fedora builds
+      - 'bash -c "sed -i -r \"s/Release:(\s*)\S+/Release: 99%{?dist}/\" python-blivet.spec"'
+    get-current-version:
+      - "python3 ./setup.py --version"
+    create-archive:
+      # get the "no btrfs on ELN" patch so we can keep the same spec both here and downstream
+      - "cp misc/0001-remove-btrfs-plugin.patch 0001-remove-btrfs-plugin.patch"
+      - 'bash -c "ls *.patch"'
+      # create the archive
+      - "make local"
+      - 'bash -c "ls *.tar*"'
+    fix-spec-file:
+      # define the Source variables
+      - bash -c "sed -i python-blivet.spec -e \"s/http.*%{realname}-%{realversion}.tar.gz/blivet-${PACKIT_PROJECT_VERSION}.tar.gz/\""
+      - bash -c "sed -i python-blivet.spec -e \"s/http.*%{realname}-%{realversion}-tests.tar.gz/blivet-${PACKIT_PROJECT_VERSION}-tests.tar.gz/\""
+      # fill in Release as if packit would have done it
+      - bash -c "sed -i python-blivet.spec -e \"s/Release:.*/Release:\ ${PACKIT_RPMSPEC_RELEASE}%{?dist}/\""
+      # for CentOS 10 build, we want to always include the btrfs remove patch in SRPM
+      - bash -c "sed -i 's/^%if 0%{?rhel} >= 9$/%if 1/' python-blivet.spec"
 
 # CentOS 10 Stream builds for the 'rhel10-branch'
 - job: copr_build
