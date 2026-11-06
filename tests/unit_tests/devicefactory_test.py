@@ -17,7 +17,7 @@ from blivet.devices import MDRaidArrayDevice
 from blivet.devices import PartitionDevice
 from blivet.devices import StratisFilesystemDevice
 from blivet.devices.lvm import DEFAULT_THPOOL_RESERVE
-from blivet.errors import RaidError
+from blivet.errors import RaidError, LUKSError, DeviceFactoryError
 import blivet.flags
 from blivet.formats import get_format
 from blivet.size import Size
@@ -330,6 +330,133 @@ class DeviceFactoryTestCase(unittest.TestCase):
 
 
 class PartitionFactoryTestCase(DeviceFactoryTestCase):
+    @patch("blivet.formats.disklabel.DiskLabel._get_best_label_type", return_value="gpt")
+    @patch("blivet.formats.luks.arch")
+    @patch("blivet.formats.luks.availability.BLOCKDEV_S390_PLUGIN_PAES", available=True)
+    @patch("blivet.devices.dm.DMDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    def test_paes_parameters(self, *args):  # pylint: disable=unused-argument
+        for disk in self.b.disks:
+            if not disk.partitioned or not disk.format.supported:
+                self.b.initialize_disk(disk)
+        device = self._factory_device(self.device_type, disks=self.b.disks, size=Size("400 MiB"),
+                                      fstype="ext4", encrypted=True, cipher=crypto.PAES_CIPHER,
+                                      zkey_keybits=256, zkey_key_type="CCA-AESCIPHER",
+                                      zkey_apqns=["01.0001"], zkey_sector_size=4096,
+                                      zkey_dummy_passphrase=True, zkey_name="test-key")
+        fmt = device.raw_device.format
+        self.assertTrue(fmt.pervasive)
+        self.assertEqual(fmt.key_size, 0)
+        self.assertEqual(fmt.zkey_keybits, 256)
+        self.assertEqual(fmt.zkey_key_type, "CCA-AESCIPHER")
+        self.assertEqual(fmt.zkey_apqns, ["01.0001"])
+        self.assertEqual(fmt.zkey_sector_size, 4096)
+        self.assertTrue(fmt.zkey_dummy_passphrase)
+        self.assertEqual(fmt._zkey_name, "test-key")
+
+    @patch("blivet.formats.disklabel.DiskLabel._get_best_label_type", return_value="gpt")
+    @patch("blivet.formats.luks.arch")
+    @patch("blivet.formats.luks.availability.BLOCKDEV_S390_PLUGIN_PAES", available=True)
+    @patch("blivet.devices.dm.DMDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    def test_reconfigure_encryption_options(self, *args):  # pylint: disable=unused-argument
+        for disk in self.b.disks:
+            if not disk.partitioned or not disk.format.supported:
+                self.b.initialize_disk(disk)
+        kwargs = {"disks": self.b.disks, "size": Size("400 MiB"), "fstype": "ext4", "encrypted": True}
+        device = self._factory_device(self.device_type, **kwargs)
+        fmt = device.raw_device.format
+        contexts = fmt.contexts
+        contexts.add_passphrase("secret")
+        self.assertFalse(fmt.pervasive)
+        self.assertEqual(fmt.key_size, 512)
+
+        device = self._factory_device(self.device_type, device=device, cipher=crypto.PAES_CIPHER,
+                                      zkey_key_type="CCA-AESCIPHER", zkey_keybits=256, zkey_apqns=["01.0001"],
+                                      zkey_sector_size=4096, zkey_dummy_passphrase=True, zkey_name="test-key", **kwargs)
+        self.assertIs(device.raw_device.format, fmt)
+        self.assertTrue(fmt.pervasive)
+        self.assertEqual(fmt.cipher, crypto.PAES_CIPHER)
+        self.assertEqual(fmt.key_size, 0)
+        self.assertEqual(fmt.zkey_key_type, "CCA-AESCIPHER")
+        self.assertEqual(fmt.zkey_keybits, 256)
+        self.assertEqual(fmt.zkey_apqns, ["01.0001"])
+        self.assertEqual(fmt.zkey_sector_size, 4096)
+        self.assertTrue(fmt.zkey_dummy_passphrase)
+        self.assertEqual(fmt._zkey_name, "test-key")
+        self.assertIs(fmt.contexts, contexts)
+        self.assertEqual(contexts.get_context("passphrase")._passphrase, "secret")
+        actions = self.b.devicetree.actions.find(device=device.raw_device, action_type="create", object_type="format")
+        self.assertTrue(actions)
+        self.assertIs(actions[-1].format, fmt)
+
+        # Unspecified options survive later edits; explicitly supplied ones change.
+        device = self._factory_device(self.device_type, device=device, zkey_keybits=512, **kwargs)
+        self.assertTrue(fmt.pervasive)
+        self.assertEqual(fmt.zkey_keybits, 512)
+        self.assertEqual(fmt.zkey_apqns, ["01.0001"])
+
+        # Validate before updating the object, including when changing versions.
+        factory = devicefactory.get_device_factory(self.b, self.device_type, device=device, luks_version="luks1", **kwargs)
+        with self.assertRaises(LUKSError):
+            factory._set_encryption()
+        self.assertEqual(fmt.luks_version, "luks2")
+        self.assertTrue(fmt.pervasive)
+
+        device = self._factory_device(self.device_type, device=device, cipher="aes-xts-plain64", **kwargs)
+        self.assertFalse(fmt.pervasive)
+        self.assertEqual(fmt.cipher, "aes-xts-plain64")
+        self.assertEqual(fmt.key_size, 512)
+        self.assertIs(fmt.contexts, contexts)
+
+        factory = devicefactory.get_device_factory(self.b, self.device_type, device=device, cipher=crypto.PAES_CIPHER,
+                                                   **kwargs)
+        with patch("blivet.formats.luks.availability.BLOCKDEV_S390_PLUGIN_PAES", available=False,
+                   availability_errors=["unavailable"]):
+            with self.assertRaises(LUKSError):
+                factory._set_encryption()
+        self.assertFalse(fmt.pervasive)
+        self.assertEqual(fmt.cipher, "aes-xts-plain64")
+
+        # Existing on-disk formats must not be silently converted.
+        fmt.exists = True
+        with self.assertRaises(DeviceFactoryError):
+            factory._set_encryption()
+        self.assertFalse(fmt.pervasive)
+        fmt.exists = False
+
+    @patch("blivet.formats.disklabel.DiskLabel._get_best_label_type", return_value="gpt")
+    @patch("blivet.formats.luks.arch")
+    @patch("blivet.formats.luks.availability.BLOCKDEV_S390_PLUGIN_PAES", available=True)
+    @patch("blivet.devices.dm.DMDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.formattable", return_value=True)
+    @patch("blivet.formats.lvmpv.LVMPhysicalVolume.destroyable", return_value=True)
+    @patch("blivet.devices.lvm.LVMVolumeGroupDevice.type_external_dependencies", return_value=set())
+    @patch("blivet.devices.lvm.LVMLogicalVolumeBase.type_external_dependencies", return_value=set())
+    @patch("blivet.static_data.lvm_info.blockdev.lvm.lvs", return_value=[])
+    @patch("blivet.formats.fs.Ext4FS.formattable", return_value=True)
+    @patch("blivet.formats.fs.XFS.formattable", return_value=True)
+    def test_reconfigure_encrypted_members(self, *args):  # pylint: disable=unused-argument
+        for disk in self.b.disks:
+            if not disk.partitioned or not disk.format.supported:
+                self.b.initialize_disk(disk)
+        kwargs = {"disks": self.b.disks, "size": Size("400 MiB"), "fstype": "ext4", "container_encrypted": True}
+        device = self._factory_device(devicefactory.DeviceTypes.LVM, **kwargs)
+        formats = [parent.raw_device.format for parent in device.container.parents]
+        self.assertTrue(formats)
+        self.assertTrue(all(not fmt.pervasive for fmt in formats))
+        device = self._factory_device(devicefactory.DeviceTypes.LVM, device=device, cipher=crypto.PAES_CIPHER,
+                                      zkey_keybits=256, zkey_apqns=["01.0001"], **kwargs)
+        self.assertEqual(formats, [parent.raw_device.format for parent in device.container.parents])
+        for fmt in formats:
+            self.assertTrue(fmt.pervasive)
+            self.assertEqual(fmt.cipher, crypto.PAES_CIPHER)
+            self.assertEqual(fmt.key_size, 0)
+            self.assertEqual(fmt.zkey_keybits, 256)
+            self.assertEqual(fmt.zkey_apqns, ["01.0001"])
+
     device_class = PartitionDevice
     device_type = devicefactory.DeviceTypes.PARTITION
     factory_class = devicefactory.PartitionFactory

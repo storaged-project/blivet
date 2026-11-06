@@ -1,4 +1,5 @@
 from .disk_test import *
+from .crypto_test import *
 from .edd_test import *
 from .lvm_test import *
 from .mdraid_test import *

@@ -357,6 +357,14 @@ class DeviceFactory(object):
             :type pbkdf_args: :class:`~.formats.luks.LUKS2PBKDFArgs`
             :keyword luks_sector_size: encryption sector size (use only with LUKS version 2)
             :type luks_sector_size: int
+            :keyword cipher: LUKS cipher (paes-xts-plain64 requests pervasive encryption)
+            :keyword key_size: LUKS key size in bits
+            :keyword zkey_key_type: PAES secure-key type
+            :keyword zkey_apqns: PAES crypto adapters
+            :keyword zkey_keybits: PAES clear-key size in bits
+            :keyword zkey_sector_size: PAES sector size
+            :keyword zkey_dummy_passphrase: generate and enroll a repository dummy passphrase
+            :keyword zkey_name: PAES repository key name
 
         """
         self.storage = storage  # a Blivet instance
@@ -378,6 +386,8 @@ class DeviceFactory(object):
         self.luks_version = kwargs.get("luks_version") or crypto.DEFAULT_LUKS_VERSION
         self.pbkdf_args = kwargs.get("pbkdf_args", None)
         self.luks_sector_size = kwargs.get("luks_sector_size") or 0
+        self._luks_extra_args = {key: kwargs[key] for key in ("cipher", "key_size") + crypto.ZKEY_PARAMETERS
+                                 if key in kwargs}
 
         # If a device was passed, update the defaults based on it.
         self.device = kwargs.get("device")
@@ -730,6 +740,7 @@ class DeviceFactory(object):
             fmt_args["luks_version"] = self.luks_version
             fmt_args["pbkdf_args"] = self.pbkdf_args
             fmt_args["luks_sector_size"] = self.luks_sector_size
+            fmt_args.update(self._luks_extra_args)
         else:
             fstype = self.fstype
             mountpoint = self.mountpoint
@@ -869,7 +880,8 @@ class DeviceFactory(object):
                                                                min_luks_entropy=self.min_luks_entropy,
                                                                luks_version=self.luks_version,
                                                                pbkdf_args=self.pbkdf_args,
-                                                               luks_sector_size=self.luks_sector_size))
+                                                               luks_sector_size=self.luks_sector_size,
+                                                               **self._luks_extra_args))
             luks_device = LUKSDevice("luks-%s" % self.device.name,
                                      fmt=leaf_format,
                                      parents=self.device)
@@ -879,13 +891,30 @@ class DeviceFactory(object):
                 parent_container.parents.append(self.device)
                 parent_container.parents.remove(orig_device)
 
-        if self.encrypted and isinstance(self.device, LUKSDevice) and \
-                self.raw_device.format.luks_version != self.luks_version:
-            self.raw_device.format.luks_version = self.luks_version
+        if self.encrypted and isinstance(self.device, LUKSDevice):
+            self._update_luks_format(self.raw_device.format)
 
-        if self.encrypted and isinstance(self.device, LUKSDevice) and \
-                self.raw_device.format.luks_sector_size != self.luks_sector_size:
-            self.raw_device.format.luks_sector_size = self.luks_sector_size
+    def _update_luks_format(self, fmt):
+        """Validate and update encryption options on an already-planned format."""
+        options = ("cipher", "key_size") + crypto.ZKEY_PARAMETERS
+        kwargs = {option: getattr(fmt, option if option != "zkey_name" else "_zkey_name")
+                  for option in options}
+        kwargs.update(self._luks_extra_args)
+        # AES key sizes describe clear keys, whereas PAES uses secure-key token
+        # sizes. Do not carry a default (or a previous token size) across modes.
+        if "key_size" not in self._luks_extra_args and crypto.is_paes_cipher(kwargs["cipher"]) != fmt.pervasive:
+            kwargs["key_size"] = 0
+        candidate = get_format("luks", exists=fmt.exists, luks_version=self.luks_version,
+                               luks_sector_size=self.luks_sector_size, **kwargs)
+        attributes = tuple(option if option != "zkey_name" else "_zkey_name" for option in options)
+        if fmt.exists and any(getattr(fmt, attr) != getattr(candidate, attr) for attr in attributes):
+            raise DeviceFactoryError("Encryption options cannot be changed on an existing LUKS format")
+
+        # Keep the same object: pending format actions reference it, and it owns
+        # the configured keyslot contexts and other settings we must preserve.
+        for attr in attributes + ("pervasive", "is_opal", "luks_version", "luks_sector_size",
+                                  "_header_size", "_min_size"):
+            setattr(fmt, attr, getattr(candidate, attr))
 
     def _set_name(self):
         if not self.device_name:
@@ -921,7 +950,8 @@ class DeviceFactory(object):
         return {"storage": self.storage,
                 "size": self._get_total_space(),
                 "disks": self.disks,
-                "fstype": self.child_factory_fstype}
+                "fstype": self.child_factory_fstype,
+                **self._luks_extra_args}
 
     def _set_up_child_factory(self):
         if self.child_factory or not self.child_factory_class or \
@@ -1244,7 +1274,8 @@ class PartitionSetFactory(PartitionFactory):
                                                               min_luks_entropy=self.min_luks_entropy,
                                                               luks_version=self.luks_version,
                                                               pbkdf_args=self.pbkdf_args,
-                                                              luks_sector_size=self.luks_sector_size))
+                                                              luks_sector_size=self.luks_sector_size,
+                                                              **self._luks_extra_args))
                 luks_member = LUKSDevice("luks-%s" % member.name,
                                          parents=[member],
                                          fmt=get_format(self.fstype))
@@ -1256,10 +1287,8 @@ class PartitionSetFactory(PartitionFactory):
 
                 continue
 
-            if member_encrypted and self.encrypted and self.luks_version != member.raw_device.format.luks_version:
-                member.raw_device.format.luks_version = self.luks_version
-            if member_encrypted and self.encrypted and self.luks_sector_size != member.raw_device.format.luks_sector_size:
-                member.raw_device.format.luks_sector_size = self.luks_sector_size
+            if member_encrypted and self.encrypted:
+                self._update_luks_format(member.raw_device.format)
 
         ##
         # Prepare previously allocated member partitions for reallocation.
@@ -1284,6 +1313,7 @@ class PartitionSetFactory(PartitionFactory):
                 fmt_args["luks_version"] = self.luks_version
                 fmt_args["pbkdf_args"] = self.pbkdf_args
                 fmt_args["luks_sector_size"] = self.luks_sector_size
+                fmt_args.update(self._luks_extra_args)
             else:
                 member_format = self.fstype
 
