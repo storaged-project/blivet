@@ -22,14 +22,16 @@
 
 import hashlib
 import os
+import tempfile
 
 import gi
 gi.require_version("BlockDev", "3.0")
 
-from gi.repository import BlockDev
+from gi.repository import BlockDev, GLib
 
 from ..size import Size, ROUND_DOWN
 from ..tasks import availability
+from ..errors import LUKSError
 from ..util import total_memory, available_memory, run_program_and_capture_output
 
 import logging
@@ -46,6 +48,9 @@ EXTERNAL_DEPENDENCIES = [availability.BLOCKDEV_CRYPTO_PLUGIN]
 LUKS_VERSIONS = {"luks1": BlockDev.CryptoLUKSVersion.LUKS1,
                  "luks2": BlockDev.CryptoLUKSVersion.LUKS2}
 DEFAULT_LUKS_VERSION = "luks2"
+PAES_CIPHER = "paes-xts-plain64"
+ZKEY_PARAMETERS = ("zkey_key_type", "zkey_apqns", "zkey_keybits", "zkey_sector_size",
+                   "zkey_dummy_passphrase", "zkey_name")
 
 OPAL_TYPES = {"luks2-hw-opal": BlockDev.CryptoLUKSHWEncryptionType.OPAL_HW_AND_SW,
               "luks2-hw-opal-only": BlockDev.CryptoLUKSHWEncryptionType.OPAL_HW_ONLY}
@@ -167,10 +172,11 @@ class KeyslotContext(object):
     ctype = None
     _context = None
 
-    def __init__(self, passphrase=None, keyfile=None, priority=0):
+    def __init__(self, passphrase=None, keyfile=None, priority=0, volume_key=None):
         self.priority = priority
         self._key_file = None
         self._passphrase = None
+        self._volume_key = None
 
         if passphrase:
             self.ctype = "passphrase"
@@ -183,8 +189,12 @@ class KeyslotContext(object):
             self.ctype = "keyfile"
             self._key_file = keyfile
             self._context = BlockDev.CryptoKeyslotContext(keyfile=keyfile)
+        elif volume_key:
+            self.ctype = "volume_key"
+            self._volume_key = volume_key
+            self._context = BlockDev.CryptoKeyslotContext(volume_key=volume_key)
         else:
-            raise ValueError("At least one 'passphrase' and 'keyfile' must be specified")
+            raise ValueError("At least one of 'passphrase', 'keyfile' and 'volume_key' must be specified")
 
     @property
     def valid(self):
@@ -192,6 +202,8 @@ class KeyslotContext(object):
             return True
         if self.is_keyfile:
             return os.access(self._key_file, os.R_OK)
+        if self.is_volume_key:
+            return bool(self._volume_key)
 
     @property
     def is_passphrase(self):
@@ -200,6 +212,86 @@ class KeyslotContext(object):
     @property
     def is_keyfile(self):
         return self.ctype == "keyfile"
+
+    @property
+    def is_volume_key(self):
+        return self.ctype == "volume_key"
+
+
+def is_paes_cipher(cipher):
+    return cipher == PAES_CIPHER
+
+
+def generate_secure_key(name, key_type=None, keybits=0, volumes=None, apqns=None,
+                        sector_size=0, dummy_passphrase=False):
+    """Generate an XTS secure key and return its repository metadata."""
+    BlockDev.s390.zkey_generate(name, key_type, keybits, volumes, apqns,
+                                sector_size, dummy_passphrase, None)
+    try:
+        keys = BlockDev.s390.zkey_list(name)
+        if len(keys) != 1 or keys[0].name != name:
+            raise LUKSError("Cannot find generated secure key '%s'" % name)
+        return keys[0]
+    except (BlockDev.BlockDevError, GLib.Error, LUKSError):
+        try:
+            remove_secure_key(name)
+        except (BlockDev.BlockDevError, GLib.Error) as e:
+            log.warning("Failed to remove secure key %s: %s", name, e)
+        raise
+
+
+def read_secure_key(key_file):
+    with open(key_file, "rb") as key:
+        return key.read()
+
+
+def remove_secure_key(name):
+    BlockDev.s390.zkey_remove(name)
+
+
+def luks_uuid_path(uuid):
+    """Persistent repository volume path for a LUKS UUID."""
+    return "/dev/disk/by-uuid/%s" % uuid
+
+
+def secure_key_volume_matches(volume, device, uuid=None):
+    """Match a repository association, including after its UUID link disappears."""
+    path = volume.split(":", 1)[0]
+    if uuid and path.startswith("/dev/disk/by-uuid/"):
+        return path == luks_uuid_path(uuid)
+    return os.path.realpath(path) == os.path.realpath(device)
+
+
+def find_secure_key_for_volume(device, uuid=None):
+    """Find a repository key by persistent UUID or a legacy device-path association."""
+    for key in BlockDev.s390.zkey_list(None):
+        for volume in key.volumes or []:
+            if secure_key_volume_matches(volume, device, uuid):
+                return key
+    return None
+
+
+def change_secure_key_volumes(name, volumes, remove=False):
+    """Replace associations, or remove only the specified associations.
+
+    libblockdev does not yet expose 'zkey change'. Keep the CLI fallback here
+    rather than editing repository files or replacing a shared secure key.
+    """
+    if not volumes:
+        raise ValueError("At least one volume association must be specified")
+    value = ("-" if remove else "") + ",".join(volumes)
+    rc, out = run_program_and_capture_output(["zkey", "change", "--name", name, "--volumes", value],
+                                             stderr_to_stdout=True)
+    if rc:
+        raise LUKSError("Failed to change volume associations for secure key %s: %s" % (name, out))
+
+
+def set_verification_pattern(device, passphrase):
+    # NamedTemporaryFile creates a private (0600) file and unlinks it even on error.
+    with tempfile.NamedTemporaryFile(prefix="blivet-zkey-") as key_file:
+        key_file.write(passphrase.encode("utf-8"))
+        key_file.flush()
+        BlockDev.s390.zkey_cryptsetup_setvp(device, key_file.name, None)
 
 
 def calculate_luks2_max_memory():
