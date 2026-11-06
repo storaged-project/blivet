@@ -132,6 +132,26 @@ class LUKSTestCaseLUKS1(LUKSTestCase):
 class LUKSTestCaseLUKS2(LUKSTestCase):
     version = "luks2"
 
+    def test_fips_mode(self):
+        try:
+            with open("/proc/sys/crypto/fips_enabled", "r") as f:
+                fips_enabled = f.read().strip() == "1"
+        except FileNotFoundError:
+            fips_enabled = False
+
+        self.assertEqual(crypto.is_fips_enabled(), fips_enabled)
+
+        self.fmt.device = self.loop_devices[0]
+        self.fmt.passphrase = "abc"
+
+        # FIPS mode rejects passphrases that are too short.
+        if fips_enabled:
+            with self.assertRaises(LUKSError):
+                self.fmt.create()
+        else:
+            self.fmt.create()
+            self.assertTrue(self.fmt.exists)
+
 
 # prevent unittest from running the "abstract" test case
 del LUKSTestCase
