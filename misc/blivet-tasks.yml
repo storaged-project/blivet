@@ -54,6 +54,7 @@
       - python3-yaml
       - stratis-cli
       - stratisd
+      - stratisd-tools
       - targetcli
       - udftools
       - udisks2-iscsi
@@ -111,6 +112,7 @@
       - python3-yaml
       - stratis-cli
       - stratisd
+      - stratisd-tools
       - targetcli
       - udisks2-iscsi
       - xfsprogs
