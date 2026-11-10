@@ -23,6 +23,8 @@ from blivet.populator.helpers import get_format_helper, get_device_helper
 from blivet.populator.helpers.boot import EFIFormatPopulator, MacEFIFormatPopulator
 from blivet.populator.helpers.formatpopulator import FormatPopulator
 from blivet.populator.helpers.disklabel import DiskLabelFormatPopulator
+from blivet.populator.helpers.luks import LUKSFormatPopulator
+from blivet.devicelibs import crypto
 from blivet.size import Size
 
 
@@ -975,6 +977,54 @@ class FormatPopulatorTestCase(PopulatorHelperTestCase):
             self.assertEqual(device.format.type,
                              self.blivet_type,
                              msg="FormatPopulator.run failed for %s" % self.udev_type)
+
+
+class PAESPopulatorTestCase(unittest.TestCase):
+    def test_populate_without_paes_api(self):
+        device = StorageDevice("test", exists=True)
+        helper = LUKSFormatPopulator(DeviceTree(), {}, device)
+        with patch("blivet.populator.helpers.luks.udev") as udev, \
+                patch.object(blockdev.crypto, "luks_info") as info, \
+                patch.object(crypto, "find_secure_key_for_volume", side_effect=AttributeError("missing API")), \
+                patch("blivet.formats.luks.availability.BLOCKDEV_S390_PLUGIN_PAES", available=False):
+            udev.device_get_holders.return_value = []
+            udev.device_get_format_version.return_value = "2"
+            udev.device_get_label.return_value = None
+            udev.device_get_uuid.return_value = "test-uuid"
+            info.return_value.cipher = "paes"
+            info.return_value.subsystem = None
+            # Populate the format without attempting to unlock the device.
+            FormatPopulator.run(helper)
+            self.assertTrue(device.format.exists)
+            self.assertTrue(device.format.pervasive)
+            self.assertEqual(device.format.cipher, crypto.PAES_CIPHER)
+            self.assertIsNone(device.format._zkey_name)
+
+    def test_paes_kwargs(self):
+        device = StorageDevice("test", exists=True)
+        helper = LUKSFormatPopulator(DeviceTree(), {"ID_FS_UUID": "test-uuid"}, device)
+        with patch("blivet.populator.helpers.luks.udev") as udev, \
+                patch.object(blockdev.crypto, "luks_info") as info, \
+                patch.object(crypto, "find_secure_key_for_volume") as find:
+            udev.device_get_holders.return_value = []
+            udev.device_get_format_version.return_value = "2"
+            udev.device_get_uuid.return_value = "test-uuid"
+            info.return_value.cipher = "paes"
+            info.return_value.subsystem = None
+            find.return_value.name = "repository-key"
+            kwargs = helper._get_kwargs()
+            self.assertEqual(kwargs["cipher"], crypto.PAES_CIPHER)
+            self.assertEqual(kwargs["zkey_name"], "repository-key")
+            find.assert_called_once_with(device.path, uuid="test-uuid")
+            find.side_effect = blockdev.BlockDevError("repository unavailable")
+            kwargs = helper._get_kwargs()
+            self.assertEqual(kwargs["cipher"], crypto.PAES_CIPHER)
+            self.assertNotIn("zkey_name", kwargs)
+            find.reset_mock()
+            info.return_value.cipher = "aes"
+            kwargs = helper._get_kwargs()
+            self.assertNotIn("cipher", kwargs)
+            find.assert_not_called()
 
 
 class Ext4PopulatorTestCase(FormatPopulatorTestCase):
