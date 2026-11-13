@@ -32,6 +32,7 @@ from ...flags import flags
 from .devicepopulator import DevicePopulator
 from .formatpopulator import FormatPopulator
 from ...static_data import luks_data, stratis_info
+from ...devicelibs import crypto
 
 import logging
 log = logging.getLogger("blivet")
@@ -140,6 +141,14 @@ class LUKSFormatPopulator(FormatPopulator):
                 kwargs["luks_version"] = "luks2-hw-opal-only"
 
             kwargs["subsystem"] = info.subsystem
+            if info.cipher and info.cipher.startswith("paes"):
+                kwargs["cipher"] = crypto.PAES_CIPHER
+                try:
+                    key = crypto.find_secure_key_for_volume(self.device.path, uuid=kwargs.get("uuid"))
+                    if key:
+                        kwargs["zkey_name"] = key.name
+                except (blockdev.BlockDevError, AttributeError) as e:
+                    log.warning("Failed to find secure key for %s: %s", self.device.path, e)
 
         return kwargs
 
