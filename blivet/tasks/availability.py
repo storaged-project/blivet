@@ -457,6 +457,18 @@ BLOCKDEV_CRYPTO_ESCROW = BlockDevTechInfo(plugin_name="crypto",
                                           technologies={blockdev.CryptoTech.ESCROW: blockdev.CryptoTechMode.CREATE})
 BLOCKDEV_CRYPTO_TECH_ESCROW = BlockDevMethod(BLOCKDEV_CRYPTO_ESCROW)
 
+# The s390 API is not present in libblockdev builds on all architectures.
+try:
+    BLOCKDEV_S390_PAES_MODES = (blockdev.S390TechMode.CREATE |
+                                blockdev.S390TechMode.MODIFY |
+                                blockdev.S390TechMode.QUERY)
+    BLOCKDEV_S390_PAES = BlockDevTechInfo(plugin_name="s390",
+                                          check_fn=blockdev.s390_is_tech_avail,
+                                          technologies={blockdev.S390Tech.PAES: BLOCKDEV_S390_PAES_MODES})
+    BLOCKDEV_S390_TECH_PAES = BlockDevMethod(BLOCKDEV_S390_PAES)
+except AttributeError:
+    BLOCKDEV_S390_TECH_PAES = _UnavailableMethod("libblockdev PAES API is not available")
+
 # libblockdev dm plugin required technologies and modes
 BLOCKDEV_DM_ALL_MODES = (blockdev.DMTechMode.CREATE_ACTIVATE |
                          blockdev.DMTechMode.REMOVE_DEACTIVATE |
@@ -597,6 +609,7 @@ BLOCKDEV_NTFS_MIN_SIZE = blockdev_fs_plugin_operation(BlockDevFSMethod(FSOperati
 # due to missing dependencies)
 BLOCKDEV_BTRFS_PLUGIN = blockdev_plugin("libblockdev btrfs plugin", BLOCKDEV_BTRFS_TECH)
 BLOCKDEV_CRYPTO_PLUGIN = blockdev_plugin("libblockdev crypto plugin", BLOCKDEV_CRYPTO_TECH)
+BLOCKDEV_S390_PLUGIN_PAES = blockdev_plugin("libblockdev s390 plugin (PAES technology)", BLOCKDEV_S390_TECH_PAES)
 BLOCKDEV_CRYPTO_PLUGIN_INTEGRITY = blockdev_plugin("libblockdev crypto plugin (integrity technology)",
                                                    BLOCKDEV_CRYPTO_TECH_INTEGRITY)
 BLOCKDEV_CRYPTO_PLUGIN_BITLK = blockdev_plugin("libblockdev crypto plugin (BitLocker technology)",
