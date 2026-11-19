@@ -27,6 +27,7 @@
   package:
     state: present
     name:
+      - cryptsetup
       - dosfstools
       - e2fsprogs
       - exfatprogs
@@ -90,6 +91,7 @@
   package:
     state: present
     name:
+      - cryptsetup
       - btrfs-progs
       - dosfstools
       - e2fsprogs
@@ -171,6 +173,7 @@
       - automake
       - autopoint
       - bison
+      - cryptsetup
       - flex
       - git
       - libtool
