@@ -312,6 +312,7 @@ class PAESLUKSTestCase(unittest.TestCase):
                 patch.object(crypto_lib, "read_secure_key", return_value=b"\x00key") as read, \
                 patch.object(blockdev, "CryptoKeyslotContext") as constructor, \
                 patch.object(blockdev, "crypto") as bdcrypto, \
+                patch.object(DeviceFormat, "_pre_create"), \
                 patch.object(crypto_lib, "set_verification_pattern") as setvp:
             s390.zkey_list.return_value = []
             calls.attach_mock(generate, "generate")
@@ -321,7 +322,7 @@ class PAESLUKSTestCase(unittest.TestCase):
             calls.attach_mock(setvp, "setvp")
             bdcrypto.luks_info.return_value.uuid = "test-uuid"
             calls.attach_mock(self.change_volumes, "associate")
-            fmt._create()
+            fmt.create()
             self.assertEqual([call[0] for call in calls.mock_calls],
                              ["generate", "read", "format", "add_key", "add_key", "setvp", "associate"])
             generate.assert_called_once_with("blivet-test", "CCA-AESCIPHER", 256,
@@ -338,7 +339,11 @@ class PAESLUKSTestCase(unittest.TestCase):
             self.assertEqual(fmt._zkey_name, "blivet-test")
             self.assertEqual(fmt.key_size, 32)
             self.change_volumes.assert_called_once_with(
-                "blivet-test", ["/dev/disk/by-uuid/test-uuid:luks-test"])
+                "blivet-test", ["/dev/disk/by-uuid/test-uuid:luks-test-uuid"])
+            self.assertEqual(fmt.map_name, "luks-test-uuid")
+            fmt._setup()
+            bdcrypto.luks_open.assert_called_once_with("/dev/test", "luks-test-uuid",
+                                                       context=fmt.contexts.get_context()._context)
 
     def test_dummy_passphrase_enrollment(self):
         fmt = self.new_format(zkey_dummy_passphrase=True)

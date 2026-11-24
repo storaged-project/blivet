@@ -592,12 +592,16 @@ class LUKS(DeviceFormat):
                 self.uuid = blockdev.crypto.luks_info(self.device).uuid
                 if not self.uuid:
                     raise LUKSError("New PAES volume has no LUKS UUID")
+                # LVM's crypt device ID includes the mapper name, so use the
+                # same name that rediscovery and boot will use.
+                map_name = "luks-%s" % self.uuid
                 # cryptsetup's udev change event creates the UUID link needed by
                 # zkey. Never persist a kernel name which may identify a different
                 # disk after reboot/device enumeration changes.
                 udev.settle()
-                crypto.change_secure_key_volumes(self._zkey_name,
-                                                 ["%s:%s" % (crypto.luks_uuid_path(self.uuid), self.map_name)])
+                crypto.change_secure_key_volumes(
+                    self._zkey_name, ["%s:%s" % (crypto.luks_uuid_path(self.uuid), map_name)])
+                self.map_name = map_name
             except (blockdev.BlockDevError, GLib.Error, OSError, LUKSError) as e:
                 raise LUKSError("Failed to associate PAES secure key with LUKS UUID: %s" % e)
 
@@ -668,6 +672,10 @@ class LUKS(DeviceFormat):
                 raise LUKSError("Failed to set allow discards flag for newly created LUKS format: %s" % str(e))
             except AttributeError:
                 log.warning("Cannot set allow discards flag: not supported")
+
+        # PAES already obtained the UUID to set up the zkey association.
+        if self.pervasive:
+            return
 
         try:
             info = blockdev.crypto.luks_info(self.device)
