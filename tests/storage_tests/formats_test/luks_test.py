@@ -220,6 +220,7 @@ class PAESLUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
         self._register_cleanup(fmt)
         self.assertTrue(fmt.pervasive)
         self.assertEqual(fmt.luks_version, "luks2")
+        self.assertEqual(fmt.map_name, "luks-%s" % fmt.uuid)
         info = crypto.find_secure_key_for_volume(fmt.device)
         self.assertIsNotNone(info)
         self.assertEqual(fmt.key_size, info.secure_key_size * 8)
@@ -240,6 +241,7 @@ class PAESLUKSTestCase(loopbackedtestcase.LoopBackedTestCase):
         discovered = self._discover_format(fmt.device)
         self.assertTrue(discovered.pervasive)
         self.assertEqual(discovered.uuid, fmt.uuid)
+        self.assertEqual(discovered.map_name, fmt.map_name)
         self.assertEqual(discovered._zkey_name, fmt._zkey_name)
         discovered.passphrase = "paes-test-password"
         discovered.setup()
