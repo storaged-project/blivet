@@ -63,6 +63,20 @@ jobs:
     - centos-stream-10-x86_64
   branch: rhel10-branch
 
+# CentOS 10 Stream tests on a FIPS enabled machine for the 'rhel10-branch'
+- job: tests
+  identifier: fips
+  trigger: pull_request
+  targets:
+    - centos-stream-10-x86_64
+  branch: rhel10-branch
+  tmt_plan: "/plans/tests-rhel-fips"
+  tf_extra_params:
+    environments:
+      - tmt:
+          context:
+            fips: "yes"
+
 # Downstream builds
 - job: propose_downstream
   trigger: release
